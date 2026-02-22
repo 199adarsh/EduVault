@@ -1,0 +1,5 @@
+/target/
+/.mvn/
+/mvnw*
+*.class
+src/main/resources/application.yml

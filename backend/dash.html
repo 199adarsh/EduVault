@@ -1,0 +1,420 @@
+
+<html lang="en">
+	 <head>
+   <title>Contineo - Bringing Happiness to work and study places!</title>
+     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="robots" content="index, follow" />
+  <meta name="keywords" content="contineo, Contineo" />
+  <meta name="description" content="contineo" />
+  <meta name="generator" content="contineo" />
+  <title>Contineo For College</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+   <!-- <link rel="shortcut icon" href="templates/contineoReg/img/logo.png" type="image/x-icon"/> -->
+    <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/uikit.css" />
+    <link rel="shortcut icon" href="images/logo.png" type="image/x-icon"/>
+     <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/uikit.min.css" />
+    <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="templates/contineoReg/assets/js/uikit.min.js"></script>
+    <script src="templates/contineoReg/assets/js/uikit-icons.min.js"></script>
+      
+    <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/billboard.css" />
+    <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/billboard.min.css" />
+    <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/insight.min.css" />
+    <link rel="stylesheet" href="templates/contineoReg/assets/src/scss/css/insight.css" />
+    <script src="templates/contineoReg/assets/js/billboard.js"></script>
+    <script src="templates/contineoReg/assets/js/billboard.pkgd.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel = "stylesheet">
+    
+	</head>
+<body id="">
+<form action="index.php" method="POST" name="log">
+
+<input type="hidden" name="option" value="com_user">
+
+<input type="hidden" name="task" value="logout">
+
+<input type="hidden" name="return" value="�w^Ƙi">
+
+</form>
+
+
+<!-- UIkit CSS -->
+
+
+
+
+<!-- UIkit JS -->
+
+
+<script type="text/javascript">
+  function closeMe() {
+    document.getElementById('atPopup').style.display = "none";
+    document.getElementById('blackOverlay').style.display = "none";
+  }
+  function popUp(date) {
+    var due = date;
+    var split = due.split('|||');
+    document.getElementById('due').innerHTML = split[0];
+    document.getElementById('due2').innerHTML = split[1];
+    document.getElementById('atPopup').style.display = "block";
+    document.getElementById('blackOverlay').style.display = "block";
+  }
+  function check() {
+    /*var dd = document.getElementById('dd').value;
+    var mm = document.getElementById('mm').value;
+    var yyyy = document.getElementById('yyyy').value;
+    var dobs = yyyy+'-'+mm+'-'+dd;*/
+    var currentdate = document.getElementById('password').value;
+    var randsting = '';
+    for (i = 0; i < currentdate.length; i++) {
+      randsting += currentdate.charAt(i) + randomstring(2);
+    }
+    var encodedString = btoa(randsting);
+    document.getElementById('passwd').value = currentdate;//encodedString;
+    document.getElementById('password').value = currentdate;// encodedString;
+    return true;
+  }
+
+  function randomstring(L) {
+    var s = '';
+    var randomchar = function () {
+      var n = Math.floor(Math.random() * 62);
+      if (n < 10) return n; //1-10
+      if (n < 36) return String.fromCharCode(n + 55); //A-Z
+      return String.fromCharCode(n + 61); //a-z
+    }
+    while (s.length < L) s += randomchar();
+    return s;
+  }
+  function putdate() {
+    var dd = document.getElementById('dd').value;
+    var mm = document.getElementById('mm').value;
+    var yyyy = document.getElementById('yyyy').value;
+    var dobs = yyyy + '-' + mm + '-' + dd;
+    document.getElementById('passwd').value = dobs.trim();
+
+  }
+</script>
+
+
+
+
+<style>
+  /* The Modal (background) */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    /* padding-top: 100px; */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  /* Modal Content */
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 10px 20px;
+    border: 1px solid #888;
+    width: 50%;
+    position: relative;
+    top: 33%;
+  }
+
+  .modal-content h3 {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 10px;
+    color: #c62020 !important;
+
+  }
+
+  /* The Close Button */
+  .close {
+    color: #393939;
+    float: right;
+    font-size: 38px;
+    font-weight: bold;
+    line-height: 23px;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  footer {
+    margin: 0px 0px !important;
+    max-width: 100%;
+  }
+</style>
+<div id="myloginModal" class="modal">
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 style="">Login Failed</h3>
+
+          <p style="text-align: center; font-size:18px">
+        You have entered an invalid USN or password.
+      </p>
+      <p style="text-align: center; color: red; font-size:18px">
+        2 attempts remaining
+      </p>
+      </div>
+</div>
+
+<div class="cn-landing uk-grid uk-grid-collapse" uk-grid>
+  <div class="uk-width-3-5@l uk-width-3-5@m uk-width-1-2@s">
+    <div class="uk-card uk-card-default uk-card-body cn-bgpart1">
+    <div class="uk-flex uk-flex-middle cn-logo">
+<img src="images/logo.png" alt="logo" width="" style="
+    width: 22%;
+">
+<div class="cn-landinglogo-text cn-landing-logo">
+<a class="cn-heading cn-mob-hide" href="#!" rel="home">D.K.T.E. SOCIETY'S TEXTILE AND ENGINEERING INSTITUTE, ICHALKARNJI, 416115</a>
+</div>
+</div>
+      <div class="cn-welcome">
+        <article class="uk-article">
+          <h2 class="uk-article-title"><a class="uk-link-reset" href="">Welcome to DKTE</a></h2>
+          <p>DKTE’S Textile & Engineering Institute, Ichalkaranji (Top Autonomous Engineering Colleges In Maharashtra),
+            established in 1982, as first private Engineering Institute in Maharashtra, DKTE reflects the vision of
+            leading industrialists and educationalists. The vast exposure and experience of it’s founders has helped
+            DKTE (Private Autonomous Engineering College) to establish it’s identity as an Institute of repute in the
+            field of Textile & Engineering Colleges In Maharashtra.</p>
+          <!-- <div class="uk-grid-small uk-child-width-auto" uk-grid>
+            <div>
+              <a class="uk-button uk-button-text" href="#">Read more</a>
+            </div>
+            <div>
+              <a class="uk-button uk-button-text" href="#">5 Comments</a>
+            </div>
+          </div> -->
+        </article>
+        <div class="uk-width-1-1 uk-first-column">
+          <div class="uk-card uk-card-default uk-card-body cn-cal-events">
+            <div class="uk-clearfix">
+              <div class="uk-float-left">
+                <div class="uk-card">
+                  <a href="#!">
+                    <h3>Notice Board</h3>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="uk-panel uk-panel-scrollable cn-events">
+              <ul class="uk-list">
+                <li style="font-size:16px;"><span class="uk-margin-small-right" uk-icon="icon: info"></span>Welcome to
+                  the preview of the new mobile friendly parent portal</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="cn-absolute"> Copyright © Powered By <a href="http://www.contineo.in/" target="_blanks">Contineo</a></div> -->
+    </div>
+  </div>
+
+
+
+
+  <div class="uk-width-2-5@l uk-width-2-5@m uk-width-1-2@s cn-pad-left0">
+    <div class="uk-card uk-card-default uk-card-body cn-bgpart2">
+
+    <div class="uk-flex uk-flex-middle cn-mobile-logo">
+<img src="images/logo.png" alt="logo" width="" style="
+    width: 22%;
+">
+<div class="cn-landinglogo-text cn-landing-logo">
+<a class="cn-heading cn-mob-hide" href="#!" rel="home">D.K.T.E. SOCIETY'S TEXTILE AND ENGINEERING INSTITUTE, ICHALKARNJI, 416115</a>
+</div>
+</div>
+     
+      <div class="cn-links">
+        <a href="../newparentsodd/" style="font-size: 18px;font-weight: 700;color: #ffffff;margin-left:auto; ">Click Here
+          to access Odd 2025</a><br>
+        <!-- <a href="../parents_even/" style="font-size: 18px;font-weight: 700;color: #ffffff;margin-left:auto; ">Click Here
+          to access Even 2024</a><br> -->
+      </div>
+
+      <div class="uk-vertical-align-middle cn-form-box">
+        <form id="login-form" action="index.php" method="post">
+          <h3>Login to Your Account -<br> Even Term 2026</h3>
+          <form class="cn-landing-login">
+            <div class="uk-margin">
+              <div class="uk-inline uk-width-1-1">
+                <span class="uk-text-emphasis"> Username </span>
+                <span class="uk-form-icon" uk-icon="icon: mail"></span>
+                <input class="uk-input" type="text" required AUTOCOMPLETE="off" name="username" id="username"
+                  placeholder="PRN">
+              </div>
+            </div>
+            <div class="uk-margin">
+              <div class="uk-inline uk-width-1-1">
+                <span class="uk-text-emphasis"> Password</span>
+                <!-- <span class="uk-form-icon" uk-icon="icon: lock"></span> -->
+                <div class="uk-flex">
+                  <select name="dd" class="validate[required] inputselectday uk-select" id="dd" required="">
+                    <option disabled selected value=''>Day</option>
+                    <option value='01 '>01</option><option value='02 '>02</option><option value='03 '>03</option><option value='04 '>04</option><option value='05 '>05</option><option value='06 '>06</option><option value='07 '>07</option><option value='08 '>08</option><option value='09 '>09</option><option value='10 '>10</option><option value='11 '>11</option><option value='12 '>12</option><option value='13 '>13</option><option value='14 '>14</option><option value='15 '>15</option><option value='16 '>16</option><option value='17 '>17</option><option value='18 '>18</option><option value='19 '>19</option><option value='20 '>20</option><option value='21 '>21</option><option value='22 '>22</option><option value='23 '>23</option><option value='24 '>24</option><option value='25 '>25</option><option value='26 '>26</option><option value='27 '>27</option><option value='28 '>28</option><option value='29 '>29</option><option value='30 '>30</option><option value='31 '>31</option>                  </select>
+
+                  <select name="mm" class="validate[required] inputselectmon uk-select" id="mm" required="">
+                    <option disabled selected value=''>Month</option>
+                    <option value='01'>Jan</option><option value='02'>Feb</option><option value='03'>Mar</option><option value='04'>Apr</option><option value='05'>May</option><option value='06'>Jun</option><option value='07'>Jul</option><option value='08'>Aug</option><option value='09'>Sep</option><option value='10'>Oct</option><option value='11'>Nov</option><option value='12'>Dec</option>                  </select>
+
+                  <select name="yyyy" class="validate[required] inputselectyear uk-select" id="yyyy"
+                    onchange="putdate()" required="">
+                    <option disabled selected value=''> Year </option>
+                                          <option value='1976'>1976</option>                      <option value='1977'>1977</option>                      <option value='1978'>1978</option>                      <option value='1979'>1979</option>                      <option value='1980'>1980</option>                      <option value='1981'>1981</option>                      <option value='1982'>1982</option>                      <option value='1983'>1983</option>                      <option value='1984'>1984</option>                      <option value='1985'>1985</option>                      <option value='1986'>1986</option>                      <option value='1987'>1987</option>                      <option value='1988'>1988</option>                      <option value='1989'>1989</option>                      <option value='1990'>1990</option>                      <option value='1991'>1991</option>                      <option value='1992'>1992</option>                      <option value='1993'>1993</option>                      <option value='1994'>1994</option>                      <option value='1995'>1995</option>                      <option value='1996'>1996</option>                      <option value='1997'>1997</option>                      <option value='1998'>1998</option>                      <option value='1999'>1999</option>                      <option value='2000'>2000</option>                      <option value='2001'>2001</option>                      <option value='2002'>2002</option>                      <option value='2003'>2003</option>                      <option value='2004'>2004</option>                      <option value='2005'>2005</option>                      <option value='2006'>2006</option>                      <option value='2007'>2007</option>                      <option value='2008'>2008</option>                      <option value='2009'>2009</option>                      <option value='2010'>2010</option>                      <option value='2011'>2011</option>                      <option value='2012'>2012</option>                      <option value='2013'>2013</option>                      <option value='2014'>2014</option>                      <option value='2015'>2015</option>                      <option value='2016'>2016</option>                      <option value='2017'>2017</option>                      <option value='2018'>2018</option>                      <option value='2019'>2019</option>                      <option value='2020'>2020</option>                      <option value='2021'>2021</option>                      <option value='2022'>2022</option>                      <option value='2023'>2023</option>                      <option value='2024'>2024</option>                      <option value='2025'>2025</option>                      <option value='2026'>2026</option>                  </select>
+                </div>
+
+                <!--  -->
+
+
+
+
+                <input type="hidden" AUTOCOMPLETE="off" name="passwd" id="passwd" />
+
+                <!-- <input type="password" class="uk-input uk-form-large" AUTOCOMPLETE="off"  required name="passwd" id="passwd"  placeholder="YYYY-DD-MM"> -->
+
+
+                <input type="hidden" id="remember" name="remember" value="No" alt="Remember Me" readonly>
+              </div>
+            </div>
+            <div class="uk-margin uk-text-right">
+              <input type="submit"
+                class="uk-button uk-button-primary uk-button-large uk-width-1-1 cn-login-btn cn-submit1 cn-landing-login1"
+                value="Login" onClick="return check1()">
+              <!-- <input type="hidden"  id="passwd" name="passwd" AUTOCOMPLETE="off" readonly >           -->
+              <input type="hidden" name="option" value="com_user" readonly>
+              <input type="hidden" name="task" value="login" readonly>
+              <input type="hidden" name="return" value="�w^Ƙi" readonly>
+              <input type="hidden" name="return" value="" readonly />
+              <input type="hidden" name="1ac0d74d74473c14fc693cbd291dac2e" value="1" />              <!-- <a class="uk-float-right uk-link uk-link-muted cn-forgot-pwd" href="#">Forgot Password?</a> -->
+            </div>
+          </form>
+      </div>
+      <!-- <div class="cn-links-two" style="float:right;">
+        <a href="../parents_odd/" style="font-size: 18px;font-weight: 700;color: #ffffff;margin-left:auto; ">Click Here
+          to access Odd 2023</a><br>
+        <a href="../parents_even/" style="font-size: 18px;font-weight: 700;color: #ffffff;margin-left:auto; ">Click Here
+          to access Even 2024</a>
+      </div> -->
+    </div>
+  </div>
+</div>
+<footer>
+  <div class="uk-clearfix cn-footer-text">
+    <div class="uk-float-left">
+      <p class="uk-text-left">
+        Copyright © Powered By <a href="http://www.contineo.in/" target="_blanks">Contineo</a>
+      </p>
+    </div>
+    <div class="uk-float-right">
+      <p class="uk-text-right terms"><a href="#!">Terms of Service</a> | <a href="#!">Privacy Policy</a></p>
+    </div>
+  </div>
+</footer>
+
+
+
+<style>
+  .fnt-clr {
+    color: #ff0000 !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+  }
+
+  .cn-clr {
+    color: rgb(19, 19, 165) !important;
+  }
+
+  .uk-list-bullet>li {
+    font-size: 17px;
+  }
+</style>
+<!-- This is the modal -->
+
+<div id="modal-container" class="uk-modal-container" uk-modal>
+  <div class="uk-modal-dialog">
+    <!-- <button class="uk-modal-close-default" type="button" uk-close></button> -->
+    <div class="uk-modal-header">
+      <h4 class="uk-modal-title fnt-clr"> IMPORTANT INSTRUCTIONS FOR THE STUDENTS </h4>
+    </div>
+    <div class="uk-modal-body">
+      <ul class="uk-list uk-list-bullet">
+        <li> Log into the parent portal with PRN as user-name and date of birth as password.</li>
+        <li><b>The user-name will be blocked if incorrect password is entered for three times.</b> Please contact DKTE
+          department coordinators for
+          password reset.
+        </li>
+      </ul>
+      <div class="uk-text-right">
+        <button class="uk-button uk-button-default uk-modal-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 
+<script>
+  var util = UIkit.util;
+
+  util.on(document, 'DOMContentLoaded', function () {
+  var modalEl = util.$('#modal-container');
+  UIkit.modal(modalEl).show();
+  });
+
+</script> -->
+<script>
+  UIkit.util.ready(function () {
+    UIkit.modal('div#modal-container').show();
+  })
+</script>
+
+<script>
+  // Get the modal
+  var modal = document.getElementById("myloginModal");
+
+  // Get the button that opens the modal
+  var btn = document.getElementById("myBtn");
+
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+
+  // Check the condition and open the modal if true
+  
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function () {
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+
+</script>
+
+</body>
+      
+
+
+</html>
+
+  

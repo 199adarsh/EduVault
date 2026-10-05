@@ -4,3 +4,4 @@
 [2026-10-04] test(core): add foundational sanity tests for repository bindings
 [2026-10-05] feat(scraper): improve Continuo portal session authentication handlers
 [2026-10-05] refactor(scraper): streamline attendance session extraction pipelines
+[2026-10-05] fix(parser): resolve semester timetable date alignment anomalies

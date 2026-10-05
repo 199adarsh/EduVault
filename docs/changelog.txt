@@ -6,3 +6,4 @@
 [2026-10-05] refactor(scraper): streamline attendance session extraction pipelines
 [2026-10-05] fix(parser): resolve semester timetable date alignment anomalies
 [2026-10-05] perf(scraper): add connection pooling for portal HTTP requests
+[2026-10-05] test(scraper): add mock tests for attendance payload validation

@@ -2,3 +2,4 @@
 [2026-10-04] feat(db): configure persistent database profiles and connection parameters
 [2026-10-04] docs(arch): document distributed synchronization schema
 [2026-10-04] test(core): add foundational sanity tests for repository bindings
+[2026-10-05] feat(scraper): improve Continuo portal session authentication handlers

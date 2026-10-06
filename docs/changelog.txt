@@ -10,3 +10,4 @@
 [2026-10-06] feat(lms): add automated course module ingestion service
 [2026-10-06] fix(lms): handle edge cases in nested topic material downloads
 [2026-10-06] chore(lms): update resource parser retry strategies
+[2026-10-06] test(lms): add automated integration assertions for LMS scraping

@@ -36,7 +36,7 @@ public class LmsScraperService {
     private static final String COURSES_URL = BASE_URL + "/my/courses.php";
     private static final String AJAX_SERVICE_URL = BASE_URL + "/lib/ajax/service.php";
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration TIMEOUT = Duration.ofSeconds(90);
     private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("(?i)\\b([0-9]{2}[A-Z]{2,6}[0-9]{3,4}[A-Z]?)\\b");
     private static final Pattern SESSKEY_PATTERN = Pattern.compile("\"sesskey\":\"([^\"]+)\"");
     private static final Pattern ID_PARAM_PATTERN = Pattern.compile("id=(\\d+)");
@@ -213,7 +213,7 @@ public class LmsScraperService {
             return result;
         }
 
-        List<Subject> existingSubjects = database.getAllSubjects();
+        List<Subject> existingSubjects = getCurrentStudentSubjects();
 
         for (JsonNode cNode : coursesNode) {
             String id = cNode.path("id").asText();
@@ -239,6 +239,21 @@ public class LmsScraperService {
         return result;
     }
 
+    private List<Subject> getCurrentStudentSubjects() {
+        StudentProfile profile = database.getProfile();
+        List<Subject> all = database.getAllSubjects();
+        if (profile != null && profile.getDepartment() != null && profile.getSemester() != null) {
+            List<Subject> filtered = all.stream()
+                    .filter(s -> s.getDepartment() != null && s.getDepartment().equalsIgnoreCase(profile.getDepartment()) &&
+                            s.getSemester() != null && s.getSemester().equalsIgnoreCase(profile.getSemester()))
+                    .toList();
+            if (!filtered.isEmpty()) {
+                return filtered;
+            }
+        }
+        return all;
+    }
+
     /**
      * Executes the complete LMS sync pipeline
      */
@@ -257,7 +272,7 @@ public class LmsScraperService {
         }
 
         List<LmsSyncResponse.DiscoveredCourseInfo> discovered = fetchDiscoveredCourses(session);
-        List<Subject> allSubjects = database.getAllSubjects();
+        List<Subject> allSubjects = getCurrentStudentSubjects();
 
         List<LmsSyncResponse.CourseSyncSummary> courseSummaries = new ArrayList<>();
         List<String> unmatchedCourses = new ArrayList<>();
@@ -515,7 +530,7 @@ public class LmsScraperService {
                     continue;
                 }
 
-                updateProgress(username, "SYNCING", "Ingesting: " + title,
+                updateProgress(username, "SYNCING", "Uploding: " + title,
                         courseInfo.getFullname(), courseIdx, totalCourses, title,
                         initialFound + result.materialsFound, initialImported + result.importedCount,
                         initialSkipped + result.skippedCount, initialFailed + result.failureCount,
@@ -615,11 +630,27 @@ public class LmsScraperService {
             // Determine original filename
             String filename = extractFilenameFromResponse(fileResp, targetUrl, title);
 
-            // Store file locally and upload to B2
+            // Store file locally and upload to B2 organized folder-by-folder
             String savedFileName = fileStorageService.storeFile(bytes, filename);
-            String b2Key = backblazeStorageService.uploadBytes(bytes, savedFileName);
-            if (b2Key == null) {
+
+            // Compute dynamic Academic Year & Branch folder (e.g. 24UAD022 -> TY-UAD)
+            String studentPrn = session.username;
+            if (studentPrn == null || studentPrn.isBlank()) {
+                StudentProfile prof = database.getProfile();
+                if (prof != null) studentPrn = prof.getPrn();
+            }
+            String yearFolder = com.eduvault.util.AcademicYearResolver.resolveYearFolder(studentPrn, subject.getDepartment());
+            String safeSubject = subject.getName() != null ? subject.getName().replaceAll("[\\\\/:*?\"<>|]", "_").trim() : "Subject";
+            String safeUnit = (unit != null && !unit.isBlank()) ? unit.replaceAll("[\\\\/:*?\"<>|]", "_").trim() : "General";
+
+            String b2Folder = yearFolder + "/" + safeSubject + "/" + safeUnit;
+            String b2Key = b2Folder + "/" + savedFileName;
+
+            String uploadedKey = backblazeStorageService.uploadBytes(bytes, b2Key);
+            if (uploadedKey == null) {
                 b2Key = savedFileName;
+            } else {
+                b2Key = uploadedKey;
             }
 
             // Extract text for AI

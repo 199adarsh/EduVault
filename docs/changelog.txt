@@ -8,3 +8,4 @@
 [2026-10-05] perf(scraper): add connection pooling for portal HTTP requests
 [2026-10-05] test(scraper): add mock tests for attendance payload validation
 [2026-10-06] feat(lms): add automated course module ingestion service
+[2026-10-06] fix(lms): handle edge cases in nested topic material downloads

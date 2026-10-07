@@ -156,7 +156,7 @@ public class RAGService {
                     .anyMatch(m -> noteId.equals(m.embedded().metadata().getString("noteId")));
 
             if (!hasEmbeddings) {
-                logger.info("NoteId {} not indexed. Ingesting now...", noteId);
+                logger.info("NoteId {} not indexed. Uploding now...", noteId);
                 ingestNote(noteId);
                 matches = embeddingStore.findRelevant(questionEmbedding, 20);
             }

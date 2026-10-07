@@ -12,3 +12,4 @@
 [2026-10-06] chore(lms): update resource parser retry strategies
 [2026-10-06] test(lms): add automated integration assertions for LMS scraping
 [2026-10-07] feat(storage): configure vector database and embedding pipelines
+[2026-10-07] perf(ai): introduce in-memory vector cache for query lookups

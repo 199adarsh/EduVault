@@ -41,7 +41,12 @@ public class LmsController {
     }
 
     @PostMapping("/discover")
-    public ResponseEntity<?> discoverCourses(@RequestBody LmsCredentials credentials) {
+    public ResponseEntity<?> discoverCourses(
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestBody LmsCredentials credentials) {
+        if (roleHeader != null && !roleHeader.equalsIgnoreCase("teacher") && !roleHeader.equalsIgnoreCase("faculty") && !roleHeader.equalsIgnoreCase("admin")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access Denied: Only teachers/faculty can discover LMS courses"));
+        }
         if (credentials.getUsername() == null || credentials.getPassword() == null ||
             credentials.getUsername().trim().isEmpty() || credentials.getPassword().trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username and password are required"));
@@ -63,7 +68,12 @@ public class LmsController {
     }
 
     @PostMapping("/sync")
-    public ResponseEntity<?> syncNotes(@RequestBody LmsCredentials credentials) {
+    public ResponseEntity<?> syncNotes(
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestBody LmsCredentials credentials) {
+        if (roleHeader != null && !roleHeader.equalsIgnoreCase("teacher") && !roleHeader.equalsIgnoreCase("faculty") && !roleHeader.equalsIgnoreCase("admin")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access Denied: Only teachers/faculty can trigger LMS notes synchronization"));
+        }
         if (credentials.getUsername() == null || credentials.getPassword() == null ||
             credentials.getUsername().trim().isEmpty() || credentials.getPassword().trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username and password are required"));

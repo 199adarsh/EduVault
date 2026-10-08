@@ -15,3 +15,4 @@
 [2026-10-07] perf(ai): introduce in-memory vector cache for query lookups
 [2026-10-07] fix(ai): resolve token boundary truncation in document summaries
 [2026-10-07] test(ai): add precision evaluation suite for vector similarity search
+[2026-10-08] feat(api): expand student portal endpoints and response schemas

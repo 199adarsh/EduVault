@@ -121,7 +121,30 @@ public class ApiController {
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String unit) {
         
-        return ResponseEntity.ok(database.getNotesByFilter(subjectId, semester, examType, keyword, search, department, unit));
+        StudentProfile profile = database.getProfile();
+        String effectiveSemester = (semester != null && !semester.isBlank()) 
+                ? semester 
+                : (profile != null ? profile.getSemester() : null);
+        String effectiveDept = (department != null && !department.isBlank()) 
+                ? department 
+                : (profile != null ? profile.getDepartment() : null);
+        
+        List<Note> notes = database.getNotesByFilter(subjectId, effectiveSemester, examType, keyword, search, effectiveDept, unit);
+
+        // Ensure synced notes are visible ONLY to students who have the corresponding subject in Continuo
+        if (profile != null && profile.getDepartment() != null && profile.getSemester() != null) {
+            java.util.Set<String> activeSubjectIds = database.getAllSubjects().stream()
+                    .filter(s -> s.getDepartment() != null && s.getDepartment().equalsIgnoreCase(profile.getDepartment()) &&
+                            s.getSemester() != null && s.getSemester().equalsIgnoreCase(profile.getSemester()))
+                    .map(com.eduvault.model.Subject::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            notes = notes.stream()
+                    .filter(n -> n.getSubjectId() != null && activeSubjectIds.contains(n.getSubjectId()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        
+        return ResponseEntity.ok(notes);
     }
 
     @RequestMapping(value = "/notes/sync-b2", method = {RequestMethod.GET, RequestMethod.POST})
@@ -229,16 +252,23 @@ public class ApiController {
     @GetMapping("/files/{noteId}/presigned")
     public ResponseEntity<Map<String, String>> getPresignedUrl(@PathVariable String noteId) {
         return database.getNoteById(noteId).map(note -> {
+            String b2Key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
+            if (backblazeStorageService != null && b2Key != null && !b2Key.startsWith("http")) {
+                try {
+                    String presigned = backblazeStorageService.generatePresignedUrl(b2Key);
+                    if (presigned != null && !presigned.isBlank()) {
+                        return ResponseEntity.ok(Map.of("noteId", noteId, "url", presigned));
+                    }
+                } catch (Exception ignored) {}
+            }
             String fileUrl = note.getFileUrl();
             if (fileUrl != null && fileUrl.startsWith("http")) {
-                return ResponseEntity.ok(Map.of(
-                        "noteId", noteId,
-                        "url", fileUrl
-                ));
+                return ResponseEntity.ok(Map.of("noteId", noteId, "url", fileUrl));
             }
+            String rawFilename = fileUrl != null && fileUrl.contains("/") ? fileUrl.substring(fileUrl.lastIndexOf('/') + 1) : fileUrl;
             return ResponseEntity.ok(Map.of(
                     "noteId", noteId,
-                    "url", "http://localhost:8081/api/files/raw/" + fileUrl
+                    "url", "http://localhost:8081/api/files/raw/" + rawFilename
             ));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -399,8 +429,9 @@ public class ApiController {
     public ResponseEntity<?> createAnnouncement(
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
             @RequestBody com.eduvault.model.Announcement announcement) {
-        if (roleHeader != null && roleHeader.equalsIgnoreCase("student_readonly")) {
-            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Students cannot post official notices"));
+        boolean isTeacher = roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin"));
+        if (!isTeacher) {
+            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Only teachers/faculty can post announcements"));
         }
         if (announcement.getTitle() == null || announcement.getTitle().trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Title is required for notice"));
@@ -408,7 +439,7 @@ public class ApiController {
         if (announcement.getId() == null) announcement.setId(UUID.randomUUID().toString());
         if (announcement.getCreatedAt() == null) announcement.setCreatedAt(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
         if (announcement.getPostedBy() == null || announcement.getPostedBy().isBlank()) {
-            announcement.setPostedBy("Academic Administration");
+            announcement.setPostedBy("Faculty / Department");
         }
         return ResponseEntity.ok(database.addAnnouncement(announcement));
     }
@@ -418,8 +449,9 @@ public class ApiController {
             @PathVariable String id,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
             @RequestBody com.eduvault.model.Announcement announcement) {
-        if (roleHeader != null && roleHeader.equalsIgnoreCase("student_readonly")) {
-            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Unauthorized to update notice"));
+        boolean isTeacher = roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin"));
+        if (!isTeacher) {
+            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Only teachers/faculty can update notices"));
         }
         return database.updateAnnouncement(id, announcement)
                 .map(ResponseEntity::ok)
@@ -430,8 +462,9 @@ public class ApiController {
     public ResponseEntity<?> deleteAnnouncement(
             @PathVariable String id,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
-        if (roleHeader != null && roleHeader.equalsIgnoreCase("student_readonly")) {
-            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Unauthorized to delete notice"));
+        boolean isTeacher = roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin"));
+        if (!isTeacher) {
+            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Only teachers/faculty can delete notices"));
         }
         boolean deleted = database.deleteAnnouncement(id);
         if (deleted) {

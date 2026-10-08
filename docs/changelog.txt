@@ -17,3 +17,4 @@
 [2026-10-07] test(ai): add precision evaluation suite for vector similarity search
 [2026-10-08] feat(api): expand student portal endpoints and response schemas
 [2026-10-08] fix(cors): refine cross-origin resource sharing policy headers
+[2026-10-08] test(api): add contract validation tests for core controllers

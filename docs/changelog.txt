@@ -20,3 +20,4 @@
 [2026-10-08] test(api): add contract validation tests for core controllers
 [2026-10-09] refactor(db): streamline database write-ahead synchronization
 [2026-10-09] perf(db): optimize subject registry lookup indexing
+[2026-10-09] fix(db): protect local store against concurrent race conditions

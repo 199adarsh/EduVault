@@ -231,17 +231,41 @@ public class LocalJsonDatabase {
                     extractedText = "";
                 }
 
-                Subject matched = findSubjectFromContent(extractedText, subjects);
+                // Parse folder hierarchy if present: <YEAR-BRANCH>/<SUBJECT>/<UNIT>/<FILENAME>
+                String[] parts = key.split("/");
+                String folderSubject = null;
+                String folderUnit = null;
+                if (parts.length >= 3) {
+                    folderSubject = parts[1].replace("_", " ").trim();
+                    folderUnit = parts[2].replace("_", " ").trim();
+                }
+
+                Subject matched = null;
+                if (folderSubject != null) {
+                    for (Subject s : subjects) {
+                        if (s.getName() != null && s.getName().equalsIgnoreCase(folderSubject)) {
+                            matched = s;
+                            break;
+                        }
+                    }
+                }
+                if (matched == null) {
+                    matched = findSubjectFromContent(extractedText, subjects);
+                }
                 String title = extractTitleFromContent(extractedText, key, ext);
                 if (matched == null && title != null) {
                     matched = findSubjectFromContent(title, subjects);
                 }
-                String unit = extractUnitFromContent(extractedText);
+                String unit = (folderUnit != null && !folderUnit.equalsIgnoreCase("General")) 
+                        ? folderUnit 
+                        : extractUnitFromContent(extractedText);
+
+                String filenameOnly = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
 
                 Note note = Note.builder()
                         .id(java.util.UUID.randomUUID().toString())
                         .title(title)
-                        .fileUrl(key)
+                        .fileUrl(filenameOnly)
                         .b2ObjectKey(key)
                         .unit(unit)
                         .examType("mid-sem")
@@ -366,13 +390,14 @@ public class LocalJsonDatabase {
                 }
             }
         }
-        String base = key.contains(".") ? key.substring(0, key.lastIndexOf('.')) : key;
+        String rawKey = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
+        String base = rawKey.contains(".") ? rawKey.substring(0, rawKey.lastIndexOf('.')) : rawKey;
         String clean = base.replaceAll("^[0-9a-fA-F-]{36}[_-]?", "").trim();
         if (clean.isEmpty() || clean.matches("^[0-9a-fA-F-]{36}$")) {
             String shortId = base.length() > 8 ? base.substring(0, 8).toUpperCase() : base.toUpperCase();
             return "Asset " + shortId + " (" + ext.replace(".", "").toUpperCase() + ")";
         }
-        return clean;
+        return clean.replace("_", " ");
     }
 
     private String extractUnitFromContent(String text) {
@@ -418,6 +443,10 @@ public class LocalJsonDatabase {
         return studentProfileRepository.save(newProfile);
     }
 
+    public synchronized void clearProfile() {
+        studentProfileRepository.deleteAll();
+    }
+
     public synchronized void clearProfileAndSubjects() {
         studentProfileRepository.deleteAll();
         subjectRepository.deleteAll();
@@ -435,6 +464,7 @@ public class LocalJsonDatabase {
     }
 
     public synchronized void relinkOrphanNotes() {
+        ensureCoreSubjects();
         List<Subject> subjects = subjectRepository.findAll();
         List<Note> notes = noteRepository.findAll();
         if (subjects.isEmpty() || notes.isEmpty()) return;
@@ -445,10 +475,11 @@ public class LocalJsonDatabase {
 
         List<Note> toUpdate = new java.util.ArrayList<>();
         for (Note n : notes) {
-            if (n.getSubjectId() == null || !validIds.contains(n.getSubjectId())) {
+            if (n.getSubjectId() == null || !validIds.contains(n.getSubjectId()) || "PENDING_MAPPING".equalsIgnoreCase(n.getStatus())) {
                 Subject matched = matchSubjectForNote(n, subjects);
                 if (matched != null) {
                     n.setSubjectId(matched.getId());
+                    n.setStatus("ready");
                     toUpdate.add(n);
                 }
             }
@@ -459,12 +490,47 @@ public class LocalJsonDatabase {
         }
     }
 
+    public synchronized void ensureCoreSubjects() {
+        subjectRepository.findById("ef0e44fc-760d-4b34-93ad-e525d4a5e1c8").ifPresent(subjectRepository::delete);
+        subjectRepository.findById("af189579-731a-445b-8dd1-ff89b8168157").ifPresent(subjectRepository::delete);
+    }
+
     private Subject matchSubjectForNote(Note note, List<Subject> subjects) {
-        String combined = (note.getTitle() != null ? note.getTitle() + " " : "")
-                + (note.getTags() != null ? String.join(" ", note.getTags()) + " " : "")
-                + (note.getExtractedText() != null ? note.getExtractedText() : "");
+        String combined = ((note.getTitle() != null ? note.getTitle() : "") + " "
+                + (note.getTags() != null ? String.join(" ", note.getTags()) : "") + " "
+                + (note.getExtractedText() != null ? note.getExtractedText() : "")).toUpperCase();
+
         Subject fromContent = findSubjectFromContent(combined, subjects);
         if (fromContent != null) return fromContent;
+
+        // Semantic subject matching
+        for (Subject s : subjects) {
+            String sName = (s.getName() != null ? s.getName() : "").toUpperCase();
+            boolean isLab = sName.contains("LAB") || (s.getCode() != null && s.getCode().toUpperCase().contains("P"));
+            if (isLab) continue;
+
+            if (sName.contains("DATABASE") && (combined.contains("DATABASE") || combined.contains("DBMS") || combined.contains("TRANSACTION") || combined.contains("ACID"))) {
+                return s;
+            }
+            if (sName.contains("MACHINE LEARNING") && (combined.contains("ARTIFICIAL INTELLIGENCE") || combined.contains("MACHINE LEARNING") || combined.contains("HEURISTIC") || combined.contains("SEARCHING") || combined.contains("AGENT"))) {
+                return s;
+            }
+            if ((sName.contains("ALGORITHM") || sName.contains("DAA")) && (combined.contains("ALGORITHM") || combined.contains("DIVIDE AND CONQUER") || combined.contains("NP HARD") || combined.contains("FUNDAMENTALS OF ALGORITHMS"))) {
+                return s;
+            }
+            if (sName.contains("WEB") && (combined.contains("JAVASCRIPT") || combined.contains("NODE") || combined.contains("ANGULAR") || combined.contains("EXPRESS"))) {
+                return s;
+            }
+            if (sName.contains("FEATURE") && combined.contains("FEATURE")) {
+                return s;
+            }
+            if (sName.contains("IOT") && combined.contains("RASPBERRY")) {
+                return s;
+            }
+            if (sName.contains("ENTREPRENEURSHIP") && (combined.contains("STARTUP") || combined.contains("ENTREPRENEURSHIP"))) {
+                return s;
+            }
+        }
 
         String tags = note.getTags() != null ? String.join(" ", note.getTags()).toUpperCase() : "";
         String title = note.getTitle() != null ? note.getTitle().toUpperCase() : "";
@@ -474,16 +540,6 @@ public class LocalJsonDatabase {
             if (s.getCode() != null && !s.getCode().isEmpty() && tags.contains(s.getCode().toUpperCase())) {
                 return s;
             }
-            if (tags.contains("01ADP303") && sName.contains("WEB")) return s;
-            if (tags.contains("01ADL301") && sName.contains("DATABASE") && !sName.contains("LAB")) return s;
-            if (tags.contains("01ADL302") && sName.contains("MACHINE LEARNING") && !sName.contains("LAB")) return s;
-            if (tags.contains("01ADL333") && sName.contains("FEATURE") && !sName.contains("LAB")) return s;
-            if (tags.contains("MINI-PROJECT") && sName.contains("MINI PROJECT")) return s;
-            if (title.contains("ENTREPRENEURSHIP") && sName.contains("ENTREPRENEURSHIP")) return s;
-        }
-
-        for (Subject s : subjects) {
-            String sName = s.getName() != null ? s.getName().toUpperCase() : "";
             if (!sName.isEmpty() && (title.contains(sName) || tags.contains(sName))) {
                 return s;
             }

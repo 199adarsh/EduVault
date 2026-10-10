@@ -22,3 +22,4 @@
 [2026-10-09] perf(db): optimize subject registry lookup indexing
 [2026-10-09] fix(db): protect local store against concurrent race conditions
 [2026-10-09] test(db): verify transaction rollbacks and data consistency
+[2026-10-10] style(optimization): enhance attendance projections contrast

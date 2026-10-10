@@ -2,10 +2,16 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Settings2, AlertTriangle, CheckCircle2, Calendar, SlidersHorizontal, ShieldCheck } from 'lucide-react';
 
+const isTheoryCode = (subject) => {
+    const code = (subject?.code || '').trim().toUpperCase();
+    const alphabets = code.replace(/[^A-Z]/g, '');
+    return alphabets.slice(-1) === 'L';
+};
+
 function calculateLPW(subject) {
     const records = subject.detailedAttendance || [];
     if (!records.length) {
-        return (subject.isLab || (subject.name || '').toLowerCase().includes('lab')) ? 1 : 3;
+        return !isTheoryCode(subject) ? 1 : 3;
     }
 
     const weekCounts = {};
@@ -31,7 +37,7 @@ function calculateLPW(subject) {
 
     const counts = Object.values(weekCounts).filter(c => c > 0);
     if (!counts.length) {
-        return (subject.isLab || (subject.name || '').toLowerCase().includes('lab')) ? 1 : 3;
+        return !isTheoryCode(subject) ? 1 : 3;
     }
 
     const freqMap = {};
@@ -68,11 +74,11 @@ function computeEngine(subjects, targetPct, excludedIds, semesterLockDate, manua
         const id = s.id || s.code;
         const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
         const att = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-        const isLab = s.isLab || (s.name || '').toLowerCase().includes('lab');
+        const isLab = !isTheoryCode(s);
         const calculatedLpw = calculateLPW(s);
         const lpw = Math.max(1, manualLPWs[id] ?? calculatedLpw);
         const rem = cond === 0 ? 0 : Math.ceil(lpw * weeksLeft);
-        const credit = s.credit || (isLab ? 2 : (s.name.includes('Mini Project') ? 2 : 3));
+        const credit = s.credit || (isLab ? 2 : 3);
         if (!hasStarted || cond > 0) {
             totalCredits += credit;
         }

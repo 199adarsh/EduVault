@@ -10,10 +10,16 @@ import {
     Info
 } from 'lucide-react';
 
+const isTheoryCode = (subject) => {
+    const code = (subject?.code || '').trim().toUpperCase();
+    const alphabets = code.replace(/[^A-Z]/g, '');
+    return alphabets.slice(-1) === 'L';
+};
+
 function calculateLPW(subject) {
     const records = subject.detailedAttendance || [];
     if (!records.length) {
-        return (subject.isLab || (subject.name || '').toLowerCase().includes('lab')) ? 1 : 3;
+        return !isTheoryCode(subject) ? 1 : 3;
     }
 
     const weekCounts = {};
@@ -39,7 +45,7 @@ function calculateLPW(subject) {
 
     const counts = Object.values(weekCounts).filter(c => c > 0);
     if (!counts.length) {
-        return (subject.isLab || (subject.name || '').toLowerCase().includes('lab')) ? 1 : 3;
+        return !isTheoryCode(subject) ? 1 : 3;
     }
 
     const freqMap = {};

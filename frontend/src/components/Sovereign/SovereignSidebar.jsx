@@ -75,7 +75,6 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             badge: attendance ? `${attendance}%` : null,
             badgeClass: 'bg-status-success-bg text-status-success-text'
         },
-        { name: 'Optimization', icon: 'tune', path: '/optimization' },
         { name: 'Settings', icon: 'settings', path: '/settings' },
     ];
 
@@ -152,6 +151,21 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             <div className="p-4 border-t border-border-subtle/60 relative" ref={menuRef}>
                 {showUserMenu && (
                     <div className="absolute bottom-full left-4 right-4 mb-2 p-1.5 bg-surface-card border border-border-subtle rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const current = localStorage.getItem('eduvault_user_role') || 'student';
+                                const next = (current === 'teacher' || current === 'faculty' || current === 'admin') ? 'student' : 'teacher';
+                                localStorage.setItem('eduvault_user_role', next);
+                                toast.info(`Switched active mode to: ${next.toUpperCase()}`);
+                                setShowUserMenu(false);
+                                setTimeout(() => window.location.reload(), 300);
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-[18px] text-indigo-600">badge</span>
+                            <span>Switch: {(localStorage.getItem('eduvault_user_role') || 'student') === 'teacher' ? 'Student Mode' : 'Teacher Mode'}</span>
+                        </button>
                         <button
                             onClick={handleSync}
                             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-surface-subtle-blue hover:text-primary rounded-lg transition-colors"

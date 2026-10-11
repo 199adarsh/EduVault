@@ -75,16 +75,18 @@ const SovereignLayout = () => {
         const active = subjects.filter(s => !excludedIds.includes(s.id));
         if (active.length === 0) return null;
 
-        const getPrecisePct = (s) => {
-            const conducted = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
-            const present = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-            if (conducted === 0) return parseFloat(s.attendance) || 0;
-            return parseFloat(((present / conducted) * 100).toFixed(1));
-        };
-
-        const totalCredits = active.reduce((acc, s) => acc + (s.credit || 1), 0);
-        const weightedSum = active.reduce((acc, s) => acc + (getPrecisePct(s) * (s.credit || 1)), 0);
-        return totalCredits > 0 ? (weightedSum / totalCredits).toFixed(1) : null;
+        let totalAttended = 0;
+        let totalConducted = 0;
+        active.forEach(s => {
+            const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+            const att = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+            totalConducted += cond;
+            totalAttended += att;
+        });
+        if (totalConducted > 0) {
+            return ((totalAttended / totalConducted) * 100).toFixed(1);
+        }
+        return null;
     }, [subjects]);
 
     return (

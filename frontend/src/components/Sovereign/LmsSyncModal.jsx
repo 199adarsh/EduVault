@@ -55,10 +55,13 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
         setIsLoading(true);
         const toastId = toast.loading('Connecting to LMS & discovering courses...');
+        const userRole = localStorage.getItem('eduvault_user_role') || 'teacher';
         try {
             const res = await axios.post(`${API_BASE}/lms/discover`, {
                 username: username.trim(),
                 password: password.trim()
+            }, {
+                headers: { 'X-User-Role': userRole }
             });
             setDiscoveredCourses(res.data);
             setActiveTab('preview');
@@ -97,17 +100,20 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                 if (progRes.data) {
                     setProgress(progRes.data);
                 }
-            } catch (ignored) {}
+            } catch (ignored) { }
         }, 350);
 
         try {
+            const userRole = localStorage.getItem('eduvault_user_role') || 'teacher';
             const payload = {
                 username: username.trim(),
                 password: password.trim(),
                 testImport: syncMode === 'test'
             };
 
-            const res = await axios.post(`${API_BASE}/lms/sync`, payload);
+            const res = await axios.post(`${API_BASE}/lms/sync`, payload, {
+                headers: { 'X-User-Role': userRole }
+            });
             setSyncResult(res.data);
             toast.success(
                 `Sync Completed! Imported ${res.data.importedCount} materials (${res.data.skippedDuplicatesCount} skipped duplicates).`
@@ -162,11 +168,10 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                 <div className="flex border-b border-zinc-800/80 px-6 bg-zinc-900/20">
                     <button
                         onClick={() => setActiveTab('sync')}
-                        className={`py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
-                            activeTab === 'sync'
+                        className={`py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${activeTab === 'sync'
                                 ? 'border-blue-500 text-blue-400'
                                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                        }`}
+                            }`}
                     >
                         Sync Engine
                     </button>
@@ -175,11 +180,10 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                             if (!discoveredCourses) handleDiscover();
                             else setActiveTab('preview');
                         }}
-                        className={`py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 ${
-                            activeTab === 'preview'
+                        className={`py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 ${activeTab === 'preview'
                                 ? 'border-blue-500 text-blue-400'
                                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                        }`}
+                            }`}
                     >
                         <span>Course Discovery</span>
                         {discoveredCourses && (
@@ -236,11 +240,10 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div
                                             onClick={() => !isLoading && setSyncMode('all')}
-                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                                                syncMode === 'all'
+                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${syncMode === 'all'
                                                     ? 'border-blue-500/60 bg-blue-500/10 text-white'
                                                     : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700'
-                                            }`}
+                                                }`}
                                         >
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-xs font-bold uppercase tracking-wider">Sync All Courses</span>
@@ -253,11 +256,10 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
                                         <div
                                             onClick={() => !isLoading && setSyncMode('test')}
-                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                                                syncMode === 'test'
+                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${syncMode === 'test'
                                                     ? 'border-blue-500/60 bg-blue-500/10 text-white'
                                                     : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700'
-                                            }`}
+                                                }`}
                                         >
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-xs font-bold uppercase tracking-wider">Test Sync (1 Course)</span>
@@ -305,7 +307,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                             </span>
                                         </div>
                                         <p className="text-white font-medium text-xs truncate">
-                                            {progress?.currentStage || 'Ingesting LMS materials...'}
+                                            {progress?.currentStage || 'Uploding LMS materials...'}
                                         </p>
                                         {progress?.currentMaterial && (
                                             <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-400 truncate border-t border-zinc-800/50">
@@ -409,9 +411,8 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                                         Found: {c.materialsFound} &bull; Imported: <span className="text-emerald-400 font-bold">{c.importedCount}</span> &bull; Skipped: {c.skippedCount}
                                                     </p>
                                                 </div>
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                                                    c.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                                }`}>
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${c.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                                    }`}>
                                                     {c.status}
                                                 </span>
                                             </div>

@@ -5,6 +5,7 @@ import com.eduvault.model.Note;
 import com.eduvault.model.StudentProfile;
 import com.eduvault.model.Subject;
 import com.eduvault.repository.LocalJsonDatabase;
+import com.eduvault.service.BackblazeStorageService;
 import com.eduvault.service.FileStorageService;
 import com.eduvault.service.GroqService;
 import com.eduvault.service.RAGService;
@@ -42,6 +43,9 @@ public class ApiController {
     private FileStorageService fileStorageService;
 
     @Autowired
+    private BackblazeStorageService backblazeStorageService;
+
+    @Autowired
     private com.eduvault.service.DocumentConversionService documentConversionService;
 
     @Autowired
@@ -76,6 +80,12 @@ public class ApiController {
     @PostMapping("/profile")
     public ResponseEntity<StudentProfile> updateProfile(@RequestBody StudentProfile profile) {
         return ResponseEntity.ok(database.updateProfile(profile));
+    }
+
+    @PostMapping("/profile/logout")
+    public ResponseEntity<Void> logoutProfile() {
+        database.clearProfileAndSubjects();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/subjects")
@@ -132,6 +142,8 @@ public class ApiController {
     @DeleteMapping("/notes/{id}")
     public ResponseEntity<Map<String, String>> deleteNote(@PathVariable String id) {
         return database.getNoteById(id).map(note -> {
+            // Delete from B2 (primary) and also attempt local cleanup for legacy files
+            backblazeStorageService.deleteFile(note.getFileUrl());
             fileStorageService.deleteFile(note.getFileUrl());
             database.deleteNote(id);
             return ResponseEntity.ok(Map.of("message", "Note deleted successfully"));
@@ -139,65 +151,78 @@ public class ApiController {
     }
 
     @GetMapping("/files/{noteId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String noteId) {
-        try {
-            java.util.Optional<Note> noteOpt = database.getNoteById(noteId);
-            if (!noteOpt.isPresent()) {
-                return ResponseEntity.notFound().build();
+    public ResponseEntity<Map<String, String>> downloadFile(@PathVariable String noteId) {
+        return database.getNoteById(noteId).map(note -> {
+            String fileUrl = note.getFileUrl();
+            if (fileUrl != null && fileUrl.startsWith("http")) {
+                return ResponseEntity.ok(Map.of(
+                        "noteId", noteId,
+                        "url", fileUrl
+                ));
             }
-            String fileName = noteOpt.get().getFileUrl();
-            Path filePath = fileStorageService.getFilePath(fileName);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() || resource.isReadable()) {
-                String contentType = "application/octet-stream";
-                if (fileName.toLowerCase().endsWith(".pdf")) contentType = "application/pdf";
-                
-                if (fileName.toLowerCase().endsWith(".pptx") || fileName.toLowerCase().endsWith(".ppt")) {
-                    try {
-                        byte[] pdfBytes = documentConversionService.convertPptToPdf(filePath, fileName);
-                        return ResponseEntity.ok()
-                                .contentType(MediaType.parseMediaType("application/pdf"))
-                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + ".pdf\"")
-                                .body(new org.springframework.core.io.ByteArrayResource(pdfBytes));
-                    } catch (Exception e) {
-                        logger.error("Failed to convert PPT to PDF", e);
-                        contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-                    }
-                } else if (fileName.toLowerCase().endsWith(".docx")) {
-                    try {
-                        byte[] pdfBytes = documentConversionService.convertDocxToPdf(filePath);
-                        return ResponseEntity.ok()
-                                .contentType(MediaType.parseMediaType("application/pdf"))
-                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + ".pdf\"")
-                                .body(new org.springframework.core.io.ByteArrayResource(pdfBytes));
-                    } catch (Exception e) {
-                        logger.error("Failed to convert DOCX to PDF", e);
-                        contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                    }
-                } else if (fileName.toLowerCase().endsWith(".doc")) {
-                    try {
-                        byte[] pdfBytes = documentConversionService.convertDocToPdf(filePath);
-                        return ResponseEntity.ok()
-                                .contentType(MediaType.parseMediaType("application/pdf"))
-                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + ".pdf\"")
-                                .body(new org.springframework.core.io.ByteArrayResource(pdfBytes));
-                    } catch (Exception e) {
-                        logger.error("Failed to convert DOC to PDF", e);
-                        contentType = "application/msword";
-                    }
+            try {
+                String url = backblazeStorageService.generatePresignedUrl(fileUrl);
+                if (url != null && !url.isEmpty()) {
+                    return ResponseEntity.ok(Map.of(
+                            "noteId", noteId,
+                            "url", url
+                    ));
                 }
+            } catch (Exception ignored) {}
+            return ResponseEntity.ok(Map.of(
+                    "noteId", noteId,
+                    "url", "http://localhost:8081/api/files/raw/" + fileUrl
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 
+    @GetMapping("/files/raw/{fileName}")
+    public ResponseEntity<Resource> getRawFile(@PathVariable String fileName) {
+        Path path = fileStorageService.getFilePath(fileName);
+        if (java.nio.file.Files.exists(path)) {
+            try {
+                Resource resource = new UrlResource(path.toUri());
+                String contentType = java.nio.file.Files.probeContentType(path);
+                if (contentType == null) contentType = "application/octet-stream";
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
                         .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
+            } catch (Exception e) {
+                // fall through
             }
-        } catch (Exception ex) {
-            return ResponseEntity.internalServerError().build();
         }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Returns a presigned URL for direct, time-limited access to a private B2 file.
+     * The URL is valid for the duration configured via B2_PRESIGNED_EXPIRY_MINUTES (default 60 min).
+     */
+    @GetMapping("/files/{noteId}/presigned")
+    public ResponseEntity<Map<String, String>> getPresignedUrl(@PathVariable String noteId) {
+        return database.getNoteById(noteId).map(note -> {
+            String fileUrl = note.getFileUrl();
+            if (fileUrl != null && fileUrl.startsWith("http")) {
+                return ResponseEntity.ok(Map.of(
+                        "noteId", noteId,
+                        "url", fileUrl
+                ));
+            }
+            try {
+                String url = backblazeStorageService.generatePresignedUrl(fileUrl);
+                if (url != null && !url.isEmpty()) {
+                    return ResponseEntity.ok(Map.of(
+                            "noteId", noteId,
+                            "url", url
+                    ));
+                }
+            } catch (Exception ignored) {}
+            return ResponseEntity.ok(Map.of(
+                    "noteId", noteId,
+                    "url", "http://localhost:8081/api/files/raw/" + fileUrl
+            ));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/notes/upload")
@@ -231,11 +256,11 @@ public class ApiController {
         String department = profile != null ? profile.getDepartment() : "Unknown";
         String semester = profile != null ? profile.getSemester() : "Unknown";
         
-        // 2. Store File Locally
-        String savedFileName = fileStorageService.storeFile(file);
-        
-        // 3. Extract Text
-        String extractedText = fileStorageService.extractText(savedFileName);
+        // 2. Extract text from the in-memory file BEFORE uploading (avoids re-downloading from B2)
+        String extractedText = fileStorageService.extractTextFromMultipartFile(file);
+
+        // 3. Upload to Backblaze B2
+        String savedFileName = backblazeStorageService.uploadFile(file);
         
         // 4. Create Note Record
         Note note = Note.builder()
@@ -259,6 +284,22 @@ public class ApiController {
         // Trigger Async AI generation and RAG ingestion
         groqService.processNoteAsync(note.getId());
         ragService.ingestNote(note.getId());
+
+        // Warn if text extraction failed (e.g. scanned/image-only PDF) — AI features will be skipped
+        boolean textExtractionFailed = extractedText == null
+                || extractedText.trim().isEmpty()
+                || extractedText.equals("Failed to extract text.")
+                || extractedText.startsWith("Text extraction only supported");
+
+        if (textExtractionFailed) {
+            logger.warn("Text extraction produced no usable content for note: {} ({}). AI features will be skipped.", note.getId(), savedFileName);
+            return ResponseEntity.ok(Map.of(
+                    "noteId", note.getId(),
+                    "title", note.getTitle(),
+                    "status", "processing",
+                    "warning", "Text could not be extracted from this file. AI features (topics, questions, RAG chat) will not be available. Scanned or image-based PDFs are not supported."
+            ));
+        }
 
         return ResponseEntity.ok(Map.of(
                 "noteId", note.getId(),

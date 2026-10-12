@@ -8,7 +8,7 @@ public class GroqTest {
         try {
             ChatLanguageModel chatModel = OpenAiChatModel.builder()
                     .baseUrl("https://api.groq.com/openai/v1")
-                    .apiKey("REDACTED")
+                    .apiKey(System.getenv("GROQ_API_KEY"))
                     .modelName("llama-3.1-8b-instant")
                     .temperature(0.2)
                     .build();

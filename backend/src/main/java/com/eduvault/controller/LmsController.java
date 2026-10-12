@@ -1,0 +1,67 @@
+package com.eduvault.controller;
+
+import com.eduvault.model.LmsCredentials;
+import com.eduvault.model.LmsSyncResponse;
+import com.eduvault.service.LmsScraperService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/lms")
+@CrossOrigin(origins = "*")
+public class LmsController {
+
+    private static final Logger logger = LoggerFactory.getLogger(LmsController.class);
+
+    @Autowired
+    private LmsScraperService lmsScraperService;
+
+    @PostMapping("/discover")
+    public ResponseEntity<?> discoverCourses(@RequestBody LmsCredentials credentials) {
+        if (credentials.getUsername() == null || credentials.getPassword() == null ||
+            credentials.getUsername().trim().isEmpty() || credentials.getPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username and password are required"));
+        }
+
+        try {
+            List<LmsSyncResponse.DiscoveredCourseInfo> courses = lmsScraperService.discoverCourses(
+                    credentials.getUsername().trim(), credentials.getPassword().trim()
+            );
+            return ResponseEntity.ok(courses);
+        } catch (Exception e) {
+            logger.error("LMS Discovery error: {}", e.getMessage(), e);
+            if (e.getMessage() != null && e.getMessage().contains("Invalid LMS credentials")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "LMS Discovery failed: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/sync")
+    public ResponseEntity<?> syncNotes(@RequestBody LmsCredentials credentials) {
+        if (credentials.getUsername() == null || credentials.getPassword() == null ||
+            credentials.getUsername().trim().isEmpty() || credentials.getPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username and password are required"));
+        }
+
+        try {
+            LmsSyncResponse response = lmsScraperService.syncNotes(credentials);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("LMS Sync error: {}", e.getMessage(), e);
+            if (e.getMessage() != null && e.getMessage().contains("Invalid LMS credentials")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "LMS Sync failed: " + e.getMessage()));
+        }
+    }
+}

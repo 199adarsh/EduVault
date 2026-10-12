@@ -1,0 +1,556 @@
+[
+    {
+        "id": "learn-javascript",
+        "title": "Learn JavaScript",
+        "subject": "JavaScript",
+        "totalHours": "15+",
+        "phases": [
+            {
+                "title": "Getting Started",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Javascript for beginners",
+                        "url": "https://www.youtube.com/watch?v=Hr5iLG7sUa0"
+                    },
+                    {
+                        "name": "Setting up environment in local machine for Javascript",
+                        "url": "https://www.youtube.com/watch?v=cvoLc3deAdQ"
+                    },
+                    {
+                        "name": "Save and work on Github for Javascript",
+                        "url": "https://www.youtube.com/watch?v=-GoKoR6aLcY"
+                    },
+                    {
+                        "name": "Let, const and var ki kahani",
+                        "url": "https://www.youtube.com/watch?v=yY0bKZNYmJs"
+                    },
+                    {
+                        "name": "Datatypes and ECMA standards",
+                        "url": "https://www.youtube.com/watch?v=-9knnv97wSc"
+                    }
+                ]
+            },
+            {
+                "title": "Data Types",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Datatype conversion confusion",
+                        "url": "https://www.youtube.com/watch?v=X7hDBhd_L5U"
+                    },
+                    {
+                        "name": "Why string to number conversion is confusing",
+                        "url": "https://www.youtube.com/watch?v=N9el4APFtAo"
+                    },
+                    {
+                        "name": "Comparison of datatypes in javascript",
+                        "url": "https://www.youtube.com/watch?v=giP2uXMlv4c"
+                    },
+                    {
+                        "name": "Data types of javascript summary",
+                        "url": "https://www.youtube.com/watch?v=suMvZWjjKbo"
+                    },
+                    {
+                        "name": "Stack and Heap memory in javascript",
+                        "url": "https://www.youtube.com/watch?v=7gwc-1czolw"
+                    }
+                ]
+            },
+            {
+                "title": "Strings & Numbers",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Strings in Javascript",
+                        "url": "https://www.youtube.com/watch?v=fozwNnFunlo"
+                    },
+                    {
+                        "name": "Number and Maths in Javascript",
+                        "url": "https://www.youtube.com/watch?v=_KqpeDc47Ro"
+                    },
+                    {
+                        "name": "Date and time in depth in javascript",
+                        "url": "https://www.youtube.com/watch?v=tGLCuoumaGY"
+                    },
+                    {
+                        "name": "Array in Javascript",
+                        "url": "https://www.youtube.com/watch?v=cejBux2gtEE"
+                    },
+                    {
+                        "name": "Array part 2 in Javascript Hindi",
+                        "url": "https://www.youtube.com/watch?v=m6azhgyCi-k"
+                    }
+                ]
+            },
+            {
+                "title": "Arrays & Objects",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Objects in depth in javascript in hindi",
+                        "url": "https://www.youtube.com/watch?v=vVYOHmqQDCU"
+                    },
+                    {
+                        "name": "Objects in Javascript part 2 in Hindi",
+                        "url": "https://www.youtube.com/watch?v=4lb2pXWWXJI"
+                    },
+                    {
+                        "name": "Object de-structure and JSON API intro",
+                        "url": "https://www.youtube.com/watch?v=AViTh83k-IE"
+                    },
+                    {
+                        "name": "Functions and parameter in javascript",
+                        "url": "https://www.youtube.com/watch?v=Bn56WahG_t0"
+                    },
+                    {
+                        "name": "Functions with objects and array in javascript",
+                        "url": "https://www.youtube.com/watch?v=t7ZHPhgdA4U"
+                    }
+                ]
+            },
+            {
+                "title": "Functions",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Global and local scope in javascript",
+                        "url": "https://www.youtube.com/watch?v=cHHU0jXfjKY"
+                    },
+                    {
+                        "name": "Scope level and mini hoisting in javascript",
+                        "url": "https://www.youtube.com/watch?v=eWwge2YpHhc"
+                    },
+                    {
+                        "name": "THIS and arrow function in javascript",
+                        "url": "https://www.youtube.com/watch?v=9ksqBa8_txM"
+                    },
+                    {
+                        "name": "Immediately Invoked Function Expressions IIFE",
+                        "url": "https://www.youtube.com/watch?v=GAIbn16Iytc"
+                    },
+                    {
+                        "name": "How does javascript execute code + call stack",
+                        "url": "https://www.youtube.com/watch?v=ByhtOgF6uYM"
+                    }
+                ]
+            },
+            {
+                "title": "Control Flow",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Control flow in javascript in 1 shot",
+                        "url": "https://www.youtube.com/watch?v=0P_YvC6Gg0c"
+                    },
+                    {
+                        "name": "For loop with break and continue in javascript",
+                        "url": "https://www.youtube.com/watch?v=Y1cpFsXrEgY"
+                    },
+                    {
+                        "name": "While and do while loop in Javascript",
+                        "url": "https://www.youtube.com/watch?v=w3Q55-l47P0"
+                    },
+                    {
+                        "name": "High Order Array loops",
+                        "url": "https://www.youtube.com/watch?v=M0YImBHQsWU"
+                    },
+                    {
+                        "name": "Filter map and reduce in javascript",
+                        "url": "https://www.youtube.com/watch?v=9MfwYoWKKVE"
+                    }
+                ]
+            },
+            {
+                "title": "DOM",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "DOM introduction in javascript",
+                        "url": "https://www.youtube.com/watch?v=DcjNkHtDj8A"
+                    },
+                    {
+                        "name": "All DOM selectors NodeList and HTMLCollection",
+                        "url": "https://www.youtube.com/watch?v=Ab6K57WjWTE"
+                    },
+                    {
+                        "name": "How to create a new element in DOM",
+                        "url": "https://www.youtube.com/watch?v=xAvTgCsCHLs"
+                    },
+                    {
+                        "name": "Edit and remove elements in DOM",
+                        "url": "https://www.youtube.com/watch?v=VQlY-X_eeTE"
+                    },
+                    {
+                        "name": "Lets build 4 javascript projects for beginners",
+                        "url": "https://www.youtube.com/watch?v=EGqHVjU-fas"
+                    }
+                ]
+            },
+            {
+                "title": "Events",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Events in Javascript",
+                        "url": "https://www.youtube.com/watch?v=_ALUMTa8BAE"
+                    },
+                    {
+                        "name": "Async Javascript fundamentals",
+                        "url": "https://www.youtube.com/watch?v=zgt5oTD3rRc"
+                    },
+                    {
+                        "name": "2 projects with Async JS",
+                        "url": "https://www.youtube.com/watch?v=efrW5-IYoCU"
+                    },
+                    {
+                        "name": "API request and V8 engine",
+                        "url": "https://www.youtube.com/watch?v=pDPAcYdSse8"
+                    },
+                    {
+                        "name": "Promise in javascript",
+                        "url": "https://www.youtube.com/watch?v=NJwRQgsu1Q8"
+                    }
+                ]
+            },
+            {
+                "title": "Advanced JS",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Now you know fetch in javascript",
+                        "url": "https://www.youtube.com/watch?v=Rive84an6Lc"
+                    },
+                    {
+                        "name": "Object Oriented in Javascript",
+                        "url": "https://www.youtube.com/watch?v=pN-Qmv4zBcI"
+                    },
+                    {
+                        "name": "Magic of Prototype in javascript",
+                        "url": "https://www.youtube.com/watch?v=uMI5cNeHTOc"
+                    },
+                    {
+                        "name": "Call and this in javascript",
+                        "url": "https://www.youtube.com/watch?v=-owpuf4lbyU"
+                    },
+                    {
+                        "name": "Class constructor and static",
+                        "url": "https://www.youtube.com/watch?v=u6mVHkMpoMk"
+                    }
+                ]
+            },
+            {
+                "title": "Closures",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Bind in javascript",
+                        "url": "https://www.youtube.com/watch?v=75dMiOY_4ac"
+                    },
+                    {
+                        "name": "Now you know Objects in Javascript",
+                        "url": "https://www.youtube.com/watch?v=jss2rL9kv6s"
+                    },
+                    {
+                        "name": "Getter Setter and Stack Overflow",
+                        "url": "https://www.youtube.com/watch?v=t6vLhF-iSxQ"
+                    },
+                    {
+                        "name": "Lexical scoping and Closure",
+                        "url": "https://www.youtube.com/watch?v=VaH09NXQZ58"
+                    },
+                    {
+                        "name": "Javascript ends with a story",
+                        "url": "https://www.youtube.com/watch?v=z9PINyinqwo"
+                    },
+                    {
+                        "name": "You don't know array in javascript",
+                        "url": "https://www.youtube.com/watch?v=ZRS485LxX0s"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "learn-cpp",
+        "title": "Chai aur C++",
+        "subject": "C++",
+        "totalHours": "10+",
+        "phases": [
+            {
+                "title": "Basics & Syntax",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "C++ Course launch",
+                        "url": "https://www.youtube.com/watch?v=gCkPJTSZ9mU"
+                    },
+                    {
+                        "name": "Going in depth of Hello World",
+                        "url": "https://www.youtube.com/watch?v=H-57MLM5Tyc"
+                    },
+                    {
+                        "name": "Variables and constants in c++",
+                        "url": "https://www.youtube.com/watch?v=YHGqfKh8n4Q"
+                    },
+                    {
+                        "name": "Data types and challenges in C++",
+                        "url": "https://www.youtube.com/watch?v=tATskvdm3NM"
+                    }
+                ]
+            },
+            {
+                "title": "Control Flow",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Operators and challenges in cpp",
+                        "url": "https://www.youtube.com/watch?v=vy4FvPCp0XA"
+                    },
+                    {
+                        "name": "Conditionals and challenges in c++",
+                        "url": "https://www.youtube.com/watch?v=bHpJaWNMHLo"
+                    },
+                    {
+                        "name": "Loops in C++",
+                        "url": "https://www.youtube.com/watch?v=eWJt3Lamnhg"
+                    },
+                    {
+                        "name": "Functions in c++",
+                        "url": "https://www.youtube.com/watch?v=OziGAvXDMOA"
+                    }
+                ]
+            },
+            {
+                "title": "OOP",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Object Oriented Programming in C++",
+                        "url": "https://www.youtube.com/watch?v=7G4IkcCqNlc"
+                    },
+                    {
+                        "name": "Array, dynamic memory and Pointers in Cpp",
+                        "url": "https://www.youtube.com/watch?v=h1S6YKHKrNs"
+                    },
+                    {
+                        "name": "Constructor, destructor and Copy Constructor in C++",
+                        "url": "https://www.youtube.com/watch?v=6R-CFloUX0U"
+                    },
+                    {
+                        "name": "Friend Keyword in C++",
+                        "url": "https://www.youtube.com/watch?v=OkL5PQxJAqI"
+                    }
+                ]
+            },
+            {
+                "title": "Advanced & STL",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Getter Setter and delegating constructor",
+                        "url": "https://www.youtube.com/watch?v=GIg-iOXw3w8"
+                    },
+                    {
+                        "name": "Encapsulation, Abstract class, virtual function in c++",
+                        "url": "https://www.youtube.com/watch?v=Ksi7hNouJdM"
+                    },
+                    {
+                        "name": "Inheritance and final keyword in c++",
+                        "url": "https://www.youtube.com/watch?v=wLItTkq6O-w"
+                    },
+                    {
+                        "name": "Building an online store with STL in c++",
+                        "url": "https://www.youtube.com/watch?v=0StscizseYY"
+                    },
+                    {
+                        "name": "Building Employee Management with STL in C++",
+                        "url": "https://www.youtube.com/watch?v=Fw-ew5Hio14"
+                    },
+                    {
+                        "name": "Farewell to C++ series",
+                        "url": "https://www.youtube.com/watch?v=aXiVBbjXSR8"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "master-git",
+        "title": "Master Git & GitHub",
+        "subject": "Git",
+        "totalHours": "4+",
+        "phases": [
+            {
+                "title": "Fundamentals",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Master Git & GitHub",
+                        "url": "https://www.youtube.com/watch?v=Oq6nxXD-MZc"
+                    },
+                    {
+                        "name": "Master Git & GitHub",
+                        "url": "https://www.youtube.com/watch?v=ylVQ_lBaqvY"
+                    }
+                ]
+            },
+            {
+                "title": "Advanced Collaboration",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Master Git & GitHub",
+                        "url": "https://www.youtube.com/watch?v=tsoa9wdSKAk"
+                    },
+                    {
+                        "name": "Master Git & GitHub",
+                        "url": "https://www.youtube.com/watch?v=cn8l5bXhTBM"
+                    },
+                    {
+                        "name": "Master Git & GitHub in One Video! \u00f0\u0178\u0161\u20ac Level Up Your Skills Now!",
+                        "url": "https://www.youtube.com/watch?v=r8QQOAicu8Y"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "js-indepth",
+        "title": "Complete JS Domination",
+        "subject": "JavaScript",
+        "totalHours": "12+",
+        "phases": [
+            {
+                "title": "Core Concepts",
+                "critical": true,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "JavaScript Full Course",
+                        "url": "https://www.youtube.com/watch?v=a-wVHL0lpb0"
+                    },
+                    {
+                        "name": "Part 2 \u00e2\u20ac\u201c Master JavaScript & Become a Real Developer",
+                        "url": "https://www.youtube.com/watch?v=1aR7tcmWo_w"
+                    },
+                    {
+                        "name": "Part 3 \u00e2\u20ac\u201c Advanced JavaScript, Projects & Real Developer Mindset",
+                        "url": "https://www.youtube.com/watch?v=wH6uf20dpAo"
+                    }
+                ]
+            },
+            {
+                "title": "Projects & Placements",
+                "critical": false,
+                "topics": [
+                    "Video Concepts",
+                    "Practice",
+                    "Review"
+                ],
+                "resources": [
+                    {
+                        "name": "Part 4 \u00e2\u20ac\u201c JavaScript for Placements",
+                        "url": "https://www.youtube.com/watch?v=GVdBPJzmwQg"
+                    },
+                    {
+                        "name": "JS Finally Made Sense After This",
+                        "url": "https://www.youtube.com/watch?v=2aHJ-MKY1b0"
+                    },
+                    {
+                        "name": "JS Will Feel Easy With This Project",
+                        "url": "https://www.youtube.com/watch?v=SjgTkATAuxw"
+                    },
+                    {
+                        "name": "This JS Project will fix your logic problem",
+                        "url": "https://www.youtube.com/watch?v=SFLs1fYb5QA"
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -50,10 +50,17 @@ public class AiController {
             } else {
                 // Advanced MVP logic: Compile recent notes context for general questions
                 List<Note> recentNotes = database.getAllNotes();
+                // Sort by createdAt descending (ISO date strings sort correctly lexicographically)
+                // Cap each note at 1000 chars so all 3 notes fit within askTutor()'s 3000-char total limit
                 String context = recentNotes.stream()
                         .filter(n -> n.getExtractedText() != null && n.getExtractedText().length() > 100)
+                        .sorted((a, b) -> {
+                            String da = a.getCreatedAt() != null ? a.getCreatedAt() : "";
+                            String db = b.getCreatedAt() != null ? b.getCreatedAt() : "";
+                            return db.compareTo(da); // descending: newest first
+                        })
                         .limit(3)
-                        .map(n -> "Source (" + n.getTitle() + "):\n" + n.getExtractedText().substring(0, Math.min(n.getExtractedText().length(), 5000)))
+                        .map(n -> "Source (" + n.getTitle() + "):\n" + n.getExtractedText().substring(0, Math.min(n.getExtractedText().length(), 1000)))
                         .collect(Collectors.joining("\n\n---\n\n"));
                 
                 if(context.isEmpty()) {

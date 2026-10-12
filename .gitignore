@@ -1,7 +1,8 @@
 # Environment variables with sensitive data
 .env
-.env.local
-.env.production
+.env*
+.env.*
+*.env
 
 # IDE files
 .vscode/
@@ -47,3 +48,20 @@ build/
 # Temporary files
 *.tmp
 *.temp
+
+# Database files
+*.mv.db
+*.trace.db
+
+# User uploads and archives
+Test_Files/
+*.zip
+backend/data/*.docx
+backend/data/*.pdf
+backend/data/*.ppt*
+backend/data/*.db
+
+# Supabase CLI temp files
+supabase/.temp/
+
+

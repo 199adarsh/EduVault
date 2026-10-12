@@ -29,7 +29,7 @@ The application now uses environment variables instead of hardcoded keys:
 ```yaml
 app:
   gemini:
-    api-key: REDACTED  # ❌ LEAKED
+    api-key: AIzaSy_REDACTED_API_KEY  # ❌ LEAKED (EXAMPLE)
 ```
 
 **After (SECURE):**

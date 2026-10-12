@@ -379,11 +379,33 @@ public class PortalScraperService {
                     
                     // Look for attendance detail link
                     String detailUrl = null;
-                    Element link = row.selectFirst("a[href*='subject'], a[href*='attendance'], a[href*='studentdashboard'], a[href]");
+                    Element link = row.selectFirst("a");
                     if (link != null) {
+                        String onclick = link.attr("onclick");
                         String href = link.attr("href");
-                        if (!href.startsWith("http")) detailUrl = BASE_URL + href;
-                        else detailUrl = href;
+                        String targetPath = null;
+                        
+                        if (onclick != null && onclick.contains("window.location.href")) {
+                            java.util.regex.Matcher m = java.util.regex.Pattern.compile("window\\.location\\.href\\s*=\\s*['\"]([^'\"]+)['\"]").matcher(onclick);
+                            if (m.find()) {
+                                targetPath = m.group(1);
+                            }
+                        }
+                        
+                        if (targetPath == null && href != null && !href.equals("#") && !href.isEmpty()) {
+                            targetPath = href;
+                        }
+                        
+                        if (targetPath != null) {
+                            if (targetPath.startsWith("http")) {
+                                detailUrl = targetPath;
+                            } else if (targetPath.startsWith("/")) {
+                                String host = BASE_URL.substring(0, BASE_URL.indexOf("/", 8));
+                                detailUrl = host + targetPath;
+                            } else {
+                                detailUrl = BASE_URL + targetPath;
+                            }
+                        }
                     }
 
                     if (!code.isEmpty() && !name.isEmpty()) {
@@ -411,10 +433,12 @@ public class PortalScraperService {
             List<DashboardSubject.AttendanceRecord> records = new ArrayList<>();
             try {
                 log.info("Deep scraping attendance from: " + url);
+                log.info("Deep scraping cookies: " + cookieManager.getCookieStore().getCookies());
                 HttpRequest req = HttpRequest.newBuilder()
                         .uri(URI.create(url))
                         .timeout(REQUEST_TIMEOUT)
                         .header("User-Agent", userAgent())
+                        .header("Referer", DASHBOARD_URL)
                         .GET()
                         .build();
 
@@ -438,6 +462,37 @@ public class PortalScraperService {
                 if (mAttended.find()) totalAttended = Integer.parseInt(mAttended.group(1));
                 if (mStill.find()) stillToGo = Integer.parseInt(mStill.group(1));
                 if (mTotal.find()) totalScheduled = Integer.parseInt(mTotal.group(1));
+
+                // Also support "Present[6] Absent[1] Still to go[260]" format
+                Matcher mPresent = Pattern.compile("Present\\s*\\[(\\d*)\\]", Pattern.CASE_INSENSITIVE).matcher(text);
+                Matcher mAbsent = Pattern.compile("Absent\\s*\\[(\\d*)\\]", Pattern.CASE_INSENSITIVE).matcher(text);
+                Matcher mStill2 = Pattern.compile("Still\\s*to\\s*go\\s*\\[(\\d*)\\]", Pattern.CASE_INSENSITIVE).matcher(text);
+
+                int parsedPresent = -1;
+                int parsedAbsent = -1;
+                int parsedStill = -1;
+
+                if (mPresent.find() && !mPresent.group(1).isEmpty()) {
+                    parsedPresent = Integer.parseInt(mPresent.group(1));
+                }
+                if (mAbsent.find() && !mAbsent.group(1).isEmpty()) {
+                    parsedAbsent = Integer.parseInt(mAbsent.group(1));
+                }
+                if (mStill2.find() && !mStill2.group(1).isEmpty()) {
+                    parsedStill = Integer.parseInt(mStill2.group(1));
+                }
+
+                if (parsedPresent != -1) {
+                    totalAttended = parsedPresent;
+                    if (parsedAbsent != -1) {
+                        totalConducted = parsedPresent + parsedAbsent;
+                    } else {
+                        totalConducted = parsedPresent;
+                    }
+                }
+                if (parsedStill != -1) {
+                    stillToGo = parsedStill;
+                }
 
                 // 2. Parse the table log
                 Elements rows = doc.select("table tr:has(td)");

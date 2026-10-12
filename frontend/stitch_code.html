@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduVault Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#25005a",
+                        "tertiary-fixed": "#ffdcbb",
+                        "on-tertiary-container": "#3f2300",
+                        "surface-bright": "#3b3742",
+                        "on-primary": "#3c0091",
+                        "tertiary-fixed-dim": "#ffb869",
+                        "primary-fixed-dim": "#d0bcff",
+                        "primary": "#d0bcff",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#a078ff",
+                        "on-secondary-container": "#c9aeff",
+                        "on-surface-variant": "#cbc3d7",
+                        "secondary-container": "#6001d1",
+                        "surface-container-high": "#2c2832",
+                        "outline-variant": "#494454",
+                        "error": "#ffb4ab",
+                        "background": "#15121b",
+                        "outline": "#958ea0",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e7e0ed",
+                        "surface-tint": "#d0bcff",
+                        "tertiary-container": "#ca801e",
+                        "surface-container-lowest": "#0f0d15",
+                        "tertiary": "#ffb869",
+                        "surface-dim": "#15121b",
+                        "on-primary-fixed": "#23005c",
+                        "on-primary-fixed-variant": "#5516be",
+                        "inverse-primary": "#6d3bd7",
+                        "secondary": "#d2bbff",
+                        "on-primary-container": "#340080",
+                        "surface-variant": "#37333d",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#eaddff",
+                        "on-background": "#e7e0ed",
+                        "surface-container-highest": "#37333d",
+                        "surface-container": "#211e27",
+                        "on-tertiary-fixed-variant": "#673d00",
+                        "on-surface": "#e7e0ed",
+                        "inverse-on-surface": "#322f39",
+                        "secondary-fixed-dim": "#d2bbff",
+                        "on-secondary-fixed-variant": "#5a00c6",
+                        "on-tertiary-fixed": "#2c1700",
+                        "on-tertiary": "#482900",
+                        "on-secondary": "#3f008e",
+                        "surface-container-low": "#1d1a23",
+                        "surface": "#15121b",
+                        "primary-fixed": "#e9ddff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin": "32px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xxl": "48px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "page-title": ["Inter"],
+                        "section-title": ["Inter"],
+                        "metadata": ["Inter"],
+                        "card-title": ["Inter"],
+                        "body": ["Inter"]
+                    },
+                    "fontSize": {
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "section-title": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "metadata": ["12px", { "lineHeight": "16px", "letterSpacing": "0px", "fontWeight": "400" }],
+                        "card-title": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #37333d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #494454;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen flex overflow-hidden font-body antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<nav class="docked left-0 h-screen w-64 border-r border-[#1F2430] bg-[#111318] dark:bg-[#111318] flex flex-col h-full py-6 space-y-2 hidden md:flex shrink-0">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#8B5CF6] flex items-center justify-center text-white font-bold text-lg">A</div>
+<div>
+<h1 class="text-white font-bold font-card-title text-card-title tracking-tight leading-none">Academy</h1>
+<span class="text-[#8B5CF6] font-metadata text-metadata text-[11px] uppercase tracking-wider block mt-1">Admin Console</span>
+</div>
+</div>
+<div class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 text-white border-l-2 border-[#8B5CF6] bg-[#1A1D26] pl-4 py-2 rounded-r transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-inter text-[13px] font-medium antialiased">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-gray-500 border-l-2 border-transparent pl-4 py-2 hover:text-gray-200 hover:bg-[#151821] rounded-r transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+<span class="font-inter text-[13px] font-medium antialiased">Curriculum</span>
+</a>
+<a class="flex items-center gap-3 text-gray-500 border-l-2 border-transparent pl-4 py-2 hover:text-gray-200 hover:bg-[#151821] rounded-r transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-inter text-[13px] font-medium antialiased">Students</span>
+</a>
+<a class="flex items-center gap-3 text-gray-500 border-l-2 border-transparent pl-4 py-2 hover:text-gray-200 hover:bg-[#151821] rounded-r transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">insights</span>
+<span class="font-inter text-[13px] font-medium antialiased">Analytics</span>
+</a>
+<a class="flex items-center gap-3 text-gray-500 border-l-2 border-transparent pl-4 py-2 hover:text-gray-200 hover:bg-[#151821] rounded-r transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_open</span>
+<span class="font-inter text-[13px] font-medium antialiased">Resources</span>
+</a>
+</div>
+<div class="px-3 mt-auto">
+<a class="flex items-center gap-3 text-gray-500 border-l-2 border-transparent pl-4 py-2 hover:text-gray-200 hover:bg-[#151821] rounded-r transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="font-inter text-[13px] font-medium antialiased">Help Center</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 border-b border-[#1F2430] bg-[#111318] dark:bg-[#111318] flex justify-between items-center h-14 px-6 w-full shrink-0 z-10">
+<div class="flex items-center gap-4">
+<span class="text-lg font-semibold text-white tracking-tight md:hidden">EduSaaS</span>
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
+<input class="bg-[#1A1D26] border-none text-white text-sm rounded pl-10 pr-4 py-1.5 focus:ring-1 focus:ring-[#8B5CF6] placeholder-gray-500 w-64 transition-all duration-200" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-gray-400 hover:text-white transition-colors duration-200 flex items-center justify-center h-8 w-8 rounded hover:bg-[#1A1D26]">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="text-gray-400 hover:text-white transition-colors duration-200 flex items-center justify-center h-8 w-8 rounded hover:bg-[#1A1D26]">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-[#1F2430]">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Close up portrait of a young professional with short dark hair, neutral expression, soft studio lighting against a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6j3Ko5i4hH9jAsfSnDXqMpkMIf-ScaSzf9SfjlNTboeL2jj13xpPrkAksEPkrVrnogxkoyaTGjh5skKDALJtxyS45nqgsS6oJHL3rqI7JnzlXrhEcKKb8D8micoO9_7BGt6vz2Pnbxs-vU3jNJoahv0aMVrnP2iC0nTHZthmpkCqp-YFJj6EDXE3oPiksEJndwGOjo0m84kX3ItjkxmkVHnOWWVrn2r10AE5fQxIXqibDDO1gKi5DmriT8wFCoXvjhPI936m1QHg"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto p-margin pb-20">
+<div class="max-w-[1440px] mx-auto flex flex-col gap-gutter">
+<!-- 1. HEADER: Modular metric grid -->
+<section class="flex flex-col lg:flex-row gap-gutter items-stretch">
+<!-- Profile Strip -->
+<div class="flex-1 bg-surface-container border border-outline-variant rounded-lg p-lg flex items-center gap-md">
+<div class="w-16 h-16 rounded-lg bg-surface-variant overflow-hidden shrink-0">
+<img alt="Student Avatar" class="w-full h-full object-cover" data-alt="Portrait of a young male student looking confident, natural daylight, soft focus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9xCivldZSzrLgZAlPSnLbOukSHknzdkhqnGiIbWPuYz7kemIIOyTWc72MjXg_qz1tpzsMZCwvFFeco3SrPgYOG6lYOzopYLr2UOX_hAVrWiLW2N2lt4avpCCsfqcch3y8ROL7fukvIjjpgLm_2BU2E7pveKNBDpxYVPqOaCuc8WSZlkXJuC1EIZW8OnEbevqH_WRsG5NMjv-AwjbMUuQOVWFVrGOSEz9oAVsdxhWkHRT_yts291XiLHXkkr6AlgqzNLGtu4sJlhQ"/>
+</div>
+<div class="flex flex-col justify-center">
+<h2 class="font-page-title text-page-title text-on-surface leading-tight">Alex Sterling</h2>
+<div class="flex items-center gap-3 mt-2">
+<span class="font-metadata text-metadata text-on-surface-variant bg-surface-variant px-2 py-1 rounded">USN: 01FE21BCS</span>
+<span class="font-metadata text-metadata text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded">BE Computer Science</span>
+</div>
+</div>
+</div>
+<!-- Metrics -->
+<div class="flex flex-col sm:flex-row gap-gutter shrink-0">
+<div class="bg-surface-container border border-outline-variant rounded-lg p-lg flex flex-col justify-between w-full sm:w-[160px]">
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Attendance</span>
+<div class="mt-4 flex items-baseline gap-1">
+<span class="font-page-title text-page-title text-on-surface text-3xl">71</span>
+<span class="font-body text-body text-on-surface-variant">%</span>
+</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-lg p-lg flex flex-col justify-between w-full sm:w-[160px]">
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Exam In</span>
+<div class="mt-4 flex items-baseline gap-1">
+<span class="font-page-title text-page-title text-on-surface text-3xl">14</span>
+<span class="font-body text-body text-on-surface-variant">Days</span>
+</div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-lg p-lg flex flex-col justify-between w-full sm:w-[160px]">
+<span class="font-metadata text-metadata text-on-surface-variant uppercase tracking-wider">Contributions</span>
+<div class="mt-4 flex items-baseline gap-1">
+<span class="font-page-title text-page-title text-on-surface text-3xl">1</span>
+<span class="font-body text-body text-on-surface-variant">Docs</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Left Column -->
+<div class="xl:col-span-8 flex flex-col gap-gutter">
+<!-- 2. ACADEMIC TIMELINE -->
+<section class="bg-surface border border-outline-variant rounded-lg p-lg flex flex-col gap-6">
+<h3 class="font-section-title text-section-title text-on-surface uppercase text-[11px] tracking-widest text-on-surface-variant">Academic Timeline</h3>
+<div class="relative py-4">
+<!-- Track -->
+<div class="absolute top-1/2 left-0 w-full h-[1px] bg-outline-variant -translate-y-1/2"></div>
+<!-- Progress fill -->
+<div class="absolute top-1/2 left-0 w-[60%] h-[1px] bg-primary -translate-y-1/2 shadow-[0_0_8px_rgba(208,188,255,0.4)]"></div>
+<div class="relative flex justify-between items-center z-10">
+<!-- Node 1 -->
+<div class="flex flex-col items-center gap-2 -ml-3">
+<div class="w-3 h-3 rounded-full bg-primary border-2 border-surface"></div>
+<span class="font-metadata text-metadata text-on-surface-variant absolute top-6 whitespace-nowrap">Sem Start</span>
+</div>
+<!-- Node 2 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary border-2 border-surface"></div>
+<span class="font-metadata text-metadata text-on-surface-variant absolute top-6 whitespace-nowrap">Mid Terms</span>
+</div>
+<!-- Node 3 (Active) -->
+<div class="flex flex-col items-center gap-2 relative">
+<div class="w-4 h-4 rounded-full bg-surface border-2 border-primary flex items-center justify-center">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+</div>
+<div class="absolute -top-8 bg-primary/10 border border-primary/30 text-primary px-2 py-1 rounded text-[10px] font-bold tracking-wide whitespace-nowrap uppercase">
+                                            Exam: End Sem
+                                        </div>
+<span class="font-metadata text-metadata text-primary absolute top-6 whitespace-nowrap font-medium">2026-05-08</span>
+</div>
+<!-- Node 4 -->
+<div class="flex flex-col items-center gap-2 -mr-3">
+<div class="w-3 h-3 rounded-full bg-surface-variant border-2 border-surface"></div>
+<span class="font-metadata text-metadata text-on-surface-variant absolute top-6 whitespace-nowrap">Results</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. RECENT NOTES -->
+<section class="bg-surface border border-outline-variant rounded-lg overflow-hidden flex flex-col sm:flex-row group cursor-pointer hover:border-outline transition-colors">
+<div class="w-full sm:w-[240px] h-48 sm:h-auto bg-surface-variant relative shrink-0 border-b sm:border-b-0 sm:border-r border-outline-variant overflow-hidden">
+<img alt="Database Architecture" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-300 group-hover:scale-105 transform" data-alt="Abstract geometric shapes and intersecting lines in dark muted purple and grey tones, representing data structures and architecture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBflaIrhVapeKLJGBult2oMZt6VyKbO39bfmI4sZK89681D4ELmOCWVFq84xrLrMWDmWSG4mt1V7cWTBVRxtJT2-MiKO3aWvr_ZKdrr1CzCH2DXCAW9hTX8lkGLdI-NW39dB0p64_IorR6rW-ZtweJlUTjeeWmqO9X-jJsXVcxEJU1rtycui0Mf57ovYsv8xzpk4QguaGJmAz5mTcrm3-VQUIwOB_IYvPMkfl2GSM95jhIBbINeEeuKnY05C-v82CbEAKa-lGbpohA"/>
+<div class="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm border border-outline-variant/50 px-2 py-1 rounded font-metadata text-[10px] text-on-surface uppercase tracking-wider">
+                                    PDF Document
+                                </div>
+</div>
+<div class="p-lg flex flex-col flex-1 relative">
+<button class="absolute top-lg right-lg text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+<div class="flex gap-2 mb-3">
+<span class="font-metadata text-[10px] bg-surface-variant text-on-surface px-1.5 py-0.5 rounded uppercase tracking-wide">CS-401</span>
+<span class="font-metadata text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-wide">New</span>
+</div>
+<h3 class="font-card-title text-card-title text-on-surface mb-2 pr-8">UNIT 01 - Database Architecture</h3>
+<p class="font-body text-body text-on-surface-variant line-clamp-2 mb-4">Comprehensive overview of relational database management systems, covering ACID properties, normalization techniques up to 3NF, and basic concurrency control mechanisms.</p>
+<div class="mt-auto flex items-center justify-between border-t border-outline-variant/50 pt-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center text-[10px] font-bold text-on-surface">KR</div>
+<span class="font-metadata text-[11px] text-on-surface-variant">KUMBHAR ROHIT AVINASH</span>
+</div>
+<span class="font-metadata text-[11px] text-on-surface-variant">Oct 24, 2023</span>
+</div>
+</div>
+</section>
+<!-- 4. ATTENDANCE HEATMAP -->
+<section class="bg-surface border border-outline-variant rounded-lg p-lg flex flex-col gap-6">
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-card-title text-card-title text-on-surface">Attendance Activity</h3>
+<p class="font-metadata text-metadata text-on-surface-variant mt-1">Last 90 days overview</p>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-end">
+<span class="font-page-title text-page-title text-primary leading-none">62</span>
+<span class="font-metadata text-[10px] uppercase tracking-wider text-on-surface-variant mt-1">Classes</span>
+</div>
+<div class="w-px bg-outline-variant h-8 self-center"></div>
+<div class="flex flex-col items-end">
+<span class="font-page-title text-page-title text-on-surface leading-none">14</span>
+<span class="font-metadata text-[10px] uppercase tracking-wider text-on-surface-variant mt-1">Missed</span>
+</div>
+</div>
+</div>
+<!-- Mock Heatmap -->
+<div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+<div class="flex flex-col gap-1 text-[10px] text-on-surface-variant pt-5 pr-2 font-metadata text-right shrink-0">
+<span class="h-3 flex items-center">Mon</span>
+<span class="h-3 flex items-center">Wed</span>
+<span class="h-3 flex items-center">Fri</span>
+</div>
+<div class="flex gap-1 flex-1 shrink-0">
+<!-- Generating random columns for visual effect -->
+<div class="flex flex-col gap-1 w-3">
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-primary/40"></div>
+<div class="h-3 w-3 rounded-sm bg-primary/80"></div>
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-primary"></div>
+</div>
+<div class="flex flex-col gap-1 w-3">
+<div class="h-3 w-3 rounded-sm bg-primary/60"></div>
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-primary/40"></div>
+<div class="h-3 w-3 rounded-sm bg-primary/80"></div>
+</div>
+<div class="flex flex-col gap-1 w-3">
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-primary/20"></div>
+<div class="h-3 w-3 rounded-sm bg-surface-variant"></div>
+<div class="h-3 w-3 rounded-sm bg-primary"></div>
+</div>
+<!-- ... repeating columns ... -->
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-primary/80"></div><div class="h-3 w-3 rounded-sm bg-primary"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/40"></div><div class="h-3 w-3 rounded-sm bg-primary/60"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/20"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/80"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-primary"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/60"></div><div class="h-3 w-3 rounded-sm bg-primary"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/40"></div><div class="h-3 w-3 rounded-sm bg-primary/20"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-primary/80"></div><div class="h-3 w-3 rounded-sm bg-primary"></div><div class="h-3 w-3 rounded-sm bg-primary"></div><div class="h-3 w-3 rounded-sm bg-primary/60"></div><div class="h-3 w-3 rounded-sm bg-primary/80"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/20"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/20"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary"></div></div>
+<div class="flex flex-col gap-1 w-3"><div class="h-3 w-3 rounded-sm bg-primary/80"></div><div class="h-3 w-3 rounded-sm bg-primary"></div><div class="h-3 w-3 rounded-sm bg-surface-variant"></div><div class="h-3 w-3 rounded-sm bg-primary/40"></div><div class="h-3 w-3 rounded-sm bg-primary/60"></div></div>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-2 mt-2 font-metadata text-[10px] text-on-surface-variant self-end">
+<span>Less</span>
+<div class="flex gap-1">
+<div class="w-3 h-3 rounded-sm bg-surface-variant"></div>
+<div class="w-3 h-3 rounded-sm bg-primary/20"></div>
+<div class="w-3 h-3 rounded-sm bg-primary/40"></div>
+<div class="w-3 h-3 rounded-sm bg-primary/80"></div>
+<div class="w-3 h-3 rounded-sm bg-primary"></div>
+</div>
+<span>More</span>
+</div>
+</section>
+</div>
+<!-- Right Column (Panel) -->
+<div class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- Announcements -->
+<section class="bg-surface border border-outline-variant border-l-4 border-l-primary rounded-lg p-md flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-section-title text-[10px] uppercase tracking-wider text-primary font-bold">Important Notice</span>
+<span class="font-metadata text-[10px] text-on-surface-variant">Today, 09:00 AM</span>
+</div>
+<h4 class="font-card-title text-sm text-on-surface">Registration for Industry Electives Opens Next Week</h4>
+<p class="font-body text-xs text-on-surface-variant">Ensure all prerequisite credits are cleared before applying through the portal.</p>
+</section>
+<!-- Academic Progress -->
+<section class="bg-surface-container border border-outline-variant rounded-lg p-md">
+<div class="flex justify-between items-baseline mb-3">
+<span class="font-card-title text-sm text-on-surface">Syllabus Covered</span>
+<span class="font-metadata text-metadata text-on-surface-variant">64%</span>
+</div>
+<div class="w-full h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 64%"></div>
+</div>
+</section>
+<!-- Action Guard (Subjects List) -->
+<section class="bg-surface border border-outline-variant rounded-lg flex flex-col">
+<div class="p-md border-b border-outline-variant">
+<h3 class="font-card-title text-card-title text-on-surface">Subject Status</h3>
+</div>
+<div class="flex flex-col">
+<!-- Item 1 -->
+<div class="px-md py-3 flex items-center justify-between border-b border-outline-variant/50 hover:bg-surface-variant/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="font-body text-sm text-on-surface">Industry Training</span>
+</div>
+<span class="font-metadata text-metadata text-on-surface-variant">0%</span>
+</div>
+<!-- Item 2 -->
+<div class="px-md py-3 flex items-center justify-between border-b border-outline-variant/50 hover:bg-surface-variant/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="font-body text-sm text-on-surface">Cloud Computing</span>
+</div>
+<span class="font-metadata text-metadata text-on-surface-variant">67%</span>
+</div>
+<!-- Item 3 -->
+<div class="px-md py-3 flex items-center justify-between border-b border-outline-variant/50 hover:bg-surface-variant/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="font-body text-sm text-on-surface">Machine Learning</span>
+</div>
+<span class="font-metadata text-metadata text-on-surface-variant">92%</span>
+</div>
+<!-- Item 4 -->
+<div class="px-md py-3 flex items-center justify-between hover:bg-surface-variant/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="font-body text-sm text-on-surface">Project Phase 1</span>
+</div>
+<span class="font-metadata text-metadata text-on-surface-variant">100%</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

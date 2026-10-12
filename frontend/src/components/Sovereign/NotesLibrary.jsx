@@ -35,10 +35,12 @@ const NotesLibrary = () => {
         return null;
     };
 
+    const normalizeUnit = (u) => (u || '').toString().toLowerCase().replace(/[^0-9]/g, '');
+
     const filteredNotes = notes?.filter(note => {
         const resolvedId = resolveSubjectId(note);
         const matchSubject = selectedSubject === 'all' || resolvedId === selectedSubject;
-        const matchUnit = selectedUnit === 'all' || note.unit === selectedUnit;
+        const matchUnit = selectedUnit === 'all' || normalizeUnit(note.unit) === normalizeUnit(selectedUnit);
         const matchSearch = (note.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (subjects?.find(s => s.id === resolvedId)?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
         return matchSubject && matchUnit && matchSearch;
@@ -61,6 +63,9 @@ const NotesLibrary = () => {
 
     const units = ['UNIT 01', 'UNIT 02', 'UNIT 03', 'UNIT 04', 'UNIT 05', 'UNIT 06'];
 
+    const userRole = localStorage.getItem('eduvault_user_role') || 'student';
+    const isTeacher = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
+
     return (
         <div className="flex-1 flex flex-col min-h-screen bg-[#f8fafc] text-slate-900 antialiased overflow-y-auto">
             <main className="p-6 sm:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6">
@@ -79,13 +84,16 @@ const NotesLibrary = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setShowLmsSync(true)}
-                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-xs cursor-pointer"
-                        >
-                            <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
-                            <span>SYNC LMS NOTES</span>
-                        </button>
+                        {isTeacher && (
+                            <button
+                                onClick={() => setShowLmsSync(true)}
+                                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-xs cursor-pointer"
+                                title="Teacher access: Sync latest materials from Moodle LMS"
+                            >
+                                <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
+                                <span>SYNC LMS NOTES</span>
+                            </button>
+                        )}
                         <button
                             onClick={() => setShowUpload(true)}
                             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all shadow-xs cursor-pointer"
@@ -285,13 +293,15 @@ const NotesLibrary = () => {
                             No materials match your current filter criteria or none have been ingested yet.
                         </p>
                         <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setShowLmsSync(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all shadow-xs cursor-pointer"
-                            >
-                                <RefreshCw className="w-3.5 h-3.5" />
-                                <span>SYNC FROM LMS</span>
-                            </button>
+                            {isTeacher && (
+                                <button
+                                    onClick={() => setShowLmsSync(true)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all shadow-xs cursor-pointer"
+                                >
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    <span>SYNC FROM LMS</span>
+                                </button>
+                            )}
                             <button
                                 onClick={() => setShowUpload(true)}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs cursor-pointer"

@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS pyqs (
     subject_id VARCHAR(255) REFERENCES subjects(id) ON DELETE SET NULL,
     subject_name VARCHAR(255),
     exam_type VARCHAR(255),
-    year VARCHAR(255),
+    "year" VARCHAR(255),
     tags TEXT,
     text_content TEXT,
     file_url TEXT,

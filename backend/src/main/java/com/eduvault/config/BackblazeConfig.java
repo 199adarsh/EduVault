@@ -35,16 +35,26 @@ public class BackblazeConfig {
     private String region;
 
     private StaticCredentialsProvider credentialsProvider() {
+        String key = (accessKeyId != null && !accessKeyId.isBlank()) ? accessKeyId : "dummy-access-key";
+        String secret = (secretAccessKey != null && !secretAccessKey.isBlank()) ? secretAccessKey : "dummy-secret-key";
         return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+                AwsBasicCredentials.create(key, secret));
+    }
+
+    private String getEffectiveEndpoint() {
+        return (endpoint != null && !endpoint.isBlank()) ? endpoint : "s3.us-east-005.backblazeb2.com";
+    }
+
+    private Region getEffectiveRegion() {
+        return (region != null && !region.isBlank()) ? Region.of(region) : Region.of("us-east-005");
     }
 
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
                 .credentialsProvider(credentialsProvider())
-                .endpointOverride(URI.create("https://" + endpoint))
-                .region(Region.of(region))
+                .endpointOverride(URI.create("https://" + getEffectiveEndpoint()))
+                .region(getEffectiveRegion())
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true) // Required for B2
                         .build())
@@ -55,8 +65,8 @@ public class BackblazeConfig {
     public S3Presigner s3Presigner() {
         return S3Presigner.builder()
                 .credentialsProvider(credentialsProvider())
-                .endpointOverride(URI.create("https://" + endpoint))
-                .region(Region.of(region))
+                .endpointOverride(URI.create("https://" + getEffectiveEndpoint()))
+                .region(getEffectiveRegion())
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())

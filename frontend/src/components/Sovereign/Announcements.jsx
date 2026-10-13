@@ -48,7 +48,7 @@ const Announcements = () => {
     });
     const [showCreate, setShowCreate] = useState(false);
     const [editingAnn, setEditingAnn] = useState(null);
-    const [userRole, setUserRole] = useState(() => localStorage.getItem('eduvault_user_role') || 'admin');
+    const [userRole, setUserRole] = useState(() => localStorage.getItem('eduvault_user_role') || 'student');
     const [newAnn, setNewAnn] = useState({
         title: '',
         description: '',
@@ -56,10 +56,10 @@ const Announcements = () => {
         type: 'Official Notice'
     });
 
-    const isManager = userRole === 'admin' || userRole === 'faculty';
+    const isManager = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
 
     const toggleRole = () => {
-        const next = isManager ? 'student' : 'admin';
+        const next = isManager ? 'student' : 'teacher';
         setUserRole(next);
         localStorage.setItem('eduvault_user_role', next);
         toast.info(`Switched role mode to: ${next.toUpperCase()}`);
@@ -197,7 +197,7 @@ const Announcements = () => {
                             title="Toggle Manager/Student Permission Mode"
                         >
                             {isManager ? <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> : <ShieldAlert className="w-3.5 h-3.5 text-slate-500" />}
-                            <span>Role: {isManager ? 'Faculty / Admin' : 'Student (Read-Only)'}</span>
+                            <span>Role: {isManager ? 'Teacher / Faculty' : 'Student (Read-Only)'}</span>
                         </button>
                         <button
                             className="relative w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center text-slate-500 hover:text-blue-600 shadow-xs"

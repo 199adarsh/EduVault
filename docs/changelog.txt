@@ -30,3 +30,4 @@
 [2026-10-12] perf(notes): add client-side search filtering and pagination
 [2026-10-12] style(notes): polish cards elevation and material symbols
 [2026-10-12] test(sync): verify LMS sync status indicators
+[2026-10-13] feat(announcements): add priority tags and teacher role toggles

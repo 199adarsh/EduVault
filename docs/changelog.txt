@@ -31,3 +31,4 @@
 [2026-10-12] style(notes): polish cards elevation and material symbols
 [2026-10-12] test(sync): verify LMS sync status indicators
 [2026-10-13] feat(announcements): add priority tags and teacher role toggles
+[2026-10-13] style(announcements): refine card layout and priority badges

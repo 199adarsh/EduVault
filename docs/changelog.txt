@@ -32,3 +32,4 @@
 [2026-10-12] test(sync): verify LMS sync status indicators
 [2026-10-13] feat(announcements): add priority tags and teacher role toggles
 [2026-10-13] style(announcements): refine card layout and priority badges
+[2026-10-13] fix(announcements): handle empty state and date formatting

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
+import { computeEngine, calculateLPW } from '../../lib/optimizationEngine';
 
 const API_BASE = 'http://localhost:8081/api';
 
@@ -78,45 +79,128 @@ const AttendanceAnalytics = () => {
     const activeSubjects = subjects.filter(s => !excludedIds.includes(s.id));
 
     const getPrecisePct = (s) => {
+        const direct = parseFloat(s.attendance);
+        if (!isNaN(direct) && direct > 0) return direct;
         const conducted = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
         const present = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-        if (conducted === 0) return parseFloat(s.attendance) || 0;
-        return parseFloat(((present / conducted) * 100).toFixed(1));
+        if (conducted === 0) return !isNaN(direct) ? direct : 0;
+        return parseFloat(((present / conducted) * 100).toFixed(2));
     };
 
     const getCategory = (sub) => {
-        const code = sub.code || "";
-        const alphabets = code.replace(/[^a-zA-Z]/g, '');
-        const lastChar = alphabets.slice(-1).toUpperCase();
-        if (lastChar === 'P') return 'LAB';
-        if (lastChar === 'L' || lastChar === 'T') return 'THEORY';
-        const n = sub.name.toLowerCase();
-        if (n.includes('lab') || n.includes('practical') || n.includes('(p)')) return 'LAB';
-        return 'THEORY';
+        const code = (sub.code || "").toUpperCase();
+        const alphabets = code.replace(/[^A-Z]/g, '');
+        const lastChar = alphabets.slice(-1);
+        return lastChar === 'L' ? 'THEORY' : 'LAB';
     };
 
     const theorySubs = activeSubjects.filter(s => getCategory(s) === 'THEORY');
     const labSubs = activeSubjects.filter(s => getCategory(s) === 'LAB');
 
-    const getWeightedAvg = (subs) => {
-        if (subs.length === 0) return "0.0";
-        const totalCredits = subs.reduce((acc, s) => acc + (s.credit || 1), 0);
-        const weightedSum = subs.reduce((acc, s) => acc + (getPrecisePct(s) * (s.credit || 1)), 0);
-        return (weightedSum / totalCredits).toFixed(1);
+    const hasAttendance = (s) => {
+        if (s.totalConducted > 0) return true;
+        if (s.detailedAttendance && s.detailedAttendance.length > 0) return true;
+        const direct = parseFloat(s.attendance);
+        return !isNaN(direct) && direct > 0;
     };
 
-    const theoryPercentage = getWeightedAvg(theorySubs);
-    const labPercentage = getWeightedAvg(labSubs);
-    const overallPercentage = getWeightedAvg(activeSubjects);
+    const getAverage = (subs) => {
+        let totalAttended = 0;
+        let totalConducted = 0;
+        (subs || []).forEach(s => {
+            const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+            const att = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+            totalConducted += cond;
+            totalAttended += att;
+        });
+        if (totalConducted > 0) {
+            return ((totalAttended / totalConducted) * 100).toFixed(2);
+        }
+        const valid = (subs || []).filter(hasAttendance);
+        if (valid.length === 0) return "0.00";
+        const sum = valid.reduce((acc, s) => acc + getPrecisePct(s), 0);
+        return (sum / valid.length).toFixed(2);
+    };
 
-    const riskSubjects = activeSubjects.filter(r => getPrecisePct(r) < 75);
-    const safeSubjects = activeSubjects.filter(r => getPrecisePct(r) >= 75);
+    const getSimpleAvg = (subs) => {
+        const valid = (subs || []).filter(hasAttendance);
+        if (valid.length === 0) return "0.0";
+        const sum = valid.reduce((acc, s) => acc + getPrecisePct(s), 0);
+        return (sum / valid.length).toFixed(1);
+    };
+
+    const theoryPercentage = getSimpleAvg(theorySubs);
+    const labPercentage = getSimpleAvg(labSubs);
+    const overallPercentage = getAverage(activeSubjects);
+
+    const validSubjects = activeSubjects.filter(hasAttendance);
+    const riskSubjects = validSubjects.filter(r => getPrecisePct(r) < 75);
+    const safeSubjects = validSubjects.filter(r => getPrecisePct(r) >= 75);
 
     const displayedSubjects = useMemo(() => {
         if (filterTab === 'attention') return riskSubjects;
         if (filterTab === 'safe') return safeSubjects;
         return activeSubjects;
     }, [filterTab, activeSubjects, riskSubjects, safeSubjects]);
+
+    // Optimization planner state (minimizable)
+    const [isOptMinimized, setIsOptMinimized] = useState(() => {
+        try {
+            const val = localStorage.getItem('eduvault_opt_minimized');
+            return val !== null ? JSON.parse(val) : false;
+        } catch { return false; }
+    });
+    const [optTarget, setOptTarget] = useState(() => {
+        try {
+            const val = localStorage.getItem('eduvault_opt_target');
+            return val ? JSON.parse(val) : 75;
+        } catch { return 75; }
+    });
+    const [semesterLockDate, setSemesterLockDate] = useState(() => {
+        const saved = localStorage.getItem('eduvault_opt_semdate');
+        if (saved) return saved;
+        const d = new Date(); d.setMonth(d.getMonth() + 2); return d.toISOString().split('T')[0];
+    });
+    const [manualLPWs, setManualLPWs] = useState(() => {
+        try {
+            const val = localStorage.getItem('eduvault_opt_lpws');
+            return val ? JSON.parse(val) : {};
+        } catch { return {}; }
+    });
+    const [showOptSettings, setShowOptSettings] = useState(false);
+    const [optFilter, setOptFilter] = useState('all');
+
+    useEffect(() => {
+        localStorage.setItem('eduvault_opt_minimized', JSON.stringify(isOptMinimized));
+        localStorage.setItem('eduvault_opt_target', JSON.stringify(optTarget));
+        localStorage.setItem('eduvault_opt_semdate', semesterLockDate);
+        localStorage.setItem('eduvault_opt_lpws', JSON.stringify(manualLPWs));
+    }, [isOptMinimized, optTarget, semesterLockDate, manualLPWs]);
+
+    const optEngine = useMemo(() => computeEngine(subjects, optTarget, excludedIds, semesterLockDate, manualLPWs),
+        [subjects, optTarget, excludedIds, semesterLockDate, manualLPWs]);
+
+    const optPriorityIds = useMemo(() => {
+        if (!optEngine || !optEngine.plan) return new Set();
+        const needingAttend = optEngine.plan.filter(r => r.attend > 0);
+        const sorted = [...needingAttend].sort((a, b) => {
+            const weightA = (a.credit || 1) * (a.lpw || 1);
+            const weightB = (b.credit || 1) * (b.lpw || 1);
+            return weightB - weightA;
+        });
+        return new Set(sorted.slice(0, 3).map(r => r.id));
+    }, [optEngine]);
+
+    const filteredOptPlan = useMemo(() => {
+        if (!optEngine?.plan) return [];
+        return optEngine.plan.filter(s => {
+            if (optFilter === 'theory') return !s.isLab;
+            if (optFilter === 'lab') return s.isLab;
+            if (optFilter === 'risk') return s.currentPct < optTarget;
+            if (optFilter === 'priority') return optPriorityIds.has(s.id);
+            return true;
+        });
+    }, [optEngine, optFilter, optTarget, optPriorityIds]);
 
     // Chronological Session Audit Logs from all subjects
     const sessionLogs = useMemo(() => {
@@ -365,6 +449,273 @@ const AttendanceAnalytics = () => {
                             {riskSubjects.length > 0 ? 'Immediate recovery action advised' : 'Academic threshold maintained'}
                         </div>
                     </div>
+                </section>
+
+                {/* Minimizable Attendance Optimization & Strategy Panel */}
+                <section className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden transition-all">
+                    {/* Header with Minimize / Expand toggle */}
+                    <div 
+                        onClick={() => setIsOptMinimized(!isOptMinimized)}
+                        className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/70 transition-colors select-none"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <span className="material-symbols-outlined text-[18px]">tune</span>
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-sm font-bold text-slate-900 tracking-tight">Attendance Optimization &amp; Strategy</h2>
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                                        Pacing Simulator
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-slate-500">
+                                    Target simulation, safe skip allowances, and required lecture pacing
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            {isOptMinimized && optEngine && (
+                                <div className="hidden sm:flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full">
+                                    <span>Target: <strong className="text-blue-600">{optTarget}%</strong></span>
+                                    <span className="text-slate-300">•</span>
+                                    <span>Safe Skips: <strong className="text-emerald-600">{optEngine.SkipableOverall}</strong></span>
+                                    <span className="text-slate-300">•</span>
+                                    <span>Must Attend: <strong className="text-amber-600">{optEngine.mustAttendOverall}</strong></span>
+                                </div>
+                            )}
+                            <button 
+                                type="button" 
+                                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
+                                title={isOptMinimized ? "Expand Optimization Planner" : "Minimize Optimization Planner"}
+                            >
+                                <span className="material-symbols-outlined text-[20px]">
+                                    {isOptMinimized ? 'expand_more' : 'expand_less'}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {!isOptMinimized && optEngine && (
+                        <div className="border-t border-slate-100 p-5 space-y-5 animate-in slide-in-from-top-1 duration-200">
+                            {/* Top Controls Row */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                        Horizon:
+                                    </span>
+                                    <span className="text-xs font-medium text-slate-700 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-2xs">
+                                        {optEngine.weeksRemaining} Weeks Left
+                                    </span>
+
+                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                                        Target:
+                                    </span>
+                                    <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setOptTarget(prev => Math.max(50, prev - 1)); }}
+                                            className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-xs"
+                                            type="button"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="text-xs font-bold text-blue-600 min-w-[32px] text-center">
+                                            {optTarget}%
+                                        </span>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setOptTarget(prev => Math.min(100, prev + 1)); }}
+                                            className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-xs"
+                                            type="button"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setShowOptSettings(!showOptSettings); }}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${showOptSettings
+                                                ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                            }`}
+                                    >
+                                        <span className="material-symbols-outlined text-[15px]">settings</span>
+                                        <span>{showOptSettings ? 'Hide Parameters' : 'Adjust Parameters'}</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Parameter Settings (Date & LPW) */}
+                            {showOptSettings && (
+                                <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 space-y-4">
+                                    <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                                        <div>
+                                            <h4 className="text-xs font-bold text-slate-800">Semester &amp; Frequency Tuning</h4>
+                                            <p className="text-[11px] text-slate-500">Customize the semester end date and weekly lectures per subject</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                                                Semester Lock Date
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={semesterLockDate}
+                                                onChange={e => setSemesterLockDate(e.target.value)}
+                                                className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-semibold text-slate-600 mb-2 uppercase tracking-wider">
+                                            Weekly Lectures Frequency (LPW)
+                                        </label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                            {subjects?.map(s => {
+                                                const id = s.id || s.code;
+                                                return (
+                                                    <div key={id} className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 text-xs">
+                                                        <span className="font-medium text-slate-700 truncate pr-2" title={s.name}>{s.name}</span>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <span className="text-[10px] text-slate-400">LPW:</span>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max="10"
+                                                                value={manualLPWs[id] ?? calculateLPW(s)}
+                                                                onChange={e => setManualLPWs(prev => ({
+                                                                    ...prev,
+                                                                    [id]: Math.max(1, Number(e.target.value))
+                                                                }))}
+                                                                className="w-8 border border-slate-200 rounded text-center text-xs font-bold text-blue-600 py-0.5 outline-none focus:border-blue-500"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 4-Stat Metric Strip */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Current Attendance</span>
+                                    <div className="my-1 flex items-baseline gap-1.5">
+                                        <span className="text-xl font-extrabold text-slate-900">{optEngine.currentOverall.toFixed(1)}%</span>
+                                        <span className="text-[11px] text-slate-400 font-medium">({optEngine.totalAttended}/{optEngine.totalConducted})</span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">Institutional baseline</span>
+                                </div>
+
+                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Projected Attendance</span>
+                                    <div className="my-1 flex items-baseline gap-1.5">
+                                        <span className="text-xl font-extrabold text-blue-600">{optEngine.projectedFinal.toFixed(1)}%</span>
+                                        <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-full border ${!optEngine.isImpossible ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-rose-700 bg-rose-50 border-rose-200'}`}>
+                                            {!optEngine.isImpossible ? 'Achievable' : `Deficit: ${optEngine.deficit}`}
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">Target goal: {optTarget}%</span>
+                                </div>
+
+                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Must Attend</span>
+                                    <div className="my-1 flex items-baseline gap-1">
+                                        <span className="text-xl font-extrabold text-amber-600">{optEngine.mustAttendOverall}</span>
+                                        <span className="text-xs text-slate-500 font-normal">lectures</span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">Required future sessions</span>
+                                </div>
+
+                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Safe Skips</span>
+                                    <div className="my-1 flex items-baseline gap-1">
+                                        <span className="text-xl font-extrabold text-emerald-600">{optEngine.SkipableOverall}</span>
+                                        <span className="text-xs text-slate-500 font-normal">sessions</span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">Allowed without penalty</span>
+                                </div>
+                            </div>
+
+                            {/* Subject Strategy Table */}
+                            <div>
+                                {/* Filter Pills */}
+                                <div className="flex items-center gap-1.5 mb-3 overflow-x-auto no-scrollbar">
+                                    {[
+                                        { id: 'all', label: 'All Subjects', count: optEngine.plan.length },
+                                        { id: 'theory', label: 'Theory', count: optEngine.plan.filter(s => !s.isLab).length },
+                                        { id: 'lab', label: 'Labs', count: optEngine.plan.filter(s => s.isLab).length },
+                                        { id: 'risk', label: 'Risk (< Target)', count: optEngine.plan.filter(s => s.currentPct < optTarget).length },
+                                        { id: 'priority', label: 'Priority Impact', count: optPriorityIds.size },
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            onClick={() => setOptFilter(f.id)}
+                                            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${optFilter === f.id
+                                                    ? 'bg-blue-600 text-white shadow-2xs'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                                                }`}
+                                        >
+                                            <span>{f.label}</span>
+                                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${optFilter === f.id ? 'bg-blue-700 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+                                                {f.count}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Plan Rows */}
+                                <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
+                                    {filteredOptPlan.map(sub => {
+                                        const isSafe = sub.currentPct >= optTarget;
+                                        const isLab = sub.isLab;
+                                        return (
+                                            <div key={sub.id} className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className={`p-1.5 rounded-lg shrink-0 ${isSafe ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
+                                                        <span className="material-symbols-outlined text-[16px]">
+                                                            {isLab ? 'science' : 'menu_book'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="text-xs font-semibold text-slate-800 truncate" title={sub.name}>
+                                                                {sub.name}
+                                                            </h4>
+                                                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
+                                                                {sub.code || 'COURSE'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-400 mt-0.5">
+                                                            Current: <strong className={isSafe ? 'text-slate-700' : 'text-amber-600'}>{sub.currentPct}%</strong> • Remaining: {sub.rem} lectures
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                                    {sub.attend > 0 ? (
+                                                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                                                            Attend {sub.attend} more
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                                            {sub.skip} {sub.skip === 1 ? 'Skip' : 'Skips'} Safe
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* Main Two-Column Area */}

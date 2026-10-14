@@ -34,3 +34,4 @@
 [2026-10-13] style(announcements): refine card layout and priority badges
 [2026-10-13] fix(announcements): handle empty state and date formatting
 [2026-10-13] test(announcements): verify bookmark and acknowledge state retention
+[2026-10-14] feat(heatmap): implement shared attendance activity heatmap matrix

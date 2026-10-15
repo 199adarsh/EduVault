@@ -3,9 +3,10 @@ import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import mammoth from 'mammoth';
 import {
     ArrowLeft, Download, ExternalLink, MessageSquare, Bot, X,
-    FileText, User, Calendar, CheckCircle2, Send, Inbox
+    FileText, User, Calendar, CheckCircle2, Send, Inbox, Loader2
 } from 'lucide-react';
 
 const API_BASE = 'http://localhost:8081/api';
@@ -24,6 +25,8 @@ const NoteDetail = () => {
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [presignedUrl, setPresignedUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
+    const [docxHtml, setDocxHtml] = useState(null);
+    const [docLoading, setDocLoading] = useState(false);
     const [chatMessages, setChatMessages] = useState([
         { role: 'assistant', text: "Hello! I'm your AI academic assistant. Ask me anything about this document." }
     ]);
@@ -53,38 +56,60 @@ const NoteDetail = () => {
         if (noteId) fetchNoteData();
     }, [noteId, navigate]);
 
-    // Fetch file as blob for iframe rendering (bypasses X-Frame-Options)
+    // Fetch file and render preview (PDF/DOCX/Image)
     useEffect(() => {
         if (!presignedUrl && !note?.fileUrl) return;
         let cancelled = false;
 
         const loadBlob = async () => {
-            try {
-                if (presignedUrl) {
-                    const res = await fetch(presignedUrl);
-                    if (res.ok) {
-                        const blob = await res.blob();
-                        if (!cancelled) setBlobUrl(URL.createObjectURL(blob));
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn('Presigned fetch failed, falling back to local file API:', e);
-            }
+            setDocLoading(true);
+            let blob = null;
 
-            // Fallback to local server raw file endpoint
-            if (note?.fileUrl && !cancelled) {
+            // 1. Try local backend endpoint first for reliable CORS and speed
+            if (note?.fileUrl) {
                 try {
                     const fallbackUrl = `${API_BASE}/files/raw/${note.fileUrl}`;
                     const res = await fetch(fallbackUrl);
                     if (res.ok) {
-                        const blob = await res.blob();
-                        if (!cancelled) setBlobUrl(URL.createObjectURL(blob));
+                        blob = await res.blob();
                     }
                 } catch (err) {
-                    console.error('Failed to fetch file blob fallback:', err);
+                    console.warn('Local raw fetch error:', err);
                 }
             }
+
+            // 2. Try presigned URL if local fetch was not used/failed
+            if (!blob && presignedUrl) {
+                try {
+                    const res = await fetch(presignedUrl);
+                    if (res.ok) {
+                        blob = await res.blob();
+                    }
+                } catch (e) {
+                    console.warn('Presigned fetch failed:', e);
+                }
+            }
+
+            if (cancelled) return;
+
+            if (blob) {
+                const bUrl = URL.createObjectURL(blob);
+                setBlobUrl(bUrl);
+
+                const ext = note?.fileUrl ? note.fileUrl.split('.').pop().toLowerCase() : '';
+                if (['doc', 'docx'].includes(ext)) {
+                    try {
+                        const arrayBuffer = await blob.arrayBuffer();
+                        const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
+                        if (html && html.trim().length > 0 && !cancelled) {
+                            setDocxHtml(html);
+                        }
+                    } catch (mErr) {
+                        console.warn('Mammoth docx parse failed:', mErr);
+                    }
+                }
+            }
+            setDocLoading(false);
         };
 
         loadBlob();
@@ -180,85 +205,123 @@ const NoteDetail = () => {
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
 
     return (
-        <div className="relative flex-1 flex flex-col bg-black overflow-hidden antialiased h-[100dvh] md:h-[90dvh] m-0 md:m-4 rounded-none md:rounded-3xl border-0 md:border border-zinc-800/50">
-            {/* Header Overlay */}
-            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-6 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none">
-                <div className="flex items-center gap-4 pointer-events-auto">
-                    <button onClick={() => navigate('/notes')} className="p-2.5 bg-zinc-900/80 hover:bg-zinc-800 backdrop-blur-md border border-zinc-800/80 rounded-xl transition-all duration-300 text-zinc-400 hover:text-white shadow-xl">
+        <div className="relative flex-1 flex flex-col bg-zinc-950 overflow-hidden antialiased h-full w-full">
+            {/* Header - Slim, Non-intrusive Top Bar */}
+            <div className="h-12 px-3 sm:px-5 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 flex items-center justify-between shrink-0 z-20">
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <button 
+                        onClick={() => navigate('/notes')} 
+                        className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                        title="Back to Notes"
+                    >
                         <ArrowLeft className="w-4 h-4" />
                     </button>
-                    <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-800/80 rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-xl">
-                        <FileText className="w-4 h-4 text-blue-400" />
-                        <h2 className="text-sm font-bold text-zinc-100 tracking-tight truncate max-w-[300px] md:max-w-[500px]">{note.title}</h2>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 text-blue-400 shrink-0" />
+                        <h2 className="text-xs sm:text-sm font-semibold text-zinc-100 truncate max-w-[200px] sm:max-w-[450px]">{note.title}</h2>
+                        {note.unit && (
+                            <span className="hidden md:inline-block px-2 py-0.5 rounded bg-zinc-900 text-[10px] font-medium text-zinc-400 border border-zinc-800 shrink-0">
+                                {note.unit}
+                            </span>
+                        )}
                     </div>
                 </div>
                 
-                <div className="flex items-center gap-3 pointer-events-auto">
+                <div className="flex items-center gap-2 shrink-0">
+                    <button 
+                        onClick={() => setIsPanelOpen(true)}
+                        className="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+                        title="Open Doubts & Discussions"
+                    >
+                        <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="hidden sm:inline">Doubts</span>
+                        {doubts.length > 0 && (
+                            <span className="px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold">
+                                {doubts.length}
+                            </span>
+                        )}
+                    </button>
                     <a 
                         href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
                         download
-                        className="p-2.5 bg-blue-600/20 hover:bg-blue-600/40 backdrop-blur-md border border-blue-500/30 rounded-xl transition-all duration-300 text-blue-400 hover:text-blue-300 shadow-xl" 
-                        title="Download Source"
+                        className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer" 
+                        title="Download Document"
                     >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Download</span>
                     </a>
                 </div>
             </div>
 
-            {/* Document Viewer Area */}
-            <div className="flex-1 w-full h-full pt-20 pb-0 md:pb-4 px-0 md:px-4 lg:px-6 flex">
-                <div className="w-full h-full rounded-none md:rounded-2xl overflow-hidden border-0 md:border border-zinc-800/50 bg-zinc-950/80 shadow-2xl relative flex flex-col">
-                    {isPdf ? (
-                        <iframe 
-                            src={blobUrl ? `${blobUrl}#toolbar=0` : 'about:blank'} 
-                            className="w-full flex-1 border-none bg-white rounded-2xl"
-                            title="Document Preview"
-                        />
-                    ) : isOfficeDoc ? (
-                        <iframe 
-                            src={presignedUrl ? `https://docs.google.com/gview?url=${encodeURIComponent(presignedUrl)}&embedded=true` : 'about:blank'} 
-                            className="w-full flex-1 border-none bg-white rounded-2xl"
-                            title="Document Preview"
-                        />
-                    ) : isImage ? (
-                        <div className="flex-1 flex items-center justify-center p-8 bg-zinc-900/20">
-                            <img 
-                                src={blobUrl || 'about:blank'} 
-                                alt={note.title}
-                                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+            {/* Document Viewer Area - Full Viewport Coverage */}
+            <div className="flex-1 w-full h-[calc(100%-3rem)] min-h-0 bg-white relative flex flex-col overflow-hidden">
+                {isPdf ? (
+                    <iframe 
+                        src={blobUrl ? `${blobUrl}#toolbar=0` : 'about:blank'} 
+                        className="w-full h-full border-none bg-white"
+                        title="Document Preview"
+                    />
+                ) : isOfficeDoc ? (
+                    docLoading ? (
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
+                            <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                            <p className="text-xs text-zinc-400 font-medium">Parsing document content...</p>
+                        </div>
+                    ) : docxHtml ? (
+                        <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
+                            <div 
+                                className="max-w-4xl mx-auto prose prose-slate prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed prose-table:border prose-td:border prose-td:p-2 prose-th:border prose-th:p-2 prose-th:bg-slate-50 [&_p]:mb-4 [&_h1]:mb-4 [&_h2]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                                dangerouslySetInnerHTML={{ __html: docxHtml }} 
                             />
                         </div>
+                    ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
+                        <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
+                            <div className="max-w-4xl mx-auto whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-800">
+                                {note.extractedText}
+                            </div>
+                        </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-900/20">
-                            <FileText className="w-16 h-16 text-zinc-800 mb-6" />
-                            <h3 className="text-xl font-bold text-zinc-300 tracking-tight">Preview Unavailable</h3>
-                            <p className="text-xs text-zinc-500 mt-2 max-w-sm">This asset format requires external viewing. Please download to access.</p>
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
+                            <FileText className="w-16 h-16 text-zinc-700 mb-6" />
+                            <h3 className="text-xl font-bold text-zinc-200 tracking-tight">Word Document Asset</h3>
+                            <p className="text-xs text-zinc-400 mt-2 max-w-sm">No preview could be parsed automatically. Download original file below.</p>
                             <a 
                                 href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
                                 download
-                                className="mt-8 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded-xl transition-all text-xs font-bold text-white uppercase tracking-widest"
+                                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all text-xs font-bold text-white shadow-lg cursor-pointer"
                             >
-                                Download Asset
+                                Download Document
                             </a>
                         </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Floating Action Button for Panel */}
-            <div className={`absolute bottom-8 right-10 z-20 transition-all duration-700 ease-in-out ${isPanelOpen ? 'translate-y-24 opacity-0 pointer-events-none scale-90' : 'translate-y-0 opacity-100 scale-100'}`}>
-                <div className="relative group cursor-pointer" onClick={() => setIsPanelOpen(true)}>
-                    <div className="absolute -inset-1 bg-blue-600/40 rounded-full blur-md opacity-70 group-hover:opacity-100 transition duration-500 group-hover:duration-200 animate-pulse"></div>
-                    <button className="relative flex items-center gap-4 px-6 py-3 bg-zinc-950/90 hover:bg-zinc-900 backdrop-blur-xl border border-zinc-800 hover:border-zinc-700 text-white rounded-full transition-all duration-300 shadow-xl">
-                        <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                            <Bot className="w-4 h-4 text-white absolute" />
+                    )
+                ) : isImage ? (
+                    <div className="flex-1 flex items-center justify-center p-4 bg-zinc-950">
+                        <img 
+                            src={blobUrl || 'about:blank'} 
+                            alt={note.title}
+                            className="max-w-full max-h-full object-contain"
+                        />
+                    </div>
+                ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
+                    <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
+                        <div className="max-w-4xl mx-auto whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-800">
+                            {note.extractedText}
                         </div>
-                        <div className="flex flex-col items-start pr-2">
-                            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-blue-400 group-hover:text-blue-300 transition-colors">DocBot & Doubts</span>
-                            <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">Interact & Learn</span>
-                        </div>
-                    </button>
-                </div>
+                    </div>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
+                        <FileText className="w-16 h-16 text-zinc-800 mb-6" />
+                        <h3 className="text-xl font-bold text-zinc-300 tracking-tight">Preview Unavailable</h3>
+                        <p className="text-xs text-zinc-500 mt-2 max-w-sm">This asset format requires external viewing. Please download to access.</p>
+                        <a 
+                            href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
+                            download
+                            className="mt-8 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded-xl transition-all text-xs font-bold text-white uppercase tracking-widest cursor-pointer"
+                        >
+                            Download Asset
+                        </a>
+                    </div>
+                )}
             </div>
 
             {/* Slide-out Overlay */}

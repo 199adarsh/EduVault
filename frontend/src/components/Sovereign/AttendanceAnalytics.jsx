@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
+import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 
 const API_BASE = 'http://localhost:8081/api';
 
@@ -10,8 +10,9 @@ const AttendanceAnalytics = () => {
     const { profile, subjects: globalSubjects, refreshData, loading } = useOutletContext();
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [hoveredCell, setHoveredCell] = useState(null);
-    const [isSessionAuditMinimized, setIsSessionAuditMinimized] = useState(false);
+    const [filterTab, setFilterTab] = useState('all'); // 'all', 'attention', 'safe'
+    const [showDetailModal, setShowDetailModal] = useState(false);
+
     const [excludedIds, setExcludedIds] = useState(() => {
         const saved = localStorage.getItem('eduvault_excluded_subjects');
         return saved ? JSON.parse(saved) : [];
@@ -21,21 +22,13 @@ const AttendanceAnalytics = () => {
         localStorage.setItem('eduvault_excluded_subjects', JSON.stringify(excludedIds));
     }, [excludedIds]);
 
-    if (loading || !profile) {
-        return (
-            <div className="flex flex-col items-center justify-center h-[80vh] w-full text-on-surface-variant font-mono uppercase tracking-widest gap-4 animate-pulse">
-                <span className="material-symbols-outlined text-4xl">sync</span>
-                Initializing Academic Core...
-            </div>
-        );
-    }
-
     const handleBackgroundSync = async () => {
         if (!profile?.prn || !profile?.dob) {
-            toast.error("Profile credentials missing. Update them in Dashboard.");
+            toast.error("Profile credentials missing in settings");
             return;
         }
         setIsSyncing(true);
+        const toastId = toast.loading("Syncing with institutional portal...");
         try {
             const response = await fetch(`${API_BASE}/portal/dashboard`, {
                 method: 'POST',
@@ -45,25 +38,43 @@ const AttendanceAnalytics = () => {
 
             if (response.ok && refreshData) {
                 await refreshData();
-                toast.success("Synchronized with academic portal");
+                toast.success("Synchronized with academic portal", { id: toastId });
             } else {
-                toast.error("Cloud synchronization failed");
+                toast.error("Cloud synchronization failed", { id: toastId });
             }
         } catch (err) {
-            toast.error("Network error during sync");
+            toast.error("Network error during sync", { id: toastId });
         } finally {
             setIsSyncing(false);
         }
     };
 
-    const toggleConsider = (id, e) => {
-        e.stopPropagation();
-        setExcludedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-        toast.info(!excludedIds.includes(id) ? "Excluded from analytics" : "Included in analytics");
+    const handleExportData = () => {
+        if (!activeSubjects.length) {
+            toast.error("No active records to export");
+            return;
+        }
+        const rows = [
+            ["Subject Code", "Subject Name", "Conducted", "Attended", "Attendance %", "Status"],
+            ...activeSubjects.map(s => {
+                const conducted = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+                const attended = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+                const pct = getPrecisePct(s);
+                return [s.code || '', `"${s.name}"`, conducted, attended, `${pct}%`, pct >= 75 ? "Safe" : "Needs Attention"];
+            })
+        ];
+        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `EduVault_Attendance_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Attendance report downloaded");
     };
 
     const subjects = globalSubjects || [];
-    const attendanceRecords = subjects; // Restore alias to fix ReferenceError
     const activeSubjects = subjects.filter(s => !excludedIds.includes(s.id));
 
     const getPrecisePct = (s) => {
@@ -98,29 +109,63 @@ const AttendanceAnalytics = () => {
     const labPercentage = getWeightedAvg(labSubs);
     const overallPercentage = getWeightedAvg(activeSubjects);
 
-    const actionRequiredCount = activeSubjects.filter(r => getPrecisePct(r) < 75).length;
+    const riskSubjects = activeSubjects.filter(r => getPrecisePct(r) < 75);
+    const safeSubjects = activeSubjects.filter(r => getPrecisePct(r) >= 75);
 
-    // -- Heatmap Logic --
-    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const activityMap = {};
-    const sourceData = selectedSubject ? [selectedSubject] : activeSubjects;
-    sourceData.forEach(sub => {
-        (sub.detailedAttendance || []).forEach(rec => {
-            const parts = rec.date.split('-');
-            if (parts.length === 3) {
-                const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                if (!activityMap[isoDate]) {
-                    activityMap[isoDate] = { present: 0, total: 0, absentSessions: [] };
-                }
-                activityMap[isoDate].total += 1;
-                if (rec.status === 'Present') {
-                    activityMap[isoDate].present += 1;
-                } else if (rec.status === 'Absent' || rec.status?.toLowerCase() === 'absent') {
-                    activityMap[isoDate].absentSessions.push(sub.name);
-                }
-            }
+    const displayedSubjects = useMemo(() => {
+        if (filterTab === 'attention') return riskSubjects;
+        if (filterTab === 'safe') return safeSubjects;
+        return activeSubjects;
+    }, [filterTab, activeSubjects, riskSubjects, safeSubjects]);
+
+    // Chronological Session Audit Logs from all subjects
+    const sessionLogs = useMemo(() => {
+        const logs = [];
+        activeSubjects.forEach(sub => {
+            (sub.detailedAttendance || []).forEach(rec => {
+                logs.push({
+                    subjectName: sub.name,
+                    date: rec.date,
+                    time: rec.time || rec.slot || '',
+                    status: rec.status,
+                    faculty: rec.faculty || sub.faculty || ''
+                });
+            });
         });
-    });
+
+        // Sort descending by date (format DD-MM-YYYY or YYYY-MM-DD)
+        return logs.sort((a, b) => {
+            const parseDate = (dStr) => {
+                if (!dStr) return 0;
+                const p = dStr.split('-');
+                if (p.length === 3) {
+                    if (p[0].length === 4) return new Date(`${p[0]}-${p[1]}-${p[2]}`).getTime();
+                    return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();
+                }
+                return new Date(dStr).getTime();
+            };
+            return parseDate(b.date) - parseDate(a.date);
+        }).slice(0, 15);
+    }, [activeSubjects]);
+
+    // Heatmap data matrix
+    const activityMap = useMemo(() => {
+        const map = {};
+        activeSubjects.forEach(sub => {
+            (sub.detailedAttendance || []).forEach(rec => {
+                const parts = rec.date.split('-');
+                if (parts.length === 3) {
+                    const isoDate = parts[0].length === 4 ? `${parts[0]}-${parts[1]}-${parts[2]}` : `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    if (!map[isoDate]) {
+                        map[isoDate] = { present: 0, total: 0 };
+                    }
+                    map[isoDate].total += 1;
+                    if (rec.status === 'Present') map[isoDate].present += 1;
+                }
+            });
+        });
+        return map;
+    }, [activeSubjects]);
 
     const formatLocalDate = (date) => {
         const yyyy = date.getFullYear();
@@ -129,384 +174,428 @@ const AttendanceAnalytics = () => {
         return `${yyyy}-${mm}-${dd}`;
     };
 
-    const today = new Date();
-    let startDate = new Date();
-    let WEEKS_TO_SHOW = 17;
+    const heatmapWeeks = useMemo(() => {
+        const today = new Date();
+        const getMonday = (d) => {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            return date;
+        };
 
-    const activeDates = Object.keys(activityMap);
-    if (activeDates.length > 0) {
-        const earliestStr = activeDates.sort()[0];
-        const earliest = new Date(earliestStr.replace(/-/g, '/'));
-        const startSunday = new Date(earliest);
-        startSunday.setDate(earliest.getDate() - earliest.getDay());
-        
-        WEEKS_TO_SHOW = 19;
-        startDate = startSunday;
-    } else {
-        const endSaturday = new Date(today);
-        endSaturday.setDate(today.getDate() + (6 - today.getDay()));
-        startDate = new Date(endSaturday);
-        startDate.setDate(endSaturday.getDate() - (17 * 7) + 1);
-    }
-
-    const heatmapGrid = [];
-    const monthLabels = [];
-    let currentHtmlMonth = -1;
-    let d = new Date(startDate);
-    for (let w = 0; w < WEEKS_TO_SHOW; w++) {
-        const week = [];
-        for (let day = 0; day < 7; day++) {
-            const iso = formatLocalDate(d);
-            const m = d.getMonth();
-            if (day === 0 && m !== currentHtmlMonth) {
-                monthLabels.push({ label: d.toLocaleString('default', { month: 'short' }), weekIndex: w });
-                currentHtmlMonth = m;
-            }
-            week.push({ key: iso, date: new Date(d), dateStr: d.toLocaleDateString(), entry: activityMap[iso], isFuture: d > today });
-            d.setDate(d.getDate() + 1);
+        const dates = Object.keys(activityMap).sort();
+        let currentMon = getMonday(today);
+        let startMon = new Date(currentMon);
+        if (dates.length > 0) {
+            const earliest = new Date(dates[0].replace(/-/g, '/'));
+            startMon = getMonday(earliest);
+        } else {
+            startMon.setDate(currentMon.getDate() - (15 * 7));
         }
-        heatmapGrid.push(week);
+
+        const weeks = [];
+        let cursor = new Date(startMon);
+        for (let w = 0; w < 16; w++) {
+            const week = [];
+            for (let day = 0; day < 6; day++) {
+                const dayDate = new Date(cursor);
+                dayDate.setDate(cursor.getDate() + day);
+                const iso = formatLocalDate(dayDate);
+                week.push({
+                    iso,
+                    entry: activityMap[iso],
+                    isFuture: dayDate > today
+                });
+            }
+            weeks.push(week);
+            cursor.setDate(cursor.getDate() + 7);
+        }
+        return weeks;
+    }, [activityMap]);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 gap-3 animate-pulse">
+                <span className="material-symbols-outlined text-3xl animate-spin text-blue-600">sync</span>
+                <p className="text-xs font-semibold tracking-wider uppercase">Loading Attendance Records...</p>
+            </div>
+        );
     }
-
-    const heatColor = (entry, isFuture) => {
-        if (isFuture) return 'bg-zinc-950/20 border border-zinc-900/30';
-        if (!entry || entry.total === 0) return 'bg-zinc-900/30 border border-zinc-800/20';
-        const pct = entry.present / entry.total;
-        if (pct < 0.5) return 'bg-red-500/10 border border-red-500/20 text-red-400';
-        if (pct < 0.75) return 'bg-amber-500/10 border border-amber-500/20 text-amber-400';
-        if (pct < 1) return 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400';
-        return 'bg-emerald-500 border border-emerald-400/50 shadow-[0_0_8px_rgba(16,185,129,0.2)]';
-    };
-
-    const heatmapStats = {
-        activeDays: Object.keys(activityMap).length,
-        totalSessions: Object.values(activityMap).reduce((a, c) => a + c.total, 0),
-        presentSessions: Object.values(activityMap).reduce((a, c) => a + c.present, 0)
-    };
-
-    const [showConsiderDropdown, setShowConsiderDropdown] = useState(false);
 
     return (
-        <div className="p-4 lg:p-10 space-y-8 max-w-[1440px] mx-auto w-full overflow-x-hidden bg-black min-h-screen antialiased" onClick={() => setShowConsiderDropdown(false)}>
-            {/* Header Area */}
-            <div className="flex flex-col gap-4 mb-8">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-emerald-400 mb-1">
-                        <span className="material-symbols-outlined text-[16px]">query_stats</span>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em]">Academic Standing</span>
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white uppercase">Attendance Dashboard</h1>
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] opacity-60">Quantitative presence tracking & risk analysis</p>
-                </div>
-                <div className="flex items-center gap-4 w-full justify-between sm:justify-start">
-                    <button className="bg-zinc-900/50 border border-zinc-800/50 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-all">Export Data</button>
-                    <div className="flex items-center gap-3 ml-4">
-                        <span className="material-symbols-outlined text-on-surface-variant/40">notifications</span>
-                        <span className="material-symbols-outlined text-on-surface-variant/40">help</span>
-                        <div className="w-8 h-8 rounded-sm bg-surface-container-highest border border-outline-variant/10 overflow-hidden">
-                            <img src={profile?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky"} alt="Avatar" />
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="flex-1 overflow-y-auto bg-slate-50/60 p-4 sm:p-8 antialiased text-slate-800 font-sans min-h-screen">
+            <div className="max-w-7xl mx-auto space-y-6">
 
-            {/* Top Overview Bar */}
-            <div className="bg-zinc-900/30 border border-zinc-800/50 ring-1 ring-white/[0.02] rounded-xl p-6 flex flex-col lg:flex-row gap-12 shadow-2xl relative backdrop-blur-md">
-                <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                </div>
-                {/* Overall Attendance */}
-                <div className="flex flex-col justify-center w-full lg:w-auto lg:min-w-[240px] relative z-0">
-                    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-primary/20 rounded-full blur-sm"></div>
-                    <div className="flex items-center gap-2 mb-2 relative">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">Master Attendance</span>
-                    </div>
-                    <div className="flex items-baseline gap-2 group cursor-default">
-                        <span className="text-5xl font-bold text-white tracking-tighter drop-shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:drop-shadow-[0_0_25px_rgba(59,130,246,0.2)] transition-all duration-500">{overallPercentage}</span>
-                        <span className="text-2xl font-bold text-blue-500/40">%</span>
+                {/* Title & Action Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
+                            <span className="material-symbols-outlined text-[16px]">trending_up</span>
+                            <span>Academic Standing</span>
+                        </div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">My Attendance</h1>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            Quantitative presence tracking &amp; risk analysis across registered coursework
+                        </p>
                     </div>
 
-                    <div className="mt-6 flex gap-8 border-t border-[#1f1f23] pt-6">
-                        <div className="space-y-1.5 flex-1">
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[10px] text-white/10">menu_book</span>
-                                <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/50">Theory Lec</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-bold text-zinc-400">{theoryPercentage}%</span>
-                                <div className="h-1 flex-1 bg-zinc-800/30 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500/40 shadow-[0_0_10px_rgba(59,130,246,0.1)]" style={{ width: `${theoryPercentage}%` }}></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="space-y-1.5 flex-1">
-                            <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[10px] text-white/10">biotech</span>
-                                <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/50">Labs</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-bold text-zinc-400">{labPercentage}%</span>
-                                <div className="h-1 flex-1 bg-zinc-800/30 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500/20" style={{ width: `${labPercentage}%` }}></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Activity Heatmap */}
-                <div className="flex-1 min-w-0 mt-6 lg:mt-0 border-t border-[#1f1f23] lg:border-t-0 pt-6 lg:pt-0 relative z-10">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Activity Overview</span>
-                        <div className="flex items-center gap-3 text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
-                            <span>Less</span>
-                            <div className="flex gap-1">
-                                <div className="w-2.5 h-2.5 rounded-[2px] bg-zinc-900/30 border border-zinc-800/20"></div>
-                                <div className="w-2.5 h-2.5 rounded-[2px] bg-emerald-500/20 border border-emerald-500/30"></div>
-                                <div className="w-2.5 h-2.5 rounded-[2px] bg-emerald-500 border border-emerald-400/50"></div>
-                            </div>
-                            <span>More</span>
-                        </div>
-                    </div>
-                    <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide w-full">
-                        <div className="grid grid-rows-3 gap-1.5 text-[8px] text-zinc-500 font-black uppercase pt-1 shrink-0 sticky left-0 z-10 pr-1">
-                            <span>Mon</span>
-                            <span>Wed</span>
-                            <span>Fri</span>
-                        </div>
-                        <div className="flex-1 grid auto-cols-min gap-1.5 shrink-0" style={{ gridAutoFlow: 'column' }}>
-                            {heatmapGrid.slice(-24).map((week, wi) => (
-                                <div key={wi} className="grid grid-rows-7 gap-1.5 shrink-0">
-                                    {week.map((cell, cellIdx) => (
-                                        <div
-                                            key={cell.key}
-                                            className={`w-[14px] h-[14px] rounded-[3px] ${heatColor(cell.entry, cell.isFuture)} hover:scale-110 transition-all duration-200 cursor-help relative`}
-                                            onMouseEnter={(e) => {
-                                                const rect = e.currentTarget.getBoundingClientRect();
-                                                setHoveredCell({ cell, rect });
-                                            }}
-                                            onMouseLeave={() => setHoveredCell(null)}
-                                        />
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Risk Nodes */}
-                <div className="w-full lg:w-auto lg:min-w-[280px] lg:border-l border-outline-variant/5 lg:pl-12 flex flex-col mt-6 lg:mt-0 border-t border-[#1f1f23] lg:border-t-0 pt-6 lg:pt-0">
-                    <div className="flex items-center justify-between mb-6">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></div>
-                            {actionRequiredCount} Risk Nodes
-                        </span>
-                        <span className="material-symbols-outlined text-on-surface-variant/20 text-sm">remove</span>
-                    </div>
-                    <div className="space-y-4">
-                        {subjects.filter(r => getPrecisePct(r) < 75 && getPrecisePct(r) > 0).slice(0, 3).map((sub, i) => (
-                            <div key={i} className="flex justify-between items-center group cursor-pointer">
-                                <span className="text-xs font-bold text-on-surface/80 group-hover:text-primary transition-colors">{sub.name}</span>
-                                <span className={`text-xs font-black ${getPrecisePct(sub) < 40 ? 'text-error' : 'text-tertiary'}`}>{getPrecisePct(sub)}%</span>
-                            </div>
-                        ))}
-                        {actionRequiredCount === 0 && (
-                            <div className="h-full flex items-center justify-center opacity-20">
-                                <span className="text-[10px] font-black uppercase tracking-widest italic">All Nodes Secure</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-            {/* Main Dual Grid */}
-            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 items-stretch w-full min-w-0">
-                {/* Column 1: Session Log */}
-                <div className="lg:col-span-4 bg-zinc-900/30 border border-zinc-800/50 ring-1 ring-white/[0.02] rounded-xl p-6 flex flex-col w-full min-w-0 lg:h-fit lg:sticky lg:top-8 shadow-xl backdrop-blur-md">
-                    <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-sm font-bold text-white/10 uppercase tracking-[0.2em]">Session Audit</h2>
-                        <button onClick={() => setIsSessionAuditMinimized(!isSessionAuditMinimized)} className="text-zinc-500 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-sm">{isSessionAuditMinimized ? 'expand_more' : 'expand_less'}</span>
+                    <div className="flex items-center gap-2.5">
+                        <button
+                            onClick={handleBackgroundSync}
+                            disabled={isSyncing}
+                            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-xs transition cursor-pointer disabled:opacity-50"
+                        >
+                            <span className={`material-symbols-outlined text-[15px] text-slate-500 ${isSyncing ? 'animate-spin' : ''}`}>
+                                refresh
+                            </span>
+                            <span>{isSyncing ? 'Syncing...' : 'Refresh Data'}</span>
+                        </button>
+                        <button
+                            onClick={handleExportData}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-xs transition cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-[15px]">download</span>
+                            <span>Export Data</span>
                         </button>
                     </div>
-                    {!isSessionAuditMinimized && (
-                        <div className="space-y-8 overflow-y-auto max-h-[calc(100vh-320px)] pr-2 no-scrollbar border-l-[1px] border-[#1f1f23] pl-8 ml-2">
-                            {(() => {
-                                let records = [];
-                                subjects.forEach(sub => {
-                                    if (sub.detailedAttendance) {
-                                        records.push(...sub.detailedAttendance.map(r => ({ ...r, subjectName: sub.name })));
-                                    }
-                                });
-                                records.sort((a, b) => {
-                                    const pa = a.date.split('-'); const pb = b.date.split('-');
-                                    return new Date(pb[2], pb[1] - 1, pb[0]) - new Date(pa[2], pa[1] - 1, pa[0]);
-                                });
+                </div>
 
-                                return records.length > 0 ? records.slice(0, 15).map((rec, idx) => (
-                                    <div key={idx} className="relative group/log py-1">
-                                        <div className={`absolute -left-[41px] top-2 w-2.5 h-2.5 rounded-full ring-4 ring-[#15121b] border-[1px] transition-all group-hover/log:scale-125 ${rec.status === 'Present' ? 'bg-[#00c853] border-white/20' : 'bg-error border-white/20'}`}></div>
-                                        <div className="flex flex-col gap-1 min-w-0">
-                                            <span className="text-[9px] font-mono font-bold text-on-surface-variant/30 flex items-center gap-2 uppercase tracking-widest break-all">
-                                                {rec.date} · {rec.slot}
-                                            </span>
-                                            <h4 className="text-[13px] font-bold text-on-surface/80 group-hover/log:text-primary transition-colors leading-tight break-words">{rec.subjectName}</h4>
-                                            <div className="mt-2.5">
-                                                <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded-[2px] border ${rec.status === 'Present' ? 'bg-[#00c853]/5 text-[#00c853]/70 border-[#00c853]/20' : 'bg-error/5 text-error/70 border-error/20'}`}>
-                                                    {rec.status}
+                {/* TopSummaryRibbon */}
+                <section className="grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="summary-ribbon">
+                    {/* Master Attendance Card */}
+                    <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Master Attendance
+                            </span>
+                            <span className={`inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border ${parseFloat(overallPercentage) >= 75
+                                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                                    : 'text-rose-700 bg-rose-50 border-rose-200'
+                                }`}>
+                                {parseFloat(overallPercentage) >= 75 ? 'Above (75%)' : 'Below (75%)'}
+                            </span>
+                        </div>
+                        <div className="my-3 flex items-baseline gap-2">
+                            <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                                {overallPercentage}%
+                            </span>
+                            <span className="text-xs text-slate-400 font-medium">overall</span>
+                        </div>
+
+                        {/* Breakdown Theory / Labs */}
+                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 text-xs">
+                            <div className="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                                <div className="flex items-center justify-between text-slate-500 mb-1">
+                                    <span className="font-medium">Lectures</span>
+                                    <span className="font-bold text-slate-800">{theoryPercentage}%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                    <div
+                                        className={`h-1.5 rounded-full ${parseFloat(theoryPercentage) >= 75 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                        style={{ width: `${Math.min(100, parseFloat(theoryPercentage))}%` }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                                <div className="flex items-center justify-between text-slate-500 mb-1">
+                                    <span className="font-medium">Labs</span>
+                                    <span className="font-bold text-slate-800">{labPercentage}%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                    <div
+                                        className={`h-1.5 rounded-full ${parseFloat(labPercentage) >= 75 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                        style={{ width: `${Math.min(100, parseFloat(labPercentage))}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Activity Overview Heatmap */}
+                    <div className="md:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Activity Overview
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                                <span>Less</span>
+                                <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 border border-slate-200 inline-block" />
+                                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-300 inline-block" />
+                                <span className="w-2.5 h-2.5 rounded-xs bg-emerald-600 inline-block" />
+                                <span>More</span>
+                            </div>
+                        </div>
+
+                        {/* Weekly Matrix Representation with Abbreviation Hover */}
+                        <div className="my-auto py-2">
+                            <SharedAttendanceHeatmap subjects={activeSubjects} weeksCount={16} />
+                        </div>
+                    </div>
+
+                    {/* Risk Nodes Summary */}
+                    <div className="md:col-span-3 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full bg-rose-500" />
+                                {riskSubjects.length} Risk Nodes
+                            </span>
+                            <span className="text-[11px] font-medium text-slate-400">&lt; 75% Cutoff</span>
+                        </div>
+
+                        <div className="my-2 space-y-1.5 text-xs max-h-[110px] overflow-y-auto no-scrollbar">
+                            {riskSubjects.length > 0 ? (
+                                riskSubjects.slice(0, 4).map(sub => (
+                                    <div key={sub.id} className="flex items-center justify-between py-1 border-b border-slate-50">
+                                        <span className="text-slate-700 truncate pr-2 font-medium" title={sub.name}>
+                                            {sub.name}
+                                        </span>
+                                        <span className="font-semibold text-rose-600 font-mono">
+                                            {getPrecisePct(sub)}%
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-4 text-center text-emerald-600 font-medium">
+                                    All subjects safely above 75% cutoff
+                                </div>
+                            )}
+                        </div>
+                        <div className="text-[11px] text-slate-400">
+                            {riskSubjects.length > 0 ? 'Immediate recovery action advised' : 'Academic threshold maintained'}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Main Two-Column Area */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* Left Column: Primary Subject Attendance Table */}
+                    <section className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+                        {/* Filter Bar */}
+                        <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+                                <button
+                                    onClick={() => setFilterTab('all')}
+                                    className={`px-3 py-1.5 rounded-md transition cursor-pointer ${filterTab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    All Subjects ({activeSubjects.length})
+                                </button>
+                                <button
+                                    onClick={() => setFilterTab('attention')}
+                                    className={`px-3 py-1.5 rounded-md transition cursor-pointer ${filterTab === 'attention' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    Needs Attention ({riskSubjects.length})
+                                </button>
+                                <button
+                                    onClick={() => setFilterTab('safe')}
+                                    className={`px-3 py-1.5 rounded-md transition cursor-pointer ${filterTab === 'safe' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    Safe ({safeSubjects.length})
+                                </button>
+                            </div>
+                            <span className="text-xs text-slate-400 font-medium">Minimum Threshold: 75.0%</span>
+                        </div>
+
+                        {/* Subject Rows List */}
+                        <div className="divide-y divide-slate-100">
+                            {displayedSubjects.map(sub => {
+                                const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
+                                const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+                                const pct = getPrecisePct(sub);
+                                const isSafe = pct >= 75;
+                                const isLab = getCategory(sub) === 'LAB';
+
+                                // Skips vs Recovery
+                                const SkipsAvailable = Math.max(0, Math.floor((attended - 0.75 * conducted) / 0.75));
+                                const sessionsNeeded = Math.max(0, Math.ceil((0.75 * conducted - attended) / 0.25));
+
+                                return (
+                                    <div
+                                        key={sub.id}
+                                        onClick={() => {
+                                            setSelectedSubject(sub);
+                                            setShowDetailModal(true);
+                                        }}
+                                        className={`p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer ${!isSafe ? 'bg-amber-50/20' : ''
+                                            }`}
+                                    >
+                                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                                            <div className={`p-2 rounded-lg mt-0.5 ${isSafe ? 'bg-blue-50 text-blue-600' : 'bg-amber-100/60 text-amber-700'
+                                                }`}>
+                                                <span className="material-symbols-outlined text-[18px]">
+                                                    {isLab ? 'science' : 'menu_book'}
                                                 </span>
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-sm font-semibold text-slate-900 truncate">
+                                                    {sub.name}
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
+                                                    <span>{attended} / {conducted} sessions</span>
+                                                    <span className="text-slate-300">•</span>
+                                                    <span>Target: 75%</span>
+                                                    {sub.faculty && (
+                                                        <>
+                                                            <span className="text-slate-300">•</span>
+                                                            <span className="text-slate-400 truncate">{sub.faculty}</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                {/* Minimal Progress Bar */}
+                                                <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                                                    <div
+                                                        className={`h-1.5 rounded-full ${isSafe ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                                        style={{ width: `${Math.min(100, pct)}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-1.5">
+                                            <div className="text-right">
+                                                <span className={`text-base font-bold ${isSafe ? 'text-slate-900' : 'text-amber-600'}`}>
+                                                    {pct}%
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                {isSafe ? (
+                                                    <span className="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                                        {SkipsAvailable} {SkipsAvailable === 1 ? 'Skip' : 'Skips'} Available
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                        Attend {sessionsNeeded} More
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
-                                )) : (
-                                    <div className="h-40 flex flex-col items-center justify-center opacity-30 italic">
-                                        <span className="text-xs">No synchronization found</span>
-                                    </div>
                                 );
-                            })()}
+                            })}
                         </div>
-                    )}
-                </div>
+                    </section>
 
-                {/* Column 2: Subject Cards */}
-                <div className="lg:col-span-8 space-y-6 w-full min-w-0">
-                    {subjects.map((sub, i) => {
-                        const isExcluded = excludedIds.includes(sub.id);
-                        const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
-                        const att = getPrecisePct(sub);
-                        const isRisk = conducted > 0 && att < 75;
-                        const isDanger = conducted > 0 && att < 40;
-                        const status = conducted === 0 ? 'NEUTRAL' : isDanger ? 'DANGER' : isRisk ? 'RISK' : 'SAFE';
-
-                        return (
-                            <div
-                                key={i}
-                                onClick={() => setSelectedSubject(sub)}
-                                className={`group bg-zinc-900/30 border ${selectedSubject?.id === sub.id ? 'border-blue-500/30 shadow-lg shadow-blue-500/5' : 'border-zinc-800/50'} ${isExcluded ? 'opacity-40 grayscale-[0.8]' : ''} rounded-xl p-4 block w-full transition-all hover:bg-zinc-900/50 cursor-pointer relative overflow-hidden backdrop-blur-md`}
-                            >
-                                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 w-full">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-lg bg-zinc-950/80 border border-zinc-800/80 flex items-center justify-center group-hover:scale-105 transition-all duration-300 shadow-inner shrink-0 relative">
-                                            <span className="material-symbols-outlined text-zinc-500 group-hover:text-blue-400 transition-colors text-xl">
-                                                {getCategory(sub) === 'LAB' ? 'biotech' : 'menu_book'}
-                                            </span>
-                                        </div>
-                                        <div className="min-w-0 flex-1 max-w-[240px]">
-                                            <h3 className="text-sm font-bold text-zinc-200 truncate group-hover:text-primary transition-colors tracking-tight">{sub.name}</h3>
-                                            <p className="text-[9px] text-zinc-500 font-mono font-bold uppercase tracking-tighter mt-1">{sub.code}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Progress Sector */}
-                                    <div className="flex-1 flex flex-col gap-3 w-full md:px-8">
-                                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
-                                            <span className="text-zinc-300">{att}%</span>
-                                            <span className="text-zinc-600 italic">Target: 75%</span>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-zinc-950 rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-1000 ${isDanger ? 'bg-red-500/80' : isRisk ? 'bg-amber-500/80' : 'bg-emerald-500/80'}`}
-                                                style={{ width: `${att}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-
-                                    {/* Status Sector */}
-                                    <div className="md:text-right w-full md:w-auto lg:min-w-[150px] flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end gap-2 mt-2 md:mt-0">
-                                        <div className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] flex flex-col items-start md:items-end gap-1">
-                                            {(() => {
-                                                const details = sub.detailedAttendance || [];
-                                                const p = sub.totalAttended > 0 ? sub.totalAttended : details.filter(r => r.status === 'Present').length;
-                                                const conducted = sub.totalConducted > 0 ? sub.totalConducted : details.length;
-                                                const s = sub.stillToGo || 0;
-                                                const totalAfter = conducted + s;
-
-                                                // Sync math with Optimization Engine: Use rounded percentage
-                                                const currentPct = conducted > 0 ? Math.round((p / conducted) * 100) : 0;
-
-                                                const needed = Math.ceil((75 / 100) * totalAfter - p);
-                                                const mustAttend = Math.max(0, Math.min(needed, s));
-
-                                                const theoreticalMaxBunks = conducted > 0 ? Math.floor(p / 0.75 - conducted) : 0;
-                                                const bunksAvail = Math.max(0, Math.min(s, theoreticalMaxBunks));
-
-                                                return (
-                                                    <>
-                                                        <span className="text-[11px] font-bold text-zinc-300">
-                                                            {`${p} / ${totalAfter}`}
-                                                        </span>
-                                                        {conducted === 0 ? (
-                                                            <span className="text-zinc-500">Attend {mustAttend} More</span>
-                                                        ) : currentPct >= 75 ? (
-                                                            <span className="text-emerald-400">{bunksAvail} Bunks Available</span>
-                                                        ) : (
-                                                            <span className="text-amber-400">Attend {mustAttend} More</span>
-                                                        )}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
-                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${status === 'DANGER' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                            status === 'RISK' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                                status === 'NEUTRAL' ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/30' :
-                                                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                            }`}>
-                                            {status}
-                                        </span>
-                                    </div>
+                    {/* Right Column: Session Audit Rail */}
+                    <section className="lg:col-span-4 space-y-4">
+                        <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5">
+                            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                                <div>
+                                    <h2 className="text-sm font-bold text-slate-900">Session Audit</h2>
+                                    <p className="text-[11px] text-slate-400">Recent chronological logs</p>
                                 </div>
+                                <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                    Latest Logs
+                                </span>
                             </div>
-                        );
-                    })}
+
+                            {/* Log timeline list */}
+                            <div className="py-2 space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar">
+                                {sessionLogs.length > 0 ? (
+                                    sessionLogs.map((log, idx) => {
+                                        const isPresent = log.status === 'Present';
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className={`p-3 rounded-lg border transition ${isPresent
+                                                        ? 'border-slate-100 bg-slate-50/50 hover:bg-slate-50'
+                                                        : 'border-rose-100 bg-rose-50/30 hover:bg-rose-50/50'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-[11px] font-mono text-slate-400">
+                                                        {log.date} {log.time ? `• ${log.time}` : ''}
+                                                    </span>
+                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${isPresent
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : 'bg-rose-100 text-rose-800'
+                                                        }`}>
+                                                        {log.status.toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs font-semibold text-slate-800 truncate">
+                                                    {log.subjectName}
+                                                </p>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="py-8 text-center text-xs text-slate-400">
+                                        No recent logs found
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Regulatory Policy Notice Footer */}
+                            <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 leading-relaxed bg-slate-50/80 p-3 rounded-lg">
+                                <div className="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
+                                    <span className="material-symbols-outlined text-[15px] text-blue-600">info</span>
+                                    <span>Academic Attendance Policy</span>
+                                </div>
+                                75% minimum physical presence is mandatory for End-Semester Examination eligibility. Medical condonation forms must be submitted within 7 calendar days of recovery.
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
 
-            {hoveredCell && !hoveredCell.cell.isFuture && (() => {
-                let tooltipLeft = hoveredCell.rect.left + hoveredCell.rect.width / 2;
-                let tooltipTransform = 'translate(-50%, -100%)';
-                if (hoveredCell.rect.left < 80) {
-                    tooltipLeft = hoveredCell.rect.left;
-                    tooltipTransform = 'translate(0, -100%)';
-                } else if (window.innerWidth - hoveredCell.rect.right < 80) {
-                    tooltipLeft = hoveredCell.rect.right;
-                    tooltipTransform = 'translate(-100%, -100%)';
-                }
-
-                return createPortal(
-                    <div 
-                        style={{
-                            position: 'fixed',
-                            left: `${tooltipLeft}px`,
-                            top: `${hoveredCell.rect.top - 8}px`,
-                            transform: tooltipTransform,
-                            zIndex: 99999,
-                            pointerEvents: 'none'
-                        }}
+            {/* Subject Detail Modal */}
+            {showDetailModal && selectedSubject && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200"
+                    onClick={() => setShowDetailModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
+                        onClick={e => e.stopPropagation()}
                     >
-                        <div className="bg-zinc-950/95 border border-zinc-800/80 rounded-xl p-3 shadow-2xl min-w-[140px] backdrop-blur-md text-left">
-                            <div className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1.5">{hoveredCell.cell.dateStr}</div>
-                            {hoveredCell.cell.entry ? (
-                                <div className="flex flex-col gap-1.5">
-                                    <div className="text-xs font-bold text-zinc-200 flex items-baseline gap-2">
-                                        <span className="text-emerald-400">{hoveredCell.cell.entry.present}/{hoveredCell.cell.entry.total}</span>
-                                        <span className="text-[8px] text-zinc-500 font-black uppercase tracking-wider">Sessions</span>
+                        <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-900">{selectedSubject.name}</h3>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    {selectedSubject.code || 'Course'} • Attendance: {getPrecisePct(selectedSubject)}%
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowDetailModal(false)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                        </div>
+
+                        <div className="p-5 overflow-y-auto flex-1 space-y-2">
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                                Date-Wise Presence Log
+                            </span>
+                            {selectedSubject.detailedAttendance && selectedSubject.detailedAttendance.length > 0 ? (
+                                selectedSubject.detailedAttendance.map((rec, i) => (
+                                    <div
+                                        key={i}
+                                        className={`flex items-center justify-between p-2.5 rounded-lg border text-xs ${rec.status === 'Present'
+                                                ? 'bg-slate-50/60 border-slate-100'
+                                                : 'bg-rose-50/30 border-rose-100'
+                                            }`}
+                                    >
+                                        <span className="font-mono text-slate-600">{rec.date} {rec.slot || rec.time || ''}</span>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${rec.status === 'Present'
+                                                ? 'bg-emerald-100 text-emerald-800'
+                                                : 'bg-rose-100 text-rose-800'
+                                            }`}>
+                                            {rec.status}
+                                        </span>
                                     </div>
-                                    {hoveredCell.cell.entry.absentSessions && hoveredCell.cell.entry.absentSessions.length > 0 && (
-                                        <div className="pt-1.5 border-t border-zinc-800/80 flex flex-col gap-0.5">
-                                            <span className="text-[8px] text-red-400 font-black uppercase tracking-wider mb-0.5">Absent</span>
-                                            {hoveredCell.cell.entry.absentSessions.map((sub, i) => (
-                                                <span key={i} className="text-[9px] text-zinc-400 leading-tight truncate">{sub}</span>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                ))
                             ) : (
-                                <div className="text-xs font-bold text-zinc-600 italic">No activity</div>
+                                <p className="text-xs text-slate-400 py-6 text-center">No detailed logs stored for this subject</p>
                             )}
                         </div>
-                    </div>,
-                    document.body
-                );
-            })()}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

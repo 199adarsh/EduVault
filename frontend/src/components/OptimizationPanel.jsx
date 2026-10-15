@@ -10,6 +10,52 @@ import {
     Info
 } from 'lucide-react';
 
+function calculateLPW(subject) {
+    const records = subject.detailedAttendance || [];
+    if (!records.length) {
+        return (subject.isLab || (subject.name || '').toLowerCase().includes('lab')) ? 1 : 3;
+    }
+
+    const weekCounts = {};
+    records.forEach(r => {
+        if (!r.date) return;
+        const parts = r.date.split('-');
+        let d;
+        if (parts.length === 3) {
+            const y = parts[0].length === 4 ? parts[0] : parts[2];
+            const m = parts[1];
+            const day = parts[0].length === 4 ? parts[2] : parts[0];
+            d = new Date(`${y}-${m}-${day}`);
+        } else {
+            d = new Date(r.date);
+        }
+        if (isNaN(d.getTime())) return;
+
+        const dayOfWeek = d.getDay();
+        const diff = d.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const mon = new Date(d.setDate(diff)).toISOString().split('T')[0];
+        weekCounts[mon] = (weekCounts[mon] || 0) + 1;
+    });
+
+    const counts = Object.values(weekCounts).filter(c => c > 0);
+    if (!counts.length) {
+        return (subject.isLab || (subject.name || '').toLowerCase().includes('lab')) ? 1 : 3;
+    }
+
+    const freqMap = {};
+    let modeVal = counts[0];
+    let maxFreq = 0;
+    counts.forEach(c => {
+        freqMap[c] = (freqMap[c] || 0) + 1;
+        if (freqMap[c] > maxFreq) {
+            maxFreq = freqMap[c];
+            modeVal = c;
+        }
+    });
+
+    return Math.max(1, modeVal);
+}
+
 function computeEngine(subjects, targetPct, excludedIds, semesterLockDate, manualLPWs = {}) {
     if (!subjects || subjects.length === 0) return null;
     const active = subjects.filter(s => !excludedIds.includes(s.id || s.code));
@@ -30,7 +76,8 @@ function computeEngine(subjects, targetPct, excludedIds, semesterLockDate, manua
         const id = s.id || s.code;
         const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
         const att = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-        const lpw = Math.max(1, manualLPWs[id] ?? s.lecturesPerWeek ?? 1);
+        const calculatedLpw = calculateLPW(s);
+        const lpw = Math.max(1, manualLPWs[id] ?? calculatedLpw);
         const rem = cond === 0 ? 0 : Math.ceil(lpw * weeksLeft);
         const credit = s.credit || 1;
         if (!hasStarted || cond > 0) {
@@ -96,7 +143,7 @@ function computeEngine(subjects, targetPct, excludedIds, semesterLockDate, manua
     }
 
     const totalRemOverall = subjectPool.reduce((acc, s) => acc + s.rem, 0);
-    const bunkableTotal = Math.max(0, totalRemOverall - mustAttendTotal);
+    const SkipableTotal = Math.max(0, totalRemOverall - mustAttendTotal);
 
     plan.forEach(s => {
         const pctWith0 = getPrecisePct(s.att, s.futureTotal, s.initialPct);
@@ -110,7 +157,7 @@ function computeEngine(subjects, targetPct, excludedIds, semesterLockDate, manua
         currentOverall: parseFloat(currentPctOverall.toFixed(1)),
         projectedFinal: parseFloat(projectedFinal.toFixed(1)),
         mustAttendOverall: mustAttendTotal,
-        bunkableOverall: bunkableTotal,
+        SkipableOverall: SkipableTotal,
         isImpossible,
         deficit: deficitStr,
         targetUsed: targetPct
@@ -215,7 +262,7 @@ const OptimizationPanel = ({ subjects }) => {
                     { label: 'Current', value: `${engine.currentOverall}%`, color: 'text-zinc-100' },
                     { label: 'Projected', value: `${engine.projectedFinal}%`, color: 'text-blue-400/80' },
                     { label: 'Must Attend', value: engine.mustAttendOverall, color: 'text-amber-400/80' },
-                    { label: 'Bunkable', value: engine.bunkableOverall, color: 'text-emerald-400/80' },
+                    { label: 'Skipable', value: engine.SkipableOverall, color: 'text-emerald-400/80' },
                 ].map(s => (
                     <div key={s.label} className="bg-zinc-900/20 px-4 py-3 flex flex-col gap-1 transition-colors hover:bg-zinc-900/40">
                         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">{s.label}</span>
@@ -277,7 +324,7 @@ const OptimizationPanel = ({ subjects }) => {
                                         </div>
                                         <span className="text-zinc-500 font-normal text-[10px] whitespace-nowrap tracking-widest font-bold shrink-0">({r.att}/{r.cond})</span>
                                     </div>
-                                    
+
                                     {/* Desktop View */}
                                     <div className="hidden md:flex items-center gap-2 min-w-0">
                                         <h3 className="text-xs font-bold text-zinc-200 tracking-tight truncate group-hover:text-blue-400 transition-colors">

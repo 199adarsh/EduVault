@@ -46,8 +46,12 @@ const StudyRoadmapView = () => {
               pyqText: guidePyq,
               qbText: guideQb
           });
-          setResult({ type: 'guide', data: res.data });
-          toast.success("Study guide generated successfully!");
+          if (res.data && res.data.error) {
+              toast.error(res.data.error);
+          } else {
+              setResult({ type: 'guide', data: res.data });
+              toast.success("Study guide generated successfully!");
+          }
       } catch (err) {
           console.error(err);
           toast.error("Failed to generate guide: " + (err.response?.data?.error || err.message));

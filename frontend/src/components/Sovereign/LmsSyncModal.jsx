@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import {
@@ -25,9 +25,25 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
     const [syncMode, setSyncMode] = useState('all'); // 'test' | 'all'
     const [isLoading, setIsLoading] = useState(false);
     const [syncResult, setSyncResult] = useState(null);
+    const [progress, setProgress] = useState(null);
     const [showUnmatched, setShowUnmatched] = useState(false);
     const [discoveredCourses, setDiscoveredCourses] = useState(null);
     const [activeTab, setActiveTab] = useState('sync'); // 'sync' | 'preview'
+
+    const pollingRef = useRef(null);
+    const logContainerRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+        }
+    }, [progress?.logs]);
 
     if (!isOpen) return null;
 
@@ -64,11 +80,25 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
         setIsLoading(true);
         setSyncResult(null);
-        const toastId = toast.loading(
-            syncMode === 'test' 
-                ? 'Running Test Sync on first matched course...' 
-                : 'Synchronizing all accessible LMS courses...'
-        );
+        setProgress({
+            status: 'AUTHENTICATING',
+            currentStage: 'Connecting to DKTE Moodle portal...',
+            percent: 5,
+            materialsFound: 0,
+            importedCount: 0,
+            skippedCount: 0,
+            logs: ['[' + new Date().toLocaleTimeString() + '] Ingestion pipeline started for ' + username.trim()]
+        });
+
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        pollingRef.current = setInterval(async () => {
+            try {
+                const progRes = await axios.get(`${API_BASE}/lms/progress?username=${encodeURIComponent(username.trim())}`);
+                if (progRes.data) {
+                    setProgress(progRes.data);
+                }
+            } catch (ignored) {}
+        }, 350);
 
         try {
             const payload = {
@@ -80,8 +110,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
             const res = await axios.post(`${API_BASE}/lms/sync`, payload);
             setSyncResult(res.data);
             toast.success(
-                `Sync Completed! Imported ${res.data.importedCount} materials (${res.data.skippedDuplicatesCount} skipped duplicates).`,
-                { id: toastId }
+                `Sync Completed! Imported ${res.data.importedCount} materials (${res.data.skippedDuplicatesCount} skipped duplicates).`
             );
             if (onSyncComplete) {
                 onSyncComplete();
@@ -89,8 +118,9 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
         } catch (err) {
             console.error('LMS Sync failed:', err);
             const msg = err.response?.data?.error || err.message || 'Failed to synchronize with LMS.';
-            toast.error(msg, { id: toastId });
+            toast.error(msg);
         } finally {
+            if (pollingRef.current) clearInterval(pollingRef.current);
             setIsLoading(false);
         }
     };
@@ -240,6 +270,91 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Live Ingestion HUD */}
+                            {isLoading && (
+                                <div className="bg-zinc-900/60 border border-blue-500/30 rounded-xl p-5 space-y-4 animate-in fade-in duration-300 shadow-xl shadow-blue-950/20">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
+                                            <span className="text-xs font-bold text-white uppercase tracking-wider">
+                                                {progress?.status || 'INGESTING LMS NOTES'}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs font-mono font-bold text-blue-400">
+                                            {progress?.percent || 5}%
+                                        </span>
+                                    </div>
+
+                                    {/* Animated Progress Bar */}
+                                    <div className="w-full bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-800">
+                                        <div
+                                            className="bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-300 ease-out"
+                                            style={{ width: `${Math.max(5, progress?.percent || 5)}%` }}
+                                        />
+                                    </div>
+
+                                    {/* Active Course & Action */}
+                                    <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-lg p-3 text-xs space-y-1.5">
+                                        <div className="flex items-center justify-between text-zinc-400 text-[11px]">
+                                            <span className="font-semibold text-zinc-300">Active Stage:</span>
+                                            <span className="font-mono text-blue-400">
+                                                {progress?.currentCourseIndex && progress?.totalCourses
+                                                    ? `Course ${progress.currentCourseIndex} of ${progress.totalCourses}`
+                                                    : 'Initializing'}
+                                            </span>
+                                        </div>
+                                        <p className="text-white font-medium text-xs truncate">
+                                            {progress?.currentStage || 'Ingesting LMS materials...'}
+                                        </p>
+                                        {progress?.currentMaterial && (
+                                            <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-400 truncate border-t border-zinc-800/50">
+                                                <FileText className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                                                <span className="truncate text-zinc-300 font-mono">{progress.currentMaterial}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Counters HUD */}
+                                    <div className="grid grid-cols-3 gap-2.5 pt-1">
+                                        <div className="bg-zinc-950 border border-zinc-800/60 rounded-lg p-2.5 text-center">
+                                            <span className="text-[10px] uppercase font-bold text-zinc-500 block">Materials Found</span>
+                                            <span className="text-sm font-bold text-white">{progress?.materialsFound || 0}</span>
+                                        </div>
+                                        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-2.5 text-center">
+                                            <span className="text-[10px] uppercase font-bold text-emerald-400 block">Uploaded to B2</span>
+                                            <span className="text-sm font-bold text-emerald-400">{progress?.importedCount || 0}</span>
+                                        </div>
+                                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 text-center">
+                                            <span className="text-[10px] uppercase font-bold text-amber-400 block">Duplicates Skipped</span>
+                                            <span className="text-sm font-bold text-amber-400">{progress?.skippedCount || 0}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Live Terminal Feed */}
+                                    {progress?.logs && progress.logs.length > 0 && (
+                                        <div className="space-y-1 pt-1">
+                                            <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                                <span>Live Activity Feed</span>
+                                                <span className="font-mono text-[9px] text-zinc-600">tail -f ingestion.log</span>
+                                            </div>
+                                            <div
+                                                ref={logContainerRef}
+                                                className="bg-black/90 border border-zinc-800 rounded-lg p-3 font-mono text-[11px] text-zinc-300 max-h-36 overflow-y-auto space-y-1"
+                                            >
+                                                {progress.logs.map((log, idx) => (
+                                                    <div key={idx} className="leading-tight flex items-start gap-1.5">
+                                                        <span className="text-blue-500 font-bold select-none">&gt;</span>
+                                                        <span className={log.includes('Saved to B2') || log.includes('Complete') ? 'text-emerald-400 font-semibold' : log.includes('duplicate') ? 'text-amber-400' : 'text-zinc-300'}>
+                                                            {log}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Results Display */}
                             {syncResult && (

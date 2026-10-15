@@ -1,27 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-    Home,
-    FileText,
-    BookOpen,
-    TrendingUp,
-    Zap,
-    AlertCircle,
-    Calendar,
-    ArrowUpRight,
-    Settings,
-    User,
-    LogOut,
-    RefreshCcw,
-    ChevronUp
-} from 'lucide-react';
-import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { cn } from '../../lib/utils';
 
 const API_BASE = 'http://localhost:8081/api';
 
-const SovereignSidebar = ({ profile, mobileMenuOpen, setMobileMenuOpen }) => {
+const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOpen }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const menuRef = useRef(null);
 
@@ -71,112 +56,147 @@ const SovereignSidebar = ({ profile, mobileMenuOpen, setMobileMenuOpen }) => {
     };
 
     const navItems = [
-        { name: 'Home', icon: Home, path: '/' },
-        { name: 'Notes', icon: FileText, path: '/notes' },
-        { name: 'PYQs', icon: BookOpen, path: '/pyqs' },
-        { name: 'Roadmaps', icon: TrendingUp, path: '/roadmaps' },
-        { name: 'AI Assistant', icon: Zap, path: '/ai-assistant' },
-        { name: 'Announcements', icon: AlertCircle, path: '/announcements' },
-        { name: 'Attendance', icon: Calendar, path: '/attendance' },
-        { name: 'Optimization', icon: ArrowUpRight, path: '/optimization' },
-        { name: 'Settings', icon: Settings, path: '/settings' },
+        { name: 'Home', icon: 'home', path: '/' },
+        { name: 'Notes', icon: 'menu_book', path: '/notes' },
+        { name: 'PYQs', icon: 'quiz', path: '/pyqs' },
+        { name: 'Roadmaps', icon: 'alt_route', path: '/roadmaps' },
+        { 
+            name: 'AI Assistant', 
+            icon: 'smart_toy', 
+            path: '/ai-assistant',
+            badge: 'Pro',
+            badgeClass: 'bg-badge-purple-bg text-badge-purple-text'
+        },
+        { name: 'Announcements', icon: 'campaign', path: '/announcements' },
+        { 
+            name: 'Attendance', 
+            icon: 'event_available', 
+            path: '/attendance',
+            badge: attendance ? `${attendance}%` : null,
+            badgeClass: 'bg-status-success-bg text-status-success-text'
+        },
+        { name: 'Optimization', icon: 'tune', path: '/optimization' },
+        { name: 'Settings', icon: 'settings', path: '/settings' },
     ];
 
-    const getCompactName = (name) => {
-        if (!name) return "student";
-        const parts = name.split(' ');
-        return (parts[1] || parts[0]).toLowerCase();
+    const formatName = (fullName) => {
+        if (!fullName) return profile?.username || "Student";
+        const parts = fullName.trim().split(/\s+/);
+        if (parts.length >= 2) {
+            const firstName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
+            const lastName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            return `${firstName} ${lastName}`;
+        }
+        return fullName.split(/\s+/).map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ');
     };
 
     return (
         <aside className={cn(
-            "flex flex-col h-screen w-64 border-r border-zinc-800/50 bg-zinc-950/95 backdrop-blur-xl shrink-0 text-left z-[60] transition-transform duration-300",
-            "fixed md:static inset-y-0 left-0",
+            "fixed left-0 top-0 h-full w-64 bg-surface-card border-r border-border-subtle z-50 flex flex-col transition-transform duration-300 md:translate-x-0",
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
-            <div className="px-6 py-8 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center shadow-inner">
-                    <Zap className="w-4 h-4 text-indigo-400" />
+            {/* Brand */}
+            <div className="h-16 px-6 flex items-center gap-3 border-b border-border-subtle/60">
+                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm">
+                    <span className="material-symbols-outlined text-[22px]">shield</span>
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-lg font-bold text-zinc-100 tracking-tighter leading-none">EduVault</span>
-                    <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold mt-1">Sovereign System</span>
+                    <span className="font-bold text-[17px] tracking-tight text-text-primary leading-tight">EduVault</span>
+                    <span className="text-[11px] font-medium text-text-secondary leading-none">Sovereign System</span>
                 </div>
             </div>
 
-            <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto scrollbar-hide">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
-                        className={({ isActive }) => cn(
-                            "flex items-center gap-3 px-3 py-2 text-[13px] font-medium tracking-tight rounded-lg transition-all duration-200 group",
-                            isActive
-                                ? "bg-zinc-800/60 text-zinc-100 border border-zinc-700/30 shadow-sm"
-                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30"
-                        )}
-                    >
-                        <item.icon className={cn(
-                            "w-4 h-4 transition-colors",
-                            "group-hover:text-indigo-400"
-                        )} />
-                        <span>{item.name}</span>
-                    </NavLink>
-                ))}
-            </nav>
+            {/* Navigation */}
+            <div className="px-4 py-4 flex-1 overflow-y-auto">
+                <div className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider px-3 mb-2">Workspace</div>
+                <nav className="space-y-1">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            end={item.path === '/'}
+                            onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
+                            className={({ isActive }) => cn(
+                                "flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all",
+                                isActive
+                                    ? "bg-surface-subtle-blue text-primary font-semibold shadow-xs"
+                                    : "text-text-secondary hover:text-text-primary hover:bg-slate-50"
+                            )}
+                        >
+                            {({ isActive }) => (
+                                <>
+                                    <div className="flex items-center gap-3">
+                                        <span className={cn(
+                                            "material-symbols-outlined text-[20px]",
+                                            item.name === 'AI Assistant' && !isActive ? "text-badge-purple-text" : ""
+                                        )}>
+                                            {item.icon}
+                                        </span>
+                                        <span>{item.name}</span>
+                                    </div>
+                                    {item.badge && (
+                                        <span className={cn("px-2 py-0.5 rounded-full text-[11px] font-semibold", item.badgeClass)}>
+                                            {item.badge}
+                                        </span>
+                                    )}
+                                </>
+                            )}
+                        </NavLink>
+                    ))}
+                </nav>
+            </div>
 
-            <div className="p-4 mt-auto border-t border-zinc-800/30 relative" ref={menuRef}>
-                {/* User Menu Dropup */}
+            {/* Active Session Indicator */}
+            <div className="p-4 border-t border-border-subtle/60 relative" ref={menuRef}>
                 {showUserMenu && (
-                    <div className="absolute bottom-full left-4 right-4 mb-2 p-1.5 bg-zinc-900/95 border border-zinc-800/80 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-[70]">
+                    <div className="absolute bottom-full left-4 right-4 mb-2 p-1.5 bg-surface-card border border-border-subtle rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
                         <button
                             onClick={handleSync}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 rounded-lg transition-all"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-surface-subtle-blue hover:text-primary rounded-lg transition-colors"
                         >
-                            <RefreshCcw className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="material-symbols-outlined text-[18px] text-primary">sync</span>
                             <span>Sync Vault</span>
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-[12px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/60 rounded-lg transition-all"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-status-danger-text hover:bg-status-danger-bg rounded-lg transition-colors"
                         >
-                            <LogOut className="w-3.5 h-3.5 text-red-400" />
+                            <span className="material-symbols-outlined text-[18px]">logout</span>
                             <span>Logout</span>
                         </button>
                     </div>
                 )}
 
-                <div
+                <div 
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className={cn(
-                        "flex items-center gap-3 p-2 bg-zinc-900/30 border border-zinc-800/50 rounded-xl transition-all duration-300 cursor-pointer group hover:bg-zinc-800/60",
-                        showUserMenu && "bg-zinc-800/80 border-zinc-700/50 shadow-inner ring-1 ring-white/5"
-                    )}
+                    className="p-3 rounded-xl bg-slate-50 border border-border-subtle hover:border-border-hover transition-colors flex items-center justify-between cursor-pointer"
                 >
-                    <div className="w-10 h-10 rounded-full bg-zinc-800/50 overflow-hidden border border-zinc-700/30 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
+                    <div className="flex items-center gap-2.5 min-w-0">
                         {profile?.image ? (
                             <img
-                                alt="Student"
-                                className="w-full h-full object-cover"
                                 src={profile.image}
+                                alt={formatName(profile?.name)}
+                                referrerPolicy="no-referrer"
+                                className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-border-subtle shadow-xs"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    if (e.currentTarget.nextElementSibling) {
+                                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                                    }
+                                }}
                             />
-                        ) : (
-                            <User className="w-5 h-5 text-zinc-500" />
-                        )}
+                        ) : null}
+                        <div className={`w-8 h-8 rounded-full bg-surface-subtle-blue text-primary items-center justify-center shrink-0 ${profile?.image ? 'hidden' : 'flex'}`}>
+                            <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-semibold text-text-primary truncate">{formatName(profile?.name)}</span>
+                            <span className="text-[11px] text-text-secondary truncate">PRN : {profile?.prn || profile?.rollNo || '—'}</span>
+                        </div>
                     </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-[12px] font-bold text-zinc-200 truncate leading-tight tracking-tight uppercase">
-                            {getCompactName(profile?.name)}
-                        </span>
-                        <span className="text-[9px] text-zinc-500 truncate uppercase font-bold tracking-widest mt-0.5 opacity-60">
-                            {profile?.rollNo || "Sovereign Tier"}
-                        </span>
-                    </div>
-                    <ChevronUp className={cn(
-                        "w-3 h-3 text-zinc-600 transition-transform duration-300",
-                        showUserMenu && "rotate-180 text-zinc-400"
-                    )} />
+                    <div className="w-2.5 h-2.5 rounded-full bg-status-success-text animate-pulse shrink-0 ml-2" title="Online"></div>
                 </div>
             </div>
         </aside>
@@ -184,4 +204,3 @@ const SovereignSidebar = ({ profile, mobileMenuOpen, setMobileMenuOpen }) => {
 };
 
 export default SovereignSidebar;
-

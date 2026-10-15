@@ -1,66 +1,23 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {
-  Calendar,
-  ChevronRight,
-  BookOpen,
-  AlertCircle,
-  TrendingUp,
-  Zap,
-  Clock,
-  FileText,
-  ArrowUpRight
-} from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 
 const API_BASE = 'http://localhost:8081/api';
 
 const getDepartmentName = (deptCode) => {
-  if (!deptCode) return "Unknown Department";
+  if (!deptCode) return "";
   const code = deptCode.toUpperCase();
-  if (code.includes('UAD')) return 'Artificial Intelligence & Data Science (AI&DS)';
-  if (code.includes('UAM')) return 'Computer Science & Engineering (CSE-AIML)';
-  if (code.includes('UCS')) return 'Computer Science & Engineering (CSE)';
+  if (code.includes('UAD')) return 'AI & Data Science';
+  if (code.includes('UAM')) return 'CSE (AI & ML)';
+  if (code.includes('UCS')) return 'Computer Science & Engineering';
   if (code.includes('UME')) return 'Mechanical Engineering';
-  if (code.includes('UET')) return 'Electronics & Telecommunication Engineering';
+  if (code.includes('UET')) return 'Electronics & Telecom';
   if (code.includes('UCE')) return 'Civil Engineering';
   if (code.includes('UEE')) return 'Electrical Engineering';
-  if (code.includes('UTT')) return 'Textile Technology';
-  if (code.includes('UMT')) return 'Man-Made Textile Technology';
-  if (code.includes('UTC')) return 'Textile Chemistry';
-  if (code.includes('UTX')) return 'Technical Textiles';
-  if (code.includes('UFT')) return 'Fashion Technology';
   return deptCode;
-};
-
-const getOrdinalSuffix = (i) => {
-  const j = i % 10, k = i % 100;
-  if (j === 1 && k !== 11) return "st";
-  if (j === 2 && k !== 12) return "nd";
-  if (j === 3 && k !== 13) return "rd";
-  return "th";
-};
-
-const formatSemester = (semStr) => {
-  if (!semStr) return "Unknown Semester";
-  const numMatch = semStr.match(/\d+/);
-  if (numMatch) {
-    const num = parseInt(numMatch[0], 10);
-    const suffix = getOrdinalSuffix(num);
-    return (
-      <span>
-        {num}<sup>{suffix}</sup> Semester
-      </span>
-    );
-  }
-  return semStr;
 };
 
 const formatName = (fullName) => {
@@ -76,7 +33,25 @@ const formatName = (fullName) => {
   ).join(' ');
 };
 
-/* ─── Heatmap Logic ─── */
+const getInitials = (fullName) => {
+  if (!fullName) return "ST";
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[1][0] + parts[0][0]).toUpperCase();
+  }
+  return fullName.slice(0, 2).toUpperCase();
+};
+
+const getSubjectIcon = (name = '') => {
+  const lower = name.toLowerCase();
+  if (lower.includes('data') || lower.includes('dbms')) return 'database';
+  if (lower.includes('machine') || lower.includes('ai') || lower.includes('intelligence')) return 'psychology';
+  if (lower.includes('network') || lower.includes('security')) return 'shield';
+  if (lower.includes('entrepreneur') || lower.includes('manage')) return 'lightbulb';
+  if (lower.includes('web') || lower.includes('software')) return 'code';
+  return 'menu_book';
+};
+
 function buildHeatmapData(subjects, fallbackWeeks = 18) {
   const dayMap = new Map();
   const dates = [];
@@ -89,7 +64,6 @@ function buildHeatmapData(subjects, fallbackWeeks = 18) {
       if (rec.status === 'Present') entry.present++;
       else entry.absent++;
 
-      // Capture lecture names and statuses
       if (!entry.lectures) entry.lectures = [];
       entry.lectures.push({
         name: sub.subjectName || sub.name || "Lecture",
@@ -116,7 +90,6 @@ function buildHeatmapData(subjects, fallbackWeeks = 18) {
     const earliest = new Date(earliestStr.replace(/-/g, '/'));
     const startSunday = new Date(earliest);
     startSunday.setDate(earliest.getDate() - earliest.getDay());
-    
     weeksToShow = 19;
     startOfGrid = startSunday;
   }
@@ -137,81 +110,19 @@ function buildHeatmapData(subjects, fallbackWeeks = 18) {
     }
     grid.push(week);
   }
-  return grid;
+  return { grid, dayMap };
 }
-
-const getHeatColor = (entry, isFuture) => {
-  if (isFuture) return 'bg-zinc-800/30 border-zinc-700/50';
-  if (!entry) return 'bg-zinc-800/50 border-zinc-700/50';
-
-  // GitHub's exact contribution graph colors with custom styles
-  // Level 0: #ebedf0 (no contribution) - very light gray
-  // Level 1: #9be9a8 (1-3 contributions) - very light green
-  // Level 2: #40c463 (4-6 contributions) - light green
-  // Level 3: #30a14e (7-9 contributions) - medium green
-  // Level 4: #216e39 (10+ contributions) - dark green
-
-  if (entry.absent > 0 && entry.present === 0) {
-    // All absent - red color
-    return 'bg-red-500 border-red-600';
-  }
-
-  // Calculate total lectures as "contributions"
-  const totalContributions = entry.present;
-
-  if (totalContributions >= 10) {
-    return 'bg-[#216e39] border-[#1a5129]'; // Level 4 - dark green
-  }
-  if (totalContributions >= 7) {
-    return 'bg-[#30a14e] border-[#267f42]'; // Level 3 - medium green
-  }
-  if (totalContributions >= 4) {
-    return 'bg-[#40c463] border-[#2fa048]'; // Level 2 - light green
-  }
-  if (totalContributions >= 1) {
-    return 'bg-[#9be9a8] border-[#7bc96f]'; // Level 1 - very light green
-  }
-
-  return 'bg-[#ebedf0] border-[#d1d5db]'; // No contributions
-};
-
-/* ─── Shared Components ─── */
-const Card = ({ children, className, title, icon: Icon, action, description }) => (
-  <div className={cn(
-    "bg-card text-card-foreground border rounded-lg shadow-sm flex flex-col",
-    className
-  )}>
-    {(title || Icon || description) && (
-      <div className="flex flex-col space-y-1.5 p-6 pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {Icon && <Icon className="w-4 h-4 text-muted-foreground" />}
-            <h3 className="font-semibold leading-none tracking-tight">{title}</h3>
-          </div>
-          {action && action}
-        </div>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      </div>
-    )}
-    <div className="p-6 pt-0 flex-1">
-      {children}
-    </div>
-  </div>
-);
-
-
 
 const HomeDashboard = () => {
   const { profile, subjects, notes, loading, refreshData } = useOutletContext();
   const [announcements, setAnnouncements] = useState([]);
   const [timeline, setTimeline] = useState([]);
   const [ciePopupOpen, setCiePopupOpen] = useState(false);
-  const [editingMilestone, setEditingMilestone] = useState(null);
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '', date: new Date().toISOString().split('T')[0] });
   const [hoveredDay, setHoveredDay] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const containerRef = useRef(null);
 
   const [loginPrn, setLoginPrn] = useState('');
   const [loginDob, setLoginDob] = useState('');
@@ -227,14 +138,12 @@ const HomeDashboard = () => {
     setSyncing(true);
     const toastId = toast.loading('Syncing with college portal...');
     try {
-      // 1. Update/Save profile on backend
       await axios.post(`${API_BASE}/profile`, {
         ...profile,
         prn: loginPrn,
         dob: loginDob
       });
 
-      // 2. Trigger Portal Sync
       const syncResponse = await axios.post(`${API_BASE}/portal/dashboard`, {
         prn: loginPrn,
         dob: loginDob
@@ -261,8 +170,8 @@ const HomeDashboard = () => {
         axios.get(`${API_BASE}/announcements/recent`),
         axios.get(`${API_BASE}/timeline`)
       ]);
-      setAnnouncements(annoRes.data);
-      setTimeline(timeRes.data);
+      setAnnouncements(Array.isArray(annoRes.data) ? annoRes.data : []);
+      setTimeline(Array.isArray(timeRes.data) ? timeRes.data : []);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     }
@@ -272,199 +181,178 @@ const HomeDashboard = () => {
     fetchData();
   }, []);
 
-  const { stats, subjectRegistry } = useMemo(() => {
-    if (!subjects?.length) return { stats: {}, subjectRegistry: [] };
-
+  const { stats, subjectRegistry, totalSessionsRecorded } = useMemo(() => {
     const saved = localStorage.getItem('eduvault_excluded_subjects');
     const excludedIds = saved ? JSON.parse(saved) : [];
-    const active = subjects.filter(s => !excludedIds.includes(s.id));
+    const active = (subjects || []).filter(s => !excludedIds.includes(s.id));
 
-    const calcAvg = (subs) => {
-      if (!subs.length) return 0;
-      return Math.round(subs.reduce((a, b) => a + (parseFloat(b.attendance) || 0), 0) / subs.length);
+    const getPrecisePct = (s) => {
+      const conducted = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+      const present = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+      if (conducted === 0) return parseFloat(s.attendance) || 0;
+      return parseFloat(((present / conducted) * 100).toFixed(1));
     };
 
-    const theory = active.filter(s => !(s.code?.toUpperCase().endsWith('P') || s.name.toLowerCase().includes('lab')));
-    const lab = active.filter(s => (s.code?.toUpperCase().endsWith('P') || s.name.toLowerCase().includes('lab')));
+    const getWeightedAvg = (subs) => {
+      if (!subs || subs.length === 0) return "0.0";
+      const totalCredits = subs.reduce((acc, s) => acc + (s.credit || 1), 0);
+      const weightedSum = subs.reduce((acc, s) => acc + (getPrecisePct(s) * (s.credit || 1)), 0);
+      return totalCredits > 0 ? (weightedSum / totalCredits).toFixed(1) : "0.0";
+    };
 
-    // Bunk Logic
-    const target = 0.75;
+    let totalSessions = 0;
+    active.forEach(s => {
+      const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+      totalSessions += cond;
+    });
+
     const registry = active.map(sub => {
-      const a = parseInt(sub.attended) || 0;
-      const h = parseInt(sub.held) || 0;
-
-      if (h === 0) return { ...sub, bunks: 0, mustAttend: 0, isAtRisk: false };
-
-      let bunks = 0;
+      const a = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || parseInt(sub.attended) || 0);
+      const h = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || parseInt(sub.held) || 0);
+      const target = 0.75;
+      const currentPct = h > 0 ? a / h : 0;
+      let Skips = 0;
       let mustAttend = 0;
-      const currentPct = a / h;
-
       if (currentPct >= target) {
-        bunks = Math.floor(a / target - h);
+        Skips = Math.floor(a / target - h);
       } else {
         mustAttend = Math.ceil((target * h - a) / (1 - target));
       }
-
       return {
         ...sub,
-        bunks,
+        preciseAttendance: getPrecisePct(sub),
+        Skips,
         mustAttend,
         isAtRisk: currentPct < target
       };
-    }).sort((a, b) => (a.mustAttend > 0 ? -1 : 1) || a.bunks - b.bunks);
+    });
 
     return {
       stats: {
-        theory: calcAvg(theory),
-        lab: calcAvg(lab),
-        overall: calcAvg(active),
+        overall: getWeightedAvg(active),
         totalDocs: notes?.length || 0,
-        riskCount: active.filter(s => parseFloat(s.attendance) < 75).length
+        riskCount: active.filter(s => getPrecisePct(s) < 75).length
       },
-      subjectRegistry: registry
+      subjectRegistry: registry,
+      totalSessionsRecorded: totalSessions
     };
   }, [subjects, notes]);
 
-  const heatmapGrid = useMemo(() => buildHeatmapData(subjects), [subjects]);
+  const { grid: heatmapGrid } = useMemo(() => buildHeatmapData(subjects), [subjects]);
 
-  /* ─── GSAP Entrance Timeline ─── */
-  useGSAP(() => {
-    if (loading || !profile) return;
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/notes?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
-    const tl = gsap.timeline({ defaults: { duration: 0.9, ease: 'expo.out' } });
+  const handleAddMilestone = async () => {
+    if (!newMilestone.title.trim()) return;
+    const item = { ...newMilestone, id: Date.now() };
+    const updated = [item, ...timeline];
+    setTimeline(updated);
+    setNewMilestone({ title: '', description: '', date: new Date().toISOString().split('T')[0] });
+    setShowAddForm(false);
+    try {
+      await axios.post(`${API_BASE}/timeline`, item);
+    } catch (e) {
+      console.warn("Failed saving milestone to server:", e);
+    }
+  };
 
-    // 1. Profile card — gentle rise + fade
-    tl.from('[data-sv="profile-card"]', {
-      autoAlpha: 0, y: 20, duration: 0.8, ease: 'power2.out'
-    })
-    // 2. Avatar — smooth scale-in
-    .from('[data-sv="avatar"]', {
-      scale: 0.6, autoAlpha: 0, duration: 0.7, ease: 'power3.out'
-    }, '<0.1')
-    // 3. Name + badges — soft stagger
-    .from('[data-sv="identity"] > *', {
-      autoAlpha: 0, y: 8, stagger: 0.06, duration: 0.5, ease: 'power2.out'
-    }, '<0.08')
-    // 4. Stats — slide in from right
-    .from('[data-sv="stats-block"]', {
-      autoAlpha: 0, x: 20, duration: 0.6, ease: 'power2.out'
-    }, '<0.15')
-    // 5. CTA button — fade + subtle scale
-    .from('[data-sv="cta-btn"]', {
-      scale: 0.92, duration: 0.5, ease: 'power2.out'
-    }, '<0.1');
-
-    // 6. Top row cards — silky stagger rise
-    tl.from('[data-sv="top-card"]', {
-      autoAlpha: 0, y: 30,
-      stagger: 0.1, duration: 0.7, ease: 'expo.out'
-    }, '-=0.4');
-
-    // 7. Online pulse dot — gentle breathing
-    gsap.to('[data-sv="pulse-dot"]', {
-      boxShadow: '0 0 0 5px rgba(16,185,129,0)',
-      repeat: -1, yoyo: true, duration: 1.6, ease: 'sine.inOut'
-    });
-
-    // 8. Below-fold cards — smooth scroll reveal
-    ScrollTrigger.batch('[data-sv="bento-card"]', {
-      onEnter: (elements) => {
-        gsap.from(elements, {
-          autoAlpha: 0, y: 35,
-          stagger: 0.08, duration: 0.8, ease: 'expo.out',
-          overwrite: true
-        });
-      },
-      start: 'top 90%',
-      once: true
-    });
-
-    // 9. Heatmap cells — gentle random fade-in
-    ScrollTrigger.create({
-      trigger: '[data-sv="heatmap"]',
-      start: 'top 88%',
-      once: true,
-      onEnter: () => {
-        gsap.from('[data-sv="heat-cell"]', {
-          scale: 0.5, autoAlpha: 0,
-          stagger: { amount: 1.2, from: 'random' },
-          duration: 0.4, ease: 'power2.out'
-        });
+  const handleDeleteMilestone = async (index, id) => {
+    const updated = timeline.filter((_, idx) => idx !== index);
+    setTimeline(updated);
+    if (id) {
+      try {
+        await axios.delete(`${API_BASE}/timeline/${id}`);
+      } catch (e) {
+        console.warn("Failed deleting milestone on server:", e);
       }
-    });
+    }
+  };
 
-    // 10. CIE progress bars — smooth width fill
-    ScrollTrigger.create({
-      trigger: '[data-sv="cie-card"]',
-      start: 'top 88%',
-      once: true,
-      onEnter: () => {
-        gsap.from('[data-sv="cie-bar"]', {
-          width: 0, duration: 1.4, stagger: 0.12, ease: 'expo.out'
-        });
-      }
-    });
+  const displayCurriculumCards = useMemo(() => {
+    if (subjects && subjects.length > 0) {
+      return subjects.slice(0, 4).map(s => ({
+        id: s.id,
+        title: s.name,
+        icon: getSubjectIcon(s.name),
+        verified: true
+      }));
+    }
+    return [];
+  }, [subjects]);
 
-  }, { scope: containerRef, dependencies: [loading, profile], revertOnUpdate: true });
+  const displayCieList = useMemo(() => {
+    if (subjectRegistry && subjectRegistry.length > 0) {
+      const sorted = [...subjectRegistry].sort((a, b) => {
+        const aCie = parseFloat(a.cie) || 0;
+        const bCie = parseFloat(b.cie) || 0;
+        if (aCie > 0 && bCie === 0) return -1;
+        if (bCie > 0 && aCie === 0) return 1;
+        return bCie - aCie;
+      });
+      return sorted.slice(0, 3);
+    }
+    return [];
+  }, [subjectRegistry]);
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[80vh] gap-4 bg-black">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm text-zinc-400 font-medium">Synchronizing Interface...</span>
+      <div className="flex flex-col items-center justify-center h-[75vh] gap-4 bg-canvas-bg text-text-primary">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-semibold text-text-secondary tracking-wide">Synchronizing Interface...</span>
       </div>
     );
   }
 
   if (!profile || !profile.prn || !profile.dob) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 bg-black text-zinc-100">
-        <div className="w-full max-w-md bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-          
+      <div className="flex flex-col items-center justify-center min-h-[75vh] px-4 bg-canvas-bg text-text-primary">
+        <div className="w-full max-w-md bg-surface-card border border-border-subtle rounded-2xl p-6">
           <div className="flex flex-col items-center text-center gap-2 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center shadow-inner mb-2">
-              <Zap className="w-6 h-6 text-indigo-400 animate-pulse" />
+            <div className="w-12 h-12 rounded-xl bg-surface-subtle-blue flex items-center justify-center mb-2">
+              <span className="material-symbols-outlined text-[24px] text-primary">shield</span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-zinc-100">EduVault Integration</h2>
-            <p className="text-xs text-zinc-400 max-w-xs leading-normal">
+            <h2 className="text-xl font-bold tracking-tight text-text-primary">EduVault Integration</h2>
+            <p className="text-xs text-text-secondary max-w-xs leading-normal">
               Enter your college PRN and Date of Birth to synchronize your student portal and initialize your dashboard.
             </p>
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 ml-0.5">College PRN</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">College PRN</label>
               <input
                 type="text"
                 placeholder="e.g. 24UAD022"
                 value={loginPrn}
                 onChange={(e) => setLoginPrn(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-950/40 border border-zinc-800/80 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500/65 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 disabled={syncing}
                 required
               />
             </div>
-            
+
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 ml-0.5">Date of Birth</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">Date of Birth</label>
               <input
                 type="text"
                 placeholder="DD-MM-YYYY (e.g. 22-11-2006)"
                 value={loginDob}
                 onChange={(e) => setLoginDob(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-950/40 border border-zinc-800/80 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500/65 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 disabled={syncing}
                 required
               />
-              <span className="text-[9px] text-zinc-500 block leading-tight">Format: DD-MM-YYYY (Day-Month-Year)</span>
+              <span className="text-[10px] text-text-secondary block">Format: DD-MM-YYYY (Day-Month-Year)</span>
             </div>
 
             <button
               type="submit"
               disabled={syncing}
-              className="w-full mt-2 inline-flex items-center justify-center rounded-lg text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-500 hover:to-indigo-550 text-white py-2.5 shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+              className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {syncing ? (
                 <div className="flex items-center gap-2">
@@ -472,7 +360,7 @@ const HomeDashboard = () => {
                   <span>Syncing Portal...</span>
                 </div>
               ) : (
-                <span>Initialize & Sync</span>
+                <span>Initialize &amp; Sync</span>
               )}
             </button>
           </form>
@@ -481,479 +369,541 @@ const HomeDashboard = () => {
     );
   }
 
+  const latestAnnouncement = announcements[0];
+
   return (
-    <div ref={containerRef} className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-7xl mx-auto w-full antialiased bg-black text-zinc-100 min-h-screen">
-      {/* Header Section */}
-      <section className="pb-6">
-        {/* SaaS-style Profile Card */}
-        <div data-sv="profile-card" className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 backdrop-blur-md">
-          <div className="flex flex-col gap-4">
-            {/* Top: Avatar and Identity */}
-            <div className="flex items-center gap-4">
-              <div className="relative shrink-0">
-                <div data-sv="avatar" className="w-14 h-14 rounded-lg border-2 border-zinc-700/50 bg-zinc-800/50 overflow-hidden ring-1 ring-zinc-800/50">
-                  <img
-                    src={profile?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.name}`}
-                    className="w-full h-full object-contain"
-                    alt="Profile"
-                  />
-                </div>
-                <div data-sv="pulse-dot" className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border border-zinc-900" />
-              </div>
-              <div data-sv="identity" className="flex flex-col justify-center space-y-1">
-                <h1 className="text-lg font-bold text-zinc-100">Hello, {formatName(profile?.name)}!</h1>
-                <div className="flex flex-wrap items-center gap-2 text-[10px]">
-                  <span className="px-1.5 py-0.5 bg-zinc-800/50 border border-zinc-700/30 rounded-sm text-zinc-300 font-medium">
-                    {profile?.rollNo || profile?.prn}
-                  </span>
-                  <span className="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded-sm text-blue-400 font-medium">
-                    {getDepartmentName(profile?.department)}
-                  </span>
-                  <span className="px-1.5 py-0.5 bg-zinc-800/50 border border-zinc-700/30 rounded-sm text-zinc-400 font-medium">
-                    {formatSemester(profile?.semester)}
-                  </span>
-                </div>
-              </div>
+    <div className="flex flex-col min-h-screen bg-canvas-bg text-text-primary">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 h-16 bg-surface-card/95 backdrop-blur-md px-6 lg:px-8 flex items-center justify-between border-b border-border-subtle shrink-0">
+        <div className="flex items-center gap-4 flex-1 max-w-lg">
+          <div className="relative w-full">
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="w-full h-9 pl-10 pr-4 rounded-xl bg-slate-50 border border-border-subtle text-text-primary placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              placeholder="Search courses, roadmaps, notices..."
+              type="text"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle-blue text-primary text-xs font-semibold">
+            <span className="material-symbols-outlined text-[16px]">school</span>For Students
+          </span>
+          <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-status-success-bg text-status-success-text text-xs font-semibold">
+            <span className="material-symbols-outlined text-[15px]">task_alt</span>Attendance {stats.overall}%
+          </span>
+          <button
+            onClick={() => navigate('/announcements')}
+            className="relative w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            title="Notifications"
+          >
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white"></span>
+          </button>
+          <div className="flex items-center gap-3 pl-2 border-l border-border-subtle">
+            {profile?.image ? (
+              <img
+                src={profile.image}
+                alt={formatName(profile?.name)}
+                referrerPolicy="no-referrer"
+                className="w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-border-subtle"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextElementSibling) {
+                    e.currentTarget.nextElementSibling.style.display = 'flex';
+                  }
+                }}
+              />
+            ) : null}
+            <div className={`w-9 h-9 rounded-full bg-primary text-white items-center justify-center font-semibold text-sm shadow-sm ${profile?.image ? 'hidden' : 'flex'}`}>
+              {getInitials(profile?.name)}
             </div>
+            <div className="hidden lg:flex flex-col text-left">
+              <span className="text-xs font-bold text-text-primary leading-tight">{formatName(profile?.name)}</span>
+              <span className="text-[11px] text-text-secondary leading-tight mt-0.5">
+                {[profile?.rollNo || profile?.prn, getDepartmentName(profile?.department), profile?.semester ? `Sem ${profile.semester}` : null].filter(Boolean).join(' • ')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-            {/* Bottom: Stats and CTA */}
-            <div className="flex items-center justify-between pt-4 border-t border-zinc-800/50">
-              <div data-sv="stats-block" className="flex items-center gap-6">
-                <div className="text-left">
-                  <div className="flex items-baseline gap-1 mb-0.5">
-                    <span className="text-lg font-bold text-emerald-400">{stats.overall}</span>
-                    <span className="text-[10px] text-zinc-500 font-bold">%</span>
+      {/* Main Content */}
+      <main className="relative py-6 px-4 sm:px-8 pb-10 flex-1">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Student Profile & Hero Area */}
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-card to-blue-50/40 p-6 border border-border-subtle">
+            <div className="absolute top-0 right-0 w-80 h-full bg-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
+
+            <div className="relative flex flex-wrap lg:flex-nowrap items-center justify-between gap-6">
+              <div className="flex items-center gap-4.5 min-w-0">
+                <div className="relative flex-shrink-0 group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-300" />
+                  {profile?.image ? (
+                    <img
+                      src={profile.image}
+                      alt={formatName(profile?.name)}
+                      referrerPolicy="no-referrer"
+                      className="relative w-14 h-14 rounded-xl object-cover ring-2 ring-white"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextElementSibling) {
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <div className={`relative w-14 h-14 rounded-xl bg-gradient-to-tr from-primary to-blue-600 text-white items-center justify-center font-bold text-lg ring-2 ring-white ${profile?.image ? 'hidden' : 'flex'}`}>
+                    {getInitials(profile?.name)}
                   </div>
-                  <span className="text-[8px] uppercase tracking-wider text-zinc-600 font-bold">Attendance</span>
+                  <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" title="Online & Synced" />
                 </div>
-                <div className="text-left">
-                  <div className="flex items-baseline gap-1 mb-0.5">
-                    <span className={cn("text-lg font-bold", stats.riskCount > 0 ? "text-orange-400" : "text-zinc-300")}>
-                      {stats.riskCount}
+
+                <div className="flex flex-col gap-1 min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight leading-tight truncate">
+                      Welcome, {formatName(profile?.name)}
+                    </h1>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80">
+                      <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Student
                     </span>
                   </div>
-                  <span className="text-[8px] uppercase tracking-wider text-zinc-600 font-bold">Risks</span>
-                </div>
-              </div>
 
-              <button
-                onClick={() => navigate('/attendance')}
-                data-sv="cta-btn"
-                className="inline-flex items-center justify-center rounded-sm text-xs font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 px-3 py-1.5 gap-1.5 shadow-md shadow-blue-500/20 w-auto"
-              >
-                <span>Attendance</span>
-                <ArrowUpRight className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
-        {/* Milestones Mini-View */}
-        <div data-sv="top-card" className="md:col-span-2 bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 backdrop-blur-md flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 bg-blue-500/5 rounded-lg">
-                <Clock className="w-4 h-4 text-blue-400/80" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-200 leading-none">Milestones</h3>
-                <p className="text-[9px] text-zinc-600 mt-0.5 uppercase tracking-wider font-bold">Timeline</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="text-[9px] font-bold uppercase tracking-wider text-blue-400/70 hover:text-blue-400 px-2.5 py-1 border border-blue-400/10 rounded-sm transition-colors bg-blue-400/5"
-            >
-              {showAddForm ? 'Cancel' : 'Add'}
-            </button>
-          </div>
-
-          <div className="flex-1 relative">
-            {showAddForm ? (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-200 bg-zinc-900/40 border border-zinc-800/40 p-3 rounded-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-zinc-600 uppercase ml-1">Date</label>
-                    <input
-                      type="date"
-                      value={newMilestone.date}
-                      onChange={(e) => setNewMilestone({ ...newMilestone, date: e.target.value })}
-                      className="w-full px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-sm text-[11px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-zinc-600 uppercase ml-1">Event</label>
-                    <input
-                      type="text"
-                      placeholder="Title"
-                      value={newMilestone.title}
-                      onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
-                      className="w-full px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-sm text-[11px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <textarea
-                    placeholder="Details..."
-                    value={newMilestone.description}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
-                    className="flex-1 px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-[11px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none transition-all"
-                    rows={1}
-                  />
-                  <button
-                    onClick={() => {
-                      if (newMilestone.title.trim()) {
-                        setTimeline([{ ...newMilestone, id: Date.now() }, ...timeline]);
-                        setNewMilestone({ title: '', description: '', date: new Date().toISOString().split('T')[0] });
-                        setShowAddForm(false);
-                      }
-                    }}
-                    className="px-4 py-1.5 bg-blue-600/90 text-white text-[9px] font-bold rounded-sm hover:bg-blue-600 transition-all"
-                  >
-                    SAVE
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-                {timeline.length > 0 ? timeline.slice(0, 5).map((item, i) => (
-                  <div key={i} className="flex-shrink-0 bg-zinc-900/30 border border-zinc-800/40 p-3 rounded-sm min-w-[180px] max-w-[220px] hover:bg-zinc-800/50 transition-all group relative overflow-hidden">
-                    <div className="relative">
-                      <div className="flex justify-between items-start mb-1.5">
-                        <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-zinc-800/80 text-zinc-500 border border-zinc-700/30 uppercase tracking-tight">
-                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </span>
-                        <button
-                          onClick={() => {
-                            const updated = timeline.filter((_, index) => index !== i);
-                            setTimeline(updated);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-orange-400/80 transition-all p-1"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                      <h4 className="text-[13px] font-medium text-zinc-300 group-hover:text-white transition-colors truncate">{item.title}</h4>
-                      <p className="text-[9px] text-zinc-600 line-clamp-1 mt-0.5">{item.description}</p>
-                    </div>
-                  </div>
-                )) : (
-                  <div className="flex flex-col items-center justify-center w-full py-4 opacity-20 border border-dashed border-zinc-800 rounded-sm">
-                    <Clock className="w-5 h-5 mb-1.5 text-zinc-600" />
-                    <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Empty</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Broadcasts Mini */}
-        <div data-sv="top-card" className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 backdrop-blur-md flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-1.5 bg-orange-500/5 rounded-sm">
-              <Zap className="w-4 h-4 text-orange-400/80" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-200 leading-none">Broadcasts</h3>
-              <p className="text-[9px] text-zinc-600 mt-0.5 uppercase tracking-wider font-bold">Latest</p>
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center">
-            {announcements.length > 0 ? (
-              <div className="group relative p-3.5 rounded-sm border border-zinc-800/40 bg-zinc-900/40 hover:bg-zinc-800/50 transition-all">
-                <div className="relative">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-orange-500/10 text-orange-500/70 border border-orange-500/10 uppercase tracking-tight">
-                      Notice
-                    </span>
-                    <span className="text-[9px] font-medium text-zinc-600">{new Date(announcements[0].createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <h4 className="text-[13px] font-medium text-zinc-300 group-hover:text-white transition-colors line-clamp-1">{announcements[0].title}</h4>
-                  <p className="text-[9px] text-zinc-600 line-clamp-1 mt-0.5 mb-2.5">{announcements[0].description}</p>
-                  <button
-                    onClick={() => navigate('/announcements')}
-                    className="w-full py-1.5 bg-zinc-800/60 hover:bg-zinc-700/60 border border-zinc-700/40 rounded-sm text-[9px] font-bold text-zinc-400 hover:text-white transition-all flex items-center justify-center gap-1"
-                  >
-                    VIEW ARCHIVE <ChevronRight className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-4 opacity-20 border border-dashed border-zinc-800 rounded-md">
-                <Zap className="w-5 h-5 mb-1.5 text-zinc-600" />
-                <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">None</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Bento Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        {/* Left Column: Analytics & Subject Registry */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Intellectual Assets - Premium Redesign */}
-          <div data-sv="bento-card" className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 backdrop-blur-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-blue-500/5 rounded-sm">
-                  <FileText className="w-4 h-4 text-blue-400/80" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 leading-none">Intellectual Assets</h3>
-                  <p className="text-[9px] text-zinc-600 mt-0.5 uppercase tracking-wider font-bold">Repository</p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/notes')}
-                className="text-[9px] font-bold text-zinc-500 hover:text-blue-400 transition-colors flex items-center gap-1 uppercase tracking-wider"
-              >
-                OPEN <ChevronRight className="w-2.5 h-2.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {notes?.slice(0, 3).map((note, i) => (
-                <div
-                  key={i}
-                  onClick={() => navigate('/notes')}
-                  className="group relative flex flex-col p-3.5 rounded-sm border border-zinc-800/40 bg-zinc-900/40 hover:bg-zinc-800/60 transition-all cursor-pointer overflow-hidden"
-                >
-                  <div className="relative flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-zinc-800/80 text-zinc-500 border border-zinc-700/30 uppercase tracking-tight">
-                        {note.courseCode}
+                  <div className="flex items-center gap-2 text-xs text-text-secondary flex-wrap">
+                    {(profile?.rollNo || profile?.prn) && (
+                      <span className="inline-flex items-center gap-1 font-mono font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/60">
+                        <span className="material-symbols-outlined text-[13px] text-text-secondary">badge</span>
+                        {profile?.rollNo || profile?.prn}
                       </span>
-                      <ArrowUpRight className="w-3 h-3 text-zinc-700 group-hover:text-blue-400 transition-all" />
-                    </div>
-                    <h5 className="text-[13px] font-medium text-zinc-300 group-hover:text-white transition-colors line-clamp-1 mb-3">
-                      {note.title}
-                    </h5>
-                    <div className="mt-auto flex items-center justify-between">
-                      <span className="text-[9px] text-zinc-600 uppercase font-bold tracking-tighter">Verified Asset</span>
-                      <div className="w-5 h-5 rounded-full bg-zinc-800/50 border border-zinc-700/30 flex items-center justify-center">
-                        <div className="w-1 h-1 rounded-full bg-blue-500/50" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {(!notes || notes.length === 0) && (
-                <div className="col-span-full py-6 border border-dashed border-zinc-800 rounded-sm flex flex-col items-center justify-center opacity-20">
-                  <FileText className="w-6 h-6 mb-1.5 text-zinc-600" />
-                  <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">Empty</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Heatmap Section */}
-          <div data-sv="bento-card" data-sv-extra="heatmap" className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 backdrop-blur-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-emerald-500/5 rounded-sm">
-                  <Calendar className="w-4 h-4 text-emerald-400/80" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 leading-none">Attendance Activity</h3>
-                  <p className="text-[9px] text-zinc-600 mt-0.5 uppercase tracking-wider font-bold">Daily Engagement</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 overflow-x-auto pb-1 scrollbar-hide">
-                <div className="flex gap-1.5 min-w-max p-0.5">
-                  {heatmapGrid.map((week, wi) => (
-                    <div key={wi} data-sv="heatmap" className="flex flex-col gap-1.5">
-                      {week.map((cell) => (
-                        <div
-                          data-sv="heat-cell"
-                          key={cell.key}
-                          onMouseEnter={() => setHoveredDay(cell)}
-                          onMouseLeave={() => setHoveredDay(null)}
-                          className={cn(
-                            "w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-md border transition-all duration-300 hover:scale-110 cursor-crosshair",
-                            getHeatColor(cell.entry, cell.isFuture),
-                            hoveredDay?.key === cell.key ? "ring-2 ring-emerald-500/50 ring-offset-2 ring-offset-zinc-900 scale-110" : ""
-                          )}
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sidebar Detail Panel */}
-              <div className="w-full md:w-56 bg-zinc-900/40 border border-zinc-800/50 rounded-xl p-3 flex flex-col justify-start min-h-[160px] relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                  <Calendar className="w-16 h-16 text-emerald-400" />
-                </div>
-                {hoveredDay ? (
-                  <div className="animate-in fade-in zoom-in-95 duration-200 h-full flex flex-col">
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 border-b border-zinc-800/50 pb-1 flex justify-between items-center">
-                      <span>{(() => {
-                        const [day, month, year] = hoveredDay.key.split('-');
-                        const date = new Date(`${year}-${month}-${day}`);
-                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                      })()}</span>
-                      <span className="text-[8px] text-zinc-700">#{hoveredDay.key.split('-')[0]}</span>
-                    </p>
-
-                    {hoveredDay.entry ? (
-                      <div className="flex-1 space-y-2 overflow-y-auto pr-1 custom-scrollbar max-h-[140px]">
-                        <div className="space-y-1.5">
-                          {hoveredDay.entry.lectures?.map((lecture, i) => (
-                            <div key={i} className="flex items-center gap-2 group/item">
-                              <div className={cn(
-                                "w-1.5 h-1.5 rounded-full shrink-0",
-                                lecture.status === 'Present' ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" : "bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.4)]"
-                              )} />
-                              <span className={cn(
-                                "text-[10px] truncate transition-colors",
-                                lecture.status === 'Present' ? "text-zinc-200" : "text-zinc-400 line-through decoration-rose-500/30"
-                              )}>
-                                {lecture.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="py-4 text-center">
-                        <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-tight">System Offline</p>
-                        <p className="text-[8px] text-zinc-700 leading-tight mt-1">No logs for this cycle.</p>
-                      </div>
+                    )}
+                    {getDepartmentName(profile?.department) && (
+                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/60 px-2 py-0.5 rounded-md">
+                        <span className="material-symbols-outlined text-[13px]">school</span>
+                        {getDepartmentName(profile?.department)}
+                      </span>
+                    )}
+                    {(profile?.semester || profile?.section) && (
+                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/60 px-2 py-0.5 rounded-md">
+                        <span className="material-symbols-outlined text-[13px]">calendar_today</span>
+                        {[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' · ')}
+                      </span>
                     )}
                   </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Pulse Monitor</p>
-                    <p className="text-[8px] text-zinc-700 mt-1 italic">Scan timeline to audit sessions</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap ml-auto lg:ml-0">
+                <div
+                  onClick={() => navigate('/attendance')}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-primary/40 transition-colors duration-200 cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-blue-50 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <span className="material-symbols-outlined text-[16px]">fact_check</span>
                   </div>
-                )}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 leading-none">
+                      <span className="text-sm font-bold text-text-primary tracking-tight">{stats.overall}%</span>
+                      <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60 leading-none">
+                        {stats.overall >= 75 ? 'Optimal' : 'Review'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Overall Attendance</span>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => navigate('/attendance')}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-red-300 transition-colors duration-200 cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-md bg-red-50 text-red-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <span className="material-symbols-outlined text-[16px]">warning</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 leading-none">
+                      <span className="text-sm font-bold text-red-600 tracking-tight">{stats.riskCount}</span>
+                      <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-red-50 text-red-600 border border-red-200/60 leading-none">Below 75%</span>
+                    </div>
+                    <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Attendance Alerts</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
 
-        </div>
-
-        {/* Right Column: CIE & Assets */}
-        <div className="lg:col-span-1 space-y-6">
-
-          {/* CIE Scores Card */}
-          <div data-sv="bento-card" data-sv-extra="cie-card" className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 backdrop-blur-md">
-            <div data-sv="cie-card" className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-rose-500/5 rounded-lg">
-                  <BookOpen className="w-4 h-4 text-rose-400/80" />
+          {/* Core Dashboard Layout (Minimal & Compact) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Left Column: Core Academics & Tracking (7 Cols) */}
+            <div className="lg:col-span-7 space-y-4">
+              {/* Section 1: Notes & Resources */}
+              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[17px]">menu_book</span>
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Notes &amp; Resources</h2>
+                      <span className="text-[11px] font-medium text-text-secondary">Curriculum Repository</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/notes')}
+                    className="inline-flex items-center gap-0.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors cursor-pointer"
+                  >
+                    <span>View All</span>
+                    <span className="material-symbols-outlined text-[15px]">chevron_right</span>
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 leading-none">CIE Scores</h3>
-                  <p className="text-[9px] text-zinc-600 mt-0.5 uppercase tracking-wider font-bold">Academic Status</p>
-                </div>
-              </div>
-            </div>
 
-            <div className="space-y-3.5">
-              {subjectRegistry.length > 0 ? (
-                <>
-                  {subjectRegistry.slice(0, 3).map((sub, i) => {
-                    const cie = parseFloat(sub.cie) || 0;
-                    const maxCie = 50;
-                    const percentage = Math.min((cie / maxCie) * 100, 100);
-                    return (
-                      <div key={i} className="space-y-1.5">
-                        <div className="flex justify-between items-center text-[10px] uppercase tracking-wide font-bold">
-                          <span className="text-zinc-500 truncate max-w-[130px]">{sub.name}</span>
-                          <span className="text-zinc-300 font-mono">{cie || '-'}/50</span>
+                {/* Compact Subject Cards */}
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {displayCurriculumCards.length > 0 ? (
+                    displayCurriculumCards.map((card, i) => (
+                      <div
+                        key={card.id || i}
+                        onClick={() => navigate('/notes')}
+                        className="flex items-center justify-between p-2.5 bg-white hover:bg-slate-50/80 border border-border-subtle hover:border-primary/50 rounded-lg transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100/80 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span className="material-symbols-outlined text-[17px]">{card.icon}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors truncate">
+                              {card.title}
+                            </h3>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                <span className="material-symbols-outlined text-[11px]">verified</span>Verified
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="h-1.5 bg-zinc-800/50 border border-zinc-700/30 rounded-full overflow-hidden">
-                          <div
-                            data-sv="cie-bar"
-                            className={cn(
-                              "h-full rounded-full transition-all duration-1000",
-                              cie >= 40 ? "bg-emerald-500/80" :
-                                cie >= 30 ? "bg-blue-500/80" :
-                                  cie > 0 ? "bg-orange-500/80" : "bg-zinc-700"
-                            )}
-                            style={{ width: `${cie > 0 ? percentage : 0}%` }}
-                          />
+                        <div className="w-7 h-7 rounded-md bg-slate-50 border border-border-subtle flex items-center justify-center text-text-secondary group-hover:text-primary group-hover:border-primary/40 group-hover:bg-blue-50 transition-colors flex-shrink-0">
+                          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                         </div>
                       </div>
-                    );
-                  })}
-                  {subjectRegistry.length > 3 && (
-                    <button
-                      onClick={() => setCiePopupOpen(true)}
-                      className="w-full mt-1.5 py-1.5 bg-zinc-800/40 hover:bg-zinc-700/60 border border-zinc-700/40 rounded-lg text-[9px] font-bold text-zinc-500 hover:text-white transition-all flex items-center justify-center gap-1"
-                    >
-                      ALL SUBJECTS <ChevronRight className="w-2.5 h-2.5" />
-                    </button>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-6 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
+                      No curriculum subjects loaded.
+                    </div>
                   )}
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-4 opacity-20 border border-dashed border-zinc-800 rounded-md">
-                  <BookOpen className="w-5 h-5 mb-1.5 text-zinc-600" />
-                  <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">No Data</span>
                 </div>
-              )}
+              </section>
+
+              {/* Section 2: Attendance Activity Heatmap */}
+              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle" id="attendance-radar">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[17px]">calendar_month</span>
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Attendance Activity</h2>
+                      <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Records</span>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                    {totalSessionsRecorded} Sessions
+                  </span>
+                </div>
+
+                <div className="mt-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <span className="text-[11px] font-bold text-text-primary">Attendance Matrix</span>
+                    <div className="flex items-center gap-2.5 text-[10px] text-text-secondary">
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]"></span>
+                        <span className="font-medium">Present</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-[2px] bg-[#f85149]"></span>
+                        <span className="font-medium">Absent</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-[2px] bg-slate-100 border border-border-subtle"></span>
+                        <span className="font-medium">Holiday</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <SharedAttendanceHeatmap subjects={subjects} weeksCount={18} />
+                </div>
+              </section>
+
+              {/* Section 3: Milestones & Events */}
+              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[17px]">flag</span>
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Milestones &amp; Events</h2>
+                      <span className="text-[11px] font-medium text-text-secondary">Academic Schedule</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowAddForm(!showAddForm)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary hover:bg-primary-hover text-white text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">{showAddForm ? 'close' : 'add'}</span>
+                    <span>{showAddForm ? 'Cancel' : 'Add Event'}</span>
+                  </button>
+                </div>
+
+                {showAddForm ? (
+                  <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-border-subtle space-y-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="text-[10px] font-bold text-text-secondary uppercase">Date</label>
+                        <input
+                          type="date"
+                          value={newMilestone.date}
+                          onChange={(e) => setNewMilestone({ ...newMilestone, date: e.target.value })}
+                          className="w-full mt-0.5 px-2.5 py-1.5 bg-surface-card border border-border-subtle rounded-lg text-xs text-text-primary focus:outline-none focus:border-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-text-secondary uppercase">Event Title</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. CIE 1 Exam or Submission"
+                          value={newMilestone.title}
+                          onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
+                          className="w-full mt-0.5 px-2.5 py-1.5 bg-surface-card border border-border-subtle rounded-lg text-xs text-text-primary focus:outline-none focus:border-primary"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Details or notes..."
+                        value={newMilestone.description}
+                        onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
+                        className="flex-1 px-2.5 py-1.5 bg-surface-card border border-border-subtle rounded-lg text-xs text-text-primary focus:outline-none focus:border-primary"
+                      />
+                      <button
+                        onClick={handleAddMilestone}
+                        className="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg transition-colors border border-primary cursor-pointer"
+                      >
+                        SAVE
+                      </button>
+                    </div>
+                  </div>
+                ) : timeline.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    {timeline.map((item, i) => {
+                      const itemDate = new Date(item.date);
+                      const month = itemDate.toLocaleDateString('en-US', { month: 'short' });
+                      const day = itemDate.getDate();
+
+                      return (
+                        <div key={item.id || i} className="w-full flex items-center justify-between p-2.5 bg-white border border-border-subtle hover:border-slate-300 rounded-lg group transition-all">
+                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                            <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col items-center justify-center shrink-0">
+                              <span className="text-[9px] font-bold uppercase text-primary leading-tight">{month}</span>
+                              <span className="text-xs font-extrabold text-text-primary leading-none">{day}</span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-text-primary truncate">{item.title}</p>
+                              {item.description ? (
+                                <p className="text-[11px] text-text-secondary truncate mt-0.5">{item.description}</p>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 mt-0.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  Scheduled
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteMilestone(i, item.id)}
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-status-danger-text transition-opacity p-1 rounded hover:bg-slate-50 cursor-pointer"
+                            title="Delete"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">delete</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="mt-3 p-5 rounded-lg bg-slate-50 border border-border-subtle flex flex-col items-center justify-center text-center">
+                    <span className="material-symbols-outlined text-[22px] text-text-secondary/70 mb-1.5">event_upcoming</span>
+                    <p className="text-xs font-bold text-text-primary">No Milestones Scheduled</p>
+                    <p className="text-[11px] text-text-secondary mt-0.5 max-w-xs">Track key academic deadlines, lab submissions, and tests.</p>
+                  </div>
+                )}
+              </section>
+            </div>
+
+            {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* Section 4: Broadcasts */}
+              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[17px]">campaign</span>
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Broadcasts</h2>
+                      <span className="text-[11px] font-medium text-text-secondary">Latest Notices</span>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live
+                  </span>
+                </div>
+
+                {/* Compact Notice Card */}
+                {latestAnnouncement ? (
+                  <div className="mt-3 p-3 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-[10px] font-bold border border-amber-200/80">
+                        <span className="material-symbols-outlined text-[12px]">notification_important</span>
+                        Official Notice
+                      </span>
+                      <span className="text-[11px] font-medium text-text-secondary flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">event</span>
+                        {latestAnnouncement.createdAt ? new Date(latestAnnouncement.createdAt).toLocaleDateString() : ''}
+                      </span>
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-bold text-text-primary mt-1 leading-snug">
+                      {latestAnnouncement.title}
+                    </h3>
+                    <p className="text-[11px] font-normal text-text-secondary mt-1 leading-relaxed line-clamp-2">
+                      {latestAnnouncement.description}
+                    </p>
+                    <div className="mt-2.5 pt-0.5">
+                      <button
+                        onClick={() => navigate('/announcements')}
+                        className="w-full py-1.5 px-3 rounded-full bg-slate-50 hover:bg-slate-100 text-text-primary border border-border-subtle hover:border-border-hover text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>View All Notices</span>
+                        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 p-5 rounded-lg bg-slate-50 border border-border-subtle text-center text-xs text-text-secondary">
+                    No active broadcasts or notices.
+                  </div>
+                )}
+              </section>
+
+              {/* Section 5: CIE Scores */}
+              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[17px]">analytics</span>
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">CIE Scores</h2>
+                      <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Internal Assessment</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Compact Subject Scores List */}
+                <div className="mt-3 space-y-2">
+                  {displayCieList.length > 0 ? (
+                    displayCieList.map((sub, i) => {
+                      const cie = parseFloat(sub.cie) || 0;
+                      const maxCie = 50;
+                      const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
+                      const barColor = i === 0 ? "bg-primary" : i === 1 ? "bg-teal-600" : "bg-badge-purple-text";
+                      const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-primary bg-blue-50 border-blue-200" : "text-amber-700 bg-amber-50 border-amber-200";
+                      const statusLabel = cie >= 40 ? "Optimal" : cie >= 30 ? "Passing" : "Review";
+
+                      return (
+                        <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-text-primary tracking-tight truncate max-w-[180px]">
+                              {sub.name}
+                            </span>
+                            <span className="text-xs font-extrabold text-text-primary">
+                              {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] font-semibold text-text-secondary">/ 50</span>
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              className={cn("h-full rounded-full transition-all duration-500", barColor)}
+                              style={{ width: cie > 0 ? `${pct}%` : '0%' }}
+                            />
+                          </div>
+                          <div className="flex justify-between items-center mt-1.5 text-[10px]">
+                            <span className="font-medium text-text-secondary">{cie > 0 ? `${pct}% Score` : 'Pending evaluation'}</span>
+                            {cie > 0 && (
+                              <span className={cn("px-1.5 py-0.2 rounded text-[9px] font-bold border", tagColor)}>
+                                {statusLabel}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="py-5 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
+                      No CIE evaluations registered.
+                    </div>
+                  )}
+                </div>
+
+                {/* All Subjects CTA */}
+                <div className="mt-2.5 pt-0.5">
+                  <button
+                    onClick={() => setCiePopupOpen(true)}
+                    className="w-full py-1.5 px-3 rounded-full bg-white hover:bg-slate-50 text-text-primary border border-border-subtle hover:border-border-hover text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>View All Subject Scores</span>
+                    <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                  </button>
+                </div>
+              </section>
             </div>
           </div>
-
-
-
         </div>
-
-      </div>
+      </main>
 
       {/* CIE Popup Modal */}
       {ciePopupOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
           onClick={() => setCiePopupOpen(false)}
         >
-          <div className="fixed inset-0 bg-black/80" />
-
           <div
-            className="relative w-full max-w-5xl max-h-[85vh] bg-zinc-900/30 border border-zinc-800/50 rounded-xl backdrop-blur-md overflow-hidden"
+            className="relative w-full max-w-4xl max-h-[85vh] bg-surface-card border border-border-subtle rounded-2xl overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-border-subtle">
               <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-rose-500/5 rounded-lg">
-                  <BookOpen className="w-4 h-4 text-rose-400/80" />
+                <div className="w-9 h-9 rounded-xl bg-badge-purple-bg text-badge-purple-text flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">analytics</span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 leading-none">CIE Performance</h3>
-                  <p className="text-[9px] text-zinc-600 mt-0.5 uppercase tracking-wider font-bold">All Subjects</p>
+                  <h3 className="text-base font-bold text-text-primary leading-tight">CIE Performance Analysis</h3>
+                  <p className="text-[11px] text-text-secondary font-medium">All Semester Subjects Evaluation</p>
                 </div>
               </div>
               <button
                 onClick={() => setCiePopupOpen(false)}
-                className="p-2 rounded-md hover:bg-zinc-800/50 transition-colors text-zinc-400 hover:text-zinc-200"
+                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 p-4 border-b border-zinc-800/50">
+            {/* Modal Stats */}
+            <div className="grid grid-cols-3 gap-3 p-5 border-b border-border-subtle bg-slate-50/50">
               {(() => {
                 const subjectsWithCie = subjectRegistry.filter(sub => sub.cie && parseFloat(sub.cie) > 0);
                 const avgCie = subjectsWithCie.length > 0
@@ -961,83 +911,87 @@ const HomeDashboard = () => {
                   : 0;
                 const highScorers = subjectsWithCie.filter(sub => parseFloat(sub.cie) >= 40).length;
                 return [
-                  { value: subjectsWithCie.length, label: 'Subjects' },
-                  { value: avgCie, label: 'Average' },
+                  { value: subjectRegistry.length, label: 'Enrolled Subjects' },
+                  { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
                   { value: highScorers, label: 'Excellence (≥40)' }
                 ].map((stat, i) => (
-                  <div key={i} className="text-center p-3 bg-zinc-900/30 rounded-xl border border-zinc-800/50 backdrop-blur-md">
-                    <p className="text-xl font-semibold text-zinc-200">{stat.value}</p>
-                    <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">{stat.label}</p>
+                  <div key={i} className="text-center p-3 bg-surface-card rounded-xl border border-border-subtle">
+                    <p className="text-xl font-bold text-text-primary">{stat.value}</p>
+                    <p className="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mt-0.5">{stat.label}</p>
                   </div>
                 ));
               })()}
             </div>
 
-            {/* Chart */}
-            <div className="p-5 overflow-x-auto">
-              <div className="flex items-end justify-center gap-4 min-h-[200px] py-4 p-4 bg-zinc-900/30 rounded-xl border border-zinc-800/50 backdrop-blur-md">
-                {subjectRegistry
-                  .filter(sub => sub.cie && parseFloat(sub.cie) > 0)
-                  .map((sub, i) => {
-                    const cie = parseFloat(sub.cie);
-                    const maxCie = 50;
-                    const height = Math.min((cie / maxCie) * 100, 100);
-                    const isHigh = cie >= 40;
-                    const isGood = cie >= 30;
-                    const isLab = sub.code?.toUpperCase().endsWith('P') || sub.name?.toLowerCase().includes('lab');
-                    return (
-                      <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0" style={{ width: '60px' }}>
-                        <span className={cn(
-                          "text-xs font-medium",
-                          isHigh ? "text-emerald-400" : isGood ? "text-blue-400" : "text-orange-400"
-                        )}>
-                          {cie}
-                        </span>
+            {/* Modal Chart */}
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="w-full overflow-x-auto pb-2">
+                <div className="flex items-end justify-between gap-1.5 sm:gap-2.5 min-w-[620px] md:min-w-full min-h-[230px] p-4 sm:p-6 bg-slate-50 rounded-xl border border-border-subtle">
+                  {subjectRegistry.length > 0 ? (
+                    subjectRegistry.map((sub, i) => {
+                      const cie = parseFloat(sub.cie) || 0;
+                      const maxCie = 50;
+                      const heightPct = Math.min((cie / maxCie) * 100, 100);
+                      const isHigh = cie >= 40;
+                      const isGood = cie >= 30;
+                      return (
+                        <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-2">
+                          <span className={cn(
+                            "text-xs font-bold",
+                            cie === 0 ? "text-slate-400" :
+                              isHigh ? "text-status-success-text" : isGood ? "text-primary" : "text-amber-600 font-extrabold"
+                          )}>
+                            {cie > 0 ? cie : '-'}
+                          </span>
 
-                        <div className="relative bg-zinc-900/30 rounded-t-xl border border-zinc-800/50 overflow-hidden" style={{ height: '160px', width: '32px' }}>
-                          <div
-                            className={cn(
-                              "absolute bottom-0 w-full rounded-t-xl transition-all duration-500",
-                              isHigh ? "bg-emerald-500/80" : isGood ? "bg-blue-500/80" : "bg-orange-500/80"
-                            )}
-                            style={{ height: `${Math.max(height * 1.4, 4)}px` }}
-                          />
-                        </div>
+                          <div className="relative bg-slate-200/90 rounded-t-lg overflow-hidden flex flex-col justify-end border border-slate-300/80 w-full max-w-[32px] sm:max-w-[36px]" style={{ height: '140px' }}>
+                            <div
+                              className={cn(
+                                "w-full rounded-t-lg transition-all duration-500",
+                                cie === 0 ? "bg-slate-300" :
+                                  isHigh ? "bg-status-success-text" : isGood ? "bg-primary" : "bg-amber-600"
+                              )}
+                              style={{ height: cie > 0 ? `${Math.max(heightPct, 10)}%` : '6px' }}
+                            />
+                          </div>
 
-                        <div className="text-center flex flex-col items-center mt-1">
-                          <p className="text-[10px] font-bold text-zinc-300 truncate max-w-[60px] leading-tight" title={sub.code}>{sub.code}</p>
-                          <p className={cn(
-                            "text-[9px] truncate max-w-[60px]",
-                            isLab ? "text-indigo-400 font-medium" : "text-zinc-600"
-                          )} title={sub.name}>
-                            {sub.name}
-                          </p>
+                          <div className="text-center flex flex-col items-center mt-1 w-full">
+                            <p className="text-[10px] font-bold text-text-primary truncate w-full text-center" title={sub.code || sub.name}>
+                              {sub.code || sub.name.slice(0, 8)}
+                            </p>
+                            <p className="text-[9px] text-text-secondary truncate w-full text-center" title={sub.name}>
+                              {sub.name}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  ) : (
+                    <p className="text-xs text-text-secondary font-medium">No CIE performance records loaded yet.</p>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between p-4 border-t border-zinc-800/50 bg-zinc-900/30 backdrop-blur-md">
-              <div className="flex items-center gap-4 text-[9px] text-zinc-600 uppercase tracking-wider font-bold">
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between p-4 border-t border-border-subtle bg-slate-50/80">
+              <div className="flex items-center gap-4 text-[10px] text-text-secondary uppercase tracking-wider font-bold">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm bg-emerald-500/80" />
-                  ≥40
+                  <span className="w-2 h-2 rounded-sm bg-status-success-text" />
+                  ≥40 Optimal
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm bg-blue-500/80" />
-                  ≥30
+                  <span className="w-2 h-2 rounded-sm bg-primary" />
+                  ≥30 Satisfactory
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm bg-orange-500/80" />
-                  &lt;30
+                  <span className="w-2 h-2 rounded-sm bg-amber-600" />
+                  &lt;30 Review
                 </span>
               </div>
               <button
                 onClick={() => setCiePopupOpen(false)}
-                className="px-5 py-1.5 bg-zinc-800 text-zinc-300 text-[9px] font-bold rounded-xl hover:bg-zinc-700 hover:text-zinc-100 transition-all uppercase tracking-widest"
+                className="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-colors border border-primary cursor-pointer"
               >
                 CLOSE
               </button>

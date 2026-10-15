@@ -1,0 +1,147 @@
+1: A
+3: PROJECT REPORT
+5: ON
+7: “<<PROJECT TITLE>>”
+11: SUBMITTED TO
+13: SHIVAJIUNIVERSITY, KOLHAPUR
+15: IN THE PARTIAL FULFILLMENT OF REQUIREMENT FOR THE AWARD OF DEGREE BACHELOR OF ENGINEERING  IN COMPUTER SCIENCE AND ENGINEERING
+17: SUBMITTED BY
+19: 		MR.   <<NAME OF STUDENT>>		<<PRN NO>>
+20: MR.   <<NAME OF STUDENT>>		<< PRN NO>>
+21: 		MISS. <<NAME OF STUDENT>>		<< PRN NO>>
+22: 		MISS. <<NAME OF STUDENT>>		<< PRN NO>>
+24: UNDER THE GUIDANCE OF
+26: <<GUIDE NAME>>	
+37: DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING 
+38: DKTE SOCIETY’S TEXTILE AND ENGINEERING INSTITUTE, ICHALKARANJI
+39: 2021-20
+47: D.K.T.E.SOCIETY’S
+49: TEXTILE AND ENGINEERING INSTITUTE, ICHALKARANJI
+50: (AN AUTONOUMOUS INSTITUTE)
+53: DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING
+62: CERTIFICATE
+64: This is to certify that, project work entitled
+66: “<<PROJECT TITLE>>”
+69: is a bonafide record of project work carried out in this college by 
+72: 		MR.   <<NAME OF STUDENT>>		<< PRN NO>>
+73: MR.   <<NAME OF STUDENT>>		<< PRN NO>>
+74: 		MISS. <<NAME OF STUDENT>>		<< PRN NO>>
+75: 		MISS. <<NAME OF STUDENT>>		<< PRN NO>>
+78: is in the partial fulfillment of award of degree Bachelor in Engineering in Computer Science & Engineering prescribed by Shivaji University, Kolhapur for the academic year 2016-2017.
+82: <<GUIDE NAME>>
+83: (PROJECT GUIDE)
+88: PROF.( DR.) D.V.KODAVADE		          		 PROF.(DR.) P.V.KADOLE
+89: (HOD CSE DEPT.)				 		 (DIRECTOR)
+92: EXAMINER: ________________
+93:                          ________________
+97: DECLARATION
+100: We hereby declare that, the project work report entitled “<<project title>>” which is being submitted to D.K.T.E. Society’s Textile and Engineering Institute Ichalkaranji, affiliated to Shivaji University,Kolhapur is in partial fulfillment of degree B.E.(CSE). It is a bonafide report of the work carried out by us. The material contained in this report has not been submitted to any university or institution for the award of any degree. Further, we declare that we have not violated any of the provisions under Copyright and Piracy / Cyber / IPR Act amended from time to time.
+109: MR.   <<NAME OF STUDENT>>		<<PRN NO>>		<<SIGNATURE>>
+110: MR.   <<NAME OF STUDENT>>		<<PRN NO>>		<<SIGNATURE>>
+111: MISS. <<NAME OF STUDENT>>		<<PRN NO>>		<<SIGNATURE>>
+112: MISS. <<NAME OF STUDENT>>		<<PRN NO>>		<<SIGNATURE>>
+116: ACKNOWLEDGEMENT
+118: With great pleasure we wish to express our deep sense of gratitude to <<guide name>> for his valuable guidance, support and encouragement in completion of this project report.
+119: Also, we would like to take opportunity to thank our head of department Dr. D. V. Kodavade for his co-operation in preparing this project report.
+120: We feel gratified to record our cordial thanks to other staff members of Computer Science and Engineering Department for their support, help and assistance which they extended as and when required.
+122: Thank you,
+124: 	MR.   <<NAME OF STUDENT>>		<< PRN NO>>
+125: MR.   <<NAME OF STUDENT>>		<< PRN NO>>
+126: MISS. <<NAME OF STUDENT>>		<< PRN NO>>
+127: 	MISS. <<NAME OF STUDENT>>		<< PRN NO>>
+146: ABSTRACT
+147: 	Brief overview of project
+148: Problem, approach, and expected outcome
+168: Table of Contents
+170: 🟩 CHAPTER 1: INTRODUCTION 
+171: 1.1 Problem Statement & Societal Need
+172: Problem definition
+173: Current challenges
+174: Importance to society
+175: Proposed solution impact
+176: 1.2 Project Objectives
+177: Goals
+178: Expected outcomes
+179: Success criteria
+180: Target users
+181: 1.3 Scope of the Project
+182: What is included / excluded
+183: 1.4 Applications & Impact
+184: Real-world applications
+185: Industry relevance
+186: Social impact
+187: Future scope
+188: 1.5 Technology Stack
+189: Programming languages
+190: Frameworks
+191: Database
+192: Tools & platforms
+193: Justification
+195: 🟩 CHAPTER 2: REQUIREMENTS 
+196: 2.1 Functional Requirements
+197: (Minimum 5 required)
+Format:
+198: FR1: Name
+199: Description
+200: Input
+201: Output
+202: Priority
+204: 2.2 Non-Functional Requirements
+205: Performance:
+206: Response time
+207: Throughput
+208: Security:
+209: Authentication
+210: Encryption
+211: Usability:
+212: UI/UX
+213: Others:
+214: Reliability
+215: Scalability
+216: Maintainability
+218: 2.3 Feasibility Analysis
+219: Technical Feasibility
+Economic Feasibility
+Operational Feasibility
+221: 2.4 System Requirements
+222: Hardware Requirements
+223: Processor, RAM, Storage
+224: Software Requirements
+225: OS, Tools, DB
+226: Network Requirements
+228: 🟩 CHAPTER 3: SYSTEM DESIGN 
+229: 3.1 System Architecture (2 Marks)
+230: High-level architecture
+231: Component diagram
+232: Deployment diagram
+233: Technology layer diagram
+235: 3.2 Data Flow Diagram (DFD) (1 Mark)
+236: Level 0 (Context Diagram)
+237: Level 1 DFD
+238: Data flow explanation
+240: 3.3 UML Diagrams (2 Marks)
+241: Use Case Diagram
+242: Actors & use cases
+243: Class Diagram
+244: Classes, attributes, methods
+245: Sequence Diagram
+246: Main workflows
+248: 3.4 ER Diagram & Database Design (1.5 Marks)
+249: ER Diagram
+250: Tables & schema
+251: Primary & Foreign keys
+253: 3.5 Algorithm Design (1.5 Marks)
+254: Pseudocode
+255: Flowcharts
+256: Module description
+257: Complexity analysis
+259: 3.6 Collaboration Diagram (1 Mark)
+260: Object interactions
+261: Message passing
+263: 3.7 Design Justification (1 Mark)
+264: Design decisions
+265: Design patterns used
+266: Module interfaces
+268: 🟩 REFERENCES
+269: Minimum 5 references (papers, books, websites)
+272: 				<<PgNo>>

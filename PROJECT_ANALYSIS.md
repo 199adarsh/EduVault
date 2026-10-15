@@ -21,7 +21,7 @@ Empirical inspection of collegiate workflows reveals critical points of friction
 2. **The "75% Attendance Compliance" Guessing Dilemma:**
    Regulatory bodies (such as the University Grants Commission — UGC and AICTE in India) enforce strict attendance minimums (typically 75% aggregate and per-course thresholds). Missing this threshold incurs administrative penalties, detention from semester examinations, or loss of academic credits. However, standard institutional portals merely report static historical counts ($Attended / Conducted$) without forward-looking forecasting. Students lack deterministic insight into:
    - Exactly how many lectures they must attend consecutively to cross 75%.
-   - The exact buffer of non-critical classes they can afford to miss ("Safe Bunks") without dropping below the threshold.
+   - The exact buffer of non-critical classes they can afford to miss ("Safe Skips") without dropping below the threshold.
    - Credit-weighted or difficulty-weighted scheduling optimization.
 
 3. **Context-Free AI Hallucinations in Pedagogical Queries:**
@@ -47,7 +47,7 @@ The primary aim of EduVault is to architect, implement, and validate a unified, 
 1. **Automated Institutional Portal Ingestion & Session Synchronization:**
    - Implement an automated, headless authentication and web-scraping pipeline (`PortalScraperService`) capable of navigating dynamic CSRF protection and session state on collegiate portals (specifically DKTE Society's portal) to extract live course rosters, attendance logs, and internal continuous evaluation (CIE) data without manual student data entry.
 2. **Deterministic Attendance Optimization and Deficit Forecasting:**
-   - Engineer an attendance optimization engine (`AttendanceOptimizationService`) based on a greedy fractional allocation algorithm. The engine mathematically simulates forward-looking class scenarios, calculates the minimum lecture sequence required to achieve target compliance (e.g., 75%), and determines "Safe Bunks" per subject.
+   - Engineer an attendance optimization engine (`AttendanceOptimizationService`) based on a greedy fractional allocation algorithm. The engine mathematically simulates forward-looking class scenarios, calculates the minimum lecture sequence required to achieve target compliance (e.g., 75%), and determines "Safe Skips" per subject.
 3. **Temporal Attendance Activity Mapping:**
    - Construct a GitHub-style historical activity matrix and heatmap pipeline that parses granular daily lecture attendance records, computing temporal density scores (present vs. absent) to provide visual behavioral feedback.
 4. **Curriculum-Grounded Retrieval-Augmented Generation (RAG):**
@@ -292,7 +292,7 @@ Despite rich academic literature across these sub-disciplines, substantial limit
 
 ### 3.5 Research Gap Addressed by EduVault
 EduVault unifies these disjointed domains into a cohesive, production-grade architectural framework. It addresses the research gap by:
-1. **Closing the Prescription Gap:** Transforming attendance monitoring from passive reporting into an active, deterministic Greedy Optimization Engine that computes exact class-recovery sequences and "Safe Bunks".
+1. **Closing the Prescription Gap:** Transforming attendance monitoring from passive reporting into an active, deterministic Greedy Optimization Engine that computes exact class-recovery sequences and "Safe Skips".
 2. **Implementing a Zero-Cost Hybrid RAG Architecture:** Combining local, embedded in-memory ONNX vector representations (`all-MiniLM-L6-v2`) with ultra-fast remote inference (Groq LLaMA 3.1 8B), eliminating recurring cloud vector-database fees.
 3. **Bridging the Legacy Integration Chasm:** Engineering a headless, session-aware CSRF-bypassing ingestion scraper that programmatically liberates student data from legacy university portals into a modern, high-density reactive dashboard.
 
@@ -307,7 +307,7 @@ EduVault is designed as a Sovereign Academic Management and Pedagogical Intellig
 flowchart TD
     subgraph Client [Presentation Layer: React 19 + Vite]
         UI[Sovereign Bento Grid UI]
-        OptimizerUI[Attendance Optimizer & Safe-Bunk Calculator]
+        OptimizerUI[Attendance Optimizer & Safe-Skip Calculator]
         AITutorUI[Grounded Course Tutor Chat]
         DocViewer[React-PDF / Multi-Format Viewer]
     end
@@ -389,7 +389,7 @@ sequenceDiagram
     Student->>Frontend: Open Attendance Optimizer (Set Target e.g. 75%)
     Frontend->>Backend: POST /api/optimization/calculate
     Backend->>Backend: Execute Greedy Allocation Algorithm
-    Backend-->>Frontend: Return Required Lectures, Safe Bunks, and Risk Level
+    Backend-->>Frontend: Return Required Lectures, Safe Skips, and Risk Level
 
     Student->>Frontend: Ask Course Doubt ("Explain Process Scheduling")
     Frontend->>Backend: POST /api/ai/chat (question, noteId)
@@ -422,7 +422,7 @@ sequenceDiagram
   - Accepts a target aggregate percentage (default: 75.0%) and remaining calendar lectures.
   - Iteratively simulates attending one additional class across all subjects, evaluating the differential marginal benefit ($\Delta P = P_{new} - P_{current}$).
   - Greedily assigns the lecture to the subject offering the highest marginal gain until the aggregate simulated percentage satisfies the threshold.
-  - Computes exact "Safe Bunk" capacity when current attendance exceeds the threshold.
+  - Computes exact "Safe Skip" capacity when current attendance exceeds the threshold.
   - Classifies academic risk state into three discrete levels: `SAFE`, `AT_RISK` ($< target + 2\%$), and `CRITICAL` (mathematically unachievable).
 
 #### Module 3: Grounded AI Tutor & RAG Engine (`RAGService` & `GroqService`)
@@ -544,7 +544,7 @@ The implementation and deployment of EduVault yield tangible, multi-dimensional 
 ### 6.1 Functional Outcomes
 - **Unified Academic Command Center:** Elimination of multi-tab fragmentation by consolidating attendance records, notes, previous year exams, study guides, and doubt clearing into a single dashboard.
 - **Zero-Effort Attendance Synchronization:** Fully automated extraction of student course rosters, attendance percentages, and internal marks directly from the institutional portal in less than 3 seconds via PRN/DOB input.
-- **Prescriptive Attendance Recovery:** Exact calculation of the minimum class attendance sequence required to cross the mandatory 75% threshold, accompanied by "Safe Bunk" quotas for high-attendance courses.
+- **Prescriptive Attendance Recovery:** Exact calculation of the minimum class attendance sequence required to cross the mandatory 75% threshold, accompanied by "Safe Skip" quotas for high-attendance courses.
 - **Syllabus-Bounded AI Q&A:** Accurate, hallucination-free student doubt resolution where responses cite specific uploaded lecture materials and chapters.
 - **Instantaneous Multi-Format Previews:** Automatic server-side conversion of `.pptx` and `.docx` lecture materials into standard `.pdf` format, enabling uniform in-browser document review.
 

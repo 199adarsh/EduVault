@@ -12,7 +12,7 @@ Students often struggle with fragmented academic resources—managing notes on o
 ## 4. Objective
 To create a centralized, deterministic, and highly analytical platform that:
 - Consolidates all academic documents (Notes, PYQs).
-- Automates attendance forecasting and safe-bunk calculations.
+- Automates attendance forecasting and safe-Skip calculations.
 - Provides contextual AI assistance (tutor, study guides, roadmaps) utilizing advanced LLMs and RAG (Retrieval-Augmented Generation).
 - Offers a premium, high-density, dark-mode user experience.
 
@@ -32,7 +32,7 @@ University students, educators, and academic professionals who require a data-de
 3. **Dashboard Rendering**: The frontend displays a Bento-grid dashboard with high-contrast metrics.
 4. **Document Interaction**: Users upload or view Notes/PYQs. The backend parses PDFs/DOCXs, chunks them, and stores vector embeddings.
 5. **AI Tutor**: Users ask doubts in the frontend. The backend retrieves relevant chunks (RAG) and queries the Groq LLM to provide a contextual answer.
-6. **Attendance Optimization**: Users input their target attendance, and the frontend executes a local algorithm to project "Safe Bunks" and required attendances.
+6. **Attendance Optimization**: Users input their target attendance, and the frontend executes a local algorithm to project "Safe Skips" and required attendances.
 
 ## 8. System Architecture
 The application follows a Client-Server Microservices-inspired architecture:
@@ -108,7 +108,7 @@ EduVault/
 ## 13. Core Features
 1. **Portal Scraping & Synchronization**: Automatically logs into the university portal using PRN and DOB, bypassing CSRF tokens, to fetch live attendance and subject data.
 2. **RAG-Powered AI Tutor**: Users can ask questions about specific uploaded documents. The system embeds the document locally, performs vector search, and uses Groq to synthesize an answer.
-3. **Attendance Optimization Engine (Layer-5)**: A frontend algorithm that calculates exactly how many classes a student needs to attend or can afford to miss (Safe Bunks) to hit a target percentage, utilizing a fractional knapsack approach based on subject credits and remaining weeks.
+3. **Attendance Optimization Engine (Layer-5)**: A frontend algorithm that calculates exactly how many classes a student needs to attend or can afford to miss (Safe Skips) to hit a target percentage, utilizing a fractional knapsack approach based on subject credits and remaining weeks.
 4. **Automated Study Guides & Roadmaps**: The backend parses text from PDFs/PPTXs and asks the LLM to identify top exam topics, generate practice questions, and formulate a day-by-day study schedule before an exam.
 
 ## 14. Authentication & Authorization
@@ -195,7 +195,7 @@ EduVault/
 - `backend/.../service/RAGService.java`: Handles local ONNX embeddings, vector storage, and similarity search for document Q&A.
 - `backend/.../service/GroqService.java`: Manages communication with the Groq API, including exponential backoff and rate-limit handling.
 - `backend/.../service/PortalScraperService.java`: Scrapes the university portal for attendance/profile data, managing CSRF and cookies.
-- `frontend/src/components/OptimizationPanel.jsx`: The frontend engine that computes attendance safe-bunks and projected deficits.
+- `frontend/src/components/OptimizationPanel.jsx`: The frontend engine that computes attendance safe-Skips and projected deficits.
 - `DESIGN.md`: The single source of truth for all CSS, spacing, typography, and color tokens for the project.
 
 ## 29. Third-Party Services and Integrations

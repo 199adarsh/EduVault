@@ -13,13 +13,13 @@ The purpose of this document is to provide a complete, definitive specification 
 ### 1.2 Scope
 EduVault is an intelligent, high-density academic management system and pedagogical assistant tailored for tertiary education students. It automates:
 - Headless synchronization with legacy collegiate ERP portals (specifically DKTE Society's portal) to ingest attendance, Continuous Internal Evaluation (CIE) marks, and course rosters.
-- Deterministic attendance optimization using a greedy knapsack allocation algorithm to calculate mandatory lecture attendance sequences and safe-bunk allowances.
+- Deterministic attendance optimization using a greedy knapsack allocation algorithm to calculate mandatory lecture attendance sequences and safe-Skip allowances.
 - Curriculum-bounded, local-first Retrieval-Augmented Generation (RAG) using on-device ONNX embeddings (`all-MiniLM-L6-v2`) and Groq Cloud LPU inference (`LLaMA 3.1 8B`) for syllabus-grounded doubt resolution.
 - Multi-format academic document ingestion, OCR/text extraction, and automatic PDF normalization (PPT, PPTX, DOCX to PDF).
 - Historical examination trend analysis, predictive exam topic matrices, and calendar-constrained study roadmap synthesis.
 
 ### 1.3 Target Audience and User Characteristics
-1. **Undergraduate/Postgraduate Students:** Primary users needing immediate visibility into attendance thresholds, automated safe-bunk calculations, centralized lecture materials, and syllabus-bounded AI tutoring.
+1. **Undergraduate/Postgraduate Students:** Primary users needing immediate visibility into attendance thresholds, automated safe-Skip calculations, centralized lecture materials, and syllabus-bounded AI tutoring.
 2. **Academic Mentors & Faculty Advisors:** Secondary stakeholders who utilize student attendance heatmaps and CIE performance profiles for targeted academic intervention.
 3. **System Administrators:** Responsible for configuring institution portal targets, storage backends (Local JSON / Supabase / Backblaze B2), and Groq API keys.
 
@@ -53,8 +53,8 @@ EduVault is an intelligent, high-density academic management system and pedagogi
 - **FR-2.2 (Greedy Optimization Algorithm):** The backend shall execute a discrete greedy allocation algorithm that iteratively evaluates the marginal attendance benefit:
   $$\Delta B_i = \left(\frac{\text{Attended}_i + \text{ToAttend}_i + 1}{\text{Conducted}_i + \text{ToAttend}_i + 1}\right) - \left(\frac{\text{Attended}_i + \text{ToAttend}_i}{\text{Conducted}_i + \text{ToAttend}_i}\right)$$
   The engine shall iteratively allocate required attendance units to subjects yielding the maximum $\Delta B_i$ until the simulated aggregate reaches the target.
-- **FR-2.3 (Safe-Bunk Computation):** If current attendance exceeds the target threshold, the system shall compute the maximum number of allowable missed lectures ($Bunk_{max}$) such that:
-  $$\frac{\sum \text{Attended}_i}{\sum (\text{Conducted}_i + Bunk_{max})} \ge \text{Target}$$
+- **FR-2.3 (Safe-Skip Computation):** If current attendance exceeds the target threshold, the system shall compute the maximum number of allowable missed lectures ($Skip_{max}$) such that:
+  $$\frac{\sum \text{Attended}_i}{\sum (\text{Conducted}_i + Skip_{max})} \ge \text{Target}$$
 - **FR-2.4 (Risk Categorization):** The system shall categorize attendance status into discrete risk states:
   - `SAFE`: Current or simulated attendance meets target with a buffer $\ge 2\%$.
   - `AT_RISK`: Simulated attendance is within $[Target, Target + 2\%)$.
@@ -188,7 +188,7 @@ usecaseDiagram
     package EduVault {
         usecase UC1 as "Authenticate & Sync Portal Attendance"
         usecase UC2 as "View Daily Attendance Heatmap & Metrics"
-        usecase UC3 as "Compute Attendance Recovery & Safe Bunks"
+        usecase UC3 as "Compute Attendance Recovery & Safe Skips"
         usecase UC4 as "Upload Lecture Notes & Slide Decks"
         usecase UC5 as "Convert PPT/DOCX to PDF for In-Browser View"
         usecase UC6 as "Query Grounded AI Tutor (RAG)"
@@ -736,7 +736,7 @@ Output: OptimizationOutput (achievable, totalToAttend, riskLevel, actionSummary)
      CurrentTotalPercentage += CurrentPercentage
 5. CurrentGlobalAverage = CurrentTotalPercentage / N
 6. IF CurrentGlobalAverage >= TargetPercentage:
-     Calculate SafeBunks capacity across high-attendance subjects
+     Calculate SafeSkips capacity across high-attendance subjects
      RETURN OptimizationOutput(achievable=true, totalToAttend=0, riskLevel="SAFE")
 7. SimulatedTotalPercentage = CurrentTotalPercentage
 8. TotalLecturesToAttend = 0

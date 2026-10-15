@@ -1,0 +1,499 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>EduVault - Previous Year Questions</title>
+<!-- Tailwind CSS CDN with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#0b56e4',
+              900: '#1e3a8a',
+            },
+            surface: {
+              main: '#f8fafc',
+              card: '#ffffff',
+              border: '#e2e8f0',
+              muted: '#64748b'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style data-purpose="base-layout">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    /* Custom scrollbar styling for slick enterprise feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex antialiased bg-[#f8fafc]">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none z-20">
+<div class="p-5 flex flex-col gap-6">
+<!-- App Brand & Identity -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-200">
+<!-- Shield/Logo Icon -->
+<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"></path>
+</svg>
+</div>
+<div>
+<span class="text-base font-bold tracking-tight text-slate-900 block leading-tight">EduVault</span>
+<span class="text-[11px] font-medium tracking-wide text-slate-400 uppercase">Sovereign System</span>
+</div>
+</div>
+<!-- Navigation Section -->
+<div>
+<p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">WORKSPACE</p>
+<nav class="space-y-1">
+<!-- Nav Item: Home -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Home</span>
+</a>
+<!-- Nav Item: Notes -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Notes</span>
+</a>
+<!-- Nav Item: PYQs (Active State) -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-blue-600 bg-blue-50/80 rounded-lg border border-blue-100 transition-colors" href="#">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>PYQs</span>
+</a>
+<!-- Nav Item: Roadmaps -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Roadmaps</span>
+</a>
+<!-- Nav Item: AI Assistant with Pro Badge -->
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>AI Assistant</span>
+</div>
+<span class="text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200/60 rounded px-1.5 py-0.5 leading-none">Pro</span>
+</a>
+<!-- Nav Item: Announcements -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Announcements</span>
+</a>
+<!-- Nav Item: Attendance with 94% badge -->
+<a class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Attendance</span>
+</div>
+<span class="text-[11px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/60 rounded px-1.5 py-0.5 leading-none">94%</span>
+</a>
+<!-- Nav Item: Optimization -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Optimization</span>
+</a>
+<!-- Nav Item: Settings -->
+<a class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Settings</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Bottom Sidebar User Badge -->
+<div class="p-4 border-t border-slate-200">
+<div class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-100/60 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<span class="text-xs font-semibold text-slate-800 block">Adarsh Herwade</span>
+<span class="text-[11px] text-slate-500 font-medium">PRN : 24UAD022</span>
+</div>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-50"></span>
+</div>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContentArea -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- BEGIN: TopBar -->
+<header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 sticky top-0 z-10">
+<!-- Search Input Container -->
+<div class="relative w-96">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="w-full pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder-slate-400 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Search courses, roadmaps, assets, notices..." type="text">
+</div>
+<!-- Top Right Status Indicators & Profile -->
+<div class="flex items-center gap-4">
+<!-- Student Pill Tag -->
+<div class="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>For Students</span>
+</div>
+<!-- Attendance Status Badge -->
+<div class="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-100">
+<svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Attendance 94%</span>
+</div>
+<!-- Bell Notification Icon -->
+<button class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-50 relative transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+</button>
+<!-- Vertical Divider -->
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Student Profile Avatar & Info -->
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-blue-600 text-white font-semibold text-xs flex items-center justify-center ring-2 ring-blue-100 shadow-sm">
+            AH
+          </div>
+<div class="text-left">
+<span class="text-xs font-bold text-slate-800 block leading-tight">Adarsh Herwade</span>
+<span class="text-[11px] text-slate-400 font-medium">24UAD022 • AI&amp;DS 5th Sem</span>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: PageMainContent -->
+<main class="p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6" data-purpose="pyq-repository">
+<!-- BEGIN: PageHeader -->
+<section class="flex items-center justify-between flex-wrap gap-4" data-purpose="header-section">
+<div>
+<!-- Eyebrow label -->
+<div class="flex items-center gap-2 text-xs font-semibold text-blue-600 tracking-wide mb-1">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="uppercase tracking-wider text-[11px]">INSTITUTIONAL REPOSITORY</span>
+</div>
+<h1 class="text-2xl font-bold text-slate-900 tracking-tight">Previous Year Questions</h1>
+<p class="text-xs font-normal text-slate-500 mt-1">Official past examination papers &amp; examination sequence mapping</p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3">
+<!-- Launch AI Predictor Button -->
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-sm active:scale-95" data-purpose="ai-predictor-trigger" type="button">
+<!-- AI / Sparkle Brain Icon -->
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>LAUNCH AI PREDICTOR</span>
+</button>
+<!-- Ingest Record Primary Button -->
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all shadow-sm active:scale-95" data-purpose="ingest-record-action" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>INGEST RECORD</span>
+</button>
+</div>
+</section>
+<!-- END: PageHeader -->
+<!-- BEGIN: SearchAndFiltersBar -->
+<section class="bg-white border border-slate-200/90 rounded-xl p-3 shadow-sm flex flex-col md:flex-row items-center gap-3" data-purpose="search-filters">
+<!-- Historical Sequence Search Input -->
+<div class="relative flex-1 w-full">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="w-full pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Search historical sequences..." type="text">
+</div>
+<!-- Filter Dropdown 1: Global Archive -->
+<div class="relative w-full md:w-56">
+<select class="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer">
+<option>GLOBAL ARCHIVE</option>
+<option>Autonomous Syllabus (2023 - 2026)</option>
+<option>Legacy Autonomous (2020 - 2023)</option>
+<option>Affiliated University Records</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Filter Dropdown 2: All Exams -->
+<div class="relative w-full md:w-48">
+<select class="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer">
+<option>ALL EXAMS</option>
+<option>End Semester Exam (ESE)</option>
+<option>Mid Semester Exam (MSE)</option>
+<option>In-Sem Evaluation (ISE)</option>
+<option>Unit Test (UT)</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</section>
+<!-- END: SearchAndFiltersBar -->
+<!-- BEGIN: QuestionRecordsTable -->
+<section class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm" data-purpose="records-table-container">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse" id="vault-records-table">
+<!-- Table Header -->
+<thead>
+<tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 tracking-wider">
+<th class="py-3 px-6 uppercase w-5/12" scope="col">Subject Name</th>
+<th class="py-3 px-6 uppercase w-2/12" scope="col">Exam</th>
+<th class="py-3 px-6 uppercase w-2/12" scope="col">Release</th>
+<th class="py-3 px-6 uppercase w-2/12" scope="col">Labels</th>
+<th class="py-3 px-6 uppercase w-1/12 text-center" scope="col">Vault</th>
+</tr>
+</thead>
+<!-- Table Body -->
+<tbody class="divide-y divide-slate-100 text-xs">
+<!-- Record Row 1: General Record (From snapshot) -->
+<tr class="hover:bg-blue-50/30 transition-colors group">
+<td class="py-3.5 px-6">
+<div class="flex items-center gap-3">
+<span class="w-1.5 h-5 bg-blue-600 rounded-full shrink-0"></span>
+<div>
+<span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">General Record</span>
+<span class="block text-[11px] text-slate-400 font-normal">Core Sequence Archetype</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                    ESE
+                  </span>
+</td>
+<td class="py-3.5 px-6 font-medium text-slate-600">
+                  2026
+                </td>
+<td class="py-3.5 px-6">
+<span class="text-slate-400 italic font-normal text-[11px]">Unlabeled</span>
+</td>
+<td class="py-3.5 px-6 text-center">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="View Question Paper" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Record Row 2: Machine Learning -->
+<tr class="hover:bg-blue-50/30 transition-colors group">
+<td class="py-3.5 px-6">
+<div class="flex items-center gap-3">
+<span class="w-1.5 h-5 bg-blue-600 rounded-full shrink-0"></span>
+<div>
+<span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">Machine Learning</span>
+<span class="block text-[11px] text-slate-400 font-normal">Supervised, Unsupervised &amp; Neural Nets</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    ESE
+                  </span>
+</td>
+<td class="py-3.5 px-6 font-medium text-slate-600">
+                  2025
+                </td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                    High Yield
+                  </span>
+</td>
+<td class="py-3.5 px-6 text-center">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="View Question Paper" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Record Row 3: Database Engineering -->
+<tr class="hover:bg-blue-50/30 transition-colors group">
+<td class="py-3.5 px-6">
+<div class="flex items-center gap-3">
+<span class="w-1.5 h-5 bg-blue-600 rounded-full shrink-0"></span>
+<div>
+<span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">Database Engineering</span>
+<span class="block text-[11px] text-slate-400 font-normal">Relational Indexing &amp; Query Tuning</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    MSE
+                  </span>
+</td>
+<td class="py-3.5 px-6 font-medium text-slate-600">
+                  2025
+                </td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                    Solved
+                  </span>
+</td>
+<td class="py-3.5 px-6 text-center">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="View Question Paper" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Record Row 4: Advanced Web Technologies -->
+<tr class="hover:bg-blue-50/30 transition-colors group">
+<td class="py-3.5 px-6">
+<div class="flex items-center gap-3">
+<span class="w-1.5 h-5 bg-blue-600 rounded-full shrink-0"></span>
+<div>
+<span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">Advanced Web Technologies</span>
+<span class="block text-[11px] text-slate-400 font-normal">Full-Stack Architectures &amp; Distributed APIs</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                    UT-2
+                  </span>
+</td>
+<td class="py-3.5 px-6 font-medium text-slate-600">
+                  2024
+                </td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                    Model Answer
+                  </span>
+</td>
+<td class="py-3.5 px-6 text-center">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="View Question Paper" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Record Row 5: Deep Learning & Vision -->
+<tr class="hover:bg-blue-50/30 transition-colors group">
+<td class="py-3.5 px-6">
+<div class="flex items-center gap-3">
+<span class="w-1.5 h-5 bg-blue-600 rounded-full shrink-0"></span>
+<div>
+<span class="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">Deep Learning &amp; Computer Vision</span>
+<span class="block text-[11px] text-slate-400 font-normal">CNNs, Visual Transformers &amp; OpenCV</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    ESE
+                  </span>
+</td>
+<td class="py-3.5 px-6 font-medium text-slate-600">
+                  2024
+                </td>
+<td class="py-3.5 px-6">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Verified
+                  </span>
+</td>
+<td class="py-3.5 px-6 text-center">
+<button class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="View Question Paper" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
+<span>Showing <strong class="font-semibold text-slate-700">5</strong> of <strong class="font-semibold text-slate-700">32</strong> archived papers</span>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-md bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-600 font-medium" disabled="">Previous</button>
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-md bg-white hover:bg-slate-50 text-slate-700 font-medium">Next</button>
+</div>
+</div>
+</section>
+<!-- END: QuestionRecordsTable -->
+</main>
+<!-- END: PageMainContent -->
+</div>
+<!-- END: MainContentArea -->
+</body></html>

@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html class="h-full bg-slate-50" lang="en" style="">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>EduVault - My Attendance</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        unstop: {
+                            blue: '#0B56E4',
+                            'blue-hover': '#0845B8',
+                            'blue-light': '#EFF5FF',
+                            dark: '#0F172A',
+                            subtle: '#64748B',
+                            border: '#E2E8F0',
+                            surface: '#F8FAFC',
+                            success: '#059669',
+                            'success-bg': '#ECFDF5',
+                            warning: '#D97706',
+                            'warning-bg': '#FFFBEB',
+                            danger: '#DC2626',
+                            'danger-bg': '#FEF2F2'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style data-purpose="custom-scrollbars">
+        /* Subtle scrollbar for modern light UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body
+    class="h-full flex overflow-hidden font-sans text-slate-800 antialiased selection:bg-blue-100 selection:text-unstop-blue">
+    <!-- BEGIN: LeftSidebar -->
+    <aside class="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col justify-between h-full z-20"
+        data-purpose="main-navigation">
+        <div>
+            <!-- EduVault Brand Header -->
+            <div class="h-16 px-6 flex items-center gap-3 border-b border-slate-100">
+                <div
+                    class="h-9 w-9 rounded-lg bg-unstop-blue flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2.5"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-900 tracking-tight text-lg leading-none">EduVault</span>
+                    <span
+                        class="block text-[10px] font-semibold tracking-wider text-slate-400 uppercase mt-0.5">Sovereign
+                        Portal</span>
+                </div>
+            </div>
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1 text-sm font-medium">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    Home
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    Notes
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    PYQs
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    Roadmaps
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"></path>
+                    </svg>
+                    AI Assistant
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    Announcements
+                </a>
+                <!-- Active Tab: Attendance -->
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-unstop-blue-light text-unstop-blue font-semibold border-l-4 border-unstop-blue transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-unstop-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    Attendance
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"></path>
+                    </svg>
+                    Optimization
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    href="#">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"></path>
+                    </svg>
+                    Settings
+                </a>
+            </nav>
+        </div>
+        <!-- User Profile Footer -->
+        <div class="p-3 border-t border-slate-100">
+            <div class="flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200/60">
+                <div
+                    class="h-9 w-9 rounded-full bg-slate-900 text-white font-semibold text-xs flex items-center justify-center ring-2 ring-white">
+                    AD
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-slate-900 truncate">ADARSH</p>
+                    <p class="text-[11px] text-slate-500 truncate font-mono">24UAD022</p>
+                </div>
+                <button class="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors" title="Switch Account"
+                    type="button">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 9l4-4 4 4m0 6l-4 4-4-4" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+    <!-- END: LeftSidebar -->
+    <!-- BEGIN: RightMainContainer -->
+    <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        <!-- BEGIN: TopBar -->
+        <header
+            class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0 z-10"
+            data-purpose="top-navigation">
+            <!-- Global Search -->
+            <div class="flex items-center w-96 relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"
+                            stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                </span>
+                <input
+                    class="w-full text-xs pl-9 pr-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-unstop-blue focus:border-unstop-blue focus:bg-white transition-all"
+                    placeholder="Search subjects, attendance, roadmaps..." type="text">
+            </div>
+            <!-- Right Profile & Badges -->
+            <div class="flex items-center gap-4">
+                <!-- Live Sync Pill -->
+                <div
+                    class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium border border-emerald-200">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="">78.6% Attendance • Live Sync</span>
+                </div>
+                <!-- Notification Bell -->
+                <button
+                    class="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors"
+                    title="Notifications">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    <span class="absolute top-1.5 right-1.5 h-2 w-2 bg-rose-500 rounded-full"></span>
+                </button>
+                <div class="h-6 w-px bg-slate-200"></div>
+                <!-- Student Profile Pill -->
+                <div class="flex items-center gap-2.5 pl-1">
+                    <div
+                        class="h-8 w-8 rounded-full bg-blue-100 text-unstop-blue flex items-center justify-center font-bold text-xs">
+                        AH
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-semibold text-slate-900 leading-tight">Adarsh Herwade</p>
+                        <p class="text-[11px] text-slate-500">24UAD022 • AI&amp;DS 5th Sem</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- END: TopBar -->
+        <!-- BEGIN: ScrollableContent -->
+        <main class="flex-1 overflow-y-auto bg-slate-50/60 p-8" data-purpose="dashboard-content">
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Title & Action Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <div
+                            class="flex items-center gap-2 text-xs font-semibold text-unstop-blue uppercase tracking-wider mb-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"></path>
+                            </svg>
+                            Academic Standing
+                        </div>
+                        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Attendance</h1>
+                        <p class="text-xs text-slate-500 mt-0.5">Quantitative presence tracking &amp; risk analysis
+                            across registered coursework</p>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <button
+                            class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-sm transition">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                            Refresh Data
+                        </button>
+                        <button
+                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-unstop-blue hover:bg-unstop-blue-hover rounded-lg shadow-sm transition">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                            </svg>
+                            Export Data
+                        </button>
+                    </div>
+                </div>
+                <!-- BEGIN: TopSummaryRibbon -->
+                <section class="grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="summary-ribbon">
+                    <!-- Master Attendance Card -->
+                    <div
+                        class="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Master
+                                Attendance</span>
+                            <span
+                                class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                Above (75%)
+                            </span>
+                        </div>
+                        <div class="my-3 flex items-baseline gap-2">
+                            <span class="text-4xl font-extrabold text-slate-900 tracking-tight">78.6%</span>
+                            <span class="text-xs text-slate-400 font-medium">overall</span>
+                        </div>
+                        <!-- Breakdown Theory / Labs -->
+                        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 text-xs">
+                            <div class="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                                <div class="flex items-center justify-between text-slate-500 mb-1">
+                                    <span class="font-medium">Lectures</span>
+                                    <span class="font-bold text-slate-800">73.2%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-amber-500 h-1.5 rounded-full" style="width: 73.2%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100">
+                                <div class="flex items-center justify-between text-slate-500 mb-1">
+                                    <span class="font-medium">Labs</span>
+                                    <span class="font-bold text-slate-800">88.1%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 88.1%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Activity Overview Heatmap -->
+                    <div
+                        class="md:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Activity
+                                Overview</span>
+                            <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                                <span class="">Less</span>
+                                <span
+                                    class="w-2.5 h-2.5 rounded-sm bg-slate-100 border border-slate-200 inline-block"></span>
+                                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-300 inline-block"></span>
+                                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600 inline-block"></span>
+                                <span class="">More</span>
+                            </div>
+                        </div>
+                        <!-- Weekly Matrix Representation -->
+                        <div class="my-auto py-2">
+                            <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                                <div class="flex flex-col gap-1.5 font-mono text-[10px] text-slate-400 pr-1">
+                                    <span class="">MON</span>
+                                    <span class="">WED</span>
+                                    <span class="">FRI</span>
+                                </div>
+                                <!-- 16 weeks mini matrix -->
+                                <div class="flex-1 grid grid-flow-col grid-rows-3 gap-1.5">
+                                    <!-- Row 1 Mon -->
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-rose-400"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-rose-400"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-rose-400"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-600"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-emerald-500"></div>
+                                    <div class="w-3.5 h-3.5 rounded-sm bg-slate-100"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Consistent record over 12 academic weeks</p>
+                    </div>
+                    <!-- 4 Risk Nodes Summary -->
+                    <div
+                        class="md:col-span-3 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span
+                                class="text-xs font-semibold uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
+                                <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                4 Risk Nodes
+                            </span>
+                            <span class="text-[11px] font-medium text-slate-400">&lt; 75% Cutoff</span>
+                        </div>
+                        <div class="my-2 space-y-2 text-xs">
+                            <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                                <span class="text-slate-700 truncate pr-2 font-medium">Advanced Web Tech</span>
+                                <span class="font-semibold text-rose-600 font-mono">66.7%</span>
+                            </div>
+                            <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                                <span class="text-slate-700 truncate pr-2 font-medium">Database Eng Lab</span>
+                                <span class="font-semibold text-rose-600 font-mono">66.7%</span>
+                            </div>
+                            <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                                <span class="text-slate-700 truncate pr-2 font-medium">Feature Engineering</span>
+                                <span class="font-semibold text-rose-600 font-mono">63.0%</span>
+                            </div>
+                            <div class="flex items-center justify-between py-1">
+                                <span class="text-slate-700 truncate pr-2 font-medium">Startup &amp; Entrep.</span>
+                                <span class="font-semibold text-rose-600 font-mono">70.8%</span>
+                            </div>
+                        </div>
+                        <div class="text-[11px] text-slate-400">Immediate recovery action advised</div>
+                    </div>
+                </section>
+                <!-- END: TopSummaryRibbon -->
+                <!-- BEGIN: MainTwoColumnArea -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Left Column: Primary Subject Attendance Table (~68% / 8 cols) -->
+                    <section class="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+                        data-purpose="subject-breakdown-card">
+                        <!-- Filter Bar -->
+                        <div
+                            class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+                                <button class="px-3 py-1.5 rounded-md bg-white text-slate-900 shadow-sm transition">All
+                                    Subjects (11)</button>
+                                <button
+                                    class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition">Needs
+                                    Attention (4)</button>
+                                <button
+                                    class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition">Safe
+                                    (7)</button>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium">Minimum Threshold: 75.0%</span>
+                        </div>
+                        <!-- Subject Rows Table -->
+                        <div class="divide-y divide-slate-100">
+                            <!-- Item 1: Database Engineering -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Database Engineering
+                                        </h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">34 / 51 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <!-- Minimal Progress Bar -->
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 82.9%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">82.9%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            4 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 2: Machine Learning -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Machine Learning</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">32 / 50 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 76.2%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">76.2%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            0 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 3: Advanced Web Technology (Risk) -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/20">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-amber-100/60 text-amber-700 mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Advanced Web
+                                            Technology</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">20 / 53 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-amber-500 h-1.5 rounded-full" style="width: 66.7%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-amber-600">66.7%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                            Attend 20 More
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 4: Database Engineering Lab (Risk) -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/20">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-amber-100/60 text-amber-700 mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Database Engineering
+                                            Lab</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">4 / 14 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-amber-500 h-1.5 rounded-full" style="width: 66.7%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-amber-600">66.7%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                            Attend 7 More
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 5: Machine Learning using Python Lab -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Machine Learning using
+                                            Python Lab</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">12 / 20 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 85.7%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">85.7%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            2 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 6: Mini Project II -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Mini Project II</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">7 / 16 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 77.8%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">77.8%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            0 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 7: Feature Engineering (Risk) -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/20">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-amber-100/60 text-amber-700 mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Feature Engineering
+                                        </h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">17 / 50 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-amber-500 h-1.5 rounded-full" style="width: 63%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-amber-600">63.0%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                            Attend 21 More
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 8: Feature Engineering Lab -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Feature Engineering
+                                            Lab</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">10 / 17 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">100%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            3 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 9: IoT Implementation Using Raspberry Pi -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">IoT Implementation
+                                            Using Raspberry Pi</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">18 / 147 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 75%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">75.0%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            0 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 10: IoT Implementation Using Raspberry Pi Lab -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-blue-50 text-unstop-blue mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">IoT Implementation
+                                            Using Raspberry Pi Lab</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">10 / 293 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-slate-900">100%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                            3 Skips Available
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Item 11: Startup and Entrepreneurship (Risk) -->
+                            <div
+                                class="p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/20">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <div class="p-2 rounded-lg bg-amber-100/60 text-amber-700 mt-0.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-sm font-semibold text-slate-900 truncate">Startup and
+                                            Entrepreneurship</h3>
+                                        <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span class="">17 / 256 sessions</span>
+                                            <span class="text-slate-300">•</span>
+                                            <span class="">Target: 75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2">
+                                            <div class="bg-amber-500 h-1.5 rounded-full" style="width: 70.8%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center flex-shrink-0 gap-1.5">
+                                    <div class="text-right">
+                                        <span class="text-base font-bold text-amber-600">70.8%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                            Attend 175 More
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Right Column: Session Audit Rail (~32% / 4 cols) -->
+                    <section class="lg:col-span-4 space-y-4" data-purpose="session-audit-rail">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+                            <!-- Session Header -->
+                            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                                <div>
+                                    <h2 class="text-sm font-bold text-slate-900">Session Audit</h2>
+                                    <p class="text-[11px] text-slate-400">Recent chronological logs</p>
+                                </div>
+                                <button
+                                    class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-md transition"
+                                    title="Filter sessions">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- Log timeline list -->
+                            <div class="py-2 space-y-3">
+                                <!-- Log 1 -->
+                                <div
+                                    class="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-mono text-slate-400">09-10-2026 • 09:40 -
+                                            11:40</span>
+                                        <span
+                                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                            PRESENT
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-800">Mini Project II</p>
+                                </div>
+                                <!-- Log 2 -->
+                                <div
+                                    class="p-3 rounded-lg border border-rose-100 bg-rose-50/30 hover:bg-rose-50/50 transition">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-mono text-slate-400">09-10-2026 • 11:50 -
+                                            12:50</span>
+                                        <span
+                                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">
+                                            ABSENT
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-800">Startup and Entrepreneurship</p>
+                                </div>
+                                <!-- Log 3 -->
+                                <div
+                                    class="p-3 rounded-lg border border-rose-100 bg-rose-50/30 hover:bg-rose-50/50 transition">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-mono text-slate-400">08-10-2026 • 12:50 -
+                                            13:50</span>
+                                        <span
+                                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">
+                                            ABSENT
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-800">Advanced Web Technology</p>
+                                </div>
+                                <!-- Log 4 -->
+                                <div
+                                    class="p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-mono text-slate-400">08-10-2026 • 11:50 -
+                                            13:50</span>
+                                        <span
+                                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                            PRESENT
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-800">Machine Learning using Python Lab
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- Regulatory Policy Notice Footer -->
+                            <div
+                                class="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 leading-relaxed bg-slate-50/80 p-3 rounded-lg">
+                                <div class="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
+                                    <svg class="w-3.5 h-3.5 text-unstop-blue" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                                    </svg>
+                                    Academic Attendance Policy
+                                </div>
+                                75% minimum physical presence is mandatory for End-Semester Examination eligibility.
+                                Medical condonation forms must be submitted within 7 calendar days of recovery.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- END: MainTwoColumnArea -->
+            </div>
+        </main>
+        <!-- END: ScrollableContent -->
+    </div>
+    <!-- END: RightMainContainer -->
+
+
+</body>
+
+</html>

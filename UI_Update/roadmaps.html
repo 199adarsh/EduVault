@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" style="">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="web_dashboard" name="shell-type">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        @layer base {
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                overscroll-behavior: none;
+            }
+
+            main>:first-child {
+                margin-top: 0 !important;
+            }
+
+            main>:last-child {
+                margin-bottom: 0 !important;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+        id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "status-danger-text": "#B91C1C", "border-subtle": "#E2E8F0", "text-primary": "#1E293B", "tertiary-fixed": "#ffdea8", "surface-container-low": "#eff4ff", "status-success-bg": "#DCFCE7", "on-primary-container": "#d7deff", "on-surface-variant": "#434655", "secondary": "#00696e", "primary": "#0040b3", "surface-dim": "#cbdbf5", "primary-fixed": "#dbe1ff", "inverse-on-surface": "#eaf1ff", "primary-container": "#0b56e4", "badge-purple-text": "#7E22CE", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002022", "surface-container-highest": "#d3e4fe", "status-danger-bg": "#FEE2E2", "surface-container": "#e5eeff", "inverse-surface": "#213145", "outline": "#737686", "text-secondary": "#64748B", "tertiary-container": "#825c00", "surface": "#f8f9ff", "surface-card": "#FFFFFF", "on-primary": "#ffffff", "on-tertiary-fixed": "#271900", "error-container": "#ffdad6", "on-tertiary-container": "#ffdb9d", "on-error-container": "#93000a", "secondary-fixed": "#6bf6ff", "surface-subtle-blue": "#F0F6FE", "tertiary-fixed-dim": "#ffba20", "surface-bright": "#f8f9ff", "on-primary-fixed": "#00174c", "surface-container-high": "#dce9ff", "inverse-primary": "#b4c4ff", "outline-variant": "#c3c5d7", "on-error": "#ffffff", "surface-variant": "#d3e4fe", "secondary-container": "#61f4fd", "status-success-text": "#15803D", "on-secondary-container": "#006e73", "border-hover": "#CBD5E1", "error": "#ba1a1a", "badge-purple-bg": "#F3E8FF", "on-tertiary-fixed-variant": "#5e4200", "primary-fixed-dim": "#b4c4ff", "secondary-fixed-dim": "#3edae3", "on-surface": "#0b1c30", "surface-tint": "#0052de", "on-secondary": "#ffffff", "on-secondary-fixed-variant": "#004f53", "on-background": "#0b1c30", "surface-container-lowest": "#ffffff", "tertiary": "#634600", "canvas-bg": "#F7F9FC", "background": "#f8f9ff", "on-primary-fixed-variant": "#003daa" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2.25rem", "space-md": "1rem", "gutter": "1.25rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin": "2rem", "gutter-mobile": "0.75rem", "space-lg": "1.5rem" }, "fontFamily": { "title-md": ["Inter"], "headline-lg-mobile": ["Inter"], "title-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-sm": ["Inter"], "headline-md": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "display": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "title-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "label-md": ["13px", { "lineHeight": "18px", "fontWeight": "500" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }] } } } };</script>
+</head>
+
+<body class="bg-canvas-bg font-body-md text-on-surface antialiased min-h-screen">
+    <aside
+        class="fixed left-0 top-0 h-full w-64 bg-surface-card z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+        <div class="h-16 px-space-md flex items-center gap-space-sm bg-surface-card">
+            <div
+                class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+                <span class="material-symbols-outlined text-[22px]">shield</span></div>
+            <div class="flex flex-col"><span
+                    class="font-title-md text-title-md text-text-primary tracking-tight leading-none">EduVault</span><span
+                    class="font-label-sm text-label-sm text-text-secondary leading-tight mt-0.5">Sovereign System</span>
+            </div>
+        </div>
+        <div class="px-space-md py-space-sm flex-1 overflow-y-auto">
+            <div
+                class="font-label-sm text-label-sm text-text-secondary uppercase px-space-sm py-space-xs tracking-wider">
+                Workspace</div>
+            <nav class="space-y-1 mt-space-xs"
+                data-active-classes="bg-surface-subtle-blue text-primary font-title-sm font-semibold"><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">home</span><span
+                        class="font-title-sm text-title-sm">Home</span></a><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="notes" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span><span
+                        class="font-title-sm text-title-sm">Notes</span></a><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="pyqs" href="#"><span class="material-symbols-outlined text-[20px]">quiz</span><span
+                        class="font-title-sm text-title-sm">PYQs</span></a><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="roadmaps" href="#"><span
+                        class="material-symbols-outlined text-[20px]">alt_route</span><span
+                        class="font-title-sm text-title-sm">Roadmaps</span></a><a
+                    class="flex items-center justify-between px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="ai-assistant" href="#">
+                    <div class="flex items-center gap-space-sm"><span
+                            class="material-symbols-outlined text-[20px] text-badge-purple-text">smart_toy</span><span
+                            class="font-title-sm text-title-sm">AI Assistant</span></div><span
+                        class="px-2 py-0.5 rounded-full bg-badge-purple-bg text-badge-purple-text font-label-sm text-label-sm">Pro</span>
+                </a><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="announcements" href="#"><span
+                        class="material-symbols-outlined text-[20px]">campaign</span><span
+                        class="font-title-sm text-title-sm">Announcements</span></a><a
+                    class="flex items-center justify-between px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="attendance" href="#">
+                    <div class="flex items-center gap-space-sm"><span
+                            class="material-symbols-outlined text-[20px]">event_available</span><span
+                            class="font-title-sm text-title-sm">Attendance</span></div><span
+                        class="px-2 py-0.5 rounded-full bg-status-success-bg text-status-success-text font-label-sm text-label-sm">94%</span>
+                </a><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="optimization" href="#"><span
+                        class="material-symbols-outlined text-[20px]">tune</span><span
+                        class="font-title-sm text-title-sm">Optimization</span></a><a
+                    class="flex items-center gap-space-sm px-space-sm py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all"
+                    data-path="settings" href="#"><span
+                        class="material-symbols-outlined text-[20px]">settings</span><span
+                        class="font-title-sm text-title-sm">Settings</span></a></nav>
+        </div>
+        <div class="p-space-md bg-surface-card">
+            <div class="p-space-sm rounded-xl bg-surface-subtle-blue flex items-center justify-between">
+                <div class="flex items-center gap-space-xs"><span
+                        class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+                    <div class="flex flex-col"><span class="font-label-sm text-label-sm text-text-primary">Active
+                            Session</span><span class="font-label-sm text-label-sm text-text-secondary">Semester 5
+                            Node</span></div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-status-success-text"></div>
+            </div>
+        </div>
+    </aside>
+    <div class="pl-64">
+        <header
+            class="fixed top-0 left-64 right-0 h-16 bg-surface-card/90 backdrop-blur-xl z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+            <div class="flex items-center gap-space-md flex-1 max-w-xl">
+                <div class="relative w-full max-w-md"><span
+                        class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span><input
+                        class="w-full h-10 pl-10 pr-4 rounded-full bg-surface-container-lowest text-text-primary placeholder:text-text-secondary font-body-md text-body-md shadow-[0_1px_4px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-primary-container/20"
+                        placeholder="Search courses, roadmaps, assets, notices..." type="text"></div>
+            </div>
+            <div class="flex items-center gap-space-md"><button
+                    class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-subtle-blue text-primary font-title-sm text-title-sm hover:bg-surface-container-high hover:text-primary transition-colors"><span
+                        class="material-symbols-outlined text-[16px]">school</span>For Students</button>
+                <div
+                    class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-success-bg text-status-success-text font-label-md text-label-md">
+                    <span class="material-symbols-outlined text-[16px]">task_alt</span>Attendance 94%</div><button
+                    class="relative w-9 h-9 rounded-full bg-surface-container-low flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-container transition-colors"><span
+                        class="material-symbols-outlined text-[20px]">notifications</span><span
+                        class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-surface-card"></span></button>
+                <div class="flex items-center gap-space-sm pl-space-xs">
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span
+                            class="material-symbols-outlined text-on-primary text-[18px]">person</span></div>
+                    <div class="hidden md:flex flex-col text-left"><span
+                            class="font-title-sm text-title-sm text-text-primary leading-none">Adarsh
+                            Herwade</span><span
+                            class="font-label-sm text-label-sm text-text-secondary leading-tight mt-0.5">24UAD022 •
+                            AI&amp;DS 5th Sem</span></div>
+                </div>
+            </div>
+        </header>
+        <main class="relative pt-16 w-full min-h-screen px-space-lg py-space-md bg-canvas-bg">
+            <div class="flex flex-col w-full">
+                <div class="max-w-[1360px] mx-auto w-full flex flex-col gap-space-lg pb-12">
+                    <!-- Active Hub Highlight Banner -->
+
+                    <!-- Header & Interactive Category Filter Controls -->
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-subtle">
+                        <div class="flex flex-col">
+                            <h1 class="text-2xl font-bold text-text-primary tracking-tight">Course Library</h1>
+                            <p class="text-body-md text-text-secondary mt-0.5">Select a roadmap to begin your tech
+                                specialization journey.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2" id="categoryFilterContainer"><button
+                                class="filter-pill active-pill px-4 py-1.5 rounded-full text-title-sm font-semibold transition-all duration-200 bg-primary text-on-primary shadow-sm"
+                                data-filter="all">All</button><button
+                                class="filter-pill px-4 py-1.5 rounded-full text-title-sm font-medium transition-all duration-200 bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-container-low border border-subtle shadow-sm"
+                                data-filter="javascript">JavaScript</button><button
+                                class="filter-pill px-4 py-1.5 rounded-full text-title-sm font-medium transition-all duration-200 bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-container-low border border-subtle shadow-sm"
+                                data-filter="cpp">C++</button><button
+                                class="filter-pill px-4 py-1.5 rounded-full text-title-sm font-medium transition-all duration-200 bg-surface-card text-text-secondary hover:text-text-primary hover:bg-surface-container-low border border-subtle shadow-sm"
+                                data-filter="git">Git</button></div>
+                    </div>
+                    <!-- Overview Metrics Summary Bar -->
+
+                    <!-- Course Grid Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md" id="courseGrid">
+                        <!-- Card 1: Learn JavaScript --><a href="#"
+                            class="course-card group bg-surface-card rounded-2xl p-6 border border-subtle flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                            data-category="javascript">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-surface-subtle-blue flex items-center justify-center text-primary mb-5 group-hover:scale-105 transition-transform duration-200">
+                                <span class="material-symbols-outlined text-[36px]"
+                                    style="font-variation-settings: 'FILL' 1;">folder</span></div>
+                            <h3
+                                class="text-lg font-bold text-text-primary group-hover:text-primary transition-colors mb-1">
+                                Learn JavaScript</h3>
+                            <p class="text-sm text-text-secondary font-medium">10 Modules</p>
+                        </a><!-- Card 2: Chai aur C++ --><a href="#"
+                            class="course-card group bg-surface-card rounded-2xl p-6 border border-subtle flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                            data-category="cpp">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-surface-subtle-blue flex items-center justify-center text-primary mb-5 group-hover:scale-105 transition-transform duration-200">
+                                <span class="material-symbols-outlined text-[36px]"
+                                    style="font-variation-settings: 'FILL' 1;">folder</span></div>
+                            <h3
+                                class="text-lg font-bold text-text-primary group-hover:text-primary transition-colors mb-1">
+                                Chai aur C++</h3>
+                            <p class="text-sm text-text-secondary font-medium">4 Modules</p>
+                        </a><!-- Card 3: Master Git & GitHub --><a href="#"
+                            class="course-card group bg-surface-card rounded-2xl p-6 border border-subtle flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                            data-category="git">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-surface-subtle-blue flex items-center justify-center text-primary mb-5 group-hover:scale-105 transition-transform duration-200">
+                                <span class="material-symbols-outlined text-[36px]"
+                                    style="font-variation-settings: 'FILL' 1;">folder</span></div>
+                            <h3
+                                class="text-lg font-bold text-text-primary group-hover:text-primary transition-colors mb-1">
+                                Master Git &amp; GitHub</h3>
+                            <p class="text-sm text-text-secondary font-medium">2 Modules</p>
+                        </a><!-- Card 4: Complete JS Domination --><a href="#"
+                            class="course-card group bg-surface-card rounded-2xl p-6 border border-subtle flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+                            data-category="javascript">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-surface-subtle-blue flex items-center justify-center text-primary mb-5 group-hover:scale-105 transition-transform duration-200">
+                                <span class="material-symbols-outlined text-[36px]"
+                                    style="font-variation-settings: 'FILL' 1;">folder</span></div>
+                            <h3
+                                class="text-lg font-bold text-text-primary group-hover:text-primary transition-colors mb-1">
+                                Complete JS Domination</h3>
+                            <p class="text-sm text-text-secondary font-medium">2 Modules</p>
+                        </a></div>
+                    <!-- Suggested Roadmap Pathway / Mentorship Banner -->
+
+                </div>
+            </div>
+            <script>
+                (function () {
+                    const filterButtons = document.querySelectorAll('#categoryFilterContainer .filter-pill');
+                    const cards = document.querySelectorAll('#courseGrid .course-card');
+
+                    filterButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            const selectedFilter = button.getAttribute('data-filter');
+
+                            // Toggle active states
+                            filterButtons.forEach(btn => {
+                                btn.classList.remove('bg-primary-container', 'text-on-primary');
+                                btn.classList.add('bg-surface-card', 'text-text-secondary');
+                            });
+
+                            button.classList.remove('bg-surface-card', 'text-text-secondary');
+                            button.classList.add('bg-primary-container', 'text-on-primary');
+
+                            // Filter cards
+                            cards.forEach(card => {
+                                const category = card.getAttribute('data-category');
+                                if (selectedFilter === 'all' || category === selectedFilter) {
+                                    card.classList.remove('hidden');
+                                    card.classList.add('flex');
+                                } else {
+                                    card.classList.add('hidden');
+                                    card.classList.remove('flex');
+                                }
+                            });
+                        });
+                    });
+                })();
+            </script>
+        </main>
+    </div>
+
+</body>
+
+</html>

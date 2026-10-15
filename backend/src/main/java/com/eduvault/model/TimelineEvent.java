@@ -1,15 +1,9 @@
 package com.eduvault.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "timeline_events")
 public class TimelineEvent {
@@ -27,4 +21,17 @@ public class TimelineEvent {
     private String tag; // Exam, Assignment, Event
     private String priority; // low, medium, high
     private boolean active;
+
+    public TimelineEvent() {
+    }
+
+    public TimelineEvent(String id, String title, String date, String time, String tag, String priority, boolean active) {
+        this.id = id;
+        this.title = title;
+        this.date = date;
+        this.time = time;
+        this.tag = tag;
+        this.priority = priority;
+        this.active = active;
+    }
 }

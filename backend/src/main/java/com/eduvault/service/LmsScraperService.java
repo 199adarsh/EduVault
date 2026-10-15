@@ -37,7 +37,7 @@ public class LmsScraperService {
     private static final String AJAX_SERVICE_URL = BASE_URL + "/lib/ajax/service.php";
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("(?i)\\b([0-9]{2}[A-Z]{2,4}[0-9]{3}[A-Z]?)\\b");
+    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("(?i)\\b([0-9]{2}[A-Z]{2,6}[0-9]{3,4}[A-Z]?)\\b");
     private static final Pattern SESSKEY_PATTERN = Pattern.compile("\"sesskey\":\"([^\"]+)\"");
     private static final Pattern ID_PARAM_PATTERN = Pattern.compile("id=(\\d+)");
 
@@ -52,6 +52,41 @@ public class LmsScraperService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    private final Map<String, LmsProgress> progressMap = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public LmsProgress getProgress(String username) {
+        if (username == null) return null;
+        return progressMap.getOrDefault(username.trim().toLowerCase(),
+                LmsProgress.builder().status("IDLE").currentStage("Ready to sync").percent(0).logs(List.of()).build());
+    }
+
+    private void updateProgress(String username, String status, String stage, String course, int courseIdx, int totalCourses,
+                                String material, int found, int imported, int skipped, int failed, int percent, String logLine) {
+        if (username == null) return;
+        String key = username.trim().toLowerCase();
+        LmsProgress prev = progressMap.get(key);
+        List<String> logs = (prev != null && prev.getLogs() != null) ? new ArrayList<>(prev.getLogs()) : new ArrayList<>();
+        if (logLine != null && !logLine.isBlank()) {
+            logs.add("[" + java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "] " + logLine);
+            if (logs.size() > 40) logs.remove(0);
+        }
+        LmsProgress p = LmsProgress.builder()
+                .status(status)
+                .currentStage(stage)
+                .currentCourse(course)
+                .currentCourseIndex(courseIdx)
+                .totalCourses(totalCourses)
+                .currentMaterial(material)
+                .materialsFound(found)
+                .importedCount(imported)
+                .skippedCount(skipped)
+                .failureCount(failed)
+                .percent(Math.min(100, Math.max(0, percent)))
+                .logs(logs)
+                .build();
+        progressMap.put(key, p);
+    }
 
     /**
      * Session wrapper holding client and cookie manager
@@ -208,8 +243,18 @@ public class LmsScraperService {
      * Executes the complete LMS sync pipeline
      */
     public LmsSyncResponse syncNotes(LmsCredentials credentials) throws Exception {
-        logger.info("Starting LMS Sync for user: {}", credentials.getUsername());
-        LmsSession session = login(credentials.getUsername(), credentials.getPassword());
+        String username = credentials.getUsername() != null ? credentials.getUsername().trim() : "anonymous";
+        logger.info("Starting LMS notes synchronization for user: {}", username);
+        updateProgress(username, "AUTHENTICATING", "Connecting to Moodle LMS portal...", null, 0, 0, null, 0, 0, 0, 0, 5, "Connecting to portal at " + BASE_URL);
+
+        LmsSession session;
+        try {
+            session = login(credentials.getUsername(), credentials.getPassword());
+            updateProgress(username, "AUTHENTICATED", "Logged in as " + session.username + ". Fetching courses...", null, 0, 0, null, 0, 0, 0, 0, 15, "Session established for user: " + session.username);
+        } catch (Exception e) {
+            updateProgress(username, "FAILED", "Login failed: " + e.getMessage(), null, 0, 0, null, 0, 0, 0, 0, 100, "Authentication error: " + e.getMessage());
+            throw e;
+        }
 
         List<LmsSyncResponse.DiscoveredCourseInfo> discovered = fetchDiscoveredCourses(session);
         List<Subject> allSubjects = database.getAllSubjects();
@@ -223,6 +268,9 @@ public class LmsScraperService {
         int totalSkipped = 0;
         int totalFailed = 0;
 
+        String batchId = "batch-" + UUID.randomUUID().toString().substring(0, 8);
+        int maxImportLimit = credentials.isTestImport() ? 15 : Integer.MAX_VALUE;
+
         // Filter courses if testImport or specific courseIds requested
         List<LmsSyncResponse.DiscoveredCourseInfo> coursesToProcess = new ArrayList<>();
         if (credentials.getCourseIds() != null && !credentials.getCourseIds().isEmpty()) {
@@ -232,33 +280,48 @@ public class LmsScraperService {
                 }
             }
         } else if (credentials.isTestImport()) {
-            // Pick first matched course, or first course
-            LmsSyncResponse.DiscoveredCourseInfo candidate = null;
+            int addedMatched = 0;
             for (LmsSyncResponse.DiscoveredCourseInfo c : discovered) {
                 if (c.isMatched()) {
-                    candidate = c;
+                    coursesToProcess.add(c);
+                    addedMatched++;
+                    if (addedMatched >= 2) break;
+                }
+            }
+            for (LmsSyncResponse.DiscoveredCourseInfo c : discovered) {
+                if (!c.isMatched()) {
+                    coursesToProcess.add(c);
                     break;
                 }
             }
-            if (candidate == null && !discovered.isEmpty()) {
-                candidate = discovered.get(0);
-            }
-            if (candidate != null) {
-                coursesToProcess.add(candidate);
+            if (coursesToProcess.isEmpty() && !discovered.isEmpty()) {
+                coursesToProcess.add(discovered.get(0));
             }
         } else {
             coursesToProcess = discovered;
         }
 
+        int totalToProcess = coursesToProcess.size();
         int matchedCount = 0;
         int unmatchedCount = 0;
+        int courseIdx = 0;
+
+        updateProgress(username, "DISCOVERED", "Discovered " + discovered.size() + " courses (" + totalToProcess + " selected for ingestion)", null, 0, totalToProcess, null, 0, 0, 0, 0, 20, "Identified " + discovered.size() + " courses. Beginning course processing...");
 
         for (LmsSyncResponse.DiscoveredCourseInfo courseInfo : coursesToProcess) {
+            courseIdx++;
+            int basePct = 20 + (int) (((double) (courseIdx - 1) / Math.max(1, totalToProcess)) * 75);
+
             Subject matchedSubject = matchSubject(courseInfo.getCode(), courseInfo.getFullname(), allSubjects);
 
             if (matchedSubject == null) {
                 unmatchedCount++;
                 unmatchedCourses.add(courseInfo.getFullname() + " (" + courseInfo.getCode() + ")");
+                updateProgress(username, "SYNCING", "Skipping unmatched course: " + courseInfo.getFullname(),
+                        courseInfo.getFullname(), courseIdx, totalToProcess, null,
+                        totalMaterialsFound, totalImported, totalSkipped, totalFailed, basePct,
+                        "Skipping course (no curriculum match): " + courseInfo.getFullname());
+
                 courseSummaries.add(LmsSyncResponse.CourseSyncSummary.builder()
                         .courseId(courseInfo.getId())
                         .courseCode(courseInfo.getCode())
@@ -271,15 +334,29 @@ public class LmsScraperService {
             }
 
             matchedCount++;
-            // If subject has no code, update it with course code
             if (matchedSubject.getCode() == null || matchedSubject.getCode().isEmpty()) {
                 matchedSubject.setCode(courseInfo.getCode());
                 database.updateSubject(matchedSubject);
             }
 
+            updateProgress(username, "SYNCING", "Processing course " + courseIdx + "/" + totalToProcess + ": " + courseInfo.getFullname(),
+                    courseInfo.getFullname(), courseIdx, totalToProcess, null,
+                    totalMaterialsFound, totalImported, totalSkipped, totalFailed, basePct,
+                    "Course matched -> " + matchedSubject.getName() + " (" + courseInfo.getCode() + ")");
+
             try {
-                // Scrape course materials
-                CourseScrapeResult scrapeResult = scrapeAndImportCourse(session, courseInfo, matchedSubject);
+                int remainingCap = maxImportLimit - totalImported;
+                if (remainingCap <= 0 && credentials.isTestImport()) {
+                    logger.info("Test import limit reached ({} notes). Skipping further courses.", totalImported);
+                    updateProgress(username, "SYNCING", "Test import limit reached (" + totalImported + " notes)",
+                            courseInfo.getFullname(), courseIdx, totalToProcess, null,
+                            totalMaterialsFound, totalImported, totalSkipped, totalFailed, 95,
+                            "Test import cap reached. Finalizing...");
+                    break;
+                }
+
+                CourseScrapeResult scrapeResult = scrapeAndImportCourse(session, courseInfo, matchedSubject, batchId,
+                        remainingCap, username, courseIdx, totalToProcess, totalMaterialsFound, totalImported, totalSkipped, totalFailed);
                 totalMaterialsFound += scrapeResult.materialsFound;
                 totalImported += scrapeResult.importedCount;
                 totalSkipped += scrapeResult.skippedCount;
@@ -303,6 +380,12 @@ public class LmsScraperService {
             } catch (Exception ex) {
                 logger.error("Error scraping course {}: {}", courseInfo.getFullname(), ex.getMessage(), ex);
                 errors.add("Course " + courseInfo.getFullname() + ": " + ex.getMessage());
+                totalFailed++;
+                updateProgress(username, "SYNCING", "Error in " + courseInfo.getFullname() + ": " + ex.getMessage(),
+                        courseInfo.getFullname(), courseIdx, totalToProcess, null,
+                        totalMaterialsFound, totalImported, totalSkipped, totalFailed, basePct,
+                        "Error processing " + courseInfo.getFullname() + ": " + ex.getMessage());
+
                 courseSummaries.add(LmsSyncResponse.CourseSyncSummary.builder()
                         .courseId(courseInfo.getId())
                         .courseCode(courseInfo.getCode())
@@ -315,9 +398,12 @@ public class LmsScraperService {
                         .build());
             }
 
-            // Polite sleep between courses
             sleep(300);
         }
+
+        updateProgress(username, "COMPLETED", "Synchronization Complete!", null, totalToProcess, totalToProcess, null,
+                totalMaterialsFound, totalImported, totalSkipped, totalFailed, 100,
+                "Ingestion complete: " + totalImported + " imported, " + totalSkipped + " duplicates skipped.");
 
         return LmsSyncResponse.builder()
                 .totalDiscoveredCourses(discovered.size())
@@ -346,7 +432,16 @@ public class LmsScraperService {
      */
     private CourseScrapeResult scrapeAndImportCourse(LmsSession session,
                                                     LmsSyncResponse.DiscoveredCourseInfo courseInfo,
-                                                    Subject subject) throws Exception {
+                                                    Subject subject,
+                                                    String batchId,
+                                                    int remainingLimit,
+                                                    String username,
+                                                    int courseIdx,
+                                                    int totalCourses,
+                                                    int initialFound,
+                                                    int initialImported,
+                                                    int initialSkipped,
+                                                    int initialFailed) throws Exception {
         CourseScrapeResult result = new CourseScrapeResult();
         String courseUrl = BASE_URL + "/course/view.php?id=" + courseInfo.getId();
 
@@ -365,6 +460,9 @@ public class LmsScraperService {
             sectionEls = doc.select(".section");
         }
 
+        int totalActivities = doc.select("li.activity").size();
+        int activityCounter = 0;
+
         for (Element secEl : sectionEls) {
             Element nameEl = secEl.selectFirst("h3.sectionname, .section-title, .sectionname");
             String sectionTitle = nameEl != null ? nameEl.text().trim() : "General";
@@ -374,6 +472,11 @@ public class LmsScraperService {
 
             Elements activities = secEl.select("li.activity");
             for (Element actEl : activities) {
+                activityCounter++;
+                if (result.importedCount >= remainingLimit) {
+                    return result;
+                }
+
                 Element linkEl = actEl.selectFirst("a[href]");
                 if (linkEl == null) continue;
 
@@ -387,22 +490,57 @@ public class LmsScraperService {
 
                 result.materialsFound++;
 
-                // Prevent duplicate import
+                String targetUrl = href.startsWith("/") ? BASE_URL + href : href;
+
+                int currentPct = 20 + (int) (((double) (courseIdx - 1) / Math.max(1, totalCourses)) * 75)
+                        + (int) (((double) activityCounter / Math.max(1, totalActivities)) * (75.0 / Math.max(1, totalCourses)));
+
+                // Prevent duplicate import (idempotent / resumable)
                 if (moodleId != null && database.existsNoteByMoodleId(moodleId)) {
                     result.skippedCount++;
+                    updateProgress(username, "SYNCING", "Duplicate skipped: " + title,
+                            courseInfo.getFullname(), courseIdx, totalCourses, title,
+                            initialFound + result.materialsFound, initialImported + result.importedCount,
+                            initialSkipped + result.skippedCount, initialFailed + result.failureCount,
+                            currentPct, "Skipped duplicate: " + title);
+                    continue;
+                }
+                if (database.existsNoteBySourceUrl(targetUrl)) {
+                    result.skippedCount++;
+                    updateProgress(username, "SYNCING", "Duplicate skipped: " + title,
+                            courseInfo.getFullname(), courseIdx, totalCourses, title,
+                            initialFound + result.materialsFound, initialImported + result.importedCount,
+                            initialSkipped + result.skippedCount, initialFailed + result.failureCount,
+                            currentPct, "Skipped duplicate: " + title);
                     continue;
                 }
 
+                updateProgress(username, "SYNCING", "Ingesting: " + title,
+                        courseInfo.getFullname(), courseIdx, totalCourses, title,
+                        initialFound + result.materialsFound, initialImported + result.importedCount,
+                        initialSkipped + result.skippedCount, initialFailed + result.failureCount,
+                        currentPct, "Downloading material: " + title);
+
                 try {
-                    boolean imported = importActivity(session, href, moodleId, title, category, unit, subject, courseInfo.getCode());
+                    boolean imported = importActivity(session, href, moodleId, title, category, unit, subject, courseInfo.getCode(), batchId);
                     if (imported) {
                         result.importedCount++;
+                        updateProgress(username, "SYNCING", "Saved to B2: " + title,
+                                courseInfo.getFullname(), courseIdx, totalCourses, title,
+                                initialFound + result.materialsFound, initialImported + result.importedCount,
+                                initialSkipped + result.skippedCount, initialFailed + result.failureCount,
+                                currentPct, "Saved to B2 & DB: " + title);
                     } else {
                         result.skippedCount++;
                     }
                 } catch (Exception e) {
                     logger.warn("Failed importing activity '{}' ({}): {}", title, href, e.getMessage());
                     result.failureCount++;
+                    updateProgress(username, "SYNCING", "Failed to ingest: " + title,
+                            courseInfo.getFullname(), courseIdx, totalCourses, title,
+                            initialFound + result.materialsFound, initialImported + result.importedCount,
+                            initialSkipped + result.skippedCount, initialFailed + result.failureCount,
+                            currentPct, "Failed: " + title + " (" + e.getMessage() + ")");
                 }
 
                 sleep(200);
@@ -422,7 +560,8 @@ public class LmsScraperService {
                                     String category,
                                     String unit,
                                     Subject subject,
-                                    String courseCode) throws Exception {
+                                    String courseCode,
+                                    String batchId) throws Exception {
 
         String targetUrl = href.startsWith("/") ? BASE_URL + href : href;
 
@@ -446,20 +585,57 @@ public class LmsScraperService {
                 return false;
             }
 
+            // Handle Moodle HTML wrapper pages that embed the actual file
+            String respContentType = fileResp.headers().firstValue("Content-Type").orElse("");
+            if (respContentType.toLowerCase().contains("text/html")) {
+                String html = new String(bytes, StandardCharsets.UTF_8);
+                Document doc = Jsoup.parse(html);
+                Element link = doc.selectFirst(".resourceworkaround a, .resourcecontent a, object[data], iframe[src], a[href*='pluginfile.php']");
+                String realFileUrl = null;
+                if (link != null) {
+                    realFileUrl = link.hasAttr("href") ? link.attr("href") : (link.hasAttr("data") ? link.attr("data") : link.attr("src"));
+                }
+                if (realFileUrl != null && !realFileUrl.isBlank()) {
+                    if (realFileUrl.startsWith("/")) realFileUrl = BASE_URL + realFileUrl;
+                    HttpRequest realReq = HttpRequest.newBuilder()
+                            .uri(URI.create(realFileUrl))
+                            .timeout(TIMEOUT)
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                            .GET()
+                            .build();
+                    HttpResponse<byte[]> realResp = session.client.send(realReq, HttpResponse.BodyHandlers.ofByteArray());
+                    if (realResp.statusCode() == 200 && realResp.body() != null && realResp.body().length > 0) {
+                        bytes = realResp.body();
+                        fileResp = realResp;
+                        targetUrl = realFileUrl;
+                    }
+                }
+            }
+
             // Determine original filename
             String filename = extractFilenameFromResponse(fileResp, targetUrl, title);
 
             // Store file locally and upload to B2
             String savedFileName = fileStorageService.storeFile(bytes, filename);
-            backblazeStorageService.uploadBytes(bytes, savedFileName);
+            String b2Key = backblazeStorageService.uploadBytes(bytes, savedFileName);
+            if (b2Key == null) {
+                b2Key = savedFileName;
+            }
 
             // Extract text for AI
             String extractedText = fileStorageService.extractTextFromBytes(bytes, filename);
 
-            // Create Note
+            List<String> tags = new ArrayList<>();
+            tags.add("LMS");
+            if (courseCode != null && !courseCode.isBlank()) tags.add(courseCode);
+            if (category != null && !category.isBlank()) tags.add(category);
+            if (unit != null && !unit.isBlank()) tags.add(unit);
+
+            // Create Note with full metadata
             Note note = Note.builder()
                     .id(UUID.randomUUID().toString())
                     .title(title)
+                    .originalFilename(filename)
                     .subjectId(subject.getId())
                     .department(subject.getDepartment() != null ? subject.getDepartment() : "General")
                     .semester(subject.getSemester() != null ? subject.getSemester() : "Current")
@@ -467,13 +643,15 @@ public class LmsScraperService {
                     .category(category)
                     .examType(category.equalsIgnoreCase("Question Papers") ? "end-sem" : "mid-sem")
                     .fileUrl(savedFileName)
+                    .b2ObjectKey(b2Key)
                     .uploadedBy("LMS Sync (" + session.username + ")")
                     .createdAt(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                     .status("ready")
                     .moodleId(moodleId)
                     .sourceUrl(targetUrl)
+                    .importBatchId(batchId)
                     .extractedText(extractedText)
-                    .tags(List.of("LMS", courseCode, category, unit))
+                    .tags(tags)
                     .build();
 
             database.addNote(note);
@@ -498,7 +676,7 @@ public class LmsScraperService {
                 }
             }
 
-            logger.info("Successfully imported note: {} [{}] for subject: {}", title, unit, subject.getName());
+            logger.info("Successfully imported note: {} [{}] (originalFilename: {}) for subject: {}", title, unit, filename, subject.getName());
             return true;
 
         } else if (targetUrl.contains("/mod/url/view.php")) {
@@ -528,9 +706,17 @@ public class LmsScraperService {
             }
 
             if (externalLink != null && !externalLink.isEmpty()) {
+                List<String> tags = new ArrayList<>();
+                tags.add("LMS");
+                tags.add("Web Resource");
+                if (courseCode != null && !courseCode.isBlank()) tags.add(courseCode);
+                if (category != null && !category.isBlank()) tags.add(category);
+                if (unit != null && !unit.isBlank()) tags.add(unit);
+
                 Note note = Note.builder()
                         .id(UUID.randomUUID().toString())
                         .title(title)
+                        .originalFilename(title)
                         .subjectId(subject.getId())
                         .department(subject.getDepartment() != null ? subject.getDepartment() : "General")
                         .semester(subject.getSemester() != null ? subject.getSemester() : "Current")
@@ -538,13 +724,15 @@ public class LmsScraperService {
                         .category(category)
                         .examType("mid-sem")
                         .fileUrl(externalLink)
+                        .b2ObjectKey(null)
                         .uploadedBy("LMS Sync (" + session.username + ")")
                         .createdAt(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                         .status("ready")
                         .moodleId(moodleId)
                         .sourceUrl(externalLink)
+                        .importBatchId(batchId)
                         .extractedText("Web Resource Link: " + externalLink)
-                        .tags(List.of("LMS", "Web Resource", courseCode, category, unit))
+                        .tags(tags)
                         .build();
 
                 database.addNote(note);
@@ -594,51 +782,61 @@ public class LmsScraperService {
 
     /**
      * Matches course code / name against existing EduVault subjects
+     * Strictly follows:
+     * 1. Match verified course codes first.
+     * 2. Use exact names (respecting lab/lecture consistency).
+     * 3. Prioritize longer names when needed (respecting lab/lecture consistency).
+     * 4. Never force incorrect mappings.
      */
-    private Subject matchSubject(String courseCode, String courseFullname, List<Subject> subjects) {
+    Subject matchSubject(String courseCode, String courseFullname, List<Subject> subjects) {
         if (subjects == null || subjects.isEmpty()) return null;
 
-        // 1. Exact code match
-        if (courseCode != null && !courseCode.isEmpty()) {
+        // 1. Match verified course codes first
+        if (courseCode != null && !courseCode.isBlank()) {
+            String cleanCode = courseCode.trim().toUpperCase();
             for (Subject s : subjects) {
-                if (s.getCode() != null && s.getCode().equalsIgnoreCase(courseCode)) {
-                    return s;
-                }
-                if (s.getName() != null && s.getName().toUpperCase().contains(courseCode)) {
+                if (s.getCode() != null && s.getCode().trim().equalsIgnoreCase(cleanCode)) {
                     return s;
                 }
             }
         }
 
-        // 2. Name matching
-        String cleanCourse = courseFullname.replaceAll("(?i)\\([0-9A-Z]+\\)|[0-9]{2}[A-Z]{2,4}[0-9]{3}[A-Z]?|[-_:]", " ")
+        if (courseFullname == null || courseFullname.isBlank()) return null;
+
+        String cleanCourse = courseFullname.replaceAll("(?i)\\([0-9A-Z]+\\)|[0-9]{2}[A-Z]{2,6}[0-9]{3,4}[A-Z]?|[0-9]{2}-[0-9]{2}|[-_:]", " ")
                 .replaceAll("\\s+", " ").trim().toLowerCase();
 
-        // Exact match
+        boolean courseIsLab = cleanCourse.contains("lab") || (courseCode != null && courseCode.toUpperCase().contains("P"));
+
+        // 2. Exact match
         for (Subject s : subjects) {
             if (s.getName() == null) continue;
             String cleanSubject = s.getName().trim().toLowerCase();
+            boolean subIsLab = cleanSubject.contains("lab") || (s.getCode() != null && s.getCode().toUpperCase().contains("P"));
+            if (subIsLab != courseIsLab) continue;
+
             if (cleanCourse.equals(cleanSubject)) {
                 return s;
             }
         }
 
-        // Substring / keyword match
-        for (Subject s : subjects) {
-            if (s.getName() == null) continue;
+        // 3. Substring match prioritizing longer names
+        List<Subject> sortedByLength = subjects.stream()
+                .filter(s -> s.getName() != null && !s.getName().isBlank())
+                .sorted((a, b) -> Integer.compare(b.getName().trim().length(), a.getName().trim().length()))
+                .toList();
+
+        for (Subject s : sortedByLength) {
             String cleanSubject = s.getName().trim().toLowerCase();
-            // Don't match "Lab" subjects with lecture courses unless course also has "lab"
-            boolean subIsLab = cleanSubject.contains("lab");
-            boolean courseIsLab = cleanCourse.contains("lab");
-            if (subIsLab != courseIsLab) {
-                continue;
-            }
+            boolean subIsLab = cleanSubject.contains("lab") || (s.getCode() != null && s.getCode().toUpperCase().contains("P"));
+            if (subIsLab != courseIsLab) continue;
 
             if (cleanCourse.contains(cleanSubject) || cleanSubject.contains(cleanCourse)) {
                 return s;
             }
         }
 
+        // Never force incorrect mappings
         return null;
     }
 

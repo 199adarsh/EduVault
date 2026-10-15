@@ -15,7 +15,7 @@ public class OptimizationSubject {
     private int attended;
     private int conducted;
     private int remaining;
-    
+
     // Outputs
     private int toAttend;
     private double currentPercentage;

@@ -64,4 +64,8 @@ backend/data/*.db
 # Supabase CLI temp files
 supabase/.temp/
 
+# Backups & auxiliary tools
+*.bak
+gemini-web2api/
+
 

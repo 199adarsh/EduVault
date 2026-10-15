@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -81,6 +82,23 @@ public class BackblazeStorageService {
         }
     }
 
+    public boolean checkB2Availability() {
+        try {
+            s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            return true;
+        } catch (S3Exception e) {
+            if (e.statusCode() == 403) {
+                logger.warn("B2 HTTP 403: Transaction/bandwidth cap or permissions issue detected: {}", e.awsErrorDetails().errorMessage());
+            } else {
+                logger.warn("B2 S3 check returned status {}: {}", e.statusCode(), e.awsErrorDetails().errorMessage());
+            }
+            return false;
+        } catch (Exception e) {
+            logger.warn("B2 check failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
     /**
      * Uploads raw bytes to B2 using the specified key.
      *
@@ -104,6 +122,13 @@ public class BackblazeStorageService {
             s3Client.putObject(request, RequestBody.fromBytes(bytes));
             logger.info("Uploaded raw bytes to B2: bucket={} key={} size={}", bucketName, key, bytes.length);
             return key;
+        } catch (S3Exception e) {
+            if (e.statusCode() == 403) {
+                logger.warn("B2 upload blocked (HTTP 403): {}", e.awsErrorDetails().errorMessage());
+            } else {
+                logger.warn("B2 S3 upload failed with code {}: {}", e.statusCode(), e.awsErrorDetails().errorMessage());
+            }
+            return null;
         } catch (Exception e) {
             logger.warn("B2 uploadBytes failed: {}. Continuing with local fallback.", e.getMessage());
             return null;
@@ -142,6 +167,34 @@ public class BackblazeStorageService {
             } catch (Exception ex) {
                 logger.warn("Failed to auto-sync local file {} to B2: {}", key, ex.getMessage());
             }
+        }
+    }
+
+    public List<S3Object> listAllObjects() {
+        try {
+            ListObjectsV2Request request = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .maxKeys(1000)
+                    .build();
+            ListObjectsV2Response response = s3Client.listObjectsV2(request);
+            logger.info("Found {} objects in B2 bucket {}", response.contents().size(), bucketName);
+            return response.contents();
+        } catch (Exception e) {
+            logger.error("Failed to list B2 objects: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    public byte[] getObjectBytes(String key) {
+        try {
+            GetObjectRequest request = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+            return s3Client.getObjectAsBytes(request).asByteArray();
+        } catch (Exception e) {
+            logger.warn("Failed to download B2 object {}: {}", key, e.getMessage());
+            return null;
         }
     }
 

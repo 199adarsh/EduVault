@@ -33,5 +33,19 @@ public interface NoteRepository extends JpaRepository<Note, String> {
 
     boolean existsByMoodleId(String moodleId);
 
+    boolean existsBySourceUrl(String sourceUrl);
+
+    boolean existsByFileUrl(String fileUrl);
+
+    boolean existsByB2ObjectKey(String b2ObjectKey);
+
     java.util.Optional<Note> findByMoodleId(String moodleId);
+
+    java.util.Optional<Note> findBySourceUrl(String sourceUrl);
+
+    List<Note> findByUploadedBy(String uploadedBy);
+
+    List<Note> findByImportBatchId(String importBatchId);
+
+    void deleteByUploadedBy(String uploadedBy);
 }

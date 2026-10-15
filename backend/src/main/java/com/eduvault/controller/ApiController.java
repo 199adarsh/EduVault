@@ -7,7 +7,7 @@ import com.eduvault.model.Subject;
 import com.eduvault.repository.LocalJsonDatabase;
 import com.eduvault.service.BackblazeStorageService;
 import com.eduvault.service.FileStorageService;
-import com.eduvault.service.GroqService;
+import com.eduvault.service.GeminiService;
 import com.eduvault.service.RAGService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -49,7 +50,7 @@ public class ApiController {
     private com.eduvault.service.DocumentConversionService documentConversionService;
 
     @Autowired
-    private com.eduvault.service.GroqService groqService;
+    private GeminiService geminiService;
 
     @Autowired
     private RAGService ragService;
@@ -59,6 +60,7 @@ public class ApiController {
 
     @GetMapping("/subjects")
     public ResponseEntity<List<Subject>> getSubjects() {
+        database.relinkOrphanNotes();
         StudentProfile profile = database.getProfile();
         List<Subject> all = database.getAllSubjects();
         
@@ -112,16 +114,26 @@ public class ApiController {
     @GetMapping("/notes")
     public ResponseEntity<List<Note>> getNotes(
             @RequestParam(required = false) String subjectId,
+            @RequestParam(required = false) String semester,
             @RequestParam(required = false) String examType,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String department,
             @RequestParam(required = false) String unit) {
         
-        StudentProfile profile = database.getProfile();
-        String department = profile != null ? profile.getDepartment() : null;
-        String semester = profile != null ? profile.getSemester() : null;
-        
         return ResponseEntity.ok(database.getNotesByFilter(subjectId, semester, examType, keyword, search, department, unit));
+    }
+
+    @RequestMapping(value = "/notes/sync-b2", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<Map<String, Object>> syncB2Notes() {
+        int synced = database.syncNotesFromBackblaze();
+        return ResponseEntity.ok(Map.of("syncedCount", synced, "totalNotes", database.getAllNotes().size()));
+    }
+
+    @RequestMapping(value = "/notes/repair", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<Map<String, Object>> repairNotes() {
+        int repaired = database.repairExistingNotes();
+        return ResponseEntity.ok(Map.of("repairedCount", repaired, "totalNotes", database.getAllNotes().size()));
     }
 
     @GetMapping("/notes/{id}")
@@ -160,15 +172,6 @@ public class ApiController {
                         "url", fileUrl
                 ));
             }
-            try {
-                String url = backblazeStorageService.generatePresignedUrl(fileUrl);
-                if (url != null && !url.isEmpty()) {
-                    return ResponseEntity.ok(Map.of(
-                            "noteId", noteId,
-                            "url", url
-                    ));
-                }
-            } catch (Exception ignored) {}
             return ResponseEntity.ok(Map.of(
                     "noteId", noteId,
                     "url", "http://localhost:8081/api/files/raw/" + fileUrl
@@ -179,6 +182,13 @@ public class ApiController {
     @GetMapping("/files/raw/{fileName}")
     public ResponseEntity<Resource> getRawFile(@PathVariable String fileName) {
         Path path = fileStorageService.getFilePath(fileName);
+        if (!java.nio.file.Files.exists(path)) {
+            path = Paths.get("./data").resolve(fileName);
+        }
+        if (!java.nio.file.Files.exists(path)) {
+            path = Paths.get("./backend/data").resolve(fileName);
+        }
+
         if (java.nio.file.Files.exists(path)) {
             try {
                 Resource resource = new UrlResource(path.toUri());
@@ -192,12 +202,29 @@ public class ApiController {
                 // fall through
             }
         }
+
+        // Fallback: Stream directly from Backblaze B2 if available
+        try {
+            byte[] bytes = backblazeStorageService.getObjectBytes(fileName);
+            if (bytes != null && bytes.length > 0) {
+                String ext = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
+                String contentType = "application/octet-stream";
+                if (ext.equalsIgnoreCase(".pdf")) contentType = "application/pdf";
+                else if (ext.equalsIgnoreCase(".docx")) contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                else if (ext.equalsIgnoreCase(".doc")) contentType = "application/msword";
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                        .body(new org.springframework.core.io.ByteArrayResource(bytes));
+            }
+        } catch (Exception ignored) {}
+
         return ResponseEntity.notFound().build();
     }
 
     /**
-     * Returns a presigned URL for direct, time-limited access to a private B2 file.
-     * The URL is valid for the duration configured via B2_PRESIGNED_EXPIRY_MINUTES (default 60 min).
+     * Returns a direct, CORS-safe proxy URL for viewing or downloading the file.
      */
     @GetMapping("/files/{noteId}/presigned")
     public ResponseEntity<Map<String, String>> getPresignedUrl(@PathVariable String noteId) {
@@ -209,15 +236,6 @@ public class ApiController {
                         "url", fileUrl
                 ));
             }
-            try {
-                String url = backblazeStorageService.generatePresignedUrl(fileUrl);
-                if (url != null && !url.isEmpty()) {
-                    return ResponseEntity.ok(Map.of(
-                            "noteId", noteId,
-                            "url", url
-                    ));
-                }
-            } catch (Exception ignored) {}
             return ResponseEntity.ok(Map.of(
                     "noteId", noteId,
                     "url", "http://localhost:8081/api/files/raw/" + fileUrl
@@ -282,7 +300,7 @@ public class ApiController {
         database.addNote(note);
 
         // Trigger Async AI generation and RAG ingestion
-        groqService.processNoteAsync(note.getId());
+        geminiService.processNoteAsync(note.getId());
         ragService.ingestNote(note.getId());
 
         // Warn if text extraction failed (e.g. scanned/image-only PDF) — AI features will be skipped
@@ -355,10 +373,10 @@ public class ApiController {
     public ResponseEntity<String> predictPyqs(@RequestBody Map<String, String> payload) {
         String pyqText = payload.get("pyqText");
         String qbText = payload.get("qbText");
-        return ResponseEntity.ok(groqService.generateStudyGuide(pyqText, qbText));
+        return ResponseEntity.ok(geminiService.generateStudyGuide(pyqText, qbText));
     }
 
-    // --- Announcement Endpoints ---
+    // --- Announcement Endpoints (Full CRUD with Permissions & Persistence) ---
 
     @GetMapping("/announcements")
     public ResponseEntity<List<com.eduvault.model.Announcement>> getAnnouncements() {
@@ -367,14 +385,59 @@ public class ApiController {
 
     @GetMapping("/announcements/recent")
     public ResponseEntity<List<com.eduvault.model.Announcement>> getRecentAnnouncements() {
-        return ResponseEntity.ok(database.getRecentAnnouncements(2));
+        return ResponseEntity.ok(database.getRecentAnnouncements(5));
+    }
+
+    @GetMapping("/announcements/{id}")
+    public ResponseEntity<com.eduvault.model.Announcement> getAnnouncementById(@PathVariable String id) {
+        return database.getAnnouncementById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/announcements")
-    public ResponseEntity<com.eduvault.model.Announcement> createAnnouncement(@RequestBody com.eduvault.model.Announcement announcement) {
+    public ResponseEntity<?> createAnnouncement(
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestBody com.eduvault.model.Announcement announcement) {
+        if (roleHeader != null && roleHeader.equalsIgnoreCase("student_readonly")) {
+            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Students cannot post official notices"));
+        }
+        if (announcement.getTitle() == null || announcement.getTitle().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Title is required for notice"));
+        }
         if (announcement.getId() == null) announcement.setId(UUID.randomUUID().toString());
         if (announcement.getCreatedAt() == null) announcement.setCreatedAt(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
+        if (announcement.getPostedBy() == null || announcement.getPostedBy().isBlank()) {
+            announcement.setPostedBy("Academic Administration");
+        }
         return ResponseEntity.ok(database.addAnnouncement(announcement));
+    }
+
+    @PutMapping("/announcements/{id}")
+    public ResponseEntity<?> updateAnnouncement(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestBody com.eduvault.model.Announcement announcement) {
+        if (roleHeader != null && roleHeader.equalsIgnoreCase("student_readonly")) {
+            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Unauthorized to update notice"));
+        }
+        return database.updateAnnouncement(id, announcement)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/announcements/{id}")
+    public ResponseEntity<?> deleteAnnouncement(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+        if (roleHeader != null && roleHeader.equalsIgnoreCase("student_readonly")) {
+            return ResponseEntity.status(403).body(Map.of("error", "Permission Denied: Unauthorized to delete notice"));
+        }
+        boolean deleted = database.deleteAnnouncement(id);
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Notice successfully deleted", "id", id));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     // --- Roadmap Endpoints ---

@@ -1,9 +1,6 @@
 package com.eduvault.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -11,9 +8,6 @@ import java.io.Serializable;
 import java.util.List;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "predefined_roadmaps")
 public class PredefinedRoadmap {
@@ -30,23 +24,46 @@ public class PredefinedRoadmap {
     @Column(name = "phases", columnDefinition = "jsonb")
     private List<Phase> phases;
 
+    public PredefinedRoadmap() {
+    }
+
+    public PredefinedRoadmap(String id, String title, String subject, String totalHours, List<Phase> phases) {
+        this.id = id;
+        this.title = title;
+        this.subject = subject;
+        this.totalHours = totalHours;
+        this.phases = phases;
+    }
+
     @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class Phase implements Serializable {
         private String title;
         private boolean critical;
         private List<String> topics;
         private List<Resource> resources;
+
+        public Phase() {
+        }
+
+        public Phase(String title, boolean critical, List<String> topics, List<Resource> resources) {
+            this.title = title;
+            this.critical = critical;
+            this.topics = topics;
+            this.resources = resources;
+        }
     }
 
     @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class Resource implements Serializable {
         private String name;
         private String url;
+
+        public Resource() {
+        }
+
+        public Resource(String name, String url) {
+            this.name = name;
+            this.url = url;
+        }
     }
 }

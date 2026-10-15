@@ -208,7 +208,10 @@ public class FileStorageService {
         try {
             if (lowerName.endsWith(".pdf")) {
                 try (PDDocument document = Loader.loadPDF(bytes)) {
-                    return new PDFTextStripper().getText(document);
+                    PDFTextStripper stripper = new PDFTextStripper();
+                    stripper.setStartPage(1);
+                    stripper.setEndPage(Math.min(3, document.getNumberOfPages()));
+                    return stripper.getText(document);
                 }
             } else if (lowerName.endsWith(".docx")) {
                 try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(bytes))) {

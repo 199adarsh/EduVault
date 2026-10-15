@@ -23,6 +23,23 @@ public class LmsController {
     @Autowired
     private LmsScraperService lmsScraperService;
 
+    @Autowired
+    private com.eduvault.repository.LocalJsonDatabase database;
+
+    @DeleteMapping("/clean-test-imports")
+    public ResponseEntity<?> deleteDisposableTestImports() {
+        int deleted = database.deleteDisposableTestImportNotes();
+        return ResponseEntity.ok(Map.of("message", "Safely deleted disposable test-import notes", "deletedCount", deleted));
+    }
+
+    @GetMapping("/progress")
+    public ResponseEntity<?> getSyncProgress(@RequestParam(required = false) String username) {
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.ok(Map.of("status", "IDLE", "percent", 0));
+        }
+        return ResponseEntity.ok(lmsScraperService.getProgress(username));
+    }
+
     @PostMapping("/discover")
     public ResponseEntity<?> discoverCourses(@RequestBody LmsCredentials credentials) {
         if (credentials.getUsername() == null || credentials.getPassword() == null ||

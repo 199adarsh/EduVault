@@ -17,7 +17,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.logging.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.*;
 
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PortalScraperService {
 
-    private static final Logger log = Logger.getLogger(PortalScraperService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(PortalScraperService.class);
 
     // URLs
     private static final String BASE_URL      = "https://online.dkte.ac.in/newparents/";
@@ -40,14 +41,14 @@ public class PortalScraperService {
 
     // Regex patterns
     private static final Pattern DATA_PAIR_PATTERN =
-            Pattern.compile("\\[\"([^\"]+)\",\\s*(\\d+)\\]");
+            Pattern.compile("\\[\\s*[\"']([^\"']+)[\"']\\s*,\\s*([0-9]+(?:\\.[0-9]+)?)\\s*\\]");
     private static final Pattern CSRF_PATTERN =
             Pattern.compile(
                 "<input[^>]+name=\"([a-f0-9]{32})\"[^>]+value=\"1\"",
                 Pattern.CASE_INSENSITIVE);
 
     public PortalDashboardResponse fetchDashboard(String prn, String dob) throws Exception {
-        log.info("Starting portal scrape for PRN: " + prn);
+        log.info("Starting student portal synchronization...");
         
         // Test connectivity first
         if (!testConnectivity()) {
@@ -98,14 +99,14 @@ public class PortalScraperService {
             log.info("Portal connectivity test - Status: " + response.statusCode());
             return response.statusCode() == 200;
         } catch (Exception e) {
-            log.warning("Portal connectivity test failed: " + e.getMessage());
+            log.warn("Portal connectivity test failed: {}", e.getMessage());
             return false;
         }
     }
 
     // Inner classes from the original scraper
     private static class ScraperService {
-        private static final Logger log = Logger.getLogger(ScraperService.class.getName());
+        private static final Logger log = LoggerFactory.getLogger(ScraperService.class);
         private final CookieManager cookieManager;
         private final HttpClient httpClient;
 
@@ -124,7 +125,7 @@ public class PortalScraperService {
             try {
                 return fetchAndParse();
             } catch (SessionExpiredException e) {
-                log.warning("Session expired - clearing cookies and retrying login...");
+                log.warn("Session expired - clearing cookies and retrying login...");
                 cookieManager.getCookieStore().removeAll();
                 login(prn, dob);
                 return fetchAndParse();
@@ -132,7 +133,7 @@ public class PortalScraperService {
         }
 
         private void login(String prn, String dob) throws Exception {
-            log.info("Fetching login page to extract CSRF token...");
+            log.debug("Fetching login page to acquire CSRF token...");
             HttpRequest getReq = HttpRequest.newBuilder()
                     .uri(URI.create(LOGIN_URL))
                     .timeout(REQUEST_TIMEOUT)
@@ -148,10 +149,10 @@ public class PortalScraperService {
 
             String csrfToken = extractCsrfToken(loginPage.body());
             if (csrfToken == null) {
-                log.warning("CSRF token not found in login page - falling back to known token.");
+                log.warn("CSRF token not found in login page - using fallback token.");
                 csrfToken = "52a9b9c958340fd545e2e5b2a7f935ef";
             } else {
-                log.info("CSRF token extracted: " + csrfToken);
+                log.debug("CSRF token acquired successfully");
             }
 
             // Normalize delimiters to dashes
@@ -159,7 +160,7 @@ public class PortalScraperService {
             String[] parts = cleanDob.split("-");
             
             if (parts.length != 3) {
-                throw new IllegalArgumentException("DOB must be in YYYY-MM-DD or DD-MM-YYYY format. Received: " + dob);
+                throw new IllegalArgumentException("DOB must be in YYYY-MM-DD or DD-MM-YYYY format.");
             }
 
             String p1 = parts[0];
@@ -181,16 +182,15 @@ public class PortalScraperService {
             }
 
             for (String passwd : passwdFormats) {
-                log.info("Attempting login with password format: " + passwd);
+                log.debug("Attempting portal login attempt with date variation...");
                 boolean result = attemptLogin(prn, passwd, csrfToken);
-                log.info("Login attempt result for format " + passwd + ": " + result);
                 if (result) {
-                    log.info("Login successful with format: " + passwd);
+                    log.info("Portal login succeeded");
                     return;
                 }
-                log.warning("Login failed for format: " + passwd);
+                log.debug("Portal login variation unsuccessful, trying fallback format...");
             }
-            throw new LoginFailedException("Authentication failed for PRN " + prn + ". Please check your credentials.");
+            throw new LoginFailedException("Authentication failed for student portal. Please check your credentials.");
         }
 
         private String extractCsrfToken(String html) {
@@ -222,9 +222,7 @@ public class PortalScraperService {
                             HttpResponse.BodyHandlers.ofString()));
 
             String body = resp.body();
-            log.info("Login response status: " + resp.statusCode());
-            log.info("Login response contains dashboard indicators: " + body.contains("bb.generate") + ", " + body.contains("COURSE CODE"));
-            log.info("Still on login page: " + (body.contains("name=\"username\"") && body.contains("name=\"passwd\"")));
+            log.debug("Login response status: {}", resp.statusCode());
 
             boolean hasDashboard = body.contains("bb.generate") 
             || body.contains("COURSE CODE")
@@ -237,7 +235,7 @@ public class PortalScraperService {
         }
 
         private String fetchDashboard() throws Exception {
-            log.info("Fetching dashboard HTML...");
+            log.debug("Fetching student dashboard HTML...");
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(DASHBOARD_URL))
                     .timeout(REQUEST_TIMEOUT)
@@ -256,7 +254,7 @@ public class PortalScraperService {
                 throw new SessionExpiredException(
                         "Dashboard content missing - session may have expired.");
             }
-            log.info("Dashboard fetched successfully. HTML length: " + html.length());
+            log.debug("Dashboard HTML fetched successfully ({} bytes)", html.length());
             return html;
         }
 
@@ -269,17 +267,16 @@ public class PortalScraperService {
             Map<String, Integer> cieMap        = extractChartData(doc, "bar");
             Map<String, Integer> attendanceMap = extractChartData(doc, "gauge");
 
-            log.info("Parse results - profile=" + (profile != null ? profile.getName() : "null")
-                    + " subjects=" + subjectLinks.size()
-                    + "  CIE=" + cieMap.size()
-                    + "  Attendance=" + attendanceMap.size());
+            log.info("Parse complete - subjects: {}, CIE records: {}, attendance records: {}",
+                    subjectLinks.size(), cieMap.size(), attendanceMap.size());
+            log.info("CIE Map contents: {}", cieMap);
 
             if (subjectLinks.isEmpty())
-                log.warning("Subject table is empty - check table/thead selectors.");
+                log.warn("Subject table is empty - check table/thead selectors.");
             if (cieMap.isEmpty())
-                log.warning("CIE (bar) data not found - check script block content.");
+                log.warn("CIE (bar) data not found - check script block content.");
             if (attendanceMap.isEmpty())
-                log.warning("Attendance (gauge) data not found - check script block content.");
+                log.warn("Attendance (gauge) data not found - check script block content.");
 
             List<SubjectData> subjects = mergeDataWithDetails(subjectLinks, cieMap, attendanceMap);
             return new ScrapeResult(profile, subjects);
@@ -350,7 +347,7 @@ public class PortalScraperService {
                         .section(sec)
                         .build();
             } catch (Exception e) {
-                log.warning("Error extracting student profile: " + e.getMessage());
+                log.warn("Error extracting student profile: {}", e.getMessage());
                 return StudentProfile.builder().name("Unknown User").build();
             }
         }
@@ -432,8 +429,7 @@ public class PortalScraperService {
             if (url == null || url.isEmpty()) return new AttendanceDetailsBundle(new ArrayList<>(), 0, 0, 0, 0);
             List<DashboardSubject.AttendanceRecord> records = new ArrayList<>();
             try {
-                log.info("Deep scraping attendance from: " + url);
-                log.info("Deep scraping cookies: " + cookieManager.getCookieStore().getCookies());
+                log.debug("Deep scraping attendance records");
                 HttpRequest req = HttpRequest.newBuilder()
                         .uri(URI.create(url))
                         .timeout(REQUEST_TIMEOUT)
@@ -526,29 +522,29 @@ public class PortalScraperService {
 
                 // Validation: detect suspicious data
                 if (records.size() == 0) {
-                    log.warning("No attendance records parsed from URL: " + url + " - Check if page structure changed or course has no attendance data");
+                    log.debug("No detailed attendance records found for URL: {}", url);
                 }
                 
                 if (totalAttended > totalConducted) {
-                    log.warning("Suspicious attendance data: attended (" + totalAttended + ") > conducted (" + totalConducted + ") for URL: " + url);
+                    log.warn("Suspicious attendance data: attended ({}) > conducted ({}) for URL: {}", totalAttended, totalConducted, url);
                     // Correct the data by using actual counts
                     totalAttended = Math.min(totalAttended, totalConducted);
                 }
                 
                 if (totalScheduled < totalConducted) {
-                    log.warning("Suspicious attendance data: total scheduled (" + totalScheduled + ") < conducted (" + totalConducted + ") for URL: " + url);
+                    log.warn("Suspicious attendance data: total scheduled ({}) < conducted ({}) for URL: {}", totalScheduled, totalConducted, url);
                     totalScheduled = Math.max(totalScheduled, totalConducted);
                 }
                 
                 if (stillToGo < 0) {
-                    log.warning("Suspicious attendance data: still to go (" + stillToGo + ") is negative for URL: " + url);
+                    log.warn("Suspicious attendance data: still to go ({}) is negative for URL: {}", stillToGo, url);
                     stillToGo = Math.max(0, stillToGo);
                 }
 
                 log.info("Parsed " + records.size() + " records (C:" + totalConducted + "/A:" + totalAttended + "/S:" + stillToGo + "/T:" + totalScheduled + ")");
                 return new AttendanceDetailsBundle(records, totalConducted, totalAttended, totalScheduled, stillToGo);
             } catch (Exception e) {
-                log.warning("Failed to fetch attendance details for " + url + ": " + e.getMessage());
+                log.warn("Failed to fetch attendance details: {}", e.getMessage());
                 return new AttendanceDetailsBundle(new ArrayList<>(), 0, 0, 0, 0);
             }
         }
@@ -557,7 +553,7 @@ public class PortalScraperService {
             Map<String, Integer> dataMap = new LinkedHashMap<>();
 
             Pattern typePattern = Pattern.compile(
-                    "\\btype\\s*:\\s*[\"']" + Pattern.quote(chartType) + "[\"']");
+                    "\\btype\\s*:\\s*[\"']" + Pattern.quote(chartType) + "[\"']", Pattern.CASE_INSENSITIVE);
 
             for (Element script : doc.select("script")) {
                 String js = script.html();
@@ -568,21 +564,27 @@ public class PortalScraperService {
                 for (int b = 1; b < blocks.length; b++) {
                     String block = blocks[b];
 
-                    if (!typePattern.matcher(block).find()) {
-                        log.fine("Block #" + b + " in script - not type=\"" + chartType + "\", skipping.");
+                    boolean matchesType = typePattern.matcher(block).find();
+                    if (!matchesType && chartType.equalsIgnoreCase("bar") && block.toLowerCase().contains("cie")) {
+                        matchesType = true;
+                    }
+                    if (!matchesType) {
                         continue;
                     }
 
-                    log.info("Extracting data from bb.generate block #" + b
-                            + " with type=\"" + chartType + "\"");
+                    log.debug("Extracting chart data with type=\"{}\"", chartType);
 
                     Matcher m = DATA_PAIR_PATTERN.matcher(block);
                     while (m.find()) {
                         String key   = m.group(1).trim();
-                        int    value = Integer.parseInt(m.group(2).trim());
-                        if (key.matches("[A-Z0-9]{8,15}")) {
-                            dataMap.put(key, value);
-                            log.fine("  [" + chartType + "] " + key + " = " + value);
+                        try {
+                            int value = (int) Math.round(Double.parseDouble(m.group(2).trim()));
+                            if (!key.isBlank()) {
+                                dataMap.put(key, value);
+                                log.debug("Chart data: {} = {}", key, value);
+                            }
+                        } catch (Exception ex) {
+                            log.debug("Could not parse value for key: {}", key);
                         }
                     }
                 }
@@ -625,8 +627,9 @@ public class PortalScraperService {
             for (String code : allCodes) {
                 SubjectLink linkData = subjectLinks.get(code);
                 String name = linkData != null ? linkData.name : code;
-                int attendance = attendanceMap.getOrDefault(code, 0);
-                int cie = cieMap.getOrDefault(code, 0);
+                
+                int attendance = getScoreFromMap(attendanceMap, code, name);
+                int cie = getScoreFromMap(cieMap, code, name);
                 
                 AttendanceDetailsBundle bundle = bundles.getOrDefault(code, new AttendanceDetailsBundle(new ArrayList<>(), 0, 0, 0, 0));
                 
@@ -635,9 +638,31 @@ public class PortalScraperService {
                 if (lpw == 0 && bundle.conducted > 0) lpw = 1;
 
                 result.add(new SubjectData(code, name, attendance, cie, bundle.conducted, bundle.attended, bundle.total, bundle.stillToGo, credit, lpw, bundle.records));
-                log.fine("Merged: " + code + " | LPW=" + lpw + " | weeks=" + weeksElapsed);
+                log.debug("Merged subject: {} | LPW={}", code, lpw);
             }
             return result;
+        }
+
+        private int getScoreFromMap(Map<String, Integer> map, String code, String name) {
+            if (map == null || map.isEmpty()) return 0;
+            if (code != null && map.containsKey(code)) return map.get(code);
+            if (name != null && map.containsKey(name)) return map.get(name);
+            
+            String normCode = code != null ? code.replaceAll("[^a-zA-Z0-9]", "").toLowerCase() : "";
+            String normName = name != null ? name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase() : "";
+
+            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                String k = entry.getKey();
+                String normK = k.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+                
+                if (!normCode.isEmpty() && (normK.equals(normCode) || normCode.contains(normK) || normK.contains(normCode))) {
+                    return entry.getValue();
+                }
+                if (!normName.isEmpty() && (normK.equals(normName) || normName.contains(normK) || normK.contains(normName))) {
+                    return entry.getValue();
+                }
+            }
+            return 0;
         }
 
         private LocalDate parseDate(String dateStr) {
@@ -658,7 +683,7 @@ public class PortalScraperService {
             try {
                 return action.get();
             } catch (IOException e) {
-                log.warning("HTTP request failed (" + e.getMessage() + ") - retrying once...");
+                log.warn("HTTP request failed ({}) - retrying once...", e.getMessage());
                 return action.get();
             }
         }

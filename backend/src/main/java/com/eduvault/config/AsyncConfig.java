@@ -15,21 +15,21 @@ public class AsyncConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(AsyncConfig.class);
 
-    @Bean(name = "groqTaskExecutor")
-    public Executor groqTaskExecutor() {
+    @Bean(name = "geminiTaskExecutor")
+    public Executor geminiTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         
-        // Limit concurrent Groq API calls to prevent quota exhaustion
+        // Limit concurrent Gemini API calls to prevent proxy/concurrency exhaustion
         executor.setCorePoolSize(2);           // 2 threads minimum
         executor.setMaxPoolSize(4);            // 4 threads maximum
         executor.setQueueCapacity(50);        // Queue up to 50 tasks
-        executor.setThreadNamePrefix("groq-async-");
+        executor.setThreadNamePrefix("gemini-async-");
         executor.setRejectedExecutionHandler((r, executor1) -> {
-            logger.warn("Groq task rejected due to thread pool exhaustion. Consider reducing concurrent AI processing.");
+            logger.warn("Gemini task rejected due to thread pool exhaustion. Consider reducing concurrent AI processing.");
         });
         
         executor.initialize();
-        logger.info("Groq async executor initialized with core={}, max={}, queue={}", 
+        logger.info("Gemini async executor initialized with core={}, max={}, queue={}", 
                    executor.getCorePoolSize(), executor.getMaxPoolSize(), executor.getQueueCapacity());
         
         return executor;
@@ -39,7 +39,7 @@ public class AsyncConfig {
     public Executor ragTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         
-        // Separate executor for RAG embedding tasks - more conservative limits
+        // Separate executor for RAG embedding tasks - conservative limits
         executor.setCorePoolSize(1);           // 1 thread for embeddings
         executor.setMaxPoolSize(2);            // 2 threads maximum
         executor.setQueueCapacity(20);        // Queue up to 20 embedding tasks

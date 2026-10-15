@@ -2,6 +2,8 @@ package com.eduvault.controller;
 
 import com.eduvault.model.DashboardCredentials;
 import com.eduvault.service.PortalScraperService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import java.util.Map;
 @CrossOrigin(origins = "*") // Allows calls from frontend
 public class PortalController {
 
+    private static final Logger logger = LoggerFactory.getLogger(PortalController.class);
+
     private final PortalScraperService portalScraperService;
     private final com.eduvault.repository.LocalJsonDatabase database;
 
@@ -26,14 +30,14 @@ public class PortalController {
 
     @PostMapping("/dashboard")
     public ResponseEntity<?> getDashboardData(@RequestBody DashboardCredentials credentials) {
-        System.out.println("Received request: " + credentials);
+        logger.info("Received request for student portal synchronization");
         
         if (credentials.getPrn() == null || credentials.getDob() == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "PRN and DOB are required"));
         }
 
         try {
-            System.out.println("Calling scraper service...");
+            logger.debug("Executing portal scraper service...");
             com.eduvault.model.PortalDashboardResponse response = portalScraperService.fetchDashboard(credentials.getPrn(), credentials.getDob());
             
             // Persist the synced data automatically
@@ -51,6 +55,7 @@ public class PortalController {
                         subjects.add(com.eduvault.model.Subject.builder()
                             .id(java.util.UUID.randomUUID().toString())
                             .name(ds.getName())
+                            .code(ds.getCode())
                             .department(profile.getDepartment())
                             .semester(profile.getSemester())
                             .attendance(String.valueOf(ds.getAttendance()))
@@ -69,8 +74,7 @@ public class PortalController {
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("Portal Sync Error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Portal synchronization error: {}", e.getMessage());
             
             if ("Invalid credentials".equals(e.getMessage())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));

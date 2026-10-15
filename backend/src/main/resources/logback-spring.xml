@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Compact color-coded single-line console pattern -->
+    <property name="CONSOLE_PATTERN"
+              value="%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%-28.28logger{26}){cyan} %clr(:){faint} %replace(%msg){'[\r\n]+', ' '}%replace(%wEx){'[\r\n]+', ' | '}%nopex%n"/>
+
+    <!-- Rolling file single-line pattern -->
+   <property name="FILE_PATTERN"
+          value="%d{HH:mm:ss} %-5level [%thread] %-30.30logger{28} - %replace(%msg){'[\r\n]+', ' '}%replace(%wEx){'[\r\n]+', ' | '}%nopex%n"/>
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Rolling File Appender -->
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/eduvault.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/eduvault-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Silence noisy third-party libraries and duplicate warnings -->
+    <logger name="org.apache.poi" level="ERROR"/>
+    <logger name="org.apache.pdfbox" level="WARN"/>
+    <logger name="org.apache.fontbox" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.boot.autoconfigure" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="ai.djl" level="WARN"/>
+
+    <!-- EduVault Application loggers -->
+    <logger name="com.eduvault" level="INFO"/>
+    <logger name="com.eduvault.service.RAGService" level="INFO"/>
+    <logger name="com.eduvault.service.GeminiService" level="INFO"/>
+    <logger name="com.eduvault.service.PortalScraperService" level="INFO"/>
+    <logger name="com.eduvault.service.LmsScraperService" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING_FILE"/>
+    </root>
+</configuration>

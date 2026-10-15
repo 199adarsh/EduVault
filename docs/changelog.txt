@@ -38,3 +38,4 @@
 [2026-10-14] style(heatmap): improve light-mode square contrast and border tokens
 [2026-10-14] fix(heatmap): prevent date mismatch on semester boundary weeks
 [2026-10-14] perf(attendance): optimize calculation loops with useMemo
+[2026-10-15] perf(brabble): introduce 15-minute in-memory caching to respect rate limits

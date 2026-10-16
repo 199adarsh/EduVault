@@ -18,6 +18,11 @@ Get-Content $envFile | ForEach-Object {
         if ($idx -gt 0) {
             $key   = $line.Substring(0, $idx).Trim()
             $value = $line.Substring($idx + 1).Trim()
+            if (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'"))) {
+                if ($value.Length -ge 2) {
+                    $value = $value.Substring(1, $value.Length - 2)
+                }
+            }
             [System.Environment]::SetEnvironmentVariable($key, $value, "Process")
             Write-Host "  SET $key"
         }

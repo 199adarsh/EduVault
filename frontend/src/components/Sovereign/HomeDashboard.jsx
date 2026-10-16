@@ -4,6 +4,7 @@ import axios from 'axios';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
+import HackathonsFeed from './HackathonsFeed';
 
 const API_BASE = 'http://localhost:8081/api';
 
@@ -127,6 +128,9 @@ const HomeDashboard = () => {
   const [loginPrn, setLoginPrn] = useState('');
   const [loginDob, setLoginDob] = useState('');
   const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(0);
+  const [syncStage, setSyncStage] = useState('');
+  const [syncStep, setSyncStep] = useState(1);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -136,7 +140,28 @@ const HomeDashboard = () => {
     }
 
     setSyncing(true);
-    const toastId = toast.loading('Syncing with college portal...');
+    setSyncProgress(15);
+    setSyncStage('Authenticating with Continuo Portal...');
+    setSyncStep(1);
+
+    const timer1 = setTimeout(() => {
+      setSyncProgress(35);
+      setSyncStage('Ingesting enrolled subjects & syllabus...');
+      setSyncStep(2);
+    }, 1200);
+
+    const timer2 = setTimeout(() => {
+      setSyncProgress(65);
+      setSyncStage('Parsing attendance slots & session logs...');
+      setSyncStep(3);
+    }, 2800);
+
+    const timer3 = setTimeout(() => {
+      setSyncProgress(85);
+      setSyncStage('Compiling Continuous Evaluation (CIE) scores...');
+      setSyncStep(4);
+    }, 4500);
+
     try {
       await axios.post(`${API_BASE}/profile`, {
         ...profile,
@@ -144,23 +169,34 @@ const HomeDashboard = () => {
         dob: loginDob
       });
 
-      const syncResponse = await axios.post(`${API_BASE}/portal/dashboard`, {
+      // Perform live portal scrape
+      await axios.post(`${API_BASE}/portal/dashboard`, {
         prn: loginPrn,
         dob: loginDob
       });
 
-      if (syncResponse.data) {
-        toast.success('Sync complete! Welcome to EduVault.', { id: toastId });
-        if (refreshData) {
-          await refreshData();
-        }
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      setSyncProgress(100);
+      setSyncStage('Vault Initialized! Redirecting to Dashboard...');
+      setSyncStep(5);
+
+      toast.success('Welcome to EduVault.');
+      if (refreshData) {
+        await refreshData();
       }
     } catch (err) {
-      console.error('Portal sync error:', err);
-      const msg = err.response?.data?.error || 'Failed to sync with portal. Check credentials.';
-      toast.error(msg, { id: toastId });
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      console.error('Login error:', err);
+      const msg = err.response?.data?.error || 'Failed to login. Check credentials.';
+      toast.error(msg);
     } finally {
-      setSyncing(false);
+      setTimeout(() => {
+        setSyncing(false);
+      }, 500);
     }
   };
 
@@ -187,17 +223,37 @@ const HomeDashboard = () => {
     const active = (subjects || []).filter(s => !excludedIds.includes(s.id));
 
     const getPrecisePct = (s) => {
+      const direct = parseFloat(s.attendance);
+      if (!isNaN(direct) && direct > 0) return direct;
       const conducted = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
       const present = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-      if (conducted === 0) return parseFloat(s.attendance) || 0;
-      return parseFloat(((present / conducted) * 100).toFixed(1));
+      if (conducted === 0) return !isNaN(direct) ? direct : 0;
+      return parseFloat(((present / conducted) * 100).toFixed(2));
     };
 
-    const getWeightedAvg = (subs) => {
-      if (!subs || subs.length === 0) return "0.0";
-      const totalCredits = subs.reduce((acc, s) => acc + (s.credit || 1), 0);
-      const weightedSum = subs.reduce((acc, s) => acc + (getPrecisePct(s) * (s.credit || 1)), 0);
-      return totalCredits > 0 ? (weightedSum / totalCredits).toFixed(1) : "0.0";
+    const hasAttendance = (s) => {
+      if (s.totalConducted > 0) return true;
+      if (s.detailedAttendance && s.detailedAttendance.length > 0) return true;
+      const direct = parseFloat(s.attendance);
+      return !isNaN(direct) && direct > 0;
+    };
+
+    const getAverage = (subs) => {
+      let totalAttended = 0;
+      let totalConducted = 0;
+      (subs || []).forEach(s => {
+        const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+        const att = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+        totalConducted += cond;
+        totalAttended += att;
+      });
+      if (totalConducted > 0) {
+        return ((totalAttended / totalConducted) * 100).toFixed(2);
+      }
+      const valid = (subs || []).filter(hasAttendance);
+      if (valid.length === 0) return "0.00";
+      const sum = valid.reduce((acc, s) => acc + getPrecisePct(s), 0);
+      return (sum / valid.length).toFixed(2);
     };
 
     let totalSessions = 0;
@@ -229,9 +285,9 @@ const HomeDashboard = () => {
 
     return {
       stats: {
-        overall: getWeightedAvg(active),
+        overall: getAverage(active),
         totalDocs: notes?.length || 0,
-        riskCount: active.filter(s => getPrecisePct(s) < 75).length
+        riskCount: active.filter(s => hasAttendance(s) && getPrecisePct(s) < 75).length
       },
       subjectRegistry: registry,
       totalSessionsRecorded: totalSessions
@@ -321,49 +377,85 @@ const HomeDashboard = () => {
             </p>
           </div>
 
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">College PRN</label>
-              <input
-                type="text"
-                placeholder="e.g. 24UAD022"
-                value={loginPrn}
-                onChange={(e) => setLoginPrn(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                disabled={syncing}
-                required
-              />
-            </div>
+          {syncing ? (
+            <div className="space-y-4 py-2 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-primary flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  <span>{syncStage}</span>
+                </span>
+                <span className="text-primary font-mono font-bold text-sm">{syncProgress}%</span>
+              </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">Date of Birth</label>
-              <input
-                type="text"
-                placeholder="DD-MM-YYYY (e.g. 22-11-2006)"
-                value={loginDob}
-                onChange={(e) => setLoginDob(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                disabled={syncing}
-                required
-              />
-              <span className="text-[10px] text-text-secondary block">Format: DD-MM-YYYY (Day-Month-Year)</span>
-            </div>
+              {/* Progress Track */}
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-border-subtle p-0.5">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 transition-all duration-500 ease-out rounded-full"
+                  style={{ width: `${syncProgress}%` }}
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={syncing}
-              className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-              {syncing ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Syncing Portal...</span>
-                </div>
-              ) : (
+              {/* Step Checklist */}
+              <div className="space-y-2.5 pt-3 border-t border-border-subtle/70 text-xs">
+                {[
+                  { step: 1, label: 'Portal Authentication' },
+                  { step: 2, label: 'Curriculum & Subjects Ingestion' },
+                  { step: 3, label: 'Attendance Slots & Session Matrix' },
+                  { step: 4, label: 'Continuous Internal Evaluation (CIE)' }
+                ].map((item) => (
+                  <div key={item.step} className="flex items-center gap-2.5">
+                    {syncStep > item.step ? (
+                      <span className="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                    ) : syncStep === item.step ? (
+                      <span className="material-symbols-outlined text-[16px] text-blue-600 animate-spin">sync</span>
+                    ) : (
+                      <span className="material-symbols-outlined text-[16px] text-slate-300">radio_button_unchecked</span>
+                    )}
+                    <span className={syncStep === item.step ? 'font-bold text-primary' : (syncStep > item.step ? 'text-text-primary' : 'text-text-secondary')}>
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">College PRN</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 24UAD022"
+                  value={loginPrn}
+                  onChange={(e) => setLoginPrn(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  disabled={syncing}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">Date of Birth</label>
+                <input
+                  type="text"
+                  placeholder="DD-MM-YYYY (e.g. 22-11-2006)"
+                  value={loginDob}
+                  onChange={(e) => setLoginDob(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  disabled={syncing}
+                  required
+                />
+                <span className="text-[10px] text-text-secondary block">Format: DD-MM-YYYY (Day-Month-Year)</span>
+              </div>
+
+              <button
+                type="submit"
+                disabled={syncing}
+                className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              >
                 <span>Initialize &amp; Sync</span>
-              )}
-            </button>
-          </form>
+              </button>
+            </form>
+          )}
         </div>
       </div>
     );
@@ -472,22 +564,22 @@ const HomeDashboard = () => {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-text-secondary flex-wrap">
+                  <div className="flex items-center gap-1.5 text-[10px] text-text-secondary flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
-                      <span className="inline-flex items-center gap-1 font-mono font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/60">
-                        <span className="material-symbols-outlined text-[13px] text-text-secondary">badge</span>
+                      <span className="inline-flex items-center gap-1 font-mono font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/60 text-[10px]">
+                        <span className="material-symbols-outlined text-[11px] text-text-secondary">badge</span>
                         {profile?.rollNo || profile?.prn}
                       </span>
                     )}
                     {getDepartmentName(profile?.department) && (
-                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/60 px-2 py-0.5 rounded-md">
-                        <span className="material-symbols-outlined text-[13px]">school</span>
+                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/70 px-2 py-0.5 rounded-full border border-slate-200/40 text-[10px]">
+                        <span className="material-symbols-outlined text-[11px]">school</span>
                         {getDepartmentName(profile?.department)}
                       </span>
                     )}
                     {(profile?.semester || profile?.section) && (
-                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/60 px-2 py-0.5 rounded-md">
-                        <span className="material-symbols-outlined text-[13px]">calendar_today</span>
+                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/70 px-2 py-0.5 rounded-full border border-slate-200/40 text-[10px]">
+                        <span className="material-symbols-outlined text-[11px]">calendar_today</span>
                         {[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' · ')}
                       </span>
                     )}
@@ -537,63 +629,8 @@ const HomeDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* Left Column: Core Academics & Tracking (7 Cols) */}
             <div className="lg:col-span-7 space-y-4">
-              {/* Section 1: Notes & Resources */}
-              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[17px]">menu_book</span>
-                    </div>
-                    <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Notes &amp; Resources</h2>
-                      <span className="text-[11px] font-medium text-text-secondary">Curriculum Repository</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate('/notes')}
-                    className="inline-flex items-center gap-0.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors cursor-pointer"
-                  >
-                    <span>View All</span>
-                    <span className="material-symbols-outlined text-[15px]">chevron_right</span>
-                  </button>
-                </div>
-
-                {/* Compact Subject Cards */}
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {displayCurriculumCards.length > 0 ? (
-                    displayCurriculumCards.map((card, i) => (
-                      <div
-                        key={card.id || i}
-                        onClick={() => navigate('/notes')}
-                        className="flex items-center justify-between p-2.5 bg-white hover:bg-slate-50/80 border border-border-subtle hover:border-primary/50 rounded-lg transition-all cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100/80 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
-                            <span className="material-symbols-outlined text-[17px]">{card.icon}</span>
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors truncate">
-                              {card.title}
-                            </h3>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                                <span className="material-symbols-outlined text-[11px]">verified</span>Verified
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="w-7 h-7 rounded-md bg-slate-50 border border-border-subtle flex items-center justify-center text-text-secondary group-hover:text-primary group-hover:border-primary/40 group-hover:bg-blue-50 transition-colors flex-shrink-0">
-                          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-full py-6 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
-                      No curriculum subjects loaded.
-                    </div>
-                  )}
-                </div>
-              </section>
+              {/* Section 1: Brabble.ai Hackathons Feed */}
+              <HackathonsFeed />
 
               {/* Section 2: Attendance Activity Heatmap */}
               <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle" id="attendance-radar">
@@ -762,37 +799,38 @@ const HomeDashboard = () => {
                   </span>
                 </div>
 
-                {/* Compact Notice Card */}
+                {/* Single Row Compact Notice Banner */}
                 {latestAnnouncement ? (
-                  <div className="mt-3 p-3 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-[10px] font-bold border border-amber-200/80">
-                        <span className="material-symbols-outlined text-[12px]">notification_important</span>
-                        Official Notice
-                      </span>
-                      <span className="text-[11px] font-medium text-text-secondary flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">event</span>
-                        {latestAnnouncement.createdAt ? new Date(latestAnnouncement.createdAt).toLocaleDateString() : ''}
-                      </span>
+                  <div className="mt-2.5 p-2 px-3 rounded-lg bg-white hover:bg-slate-50 border border-border-subtle transition-all flex items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {/* Priority Circle: Red / Green / Yellow */}
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          latestAnnouncement.colorTag === 'red'
+                            ? 'bg-rose-500 ring-2 ring-rose-200'
+                            : latestAnnouncement.colorTag === 'green'
+                            ? 'bg-emerald-500 ring-2 ring-emerald-200'
+                            : latestAnnouncement.colorTag === 'yellow' || latestAnnouncement.colorTag === 'amber'
+                            ? 'bg-amber-500 ring-2 ring-amber-200'
+                            : 'bg-blue-500 ring-2 ring-blue-200'
+                        }`}
+                        title={latestAnnouncement.colorTag || 'Notice'}
+                      />
+                      <h3 className="text-xs font-semibold text-text-primary truncate">
+                        {latestAnnouncement.title}
+                      </h3>
                     </div>
-                    <h3 className="text-xs sm:text-sm font-bold text-text-primary mt-1 leading-snug">
-                      {latestAnnouncement.title}
-                    </h3>
-                    <p className="text-[11px] font-normal text-text-secondary mt-1 leading-relaxed line-clamp-2">
-                      {latestAnnouncement.description}
-                    </p>
-                    <div className="mt-2.5 pt-0.5">
-                      <button
-                        onClick={() => navigate('/announcements')}
-                        className="w-full py-1.5 px-3 rounded-full bg-slate-50 hover:bg-slate-100 text-text-primary border border-border-subtle hover:border-border-hover text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <span>View All Notices</span>
-                        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                      </button>
-                    </div>
+
+                    <button
+                      onClick={() => navigate('/announcements')}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-primary hover:text-white hover:bg-primary bg-blue-50 border border-blue-200/80 transition-all cursor-pointer shrink-0"
+                    >
+                      <span>View</span>
+                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    </button>
                   </div>
                 ) : (
-                  <div className="mt-3 p-5 rounded-lg bg-slate-50 border border-border-subtle text-center text-xs text-text-secondary">
+                  <div className="mt-2.5 py-2 px-3 rounded-lg bg-slate-50 border border-border-subtle text-center text-xs text-text-secondary">
                     No active broadcasts or notices.
                   </div>
                 )}

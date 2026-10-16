@@ -42,3 +42,4 @@
 [2026-10-15] test(brabble): verify multi-city filtering for Mumbai, Pune, and BLR
 [2026-10-16] style(dashboard): format student profile badges into compact pills
 [2026-10-16] style(broadcasts): convert notices into single-row banner with status dot
+[2026-10-16] chore(release): finalize Oct 16 milestone updates and clean up workspace

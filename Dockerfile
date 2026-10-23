@@ -15,11 +15,17 @@ COPY backend/src ./src
 COPY --from=frontend-build /frontend/dist ./src/main/resources/static
 RUN mvn clean package -DskipTests
 
-# Stage 3: Optimized Container Runtime
+# Stage 3: Optimized Container Runtime for Hugging Face Spaces (UID 1000, Port 7860)
 FROM eclipse-temurin:17-jre-alpine
 RUN apk add --no-cache fontconfig ttf-dejavu
+
+# Hugging Face Spaces guidelines require a non-root user with UID 1000
+RUN adduser -u 1000 -D appuser
 WORKDIR /app
 COPY --from=backend-build /app/target/*.jar app.jar
-ENV PORT=8080
-EXPOSE 8080
+RUN chown -R appuser:appuser /app
+USER appuser
+
+ENV PORT=7860
+EXPOSE 7860
 ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Dserver.port=${PORT} -jar app.jar"]

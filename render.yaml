@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: eduvault
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NEON_JDBC_URL
+        value: jdbc:postgresql://ep-raspy-cell-a1e1shtq-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+      - key: NEON_DB_USER
+        value: neondb_owner
+      - key: NEON_DB_PASSWORD
+        value: npg_0G8csDpdReyC
+      - key: B2_ACCESS_KEY_ID
+        value: 00634e50813f00b0000000001
+      - key: B2_SECRET_ACCESS_KEY
+        value: K006TQAXscCLXflCRyGdTMIxDl4LrPM
+      - key: B2_ENDPOINT
+        value: s3.ca-east-006.backblazeb2.com
+      - key: B2_BUCKET_NAME
+        value: eduvault-storage-a8f3
+      - key: B2_REGION
+        value: ca-east-006
+      - key: DDL_AUTO
+        value: update

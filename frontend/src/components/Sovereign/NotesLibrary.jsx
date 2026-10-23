@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
     Upload,
@@ -9,19 +8,28 @@ import {
     RefreshCw,
     Inbox,
     Layers,
-    ChevronDown
+    ChevronDown,
+    GraduationCap
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import LmsSyncModal from './LmsSyncModal';
+import PYQsDatabase from './PYQsDatabase';
 
-const NotesLibrary = () => {
+const NotesLibrary = ({ defaultTab = 'notes' }) => {
     const { subjects, notes, refreshData, setShowUpload } = useOutletContext();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
+    const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || defaultTab);
     const [showLmsSync, setShowLmsSync] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState('all');
     const [selectedUnit, setSelectedUnit] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        setSearchParams(tab === 'notes' ? {} : { tab });
+    };
 
     React.useEffect(() => {
         if (refreshData && (!notes || notes.length === 0)) {
@@ -104,8 +112,40 @@ const NotesLibrary = () => {
                     </div>
                 </header>
 
-                {/* Search & Filters Bar */}
-                <section className="bg-white border border-slate-200/90 rounded-xl p-3 shadow-xs flex flex-col md:flex-row items-center gap-3">
+                {/* Sub-navigation tabs: Notes & PYQs */}
+                <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3">
+                    <button
+                        onClick={() => handleTabChange('notes')}
+                        className={cn(
+                            "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer",
+                            activeTab === 'notes'
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
+                        )}
+                    >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Curriculum Notes ({notes?.length || 0})</span>
+                    </button>
+                    <button
+                        onClick={() => handleTabChange('pyqs')}
+                        className={cn(
+                            "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer",
+                            activeTab === 'pyqs'
+                                ? "bg-blue-600 text-white shadow-xs"
+                                : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
+                        )}
+                    >
+                        <GraduationCap className="w-3.5 h-3.5" />
+                        <span>Previous Year Questions (PYQs)</span>
+                    </button>
+                </div>
+
+                {activeTab === 'pyqs' ? (
+                    <PYQsDatabase embedded={true} />
+                ) : (
+                    <>
+                        {/* Search & Filters Bar */}
+                        <section className="bg-white border border-slate-200/90 rounded-xl p-3 shadow-xs flex flex-col md:flex-row items-center gap-3">
                     <div className="relative flex-1 w-full">
                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                             <Search className="w-4 h-4 text-slate-400" />
@@ -311,6 +351,8 @@ const NotesLibrary = () => {
                             </button>
                         </div>
                     </div>
+                )}
+                    </>
                 )}
 
                 {/* LMS Synchronization Modal */}

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { cn } from '../../lib/utils';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOpen }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -55,10 +55,11 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
         setTimeout(() => window.location.href = '/', 1000);
     };
 
+    const isTeacher = (localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER');
+
     const navItems = [
         { name: 'Home', icon: 'home', path: '/' },
-        { name: 'Notes', icon: 'menu_book', path: '/notes' },
-        { name: 'PYQs', icon: 'quiz', path: '/pyqs' },
+        { name: 'Notes & PYQs', icon: 'menu_book', path: '/notes' },
         { name: 'Roadmaps', icon: 'alt_route', path: '/roadmaps' },
         { 
             name: 'AI Assistant', 
@@ -69,7 +70,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
         },
         { name: 'Announcements', icon: 'campaign', path: '/announcements' },
         { 
-            name: 'Attendance', 
+            name: isTeacher ? 'Attendance & NC' : 'Attendance', 
             icon: 'event_available', 
             path: '/attendance',
             badge: attendance ? `${attendance}%` : null,
@@ -80,15 +81,12 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
 
     const formatName = (fullName) => {
         if (!fullName) return profile?.username || "Student";
-        const parts = fullName.trim().split(/\s+/);
-        if (parts.length >= 2) {
-            const firstName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
-            const lastName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-            return `${firstName} ${lastName}`;
-        }
-        return fullName.split(/\s+/).map(word =>
-            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        ).join(' ');
+        const trimmed = fullName.trim();
+        if (!trimmed) return "Student";
+        return trimmed.split(/\s+/).map(word => {
+            if (word.length <= 2 && word.toUpperCase() === word) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }).join(' ');
     };
 
     return (
@@ -151,21 +149,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             <div className="p-4 border-t border-border-subtle/60 relative" ref={menuRef}>
                 {showUserMenu && (
                     <div className="absolute bottom-full left-4 right-4 mb-2 p-1.5 bg-surface-card border border-border-subtle rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const current = localStorage.getItem('eduvault_user_role') || 'student';
-                                const next = (current === 'teacher' || current === 'faculty' || current === 'admin') ? 'student' : 'teacher';
-                                localStorage.setItem('eduvault_user_role', next);
-                                toast.info(`Switched active mode to: ${next.toUpperCase()}`);
-                                setShowUserMenu(false);
-                                setTimeout(() => window.location.reload(), 300);
-                            }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
-                        >
-                            <span className="material-symbols-outlined text-[18px] text-indigo-600">badge</span>
-                            <span>Switch: {(localStorage.getItem('eduvault_user_role') || 'student') === 'teacher' ? 'Student Mode' : 'Teacher Mode'}</span>
-                        </button>
+
                         <button
                             onClick={handleSync}
                             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-surface-subtle-blue hover:text-primary rounded-lg transition-colors"
@@ -207,7 +191,9 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                         </div>
                         <div className="flex flex-col min-w-0">
                             <span className="text-xs font-semibold text-text-primary truncate">{formatName(profile?.name)}</span>
-                            <span className="text-[11px] text-text-secondary truncate">PRN : {profile?.prn || profile?.rollNo || '—'}</span>
+                            <span className="text-[11px] text-text-secondary truncate">
+                                {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? 'Faculty Account' : `PRN: ${profile?.prn || profile?.rollNo || '—'}`}
+                            </span>
                         </div>
                     </div>
                     <div className="w-2.5 h-2.5 rounded-full bg-status-success-text animate-pulse shrink-0 ml-2" title="Online"></div>

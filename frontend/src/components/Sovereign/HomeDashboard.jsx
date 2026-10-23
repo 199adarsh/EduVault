@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import HackathonsFeed from './HackathonsFeed';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const getDepartmentName = (deptCode) => {
   if (!deptCode) return "";
@@ -23,15 +23,12 @@ const getDepartmentName = (deptCode) => {
 
 const formatName = (fullName) => {
   if (!fullName) return "Student";
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    const firstName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
-    const lastName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-    return `${firstName} ${lastName}`;
-  }
-  return fullName.split(/\s+/).map(word =>
-    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  ).join(' ');
+  const trimmed = fullName.trim();
+  if (!trimmed) return "Student";
+  return trimmed.split(/\s+/).map(word => {
+    if (word.length <= 2 && word.toUpperCase() === word) return word;
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }).join(' ');
 };
 
 const getInitials = (fullName) => {
@@ -132,6 +129,62 @@ const HomeDashboard = () => {
   const [syncStage, setSyncStage] = useState('');
   const [syncStep, setSyncStep] = useState(1);
 
+  const [loginRole, setLoginRole] = useState('student'); // 'student' | 'teacher'
+  const [teacherId, setTeacherId] = useState('');
+  const [teacherPassword, setTeacherPassword] = useState('');
+
+  const TEACHER_ACCOUNTS = [
+    { id: 'DRP@Eduvault', name: 'D R Patil', pass: 'DRP@Eduvault2026', dept: 'AI & Data Science' },
+    { id: 'HPM@Eduvault', name: 'H P Magdum', pass: 'HPM@Eduvault2026', dept: 'AI & Data Science' },
+    { id: 'TIB@Eduvault', name: 'T I Bagban', pass: 'TIB@Eduvault2026', dept: 'AI & Data Science' },
+    { id: 'PMM@Eduvault', name: 'P M Mathpati', pass: 'PMM@Eduvault2026', dept: 'AI & Data Science' }
+  ];
+
+  const handleTeacherLogin = async (e) => {
+    e.preventDefault();
+    const account = TEACHER_ACCOUNTS.find(
+      t => t.id.toLowerCase() === teacherId.trim().toLowerCase() && t.pass === teacherPassword.trim()
+    );
+
+    if (!account) {
+      toast.error('Invalid Faculty ID or Password');
+      return;
+    }
+
+    setSyncing(true);
+    setSyncStage('Authenticating Faculty Account...');
+    setSyncProgress(50);
+
+    try {
+      localStorage.setItem('eduvault_user_role', 'teacher');
+      localStorage.setItem('eduvault_teacher_id', account.id);
+      localStorage.setItem('eduvault_teacher_name', account.name);
+
+      await axios.post(`${API_BASE}/profile`, {
+        name: account.name,
+        prn: account.id,
+        dob: 'TEACHER',
+        department: account.dept,
+        role: 'teacher'
+      });
+
+      setSyncProgress(100);
+      setSyncStage('Faculty Vault Initialized!');
+      toast.success(`Welcome, Prof. ${account.name}`);
+
+      if (refreshData) {
+        await refreshData();
+      }
+    } catch (err) {
+      console.error('Faculty login error:', err);
+      toast.error('Failed to initialize faculty session');
+    } finally {
+      setTimeout(() => {
+        setSyncing(false);
+      }, 500);
+    }
+  };
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!loginPrn || !loginDob) {
@@ -139,61 +192,82 @@ const HomeDashboard = () => {
       return;
     }
 
+    localStorage.setItem('eduvault_user_role', 'student');
     setSyncing(true);
-    setSyncProgress(15);
-    setSyncStage('Authenticating with Continuo Portal...');
     setSyncStep(1);
+    setSyncStage('Authenticating with Continuo Portal...');
+    setSyncProgress(12);
 
-    const timer1 = setTimeout(() => {
-      setSyncProgress(35);
-      setSyncStage('Ingesting enrolled subjects & syllabus...');
-      setSyncStep(2);
-    }, 1200);
+    // Smoothly tick Auth phase from 12% to 30%
+    let currentPct = 12;
+    const authInterval = setInterval(() => {
+      currentPct = Math.min(30, currentPct + 4);
+      setSyncProgress(currentPct);
+      if (currentPct >= 30) clearInterval(authInterval);
+    }, 200);
 
-    const timer2 = setTimeout(() => {
-      setSyncProgress(65);
-      setSyncStage('Parsing attendance slots & session logs...');
-      setSyncStep(3);
-    }, 2800);
-
-    const timer3 = setTimeout(() => {
-      setSyncProgress(85);
-      setSyncStage('Compiling Continuous Evaluation (CIE) scores...');
-      setSyncStep(4);
-    }, 4500);
+    let fetchInterval = null;
 
     try {
+      // Phase 1: Authentication (0 - 30%)
       await axios.post(`${API_BASE}/profile`, {
         ...profile,
         prn: loginPrn,
         dob: loginDob
       });
 
-      // Perform live portal scrape
+      clearInterval(authInterval);
+      setSyncProgress(30);
+
+      // Phase 2: Data Fetching & Sync (30% - 100%)
+      setSyncStep(2);
+      setSyncStage('Ingesting enrolled subjects & syllabus...');
+      currentPct = 32;
+      setSyncProgress(32);
+
+      fetchInterval = setInterval(() => {
+        if (currentPct < 52) {
+          currentPct += 2;
+          if (currentPct >= 52) {
+            setSyncStep(3);
+            setSyncStage('Parsing attendance slots & session logs...');
+          }
+        } else if (currentPct < 74) {
+          currentPct += 2;
+          if (currentPct >= 74) {
+            setSyncStep(4);
+            setSyncStage('Compiling Continuous Evaluation (CIE) scores...');
+          }
+        } else if (currentPct < 94) {
+          currentPct += 1;
+        }
+        setSyncProgress(currentPct);
+      }, 250);
+
+      // Perform live portal scrape (60-70% heavy lifting)
       await axios.post(`${API_BASE}/portal/dashboard`, {
         prn: loginPrn,
         dob: loginDob
       });
 
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
+      clearInterval(fetchInterval);
+      setSyncStep(5);
       setSyncProgress(100);
       setSyncStage('Vault Initialized! Redirecting to Dashboard...');
-      setSyncStep(5);
 
       toast.success('Welcome to EduVault.');
       if (refreshData) {
         await refreshData();
       }
     } catch (err) {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
+      clearInterval(authInterval);
+      if (fetchInterval) clearInterval(fetchInterval);
       console.error('Login error:', err);
       const msg = err.response?.data?.error || 'Failed to login. Check credentials.';
       toast.error(msg);
     } finally {
+      clearInterval(authInterval);
+      if (fetchInterval) clearInterval(fetchInterval);
       setTimeout(() => {
         setSyncing(false);
       }, 500);
@@ -216,6 +290,92 @@ const HomeDashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const isTeacher = (localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER');
+  const [facultyNcRequests, setFacultyNcRequests] = useState([]);
+  const [facultyNcLoading, setFacultyNcLoading] = useState(false);
+  const [ncFilterStatus, setNcFilterStatus] = useState('ALL');
+  const [ncSearchQuery, setNcSearchQuery] = useState('');
+  const [reviewingReq, setReviewingReq] = useState(null);
+  const [reviewDecision, setReviewDecision] = useState('APPROVED');
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [docPreviewUrl, setDocPreviewUrl] = useState(null);
+  const [docPreviewName, setDocPreviewName] = useState('');
+
+  const fetchFacultyNc = async () => {
+    if (!isTeacher) return;
+    setFacultyNcLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/nc/requests`, {
+        headers: { 'X-User-Role': 'teacher' }
+      });
+      setFacultyNcRequests(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error('Failed to load NC requests for faculty', err);
+    } finally {
+      setFacultyNcLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isTeacher) {
+      fetchFacultyNc();
+    }
+  }, [isTeacher]);
+
+  const getNcProofUrl = (req) => {
+    if (!req) return '';
+    if (req.proofFileKey) {
+      return `${API_BASE}/nc/proofs/${encodeURIComponent(req.proofFileKey)}`;
+    }
+    return req.proofPresignedUrl || '';
+  };
+
+  const handleTeacherReview = async (e) => {
+    e?.preventDefault();
+    if (!reviewingReq) return;
+    setIsSubmittingReview(true);
+    try {
+      await axios.put(`${API_BASE}/nc/requests/${reviewingReq.id}/review`, {
+        status: reviewDecision,
+        comment: reviewComment,
+        reviewerName: profile?.name || localStorage.getItem('eduvault_teacher_name') || 'Faculty'
+      });
+      toast.success(`Request marked as ${reviewDecision.toLowerCase()}`);
+      setReviewingReq(null);
+      setReviewComment('');
+      fetchFacultyNc();
+      if (refreshData) refreshData();
+    } catch (err) {
+      console.error('Failed to review NC request', err);
+      toast.error('Failed to save review decision');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const ncStats = useMemo(() => {
+    const total = facultyNcRequests.length;
+    const pending = facultyNcRequests.filter(r => r.status === 'PENDING').length;
+    const approved = facultyNcRequests.filter(r => r.status === 'APPROVED').length;
+    const rejected = facultyNcRequests.filter(r => r.status === 'REJECTED').length;
+    return { total, pending, approved, rejected };
+  }, [facultyNcRequests]);
+
+  const filteredFacultyNc = useMemo(() => {
+    return facultyNcRequests.filter(r => {
+      if (ncFilterStatus !== 'ALL' && r.status !== ncFilterStatus) return false;
+      if (ncSearchQuery.trim()) {
+        const q = ncSearchQuery.toLowerCase();
+        const nameMatch = r.studentName?.toLowerCase().includes(q);
+        const prnMatch = r.studentPrn?.toLowerCase().includes(q);
+        const subMatch = r.missedSubjects?.some(ms => ms.subjectName?.toLowerCase().includes(q));
+        return nameMatch || prnMatch || subMatch;
+      }
+      return true;
+    });
+  }, [facultyNcRequests, ncFilterStatus, ncSearchQuery]);
 
   const { stats, subjectRegistry, totalSessionsRecorded } = useMemo(() => {
     const saved = localStorage.getItem('eduvault_excluded_subjects');
@@ -377,49 +537,151 @@ const HomeDashboard = () => {
             </p>
           </div>
 
+          {/* Role Toggle Tabs */}
+          <div className="flex items-center p-1 bg-slate-100 rounded-xl mb-5">
+            <button
+              type="button"
+              onClick={() => setLoginRole('student')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${loginRole === 'student'
+                  ? 'bg-white text-primary shadow-xs'
+                  : 'text-text-secondary hover:text-text-primary'
+                }`}
+            >
+              Student Login
+            </button>
+            <button
+              type="button"
+              onClick={() => setLoginRole('teacher')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${loginRole === 'teacher'
+                  ? 'bg-white text-primary shadow-xs'
+                  : 'text-text-secondary hover:text-text-primary'
+                }`}
+            >
+              Teacher / Faculty
+            </button>
+          </div>
+
           {syncing ? (
-            <div className="space-y-4 py-2 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between text-xs font-semibold">
-                <span className="text-primary flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                  <span>{syncStage}</span>
+            <div className="space-y-5 py-3 animate-in fade-in duration-300">
+              {/* Header Status with Live Icon & Progress Badge */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 min-w-0 pr-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60">
+                    <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 truncate">{syncStage}</p>
+                    <p className="text-[11px] text-slate-400 truncate">Connecting and syncing student portal...</p>
+                  </div>
+                </div>
+                <span className="shrink-0 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 font-mono font-bold text-xs text-blue-600 shadow-2xs">
+                  {syncProgress}%
                 </span>
-                <span className="text-primary font-mono font-bold text-sm">{syncProgress}%</span>
               </div>
 
-              {/* Progress Track */}
-              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-border-subtle p-0.5">
+              {/* Refined Smooth Progress Track */}
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 transition-all duration-500 ease-out rounded-full"
+                  className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 rounded-full transition-all duration-300 ease-out shadow-xs"
                   style={{ width: `${syncProgress}%` }}
                 />
               </div>
 
-              {/* Step Checklist */}
-              <div className="space-y-2.5 pt-3 border-t border-border-subtle/70 text-xs">
+              {/* Minimalist Vertical Step Timeline */}
+              <div className="space-y-3 pt-1 border-t border-slate-100">
                 {[
                   { step: 1, label: 'Portal Authentication' },
                   { step: 2, label: 'Curriculum & Subjects Ingestion' },
                   { step: 3, label: 'Attendance Slots & Session Matrix' },
                   { step: 4, label: 'Continuous Internal Evaluation (CIE)' }
-                ].map((item) => (
-                  <div key={item.step} className="flex items-center gap-2.5">
-                    {syncStep > item.step ? (
-                      <span className="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
-                    ) : syncStep === item.step ? (
-                      <span className="material-symbols-outlined text-[16px] text-blue-600 animate-spin">sync</span>
-                    ) : (
-                      <span className="material-symbols-outlined text-[16px] text-slate-300">radio_button_unchecked</span>
-                    )}
-                    <span className={syncStep === item.step ? 'font-bold text-primary' : (syncStep > item.step ? 'text-text-primary' : 'text-text-secondary')}>
-                      {item.label}
-                    </span>
-                  </div>
-                ))}
+                ].map((item) => {
+                  const isDone = syncStep > item.step;
+                  const isCurrent = syncStep === item.step;
+                  return (
+                    <div key={item.step} className="flex items-center gap-3 text-xs transition-all">
+                      <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                        {isDone ? (
+                          <span className="material-symbols-outlined text-[19px] text-emerald-600">check_circle</span>
+                        ) : isCurrent ? (
+                          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-slate-200" />
+                        )}
+                      </div>
+                      <span className={`transition-colors truncate ${
+                        isCurrent
+                          ? 'font-bold text-blue-600'
+                          : isDone
+                          ? 'font-medium text-slate-700'
+                          : 'text-slate-400'
+                      }`}>
+                        {item.label}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+          ) : loginRole === 'teacher' ? (
+            /* Teacher / Faculty Login Form */
+            <form onSubmit={handleTeacherLogin} className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">
+                  Faculty ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Faculty@Eduvault"
+                  value={teacherId}
+                  onChange={(e) => setTeacherId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
+                  disabled={syncing}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••"
+                  value={teacherPassword}
+                  onChange={(e) => setTeacherPassword(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  disabled={syncing}
+                  required
+                />
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-border-subtle text-[11px] text-text-secondary space-y-1">
+                <div className="font-semibold text-text-primary">Authorized Faculty Accounts:</div>
+                <div className="flex flex-wrap gap-1 text-[10px]">
+                  {TEACHER_ACCOUNTS.map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => { setTeacherId(t.id); setTeacherPassword(t.pass); }}
+                      className="px-2 py-0.5 rounded bg-white hover:bg-slate-100 border border-border-subtle font-mono text-primary transition-colors cursor-pointer"
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={syncing}
+                className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              >
+                <span>Login as Teacher</span>
+              </button>
+            </form>
           ) : (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+            /* Student Login Form */
+            <form onSubmit={handleLoginSubmit} className="space-y-4 animate-in fade-in duration-200">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">College PRN</label>
                 <input
@@ -482,11 +744,14 @@ const HomeDashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle-blue text-primary text-xs font-semibold">
-            <span className="material-symbols-outlined text-[16px]">school</span>For Students
+            <span className="material-symbols-outlined text-[16px]">school</span>
+            {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? 'Faculty Portal' : 'For Students'}
           </span>
-          <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-status-success-bg text-status-success-text text-xs font-semibold">
-            <span className="material-symbols-outlined text-[15px]">task_alt</span>Attendance {stats.overall}%
-          </span>
+          {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (
+            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-status-success-bg text-status-success-text text-xs font-semibold">
+              <span className="material-symbols-outlined text-[15px]">task_alt</span>Attendance {stats.overall}%
+            </span>
+          )}
           <button
             onClick={() => navigate('/announcements')}
             className="relative w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
@@ -559,16 +824,22 @@ const HomeDashboard = () => {
                     <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight leading-tight truncate">
                       Welcome, {formatName(profile?.name)}
                     </h1>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80">
-                      <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Student
-                    </span>
+                    {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
+                        <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Teacher
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80">
+                        <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Student
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5 text-[10px] text-text-secondary flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
                       <span className="inline-flex items-center gap-1 font-mono font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/60 text-[10px]">
                         <span className="material-symbols-outlined text-[11px] text-text-secondary">badge</span>
-                        {profile?.rollNo || profile?.prn}
+                        {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? `ID: ${profile?.prn}` : (profile?.rollNo || profile?.prn)}
                       </span>
                     )}
                     {getDepartmentName(profile?.department) && (
@@ -577,7 +848,7 @@ const HomeDashboard = () => {
                         {getDepartmentName(profile?.department)}
                       </span>
                     )}
-                    {(profile?.semester || profile?.section) && (
+                    {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (profile?.semester || profile?.section) && (
                       <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/70 px-2 py-0.5 rounded-full border border-slate-200/40 text-[10px]">
                         <span className="material-symbols-outlined text-[11px]">calendar_today</span>
                         {[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' · ')}
@@ -587,41 +858,81 @@ const HomeDashboard = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap ml-auto lg:ml-0">
-                <div
-                  onClick={() => navigate('/attendance')}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-primary/40 transition-colors duration-200 cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-md bg-blue-50 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <span className="material-symbols-outlined text-[16px]">fact_check</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 leading-none">
-                      <span className="text-sm font-bold text-text-primary tracking-tight">{stats.overall}%</span>
-                      <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60 leading-none">
-                        {stats.overall >= 75 ? 'Optimal' : 'Review'}
-                      </span>
+              {isTeacher ? (
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap ml-auto lg:ml-0">
+                  <div
+                    onClick={() => navigate('/attendance')}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-amber-400 transition-colors duration-200 cursor-pointer group shadow-2xs"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <span className="material-symbols-outlined text-[16px]">pending_actions</span>
                     </div>
-                    <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Overall Attendance</span>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 leading-none">
+                        <span className="text-sm font-bold text-amber-600 tracking-tight">{ncStats.pending}</span>
+                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200/60 leading-none">
+                          Action Needed
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">NC Pending Review</span>
+                    </div>
                   </div>
-                </div>
 
-                <div
-                  onClick={() => navigate('/attendance')}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-red-300 transition-colors duration-200 cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-md bg-red-50 text-red-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <span className="material-symbols-outlined text-[16px]">warning</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 leading-none">
-                      <span className="text-sm font-bold text-red-600 tracking-tight">{stats.riskCount}</span>
-                      <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-red-50 text-red-600 border border-red-200/60 leading-none">Below 75%</span>
+                  <div
+                    onClick={() => navigate('/attendance')}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-emerald-400 transition-colors duration-200 cursor-pointer group shadow-2xs"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <span className="material-symbols-outlined text-[16px]">verified</span>
                     </div>
-                    <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Attendance Alerts</span>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 leading-none">
+                        <span className="text-sm font-bold text-emerald-600 tracking-tight">{ncStats.approved}</span>
+                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60 leading-none">
+                          Approved
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Absences Condoned</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap ml-auto lg:ml-0">
+                  <div
+                    onClick={() => navigate('/attendance')}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-primary/40 transition-colors duration-200 cursor-pointer group"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-blue-50 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <span className="material-symbols-outlined text-[16px]">fact_check</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 leading-none">
+                        <span className="text-sm font-bold text-text-primary tracking-tight">{stats.overall}%</span>
+                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60 leading-none">
+                          {stats.overall >= 75 ? 'Optimal' : 'Review'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Overall Attendance</span>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => navigate('/attendance')}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-red-300 transition-colors duration-200 cursor-pointer group"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-red-50 text-red-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <span className="material-symbols-outlined text-[16px]">warning</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 leading-none">
+                        <span className="text-sm font-bold text-red-600 tracking-tight">{stats.riskCount}</span>
+                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-red-50 text-red-600 border border-red-200/60 leading-none">Below 75%</span>
+                      </div>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Attendance Alerts</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -632,45 +943,234 @@ const HomeDashboard = () => {
               {/* Section 1: Brabble.ai Hackathons Feed */}
               <HackathonsFeed />
 
-              {/* Section 2: Attendance Activity Heatmap */}
-              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle" id="attendance-radar">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[17px]">calendar_month</span>
+              {/* Section 2: Attendance Activity Heatmap OR Faculty NC Management */}
+              {isTeacher ? (
+                <section className="bg-surface-card rounded-xl p-4 sm:p-5 border border-border-subtle space-y-3 shadow-2xs" id="faculty-nc-hub">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border-subtle gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                      </div>
+                      <div>
+                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Absence Consideration (NC) Queue</h2>
+                        <span className="text-[11px] font-medium text-text-secondary">Student absence claims & proof verification</span>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Attendance Activity</h2>
-                      <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Records</span>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                    {totalSessionsRecorded} Sessions
-                  </span>
-                </div>
-
-                <div className="mt-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <span className="text-[11px] font-bold text-text-primary">Attendance Matrix</span>
-                    <div className="flex items-center gap-2.5 text-[10px] text-text-secondary">
-                      <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]"></span>
-                        <span className="font-medium">Present</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-[2px] bg-[#f85149]"></span>
-                        <span className="font-medium">Absent</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-[2px] bg-slate-100 border border-border-subtle"></span>
-                        <span className="font-medium">Holiday</span>
-                      </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        {ncStats.pending} Pending
+                      </span>
+                      <button
+                        onClick={fetchFacultyNc}
+                        className="p-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-slate-100 transition cursor-pointer"
+                        title="Refresh NC Requests"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">refresh</span>
+                      </button>
                     </div>
                   </div>
 
-                  <SharedAttendanceHeatmap subjects={subjects} weeksCount={18} />
-                </div>
-              </section>
+                  {/* Search & Filter pills */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                      {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((st) => (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => setNcFilterStatus(st)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            ncFilterStatus === st
+                              ? 'bg-primary text-white shadow-xs'
+                              : 'bg-slate-100 text-text-secondary hover:bg-slate-200/70'
+                          }`}
+                        >
+                          {st === 'ALL' ? `All (${ncStats.total})` : st === 'PENDING' ? `Pending (${ncStats.pending})` : st === 'APPROVED' ? `Approved (${ncStats.approved})` : `Rejected (${ncStats.rejected})`}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="relative w-full sm:w-48">
+                      <input
+                        type="text"
+                        value={ncSearchQuery}
+                        onChange={(e) => setNcSearchQuery(e.target.value)}
+                        placeholder="Search student or PRN..."
+                        className="w-full text-xs pl-7 pr-2 py-1 rounded-lg bg-slate-50 border border-border-subtle focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <span className="material-symbols-outlined text-[14px] text-text-secondary absolute left-2 top-1/2 -translate-y-1/2">
+                        search
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Requests List */}
+                  <div className="space-y-2.5 max-h-[480px] overflow-y-auto no-scrollbar">
+                    {facultyNcLoading ? (
+                      <div className="py-8 text-center text-xs text-text-secondary">Loading NC consideration requests...</div>
+                    ) : filteredFacultyNc.length === 0 ? (
+                      <div className="py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-border-subtle p-4">
+                        <span className="material-symbols-outlined text-3xl text-slate-300 mx-auto mb-1">rule</span>
+                        <p className="text-xs font-semibold text-text-primary">No NC requests found</p>
+                        <p className="text-[11px] text-text-secondary mt-0.5">No student submissions matching current filter.</p>
+                      </div>
+                    ) : (
+                      filteredFacultyNc.map((req) => (
+                        <div key={req.id} className="p-3.5 rounded-xl border border-border-subtle bg-white text-xs space-y-2 shadow-2xs hover:border-primary/40 transition">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-text-primary">{req.studentName}</span>
+                              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200 font-semibold">
+                                {req.studentPrn}
+                              </span>
+                              {req.missedSubjects && req.missedSubjects.length > 0 && (
+                                <span className="text-[10px] px-2 py-0.2 rounded-full bg-blue-50 text-blue-700 font-medium">
+                                  {req.missedSubjects[0].subjectName}
+                                </span>
+                              )}
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                              req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                              'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}>
+                              {req.status}
+                            </span>
+                          </div>
+
+                          <div className="text-[11px] text-text-secondary space-y-0.5">
+                            <div>Absent Dates: <strong className="font-mono text-text-primary">{(req.absentDates || []).join(', ')}</strong></div>
+                            <div>Reason: <strong className="text-text-primary">{req.reason}</strong>{req.description ? ` - "${req.description}"` : ''}</div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 border-t border-border-subtle/50">
+                            {req.proofFileName ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDocPreviewUrl(getNcProofUrl(req));
+                                  setDocPreviewName(req.proofFileName);
+                                }}
+                                className="text-primary hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">visibility</span>
+                                <span>View Proof ({req.proofFileName})</span>
+                              </button>
+                            ) : (
+                              <span className="text-slate-400 italic text-[11px]">No proof file</span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReviewingReq(req);
+                                setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
+                                setReviewComment(req.reviewComment || '');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-[11px] cursor-pointer shadow-2xs"
+                            >
+                              Review
+                            </button>
+                          </div>
+
+                          {/* Quick Review Box */}
+                          {reviewingReq && reviewingReq.id === req.id && (
+                            <div className="mt-2 p-3 rounded-lg bg-blue-50/60 border border-blue-200 space-y-2 animate-in fade-in duration-150">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-[11px] text-blue-900">Faculty Review Decision</span>
+                                <button type="button" onClick={() => setReviewingReq(null)} className="text-slate-400 hover:text-slate-600">
+                                  <span className="material-symbols-outlined text-[15px]">close</span>
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewDecision('APPROVED')}
+                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${
+                                    reviewDecision === 'APPROVED' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                                  }`}
+                                >
+                                  Approve NC
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewDecision('REJECTED')}
+                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${
+                                    reviewDecision === 'REJECTED' ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                                  }`}
+                                >
+                                  Reject NC
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={reviewComment}
+                                onChange={(e) => setReviewComment(e.target.value)}
+                                placeholder="Faculty remarks or justification..."
+                                className="w-full text-xs p-1.5 bg-white border border-slate-200 rounded outline-none"
+                              />
+                              <div className="flex justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewingReq(null)}
+                                  className="px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-200 rounded"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleTeacherReview}
+                                  disabled={isSubmittingReview}
+                                  className="px-3 py-1 rounded bg-primary text-white text-xs font-bold disabled:opacity-50"
+                                >
+                                  {isSubmittingReview ? 'Saving...' : 'Save Decision'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
+              ) : (
+                <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle" id="attendance-radar">
+                  <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[17px]">calendar_month</span>
+                      </div>
+                      <div>
+                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Attendance Activity</h2>
+                        <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Records</span>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                      {totalSessionsRecorded} Sessions
+                    </span>
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <span className="text-[11px] font-bold text-text-primary">Attendance Matrix</span>
+                      <div className="flex items-center gap-2.5 text-[10px] text-text-secondary">
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]"></span>
+                          <span className="font-medium">Present</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-[2px] bg-[#f85149]"></span>
+                          <span className="font-medium">Absent</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-[2px] bg-slate-100 border border-border-subtle"></span>
+                          <span className="font-medium">Holiday</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <SharedAttendanceHeatmap subjects={subjects} weeksCount={18} />
+                  </div>
+                </section>
+              )}
 
               {/* Section 3: Milestones & Events */}
               <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
@@ -805,15 +1305,14 @@ const HomeDashboard = () => {
                     <div className="flex items-center gap-2 min-w-0">
                       {/* Priority Circle: Red / Green / Yellow */}
                       <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          latestAnnouncement.colorTag === 'red'
+                        className={`w-2 h-2 rounded-full shrink-0 ${latestAnnouncement.colorTag === 'red'
                             ? 'bg-rose-500 ring-2 ring-rose-200'
                             : latestAnnouncement.colorTag === 'green'
-                            ? 'bg-emerald-500 ring-2 ring-emerald-200'
-                            : latestAnnouncement.colorTag === 'yellow' || latestAnnouncement.colorTag === 'amber'
-                            ? 'bg-amber-500 ring-2 ring-amber-200'
-                            : 'bg-blue-500 ring-2 ring-blue-200'
-                        }`}
+                              ? 'bg-emerald-500 ring-2 ring-emerald-200'
+                              : latestAnnouncement.colorTag === 'yellow' || latestAnnouncement.colorTag === 'amber'
+                                ? 'bg-amber-500 ring-2 ring-amber-200'
+                                : 'bg-blue-500 ring-2 ring-blue-200'
+                          }`}
                         title={latestAnnouncement.colorTag || 'Notice'}
                       />
                       <h3 className="text-xs font-semibold text-text-primary truncate">
@@ -1033,6 +1532,70 @@ const HomeDashboard = () => {
               >
                 CLOSE
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Preview Modal */}
+      {docPreviewUrl && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[18px]">description</span>
+                <span className="font-bold text-xs sm:text-sm text-slate-900">{docPreviewName}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={docPreviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  download={docPreviewName}
+                  className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200"
+                  title="Download Document"
+                >
+                  <span className="material-symbols-outlined text-[18px]">download</span>
+                </a>
+                <button
+                  onClick={() => setDocPreviewUrl(null)}
+                  className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 p-3 overflow-auto flex items-center justify-center bg-slate-100 min-h-[350px]">
+              {docPreviewUrl.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={docPreviewUrl}
+                  title="NC Proof Preview"
+                  className="w-full h-[60vh] rounded-xl border border-slate-200 bg-white"
+                />
+              ) : (
+                <img
+                  src={docPreviewUrl}
+                  alt={docPreviewName}
+                  className="max-h-[60vh] object-contain rounded-xl border border-slate-200 shadow-xs"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    if (e.target.nextSibling) e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+              )}
+              <div className="hidden text-center p-6 text-slate-500">
+                <span className="material-symbols-outlined text-amber-500 text-3xl mx-auto mb-1">warning</span>
+                <p className="text-xs font-semibold">Document cannot be previewed directly in frame.</p>
+                <a
+                  href={docPreviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold"
+                >
+                  Download &amp; View File
+                </a>
+              </div>
             </div>
           </div>
         </div>

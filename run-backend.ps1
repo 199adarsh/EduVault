@@ -29,11 +29,19 @@ $proxyConn = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction Sil
 if (-not $proxyConn) {
     Write-Host "Starting Gemini Web2API proxy on port 8000..."
     $proxyDir = Join-Path $PSScriptRoot "gemini-web2api"
-    Start-Process -FilePath "python" -ArgumentList "gemini_web2api.py --config config.json" -WorkingDirectory $proxyDir -WindowStyle Hidden
+    Start-Process -FilePath "python" -ArgumentList "gemini_web2api.py --port 8000" -WorkingDirectory $proxyDir -WindowStyle Hidden
     Start-Sleep -Seconds 2
 } else {
     Write-Host "Gemini Web2API proxy is already running on port 8000."
 }
+
+# Ensure port 8081 is free
+$killed = $false
+Get-NetTCPConnection -LocalPort 8081 -State Listen -ErrorAction SilentlyContinue | ForEach-Object {
+    Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
+    $killed = $true
+}
+if ($killed) { Start-Sleep -Seconds 2 }
 
 Write-Host ""
 Write-Host "Starting Spring Boot backend..."

@@ -45,6 +45,12 @@ public class LocalJsonDatabase {
     private TimelineEventRepository timelineEventRepository;
 
     @Autowired
+    private NcRequestRepository ncRequestRepository;
+
+    @Autowired
+    private NcNotificationRepository ncNotificationRepository;
+
+    @Autowired
     @org.springframework.context.annotation.Lazy
     private com.eduvault.service.BackblazeStorageService backblazeStorageService;
 
@@ -73,17 +79,18 @@ public class LocalJsonDatabase {
         // Seed Notes if empty
         seedIfEmpty("notes.json", new com.fasterxml.jackson.core.type.TypeReference<List<Note>>() {}, list -> noteRepository.saveAll(list), noteRepository.count());
 
-        // Seed Doubts if empty
-        seedIfEmpty("doubts.json", new com.fasterxml.jackson.core.type.TypeReference<List<Doubt>>() {}, list -> doubtRepository.saveAll(list), doubtRepository.count());
-
-        // Seed PYQs if empty
-        seedIfEmpty("pyqs.json", new com.fasterxml.jackson.core.type.TypeReference<List<PYQ>>() {}, list -> pyqRepository.saveAll(list), pyqRepository.count());
 
         // Seed Announcements if empty
         seedIfEmpty("announcements.json", new com.fasterxml.jackson.core.type.TypeReference<List<Announcement>>() {}, list -> announcementRepository.saveAll(list), announcementRepository.count());
 
         // Seed Timeline Events if empty
         seedIfEmpty("timeline.json", new com.fasterxml.jackson.core.type.TypeReference<List<TimelineEvent>>() {}, list -> timelineEventRepository.saveAll(list), timelineEventRepository.count());
+
+        // Seed NC Requests if empty
+        seedIfEmpty("nc_requests.json", new com.fasterxml.jackson.core.type.TypeReference<List<NcRequest>>() {}, list -> ncRequestRepository.saveAll(list), ncRequestRepository.count());
+
+        // Seed NC Notifications if empty
+        seedIfEmpty("nc_notifications.json", new com.fasterxml.jackson.core.type.TypeReference<List<NcNotification>>() {}, list -> ncNotificationRepository.saveAll(list), ncNotificationRepository.count());
 
         // Seed Predefined Roadmaps if empty
         if (predefinedRoadmapRepository.count() == 0) {
@@ -662,6 +669,14 @@ public class LocalJsonDatabase {
         return pyqRepository.findByFilters(subjectId, examType);
     }
 
+    public synchronized void deleteAllPyqs() {
+        pyqRepository.deleteAll();
+    }
+
+    public synchronized void deletePyq(String id) {
+        pyqRepository.deleteById(id);
+    }
+
     public List<Announcement> getAllAnnouncements() {
         return announcementRepository.findAll();
     }
@@ -748,5 +763,160 @@ public class LocalJsonDatabase {
 
     public synchronized void deleteTimelineEvent(String id) {
         timelineEventRepository.deleteById(id);
+    }
+
+    // --- NC (Absence Consideration) Management ---
+
+    public boolean hasDuplicateNcDates(String studentPrn, List<String> dates) {
+        if (studentPrn == null || dates == null || dates.isEmpty()) return false;
+        List<NcRequest> existing = ncRequestRepository.findByStudentPrnOrderByCreatedAtDesc(studentPrn);
+        for (NcRequest req : existing) {
+            // Only check non-rejected requests
+            if (!"REJECTED".equalsIgnoreCase(req.getStatus())) {
+                if (req.getAbsentDates() != null) {
+                    for (String d : dates) {
+                        if (req.getAbsentDates().contains(d)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public synchronized NcRequest addNcRequest(NcRequest request) {
+        if (hasDuplicateNcDates(request.getStudentPrn(), request.getAbsentDates())) {
+            throw new IllegalArgumentException("An NC request already exists for one or more selected dates.");
+        }
+        if (request.getId() == null || request.getId().isBlank()) {
+            request.setId(java.util.UUID.randomUUID().toString());
+        }
+        if (request.getCreatedAt() == null || request.getCreatedAt().isBlank()) {
+            request.setCreatedAt(java.time.Instant.now().toString());
+        }
+        if (request.getStatus() == null || request.getStatus().isBlank()) {
+            request.setStatus("PENDING");
+        }
+        NcRequest saved = ncRequestRepository.save(request);
+        saveNcRequestsBackup();
+
+        // Trigger notification for teachers
+        NcNotification notif = NcNotification.builder()
+                .id(java.util.UUID.randomUUID().toString())
+                .requestId(saved.getId())
+                .recipientPrn("ALL_TEACHERS")
+                .recipientRole("teacher")
+                .title("New NC Request Submitted")
+                .message("Student " + (saved.getStudentName() != null ? saved.getStudentName() : saved.getStudentPrn())
+                        + " submitted an absence consideration request for " + String.join(", ", saved.getAbsentDates()))
+                .type("SUBMITTED")
+                .createdAt(java.time.Instant.now().toString())
+                .read(false)
+                .build();
+        addNcNotification(notif);
+
+        return saved;
+    }
+
+    public List<NcRequest> getAllNcRequests() {
+        return ncRequestRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<NcRequest> getNcRequestsByStudent(String studentPrn) {
+        return ncRequestRepository.findByStudentPrnOrderByCreatedAtDesc(studentPrn);
+    }
+
+    public Optional<NcRequest> getNcRequestById(String id) {
+        return ncRequestRepository.findById(id);
+    }
+
+    public synchronized NcRequest updateNcRequest(NcRequest request) {
+        NcRequest saved = ncRequestRepository.save(request);
+        saveNcRequestsBackup();
+
+        // Trigger notification for student
+        String statusTitle = "APPROVED".equalsIgnoreCase(saved.getStatus()) ? "NC Request Approved" : "NC Request Reviewed";
+        NcNotification notif = NcNotification.builder()
+                .id(java.util.UUID.randomUUID().toString())
+                .requestId(saved.getId())
+                .recipientPrn(saved.getStudentPrn())
+                .recipientRole("student")
+                .title(statusTitle)
+                .message("Your NC request for " + String.join(", ", saved.getAbsentDates()) + " was marked as "
+                        + saved.getStatus() + (saved.getReviewComment() != null ? ": " + saved.getReviewComment() : "."))
+                .type(saved.getStatus())
+                .createdAt(java.time.Instant.now().toString())
+                .read(false)
+                .build();
+        addNcNotification(notif);
+
+        return saved;
+    }
+
+    public synchronized void deleteAllNcData() {
+        ncRequestRepository.deleteAll();
+        ncNotificationRepository.deleteAll();
+        saveNcRequestsBackup();
+        saveNcNotificationsBackup();
+        logger.info("Cleared all NC requests and notifications from database and backup files");
+    }
+
+    private void saveNcRequestsBackup() {
+        try {
+            java.nio.file.Path path = java.nio.file.Paths.get("data", "nc_requests.json");
+            if (!java.nio.file.Files.exists(path)) {
+                java.nio.file.Path backendData = java.nio.file.Paths.get("backend", "data", "nc_requests.json");
+                if (java.nio.file.Files.exists(backendData)) path = backendData;
+            }
+            if (path.getParent() != null && !java.nio.file.Files.exists(path.getParent())) {
+                java.nio.file.Files.createDirectories(path.getParent());
+            }
+            mapper.writeValue(path.toFile(), ncRequestRepository.findAll());
+        } catch (Exception e) {
+            logger.warn("Could not sync nc_requests to backup file: {}", e.getMessage());
+        }
+    }
+
+    // --- NC Notifications ---
+
+    public synchronized NcNotification addNcNotification(NcNotification notification) {
+        if (notification.getId() == null || notification.getId().isBlank()) {
+            notification.setId(java.util.UUID.randomUUID().toString());
+        }
+        if (notification.getCreatedAt() == null || notification.getCreatedAt().isBlank()) {
+            notification.setCreatedAt(java.time.Instant.now().toString());
+        }
+        NcNotification saved = ncNotificationRepository.save(notification);
+        saveNcNotificationsBackup();
+        return saved;
+    }
+
+    public List<NcNotification> getNotifications(String recipientPrn, String recipientRole) {
+        return ncNotificationRepository.findByRecipientPrnOrRecipientRoleOrderByCreatedAtDesc(recipientPrn, recipientRole);
+    }
+
+    public synchronized void markNotificationRead(String id) {
+        ncNotificationRepository.findById(id).ifPresent(n -> {
+            n.setRead(true);
+            ncNotificationRepository.save(n);
+            saveNcNotificationsBackup();
+        });
+    }
+
+    private void saveNcNotificationsBackup() {
+        try {
+            java.nio.file.Path path = java.nio.file.Paths.get("data", "nc_notifications.json");
+            if (!java.nio.file.Files.exists(path)) {
+                java.nio.file.Path backendData = java.nio.file.Paths.get("backend", "data", "nc_notifications.json");
+                if (java.nio.file.Files.exists(backendData)) path = backendData;
+            }
+            if (path.getParent() != null && !java.nio.file.Files.exists(path.getParent())) {
+                java.nio.file.Files.createDirectories(path.getParent());
+            }
+            mapper.writeValue(path.toFile(), ncNotificationRepository.findAll());
+        } catch (Exception e) {
+            logger.warn("Could not sync nc_notifications to backup file: {}", e.getMessage());
+        }
     }
 }

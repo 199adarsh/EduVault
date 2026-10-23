@@ -197,7 +197,7 @@ public class ApiController {
             }
             return ResponseEntity.ok(Map.of(
                     "noteId", noteId,
-                    "url", "http://localhost:8081/api/files/raw/" + fileUrl
+                    "url", "/api/files/raw/" + fileUrl
             ));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -268,7 +268,7 @@ public class ApiController {
             String rawFilename = fileUrl != null && fileUrl.contains("/") ? fileUrl.substring(fileUrl.lastIndexOf('/') + 1) : fileUrl;
             return ResponseEntity.ok(Map.of(
                     "noteId", noteId,
-                    "url", "http://localhost:8081/api/files/raw/" + rawFilename
+                    "url", "/api/files/raw/" + rawFilename
             ));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -404,6 +404,18 @@ public class ApiController {
         String pyqText = payload.get("pyqText");
         String qbText = payload.get("qbText");
         return ResponseEntity.ok(geminiService.generateStudyGuide(pyqText, qbText));
+    }
+
+    @DeleteMapping("/pyqs")
+    public ResponseEntity<?> clearAllPyqs() {
+        database.deleteAllPyqs();
+        return ResponseEntity.ok(Map.of("message", "All PYQs deleted successfully."));
+    }
+
+    @DeleteMapping("/pyqs/{id}")
+    public ResponseEntity<?> deletePyq(@PathVariable String id) {
+        database.deletePyq(id);
+        return ResponseEntity.ok(Map.of("message", "PYQ deleted successfully."));
     }
 
     // --- Announcement Endpoints (Full CRUD with Permissions & Persistence) ---

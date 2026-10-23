@@ -3,19 +3,16 @@ import { useOutletContext } from 'react-router-dom';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const formatName = (fullName) => {
     if (!fullName) return "Scholar";
-    const parts = fullName.trim().split(/\s+/);
-    if (parts.length >= 2) {
-        const firstName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
-        const lastName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-        return `${firstName} ${lastName}`;
-    }
-    return fullName.split(/\s+/).map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
+    const trimmed = fullName.trim();
+    if (!trimmed) return "Scholar";
+    return trimmed.split(/\s+/).map(word => {
+        if (word.length <= 2 && word.toUpperCase() === word) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
 };
 
 const getInitials = (fullName) => {
@@ -185,11 +182,10 @@ const AIAssistant = () => {
                                             </span>
                                             <span className="text-xs text-text-secondary">{msg.time}</span>
                                         </div>
-                                        <div className={`rounded-2xl rounded-tl-sm p-5 space-y-3 border ${
-                                            msg.isError
+                                        <div className={`rounded-2xl rounded-tl-sm p-5 space-y-3 border ${msg.isError
                                                 ? 'bg-status-danger-bg text-status-danger-text border-red-200'
                                                 : 'bg-surface-card text-text-primary border-border-subtle'
-                                        }`}>
+                                            }`}>
                                             <div className="text-sm leading-relaxed">
                                                 <ReactMarkdown
                                                     components={{
@@ -259,16 +255,7 @@ const AIAssistant = () => {
                     <div className="rounded-xl bg-surface-card border border-border-subtle p-2.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
                         {/* Context Header Strip */}
                         <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">
-                            <div className="flex items-center gap-1.5">
-                                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-subtle-blue text-primary text-[10px] font-semibold">
-                                    <span className="material-symbols-outlined text-[13px]">school</span>
-                                    <span>Context: {profile?.department ? `${profile.department}${profile?.semester ? ` Sem ${profile.semester}` : ''}` : 'Academic Vault'}</span>
-                                </div>
-                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-50 text-text-secondary text-[10px] font-medium border border-border-subtle">
-                                    <span className="material-symbols-outlined text-[13px]">folder_open</span>
-                                    <span>Archives</span>
-                                </div>
-                            </div>
+
                         </div>
 
                         {/* Text Input & Send Trigger */}

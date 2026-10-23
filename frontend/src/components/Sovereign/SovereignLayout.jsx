@@ -9,7 +9,7 @@ import UploadNotesView from '../UploadNotesView';
 
 import { useLocation, matchPath, Navigate, useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const SovereignLayout = () => {
     const navigate = useNavigate();
@@ -127,19 +127,28 @@ const SovereignLayout = () => {
                     )}
                 </div>
 
-                {/* Upload Modal Overlay */}
+                {/* Upload Modal Overlay (Clean Plain Modal) */}
                 {showUpload && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface/80 backdrop-blur-md">
-                        <div className="bg-surface-container p-1 rounded-sm border border-outline-variant/20 max-w-5xl w-full shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 z-50">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-4xl w-full shadow-2xl relative overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">Upload Notes</h2>
+                                        <span className="text-[11px] font-medium text-slate-500">Add documents to student notes repository</span>
+                                    </div>
+                                </div>
                                 <button 
                                     onClick={() => setShowUpload(false)}
-                                    className="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-colors"
+                                    className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
                                 >
-                                    close
+                                    <span className="material-symbols-outlined text-[20px]">close</span>
                                 </button>
                             </div>
-                            <div className="p-6 max-h-[85vh] overflow-y-auto custom-scrollbar">
+                            <div className="p-6 max-h-[80vh] overflow-y-auto">
                                 <UploadNotesView 
                                     profile={profile} 
                                     subjects={subjects} 

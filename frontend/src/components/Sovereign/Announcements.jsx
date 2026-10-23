@@ -23,7 +23,7 @@ import {
     ShieldAlert
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const Announcements = () => {
     const [announcements, setAnnouncements] = useState([]);
@@ -57,13 +57,6 @@ const Announcements = () => {
     });
 
     const isManager = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
-
-    const toggleRole = () => {
-        const next = isManager ? 'student' : 'teacher';
-        setUserRole(next);
-        localStorage.setItem('eduvault_user_role', next);
-        toast.info(`Switched role mode to: ${next.toUpperCase()}`);
-    };
 
     useEffect(() => {
         fetchAnnouncements();
@@ -187,18 +180,6 @@ const Announcements = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={toggleRole}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                                isManager 
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
-                                    : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-                            }`}
-                            title="Toggle Manager/Student Permission Mode"
-                        >
-                            {isManager ? <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> : <ShieldAlert className="w-3.5 h-3.5 text-slate-500" />}
-                            <span>Role: {isManager ? 'Teacher / Faculty' : 'Student (Read-Only)'}</span>
-                        </button>
                         <button
                             className="relative w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center text-slate-500 hover:text-blue-600 shadow-xs"
                             title="Bulletin Subscriptions"

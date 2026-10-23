@@ -18,6 +18,12 @@ export default defineConfig({
     include: ['react-markdown']
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+      }
+    },
     headers: {
       // Allow YouTube (privacy-enhanced mode) to load in iframes
       'Content-Security-Policy': [

@@ -4,8 +4,7 @@ import { NavLink } from 'react-router-dom';
 const Sidebar = () => {
     const navItems = [
         { icon: 'home', label: 'Home', path: '/', filled: true },
-        { icon: 'description', label: 'Notes', path: '/notes' },
-        { icon: 'history_edu', label: 'PYQs', path: '/pyqs' },
+        { icon: 'description', label: 'Notes & PYQs', path: '/notes' },
         { icon: 'map', label: 'Roadmaps', path: '/roadmaps' },
         { icon: 'smart_toy', label: 'AI Assistant', path: '/ai' },
         { icon: 'campaign', label: 'Announcements', path: '/announcements' },

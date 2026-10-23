@@ -15,7 +15,7 @@ import {
   Loader2
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 /**
  * Custom High-Reliability Dropdown Component
@@ -43,9 +43,9 @@ const CustomSelect = ({ label, icon: Icon, value, options, onChange, placeholder
   const selectedOption = options.find(opt => opt.value === value);
 
   return (
-    <div className="flex flex-col gap-1.5 relative w-full" ref={dropdownRef}>
-      <label className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.1em] px-1 flex items-center gap-2">
-        {Icon && <Icon size={12} className="opacity-50" />}
+    <div className="flex flex-col gap-1 relative w-full" ref={dropdownRef}>
+      <label className="text-xs font-bold text-slate-700 dark:text-white px-0.5 flex items-center gap-1.5">
+        {Icon && <Icon size={13} className="text-slate-400 dark:text-slate-300" />}
         {label}
       </label>
 
@@ -53,28 +53,29 @@ const CustomSelect = ({ label, icon: Icon, value, options, onChange, placeholder
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2 text-sm bg-surface-container-lowest border rounded transition-all duration-200 text-left outline-none ${isOpen ? 'border-primary ring-1 ring-primary/20 bg-surface-container-low' : 'border-outline-variant/10 hover:border-outline-variant/30'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`w-full flex items-center justify-between px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg transition-all text-left outline-none cursor-pointer ${
+          isOpen ? 'ring-1 ring-blue-500 border-blue-500' : 'hover:border-slate-300'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span className={`truncate flex-1 ${!selectedOption ? 'text-on-surface-variant/30' : 'text-on-surface'}`}>
+        <span className={`truncate flex-1 font-medium ${!selectedOption ? 'text-slate-400 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown size={14} className={`text-on-surface-variant/40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`text-slate-400 dark:text-slate-300 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+4px)] left-0 w-full z-[200] bg-surface-container-low border border-outline-variant/20 rounded shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+        <div className="absolute top-[calc(100%+4px)] left-0 w-full z-[200] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden">
           {searchable && (
-            <div className="p-2 border-b border-outline-variant/10 bg-surface-container">
+            <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
               <div className="relative">
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   autoFocus
                   type="text"
                   placeholder="Filter options..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-surface-container-lowest border-none ring-1 ring-outline-variant/10 text-[11px] py-1.5 pl-8 pr-3 rounded focus:ring-primary/40 outline-none text-on-surface"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs py-1.5 pl-8 pr-3 rounded-md outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
@@ -90,15 +91,18 @@ const CustomSelect = ({ label, icon: Icon, value, options, onChange, placeholder
                     setIsOpen(false);
                     setSearchTerm('');
                   }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded transition-colors text-left group ${value === opt.value ? 'bg-primary/10 text-primary font-medium' : 'text-on-surface-variant hover:bg-surface-container-highest'
-                    }`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-colors text-left cursor-pointer ${
+                    value === opt.value
+                      ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold'
+                      : 'text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
                 >
-                  <div className={`w-1.5 h-1.5 rounded-full transition-all ${value === opt.value ? 'bg-primary scale-125' : 'bg-transparent'}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${value === opt.value ? 'bg-blue-600' : 'bg-transparent'}`} />
                   {opt.label}
                 </button>
               ))
             ) : (
-              <div className="p-4 text-center text-xs text-on-surface-variant/40 italic">No matches found</div>
+              <div className="p-3 text-center text-xs text-slate-400">No matches found</div>
             )}
           </div>
         </div>
@@ -200,68 +204,63 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
   };
 
   return (
-    <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
-      {/* Header Area */}
-      <div className="flex flex-col gap-1 items-center text-center">
-        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-1 shadow-2xl shadow-primary/10 border border-primary/20">
-          <UploadCloud size={24} />
-        </div>
-        <h2 className="text-2xl font-medium tracking-tight text-on-surface">Data Vault Ingestion</h2>
-        <p className="text-on-surface-variant/50 text-[10px] font-bold uppercase tracking-[0.2em]">Sovereign Academic Protocol</p>
-      </div>
-
+    <div className="w-full space-y-5">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left Side: File Upload */}
+        {/* Left Side: File Upload Dropzone */}
         <div className="lg:col-span-3 space-y-4">
           <div
             {...getRootProps()}
-            className={`relative h-full min-h-[320px] border-2 border-dashed rounded-[1.5rem] p-6 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isDragActive ? 'border-primary bg-primary/5 scale-[1.01]' : 'border-outline-variant/20 bg-surface-container-lowest/30 hover:bg-surface-container-low/50 hover:border-outline-variant/40'
-              } ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
+            className={`relative h-full min-h-[300px] border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all overflow-hidden ${
+              isDragActive
+                ? 'border-blue-500 bg-blue-50/50'
+                : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/70 hover:border-slate-400'
+            } ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
           >
             <input {...getInputProps()} />
 
             {file ? (
-              <div className="space-y-4 text-center animate-in zoom-in duration-300">
-                <div className="w-16 h-16 bg-surface-container-highest rounded-2xl flex items-center justify-center mx-auto text-primary relative shadow-xl">
-                  <FileText size={32} />
-                  <div className="absolute -top-1 -right-1 bg-green-500 text-on-primary w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+              <div className="space-y-3 text-center">
+                <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/50 text-blue-600 rounded-xl flex items-center justify-center mx-auto relative border border-blue-200">
+                  <FileText size={28} />
+                  <div className="absolute -top-1 -right-1 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center">
                     <CheckCircle2 size={12} />
                   </div>
                 </div>
                 <div>
-                  <p className="font-medium text-base text-on-surface break-all max-w-sm px-4">{file.name}</p>
-                  <p className="text-[10px] text-on-surface-variant/40 font-bold uppercase tracking-widest mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB • Ready</p>
+                  <p className="font-semibold text-sm text-slate-800 dark:text-slate-200 break-all max-w-sm px-4">{file.name}</p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB • Ready to upload</p>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); setFile(null); }} className="px-5 py-1.5 rounded-full border border-outline-variant/20 text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container-highest transition-colors">Replace File</button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                  className="px-4 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Change File
+                </button>
               </div>
             ) : (
-              <div className="text-center space-y-4 max-w-xs">
-                <div className="w-16 h-16 bg-surface-container-low rounded-[1.5rem] flex items-center justify-center mx-auto text-on-surface-variant/20 border border-outline-variant/10 group-hover:scale-110 transition-transform duration-500">
-                  <UploadCloud size={32} />
+              <div className="text-center space-y-3 max-w-xs">
+                <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto text-slate-400 border border-slate-200 dark:border-slate-700">
+                  <UploadCloud size={28} />
                 </div>
                 <div>
-                  <p className="text-base font-medium text-on-surface">Transmission Interface</p>
-                  <p className="text-[10px] text-on-surface-variant/40 mt-1 leading-relaxed">Drop your study material here.</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Drag &amp; drop document</p>
+                  <p className="text-xs text-slate-500 mt-0.5">or click to browse files from device</p>
                 </div>
-                <div className="flex flex-wrap justify-center gap-2 pt-4 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700">
-                  <span className="text-[10px] bg-red-500/10 text-red-500 px-2 py-1 rounded font-black tracking-tighter">PDF</span>
-                  <span className="text-[10px] bg-blue-500/10 text-blue-500 px-2 py-1 rounded font-black tracking-tighter">DOCX</span>
-                  <span className="text-[10px] bg-amber-500/10 text-amber-500 px-2 py-1 rounded font-black tracking-tighter">PPTX</span>
+                <div className="flex flex-wrap justify-center gap-1.5 pt-2">
+                  <span className="text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded">PDF</span>
+                  <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded">DOCX</span>
+                  <span className="text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded">PPTX</span>
                 </div>
               </div>
-            )}
-
-            {isUploading && (
-              <div className="absolute bottom-0 left-0 w-full p-8 bg-surface/80 backdrop-blur-md border-t border-outline-variant/10 animate-in slide-in-from-bottom-full duration-500">
-                <div className="flex justify-between items-end mb-3">
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-primary uppercase tracking-[0.2em]">Synchronizing Vault</p>
-                    <p className="text-sm font-medium text-on-surface truncate max-w-[200px]">{file?.name}</p>
-                  </div>
-                  <span className="text-2xl font-black text-primary">{uploadProgress}%</span>
+            )}            {isUploading && (
+              <div className="absolute bottom-0 left-0 w-full p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Uploading note...</span>
+                  <span className="text-xs font-bold text-blue-600 font-mono">{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-primary h-full transition-all duration-300 rounded-full shadow-[0_0_10px_rgba(208,188,255,0.5)]" style={{ width: `${uploadProgress}%` }} />
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div className="bg-blue-600 h-full transition-all duration-300 rounded-full" style={{ width: `${uploadProgress}%` }} />
                 </div>
               </div>
             )}
@@ -270,17 +269,17 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
 
         {/* Right Side: Metadata Form */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-surface-container-lowest/30 p-5 rounded-[1.5rem] border border-outline-variant/15 space-y-4 h-full">
+          <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4 h-full">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.1em] px-1">Title</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-white px-0.5">Note Title</label>
               <div className="relative">
-                <Sparkles size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40" />
+                <Sparkles size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Descriptive Title..."
+                  placeholder="e.g. Unit 1 Introduction Notes"
                   disabled={isUploading}
-                  className="w-full bg-surface-container-lowest border border-outline-variant/10 text-xs pl-9 pr-4 py-2 rounded focus:ring-1 focus:ring-primary/40 outline-none text-on-surface transition-all hover:border-outline-variant/30"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs pl-9 pr-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 dark:text-white transition-all"
                 />
               </div>
             </div>
@@ -307,7 +306,7 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
             />
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.1em] px-1">Tags</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-white px-0.5">Tags</label>
               <div className="space-y-2">
                 <input
                   value={tagInput}
@@ -315,17 +314,17 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
                   placeholder="Add tags (press Enter)"
                   disabled={isUploading}
                   onKeyDown={handleAddTag}
-                  className="w-full bg-surface-container-lowest border border-outline-variant/10 text-xs px-3 py-2 rounded focus:ring-1 focus:ring-primary/40 outline-none text-on-surface transition-all hover:border-outline-variant/30"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 dark:text-white transition-all"
                 />
                 {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {tags.map((tag, index) => (
-                      <span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-[10px] rounded-full border border-primary/20">
+                      <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[11px] rounded-md border border-blue-200 dark:border-blue-800">
                         {tag}
                         <button 
                           type="button" 
                           onClick={() => removeTag(tag)}
-                          className="text-xs hover:text-destructive ml-1"
+                          className="hover:text-rose-600 ml-0.5 cursor-pointer"
                         >
                           ×
                         </button>
@@ -336,29 +335,22 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-outline-variant/5 space-y-3">
-              <div className="p-3 bg-surface-container-low rounded-xl border border-outline-variant/10 text-[10px] text-on-surface-variant/60 leading-relaxed italic">
-                <div className="flex gap-2 mb-1 not-italic font-bold text-primary uppercase tracking-widest text-[9px] items-center">
-                  <Sparkles size={10} />
-                  Post-Ingest Logic
-                </div>
-                Our high-fidelity LLM will autonomously synthesize this document.
-              </div>
-
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
               <button
                 onClick={handleUpload}
                 disabled={!file || !title || !subjectId || isUploading}
-                className={`w-full py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.3em] transition-all duration-300 shadow-xl ${!file || !title || !subjectId || isUploading
-                    ? 'bg-surface-container-highest text-on-surface-variant/30 cursor-not-allowed shadow-none grayscale'
-                    : 'bg-gradient-to-br from-primary to-primary-container text-on-primary hover:brightness-110 active:scale-95 shadow-primary/20'
-                  }`}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                  !file || !title || !subjectId || isUploading
+                    ? 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                }`}
               >
                 {isUploading ? (
-                  <div className="flex items-center justify-center gap-3">
+                  <div className="flex items-center justify-center gap-2">
                     <Loader2 size={14} className="animate-spin" />
-                    Processing...
+                    <span>Uploading...</span>
                   </div>
-                ) : 'Initiate Secure Ingest'}
+                ) : 'Upload Note'}
               </button>
             </div>
           </div>

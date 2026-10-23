@@ -100,6 +100,41 @@ CREATE TABLE IF NOT EXISTS timeline_events (
     active BOOLEAN DEFAULT TRUE
 );
 
+CREATE TABLE IF NOT EXISTS nc_requests (
+    id VARCHAR(255) PRIMARY KEY,
+    student_prn VARCHAR(255) NOT NULL,
+    student_name VARCHAR(255),
+    roll_no VARCHAR(255),
+    department VARCHAR(255),
+    semester VARCHAR(255),
+    section VARCHAR(255),
+    absent_dates JSONB,
+    missed_subjects JSONB,
+    reason VARCHAR(255),
+    description TEXT,
+    proof_file_name VARCHAR(255),
+    proof_file_key VARCHAR(255),
+    proof_file_type VARCHAR(255),
+    proof_presigned_url TEXT,
+    status VARCHAR(32) DEFAULT 'PENDING',
+    created_at VARCHAR(255),
+    reviewed_by VARCHAR(255),
+    review_comment TEXT,
+    reviewed_at VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS nc_notifications (
+    id VARCHAR(255) PRIMARY KEY,
+    request_id VARCHAR(255),
+    recipient_prn VARCHAR(255),
+    recipient_role VARCHAR(255),
+    title VARCHAR(255),
+    message TEXT,
+    type VARCHAR(255),
+    created_at VARCHAR(255),
+    read BOOLEAN DEFAULT FALSE
+);
+
 -- Insert Dummy Seeding Data
 INSERT INTO subjects (id, name, department, semester, created_at, note_count) VALUES
 ('sub-1', 'Operating Systems', 'B.Tech-UAD', 'SEM 04', '2023-10-01', 1),

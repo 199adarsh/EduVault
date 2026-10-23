@@ -20,7 +20,7 @@ function App() {
           <Route index element={<HomeDashboard />} />
           <Route path="notes" element={<NotesLibrary />} />
           <Route path="notes/:id" element={<NoteDetail />} />
-          <Route path="pyqs" element={<PYQsDatabase />} />
+          <Route path="pyqs" element={<NotesLibrary defaultTab="pyqs" />} />
           <Route path="roadmaps" element={<Roadmaps />} />
           <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="announcements" element={<Announcements />} />

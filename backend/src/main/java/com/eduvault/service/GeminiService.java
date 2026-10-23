@@ -81,7 +81,7 @@ public class GeminiService {
                     dir = new java.io.File("../gemini-web2api");
                 }
                 if (dir.exists()) {
-                    ProcessBuilder pb = new ProcessBuilder("python", "gemini_web2api.py", "--config", "config.json");
+                    ProcessBuilder pb = new ProcessBuilder("python", "gemini_web2api.py", "--port", "8000");
                     pb.directory(dir);
                     pb.redirectErrorStream(true);
                     pb.start();
@@ -344,6 +344,211 @@ public class GeminiService {
         } catch (Exception e) {
             logger.error("Failed to generate roadmap via Gemini Web2API", e);
             return "{\"error\": \"Failed to generate roadmap: " + escapeJson(e.getMessage()) + "\"}";
+        }
+    }
+
+    public String analyzeRoadmapSubjects(String domain, List<Map<String, Object>> subjects) {
+        try {
+            ensureProxyRunning();
+            StringBuilder subList = new StringBuilder();
+            if (subjects != null && !subjects.isEmpty()) {
+                for (Map<String, Object> s : subjects) {
+                    subList.append("- ")
+                           .append(s.getOrDefault("name", "Unknown Subject"))
+                           .append(" (Code: ").append(s.getOrDefault("code", "N/A"))
+                           .append(", Attendance: ").append(s.getOrDefault("attendance", "N/A"))
+                           .append(")\n");
+                }
+            } else if (database != null) {
+                List<com.eduvault.model.Subject> dbSubs = database.getAllSubjects();
+                if (dbSubs != null) {
+                    for (com.eduvault.model.Subject s : dbSubs) {
+                        subList.append("- ").append(s.getName())
+                               .append(" (Code: ").append(s.getCode())
+                               .append(", Attendance: ").append(s.getAttendance())
+                               .append(")\n");
+                    }
+                }
+            }
+
+            String subjectsStr = subList.toString();
+            if (subjectsStr.isBlank()) {
+                subjectsStr = "- Data Structures and Algorithms (CS301)\n- Database Management Systems (CS302)\n- Operating Systems (CS303)\n- Computer Networks (CS304)\n- Web Technologies (CS305)\n- Object Oriented Programming in Java (CS306)";
+            }
+
+            String systemInstruction = "You are a Senior Technical Placement Mentor and Hiring Consultant. "
+                    + "Analyze the student's college subjects (fetched from Continuo collegiate portal) against their chosen career domain. "
+                    + "Determine which subjects are CRITICAL or IMPORTANT for campus placements, interviews, technical assessments, and domain mastery. "
+                    + "Return ONLY a valid JSON object matching this schema without markdown fences:\n"
+                    + "{\n"
+                    + "  \"domain\": \"" + domain + "\",\n"
+                    + "  \"readinessScore\": 84,\n"
+                    + "  \"summary\": \"Executive summary of curriculum-to-placement fit\",\n"
+                    + "  \"placementSubjects\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"Subject Name\",\n"
+                    + "      \"code\": \"Code\",\n"
+                    + "      \"importance\": \"CRITICAL\",\n"
+                    + "      \"domainRelevance\": \"HIGH\",\n"
+                    + "      \"placementCategory\": \"Core CS Interview\",\n"
+                    + "      \"whyItMatters\": \"Why interviewers and placement tests focus on this\",\n"
+                    + "      \"interviewTopics\": [\"Topic 1\", \"Topic 2\", \"Topic 3\"],\n"
+                    + "      \"matchedRoadmapNode\": \"Suggested roadmap topic\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"domainGaps\": [\"Gaps to cover in roadmap\"],\n"
+                    + "  \"placementStrategy\": [\"Strategy tip 1\", \"Strategy tip 2\"]\n"
+                    + "}";
+
+            String prompt = "Target Domain: " + domain + "\n\n"
+                    + "Student's Enrolled Continuo Subjects:\n" + subjectsStr + "\n\n"
+                    + "Analyze each subject's importance for campus placements and technical interviews specifically for " + domain + ". Return valid JSON only.";
+
+            String responseText = callGemini(systemInstruction, prompt, 0.2);
+            String cleaned = cleanJson(responseText);
+            if (cleaned.contains("\"placementSubjects\"")) {
+                return cleaned;
+            }
+            return fallbackAnalyzeRoadmapSubjects(domain, subjects);
+        } catch (Exception e) {
+            logger.warn("Gemini Web2API subject analysis error: {}. Using deterministic academic placement analysis.", e.getMessage());
+            return fallbackAnalyzeRoadmapSubjects(domain, subjects);
+        }
+    }
+
+    public String fallbackAnalyzeRoadmapSubjects(String domain, List<Map<String, Object>> subjects) {
+        try {
+            List<Map<String, Object>> list = subjects;
+            if (list == null || list.isEmpty()) {
+                if (database != null) {
+                    List<com.eduvault.model.Subject> dbSubs = database.getAllSubjects();
+                    if (dbSubs != null && !dbSubs.isEmpty()) {
+                        list = dbSubs.stream().map(s -> Map.<String, Object>of(
+                                "name", s.getName() != null ? s.getName() : "Subject",
+                                "code", s.getCode() != null ? s.getCode() : "CS",
+                                "attendance", s.getAttendance() != null ? s.getAttendance() : "85%"
+                        )).toList();
+                    }
+                }
+            }
+
+            if (list == null || list.isEmpty()) {
+                list = List.of(
+                        Map.of("name", "Data Structures and Algorithms", "code", "CS301", "attendance", "88%"),
+                        Map.of("name", "Database Management Systems", "code", "CS302", "attendance", "82%"),
+                        Map.of("name", "Operating Systems", "code", "CS303", "attendance", "79%"),
+                        Map.of("name", "Computer Networks", "code", "CS304", "attendance", "85%"),
+                        Map.of("name", "Web Technologies", "code", "CS305", "attendance", "91%"),
+                        Map.of("name", "Object Oriented Programming in Java", "code", "CS306", "attendance", "86%")
+                );
+            }
+
+            String dom = domain != null ? domain.toLowerCase() : "frontend";
+            List<Map<String, Object>> placementSubjects = new java.util.ArrayList<>();
+            int criticalCount = 0;
+
+            for (Map<String, Object> s : list) {
+                String name = String.valueOf(s.getOrDefault("name", "")).trim();
+                String code = String.valueOf(s.getOrDefault("code", ""));
+                String lower = name.toLowerCase();
+
+                String importance = "SUPPLEMENTARY";
+                String domainRel = "LOW";
+                String category = "Foundational";
+                String why = "Provides general technical and analytical foundation for engineering roles.";
+                List<String> topics = List.of("Core Syllabus", "Lab Practicals", "Conceptual Depth");
+                String matchedNode = "Core Engineering";
+
+                if (lower.contains("data structure") || lower.contains("algorithm") || lower.contains("dsa")) {
+                    importance = "CRITICAL";
+                    domainRel = "HIGH";
+                    category = "Core CS Interview";
+                    why = "Primary elimination round for 95%+ campus placement coding assessments and technical rounds.";
+                    topics = List.of("Trees & BST", "Dynamic Programming", "Graphs & Shortest Path", "Arrays & Two Pointers", "Time Complexity");
+                    matchedNode = "Data Structures & Problem Solving";
+                    criticalCount++;
+                } else if (lower.contains("database") || lower.contains("dbms") || lower.contains("sql")) {
+                    importance = (dom.contains("backend") || dom.contains("full") || dom.contains("data")) ? "CRITICAL" : "IMPORTANT";
+                    domainRel = (dom.contains("backend") || dom.contains("full") || dom.contains("data")) ? "HIGH" : "MEDIUM";
+                    category = "Core CS Interview";
+                    why = "Crucial for system design, backend query optimization, transaction management, and indexing questions.";
+                    topics = List.of("SQL Queries & Joins", "Indexing & B-Trees", "ACID Transactions", "Normalization (1NF-BCNF)");
+                    matchedNode = "Database & Persistence";
+                    if (importance.equals("CRITICAL")) criticalCount++;
+                } else if (lower.contains("operating system") || lower.contains("os") || lower.contains("unix") || lower.contains("linux")) {
+                    importance = (dom.contains("devops") || dom.contains("cloud") || dom.contains("backend")) ? "CRITICAL" : "IMPORTANT";
+                    domainRel = (dom.contains("devops") || dom.contains("cloud") || dom.contains("backend")) ? "HIGH" : "MEDIUM";
+                    category = "System & Architecture";
+                    why = "Essential for technical rounds testing concurrency, threading, virtual memory, and process lifecycles.";
+                    topics = List.of("Process vs Thread", "Deadlocks & Semaphores", "Virtual Memory & Paging", "CPU Scheduling");
+                    matchedNode = "Operating Systems & Concurrency";
+                } else if (lower.contains("network") || lower.contains("cn")) {
+                    importance = (dom.contains("devops") || dom.contains("cloud") || dom.contains("backend")) ? "CRITICAL" : "IMPORTANT";
+                    domainRel = (dom.contains("devops") || dom.contains("cloud") || dom.contains("backend")) ? "HIGH" : "MEDIUM";
+                    category = "System & Architecture";
+                    why = "Tested extensively in technical interviews for client-server architecture, latency, and security protocols.";
+                    topics = List.of("TCP/IP vs UDP", "HTTP/HTTPS & Handshake", "DNS & Load Balancing", "WebSockets & REST");
+                    matchedNode = "Networking & Protocols";
+                } else if (lower.contains("web") || lower.contains("internet") || lower.contains("frontend") || lower.contains("fullstack")) {
+                    importance = (dom.contains("front") || dom.contains("full") || dom.contains("web")) ? "CRITICAL" : "IMPORTANT";
+                    domainRel = (dom.contains("front") || dom.contains("full") || dom.contains("web")) ? "HIGH" : "MEDIUM";
+                    category = "Domain Essential";
+                    why = "Direct practical foundation for building modern web applications, handling asynchronous flows, and DOM APIs.";
+                    topics = List.of("DOM Manipulation & Events", "Async JavaScript & Promises", "CSS Layouts & Responsive UI", "REST API Integration");
+                    matchedNode = "Web Foundations & Client APIs";
+                    if (importance.equals("CRITICAL")) criticalCount++;
+                } else if (lower.contains("java") || lower.contains("c++") || lower.contains("python") || lower.contains("object oriented") || lower.contains("oop")) {
+                    importance = "CRITICAL";
+                    domainRel = "HIGH";
+                    category = "Core CS Interview";
+                    why = "Standard language choice for coding interviews and Object-Oriented Design (LLD/SOLID principles).";
+                    topics = List.of("OOP 4 Pillars", "Exception Handling & Collections", "SOLID Principles", "Garbage Collection & Memory");
+                    matchedNode = "Programming Foundations & OOP";
+                    criticalCount++;
+                } else if (lower.contains("ai") || lower.contains("machine learning") || lower.contains("intelligence") || lower.contains("data science")) {
+                    importance = (dom.contains("ai") || dom.contains("machine") || dom.contains("data")) ? "CRITICAL" : "IMPORTANT";
+                    domainRel = (dom.contains("ai") || dom.contains("machine") || dom.contains("data")) ? "HIGH" : "MEDIUM";
+                    category = "Domain Essential";
+                    why = "Core mathematical and algorithmic foundation for ML engineer and Data Science campus recruitment.";
+                    topics = List.of("Regression & Classification", "Loss Functions & Optimization", "Feature Engineering", "Neural Networks");
+                    matchedNode = "Machine Learning & AI Foundations";
+                    if (importance.equals("CRITICAL")) criticalCount++;
+                }
+
+                Map<String, Object> subMap = new java.util.HashMap<>();
+                subMap.put("name", name);
+                subMap.put("code", code);
+                subMap.put("importance", importance);
+                subMap.put("domainRelevance", domainRel);
+                subMap.put("placementCategory", category);
+                subMap.put("whyItMatters", why);
+                subMap.put("interviewTopics", topics);
+                subMap.put("matchedRoadmapNode", matchedNode);
+                placementSubjects.add(subMap);
+            }
+
+            int readiness = Math.min(96, Math.max(68, 65 + (criticalCount * 7)));
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("domain", domain);
+            response.put("readinessScore", readiness);
+            response.put("summary", "Continuo curriculum features " + criticalCount + " high-yield placement subjects directly mapped to your " + domain + " track. Aligning university coursework with targeted roadmap milestones provides competitive placement leverage.");
+            response.put("placementSubjects", placementSubjects);
+            response.put("domainGaps", List.of(
+                    "Production state management & practical ecosystem tooling",
+                    "Building end-to-end fullstack capstone applications",
+                    "Mock technical interviews and timed LeetCode problem solving"
+            ));
+            response.put("placementStrategy", List.of(
+                    "Prioritize DSA & Core CS concepts (DBMS, OS, Networks) alongside your chosen roadmap domain.",
+                    "Build 2 production-grade deployed portfolio projects showcasing your selected track.",
+                    "Review college CIE/lab code and elevate it to clean architecture standards for GitHub showcasing."
+            ));
+
+            return mapper.writeValueAsString(response);
+        } catch (Exception e) {
+            logger.error("Error in fallbackAnalyzeRoadmapSubjects", e);
+            return "{\"domain\":\"" + domain + "\",\"readinessScore\":80,\"placementSubjects\":[]}";
         }
     }
 

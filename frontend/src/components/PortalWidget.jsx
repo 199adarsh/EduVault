@@ -25,7 +25,8 @@ const PortalWidget = () => {
     setData(null);
 
     try {
-      const response = await axios.post('http://localhost:8081/api/portal/dashboard', {
+      const apiBase = import.meta.env.VITE_API_BASE || '/api';
+      const response = await axios.post(`${apiBase}/portal/dashboard`, {
         prn: prn,
         dob: dob
       });

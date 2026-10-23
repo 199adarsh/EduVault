@@ -1,0 +1,25 @@
+# Stage 1: Build Frontend
+FROM node:20-alpine AS frontend-build
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Build Backend with packaged static frontend
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS backend-build
+WORKDIR /app
+COPY backend/pom.xml .
+RUN mvn dependency:go-offline -B
+COPY backend/src ./src
+COPY --from=frontend-build /frontend/dist ./src/main/resources/static
+RUN mvn clean package -DskipTests
+
+# Stage 3: Optimized Container Runtime
+FROM eclipse-temurin:17-jre-alpine
+RUN apk add --no-cache fontconfig ttf-dejavu
+WORKDIR /app
+COPY --from=backend-build /app/target/*.jar app.jar
+ENV PORT=8080
+EXPOSE 8080
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Dserver.port=${PORT} -jar app.jar"]

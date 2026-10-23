@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import clsx from 'clsx';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const UploadModal = ({ onClose, subjects, onSuccess }) => {
   const [file, setFile] = useState(null);

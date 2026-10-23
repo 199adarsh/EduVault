@@ -196,4 +196,28 @@ public class AiController {
             return ResponseEntity.status(500).body(Map.of("error", "Roadmap generation failed: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/analyze-roadmap-subjects")
+    public ResponseEntity<?> analyzeRoadmapSubjects(@RequestBody(required = false) Map<String, Object> request) {
+        try {
+            String domain = request != null && request.containsKey("domain") ? String.valueOf(request.get("domain")) : "Frontend Development";
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> subjects = request != null && request.containsKey("subjects")
+                    ? (List<Map<String, Object>>) request.get("subjects")
+                    : null;
+
+            String jsonResponse = geminiService.analyzeRoadmapSubjects(domain, subjects);
+            try {
+                return ResponseEntity.ok(mapper.readValue(jsonResponse, Map.class));
+            } catch (Exception e) {
+                return ResponseEntity.ok(Map.of(
+                        "domain", domain,
+                        "raw", jsonResponse
+                ));
+            }
+        } catch (Exception e) {
+            logger.error("Controller error in /api/ai/analyze-roadmap-subjects", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Subject analysis failed: " + e.getMessage()));
+        }
+    }
 }

@@ -9,7 +9,7 @@ import {
     FileText, User, Calendar, CheckCircle2, Send, Inbox, Loader2
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const NoteDetail = () => {
     const { id: noteId } = useParams();

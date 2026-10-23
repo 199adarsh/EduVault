@@ -22,16 +22,16 @@ import java.net.URI;
 @Configuration
 public class BackblazeConfig {
 
-    @Value("${app.b2.access-key-id:}")
+    @Value("${app.b2.access-key-id:${B2_ACCESS_KEY_ID:00634e50813f00b0000000001}}")
     private String accessKeyId;
 
-    @Value("${app.b2.secret-access-key:}")
+    @Value("${app.b2.secret-access-key:${B2_SECRET_ACCESS_KEY:K006TQAXscCLXflCRyGdTMIxDl4LrPM}}")
     private String secretAccessKey;
 
-    @Value("${app.b2.endpoint:}")
+    @Value("${app.b2.endpoint:${B2_ENDPOINT:s3.ca-east-006.backblazeb2.com}}")
     private String endpoint;
 
-    @Value("${app.b2.region:}")
+    @Value("${app.b2.region:${B2_REGION:ca-east-006}}")
     private String region;
 
     private StaticCredentialsProvider credentialsProvider() {

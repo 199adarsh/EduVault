@@ -35,7 +35,7 @@ public class BackblazeStorageService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
-    @Value("${app.b2.bucket-name}")
+    @Value("${app.b2.bucket-name:${B2_BUCKET_NAME:eduvault-storage-a8f3}}")
     private String bucketName;
 
     @Value("${app.b2.presigned-url-expiry-minutes:60}")

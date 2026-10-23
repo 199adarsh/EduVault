@@ -105,14 +105,19 @@ public class BrabbleService {
 
             URI uri = URI.create(baseUrl + "/listings?" + qb.toString());
 
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                     .uri(uri)
-                    .header("Authorization", "Bearer " + apiKey)
                     .header("Accept", "application/json")
                     .header("User-Agent", "EduVault/1.0")
                     .timeout(Duration.ofSeconds(12))
-                    .GET()
-                    .build();
+                    .GET();
+
+            if (apiKey != null && !apiKey.isBlank()) {
+                reqBuilder.header("Authorization", "Bearer " + apiKey)
+                          .header("x-api-key", apiKey);
+            }
+
+            HttpRequest request = reqBuilder.build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 

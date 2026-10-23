@@ -255,7 +255,7 @@ const HomeDashboard = () => {
       setSyncProgress(100);
       setSyncStage('Vault Initialized! Redirecting to Dashboard...');
 
-      toast.success('Welcome to EduVault.');
+      toast.success('Welcome to Campusaxis.');
       if (refreshData) {
         await refreshData();
       }
@@ -531,7 +531,7 @@ const HomeDashboard = () => {
             <div className="w-12 h-12 rounded-xl bg-surface-subtle-blue flex items-center justify-center mb-2">
               <span className="material-symbols-outlined text-[24px] text-primary">shield</span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-text-primary">EduVault Integration</h2>
+            <h2 className="text-xl font-bold tracking-tight text-text-primary">Campusaxis Integration</h2>
             <p className="text-xs text-text-secondary max-w-xs leading-normal">
               Enter your college PRN and Date of Birth to synchronize your student portal and initialize your dashboard.
             </p>

@@ -250,7 +250,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                                 {syncMode === 'all' && <Check className="w-3.5 h-3.5 text-blue-400" />}
                                             </div>
                                             <p className="text-[11px] text-zinc-500 leading-tight">
-                                                Scrape all accessible courses matching existing EduVault subjects.
+                                                Scrape all accessible courses matching existing Campusaxis subjects.
                                             </p>
                                         </div>
 
@@ -378,7 +378,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                         <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-xl">
                                             <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Matched</p>
                                             <p className="text-xl font-bold text-blue-400 mt-1">{syncResult.matchedCoursesCount}</p>
-                                            <p className="text-[9px] text-blue-500/70 mt-0.5">EduVault Subjects</p>
+                                            <p className="text-[9px] text-blue-500/70 mt-0.5">Campusaxis Subjects</p>
                                         </div>
                                         <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
                                             <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Imported</p>

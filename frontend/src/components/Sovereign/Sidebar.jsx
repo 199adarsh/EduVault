@@ -19,7 +19,7 @@ const Sidebar = () => {
                         <span className="material-symbols-outlined text-on-primary-container text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-lg font-bold text-on-surface tracking-tighter">EduVault</span>
+                        <span className="text-lg font-bold text-on-surface tracking-tighter">Campusaxis</span>
                         <span className="text-[10px] font-medium tracking-tight uppercase text-on-surface-variant/60">Academic Center</span>
                     </div>
                 </div>

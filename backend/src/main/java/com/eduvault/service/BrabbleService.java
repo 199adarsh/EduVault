@@ -108,7 +108,7 @@ public class BrabbleService {
             HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                     .uri(uri)
                     .header("Accept", "application/json")
-                    .header("User-Agent", "EduVault/1.0")
+                    .header("User-Agent", "Campusaxis/1.0")
                     .timeout(Duration.ofSeconds(12))
                     .GET();
 

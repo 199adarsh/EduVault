@@ -100,8 +100,8 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                     <span className="material-symbols-outlined text-[22px]">shield</span>
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-bold text-[17px] tracking-tight text-text-primary leading-tight">EduVault</span>
-                    <span className="text-[11px] font-medium text-text-secondary leading-none">Sovereign System</span>
+                    <span className="font-bold text-[17px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
+                    <span className="text-[11px] font-medium text-text-secondary leading-none">Academic OS</span>
                 </div>
             </div>
 

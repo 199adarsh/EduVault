@@ -107,7 +107,7 @@ const SovereignLayout = () => {
 
                 {/* Mobile Header */}
                 <div className="md:hidden flex items-center justify-between p-4 border-b border-border-subtle bg-surface-card/90 backdrop-blur-md z-40">
-                    <span className="font-bold text-text-primary tracking-tight">EduVault</span>
+                    <span className="font-bold text-text-primary tracking-tight">Campusaxis</span>
                     <button onClick={() => setMobileMenuOpen(true)} className="text-text-secondary hover:text-text-primary">
                         <Menu className="w-6 h-6" />
                     </button>
@@ -118,7 +118,7 @@ const SovereignLayout = () => {
                     {loading ? (
                         <div className="h-full flex flex-col items-center justify-center gap-4 opacity-40">
                             <div className="w-12 h-12 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                            <p className="text-xs font-bold uppercase tracking-widest">Synchronizing Vault...</p>
+                            <p className="text-xs font-bold uppercase tracking-widest">Synchronizing Campusaxis...</p>
                         </div>
                     ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' ? (
                         <Navigate to="/" replace />

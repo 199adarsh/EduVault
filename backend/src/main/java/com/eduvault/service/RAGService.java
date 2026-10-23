@@ -64,7 +64,7 @@ public class RAGService {
             } catch (Exception e) {
                 logger.warn("Auto-ingestion failed: {}", e.getMessage());
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.warn("RAG initialization encountered an issue: {}", e.getMessage());
             this.embeddingModel = null;
             this.embeddingStore = new InMemoryEmbeddingStore<>();

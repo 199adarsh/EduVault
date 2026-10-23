@@ -17,7 +17,7 @@ RUN mvn clean package -DskipTests
 
 # Stage 3: Optimized Container Runtime
 FROM eclipse-temurin:17-jre-alpine
-RUN apk add --no-cache fontconfig ttf-dejavu
+RUN apk add --no-cache fontconfig ttf-dejavu libstdc++ gcompat
 WORKDIR /app
 RUN mkdir -p /app/data
 COPY --from=backend-build /app/target/*.jar app.jar

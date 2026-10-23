@@ -8,7 +8,7 @@ RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime with Alpine fonts
 FROM eclipse-temurin:17-jre-alpine
-RUN apk add --no-cache fontconfig ttf-dejavu
+RUN apk add --no-cache fontconfig ttf-dejavu libstdc++ gcompat
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 ENV PORT=8080

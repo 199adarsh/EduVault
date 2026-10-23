@@ -46,30 +46,23 @@ public class RAGService {
 
     @PostConstruct
     public void init() {
-        try {
-            logger.info("Initializing RAGService with local ONNX embeddings and Gemini Web2API inference");
-            this.embeddingModel = new AllMiniLmL6V2EmbeddingModel();
-            this.embeddingStore = new InMemoryEmbeddingStore<>();
-            loadStore();
+        this.embeddingStore = new InMemoryEmbeddingStore<>();
+        loadStore();
 
+        Thread initThread = new Thread(() -> {
             try {
-                Embedding dummy = embeddingModel.embed("test").content();
-                if (embeddingStore.findRelevant(dummy, 1).isEmpty()) {
-                    logger.info("RAG store empty, auto-ingesting existing notes...");
-                    List<Note> allNotes = database.getAllNotes();
-                    for (int i = 0; i < Math.min(allNotes.size(), 3); i++) {
-                        ingestNote(allNotes.get(i).getId());
-                    }
-                }
-            } catch (Exception e) {
-                logger.warn("Auto-ingestion failed: {}", e.getMessage());
+                Thread.sleep(8000);
+                logger.info("Initializing RAGService with local ONNX embeddings in background...");
+                this.embeddingModel = new AllMiniLmL6V2EmbeddingModel();
+                logger.info("RAGService ONNX embeddings initialized successfully");
+            } catch (Throwable e) {
+                logger.warn("ONNX EmbeddingModel disabled (using direct LLM fallback): {}", e.getMessage());
+                this.embeddingModel = null;
             }
-        } catch (Throwable e) {
-            logger.warn("RAG initialization encountered an issue: {}", e.getMessage());
-            this.embeddingModel = null;
-            this.embeddingStore = new InMemoryEmbeddingStore<>();
-            loadStore();
-        }
+        });
+        initThread.setName("rag-onnx-init");
+        initThread.setDaemon(true);
+        initThread.start();
     }
 
     private void loadStore() {

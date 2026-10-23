@@ -28,4 +28,4 @@ USER appuser
 
 ENV PORT=7860
 EXPOSE 7860
-ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Dserver.port=${PORT} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -jar app.jar --server.port=${PORT}"]

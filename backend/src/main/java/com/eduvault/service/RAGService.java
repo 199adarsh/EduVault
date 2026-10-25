@@ -44,10 +44,19 @@ public class RAGService {
     @Autowired
     private LocalJsonDatabase database;
 
+    @Value("${app.rag.onnx.enabled:false}")
+    private boolean onnxEnabled;
+
     @PostConstruct
     public void init() {
         this.embeddingStore = new InMemoryEmbeddingStore<>();
         loadStore();
+
+        if (!onnxEnabled) {
+            logger.info("ONNX EmbeddingModel disabled by config to prevent heap exhaustion (using direct LLM fallback)");
+            this.embeddingModel = null;
+            return;
+        }
 
         Thread initThread = new Thread(() -> {
             try {

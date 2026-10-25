@@ -70,52 +70,58 @@ public class LocalJsonDatabase {
     public void init() {
         logger.info("LocalJsonDatabase redirected to Supabase/PostgreSQL");
 
-        // Seed Profile if empty
-        seedIfEmpty("profile.json", new com.fasterxml.jackson.core.type.TypeReference<StudentProfile>() {}, sp -> studentProfileRepository.save(sp), studentProfileRepository.count());
+        Thread seedThread = new Thread(() -> {
+            try {
+                // Seed Profile if empty
+                seedIfEmpty("profile.json", new com.fasterxml.jackson.core.type.TypeReference<StudentProfile>() {}, sp -> studentProfileRepository.save(sp), studentProfileRepository.count());
 
-        // Seed Subjects if empty
-        seedIfEmpty("subjects.json", new com.fasterxml.jackson.core.type.TypeReference<List<Subject>>() {}, list -> subjectRepository.saveAll(list), subjectRepository.count());
+                // Seed Subjects if empty
+                seedIfEmpty("subjects.json", new com.fasterxml.jackson.core.type.TypeReference<List<Subject>>() {}, list -> subjectRepository.saveAll(list), subjectRepository.count());
 
-        // Seed Notes if empty
-        seedIfEmpty("notes.json", new com.fasterxml.jackson.core.type.TypeReference<List<Note>>() {}, list -> noteRepository.saveAll(list), noteRepository.count());
+                // Seed Notes if empty
+                seedIfEmpty("notes.json", new com.fasterxml.jackson.core.type.TypeReference<List<Note>>() {}, list -> noteRepository.saveAll(list), noteRepository.count());
 
+                // Seed Announcements if empty
+                seedIfEmpty("announcements.json", new com.fasterxml.jackson.core.type.TypeReference<List<Announcement>>() {}, list -> announcementRepository.saveAll(list), announcementRepository.count());
 
-        // Seed Announcements if empty
-        seedIfEmpty("announcements.json", new com.fasterxml.jackson.core.type.TypeReference<List<Announcement>>() {}, list -> announcementRepository.saveAll(list), announcementRepository.count());
+                // Seed Timeline Events if empty
+                seedIfEmpty("timeline.json", new com.fasterxml.jackson.core.type.TypeReference<List<TimelineEvent>>() {}, list -> timelineEventRepository.saveAll(list), timelineEventRepository.count());
 
-        // Seed Timeline Events if empty
-        seedIfEmpty("timeline.json", new com.fasterxml.jackson.core.type.TypeReference<List<TimelineEvent>>() {}, list -> timelineEventRepository.saveAll(list), timelineEventRepository.count());
+                // Seed NC Requests if empty
+                seedIfEmpty("nc_requests.json", new com.fasterxml.jackson.core.type.TypeReference<List<NcRequest>>() {}, list -> ncRequestRepository.saveAll(list), ncRequestRepository.count());
 
-        // Seed NC Requests if empty
-        seedIfEmpty("nc_requests.json", new com.fasterxml.jackson.core.type.TypeReference<List<NcRequest>>() {}, list -> ncRequestRepository.saveAll(list), ncRequestRepository.count());
+                // Seed NC Notifications if empty
+                seedIfEmpty("nc_notifications.json", new com.fasterxml.jackson.core.type.TypeReference<List<NcNotification>>() {}, list -> ncNotificationRepository.saveAll(list), ncNotificationRepository.count());
 
-        // Seed NC Notifications if empty
-        seedIfEmpty("nc_notifications.json", new com.fasterxml.jackson.core.type.TypeReference<List<NcNotification>>() {}, list -> ncNotificationRepository.saveAll(list), ncNotificationRepository.count());
-
-        // Seed Predefined Roadmaps if empty
-        if (predefinedRoadmapRepository.count() == 0) {
-            seedIfEmpty("roadmaps.json", new com.fasterxml.jackson.core.type.TypeReference<List<PredefinedRoadmap>>() {}, list -> predefinedRoadmapRepository.saveAll(list), 0);
-            if (predefinedRoadmapRepository.count() == 0) {
-                try {
-                    org.springframework.core.io.ClassPathResource resource = new org.springframework.core.io.ClassPathResource("seed_roadmaps.json");
-                    if (resource.exists()) {
-                        List<PredefinedRoadmap> defaultRoadmaps = mapper.readValue(
-                                resource.getInputStream(),
-                                new com.fasterxml.jackson.core.type.TypeReference<List<PredefinedRoadmap>>() {}
-                        );
-                        predefinedRoadmapRepository.saveAll(defaultRoadmaps);
-                        logger.info("Seeded predefined roadmaps from classpath resource");
+                // Seed Predefined Roadmaps if empty
+                if (predefinedRoadmapRepository.count() == 0) {
+                    seedIfEmpty("roadmaps.json", new com.fasterxml.jackson.core.type.TypeReference<List<PredefinedRoadmap>>() {}, list -> predefinedRoadmapRepository.saveAll(list), 0);
+                    if (predefinedRoadmapRepository.count() == 0) {
+                        try {
+                            org.springframework.core.io.ClassPathResource resource = new org.springframework.core.io.ClassPathResource("seed_roadmaps.json");
+                            if (resource.exists()) {
+                                List<PredefinedRoadmap> defaultRoadmaps = mapper.readValue(
+                                        resource.getInputStream(),
+                                        new com.fasterxml.jackson.core.type.TypeReference<List<PredefinedRoadmap>>() {}
+                                );
+                                predefinedRoadmapRepository.saveAll(defaultRoadmaps);
+                                logger.info("Seeded predefined roadmaps from classpath resource");
+                            }
+                        } catch (IOException e) {
+                            logger.error("Failed to seed predefined roadmaps", e);
+                        }
                     }
-                } catch (IOException e) {
-                    logger.error("Failed to seed predefined roadmaps", e);
                 }
-            }
-        }
 
-        updateSubjectCounts();
-        
-        // Repair existing note records
-        repairExistingNotes();
+                updateSubjectCounts();
+                repairExistingNotes();
+            } catch (Exception e) {
+                logger.warn("Non-fatal background DB seed notice: {}", e.getMessage());
+            }
+        });
+        seedThread.setName("db-seed-thread");
+        seedThread.setDaemon(true);
+        seedThread.start();
     }
 
     public synchronized int repairExistingNotes() {

@@ -22,4 +22,5 @@ RUN mkdir -p /app/data
 COPY --from=backend-build /app/target/*.jar app.jar
 
 ENV PORT=8080
+EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "java -Xmx320m -Xms128m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -jar app.jar --server.port=${PORT}"]

@@ -5,9 +5,10 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free
     region: singapore
+    healthCheckPath: /health
     envVars:
       - key: PORT
-        value: 8080
+        value: 10000
       - key: NEON_JDBC_URL
         value: jdbc:postgresql://ep-raspy-cell-a1e1shtq-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
       - key: NEON_DB_USER

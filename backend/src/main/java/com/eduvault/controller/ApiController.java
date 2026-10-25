@@ -228,7 +228,17 @@ public class ApiController {
 
         // Fallback: Stream directly from Backblaze B2 if available
         try {
-            byte[] bytes = backblazeStorageService.getObjectBytes(fileName);
+            String b2Key = fileName;
+            // Check if fileName is part of a known note's full B2 key path (e.g., folder/subfolder/file.docx)
+            Optional<Note> matchingNote = database.getAllNotes().stream()
+                    .filter(n -> fileName.equals(n.getFileUrl()) ||
+                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(fileName) || n.getB2ObjectKey().endsWith("/" + fileName))))
+                    .findFirst();
+            if (matchingNote.isPresent() && matchingNote.get().getB2ObjectKey() != null) {
+                b2Key = matchingNote.get().getB2ObjectKey();
+            }
+
+            byte[] bytes = backblazeStorageService.getObjectBytes(b2Key);
             if (bytes != null && bytes.length > 0) {
                 String ext = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
                 String contentType = "application/octet-stream";

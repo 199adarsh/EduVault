@@ -29,7 +29,7 @@ public class PortalScraperService {
     private static final Logger log = LoggerFactory.getLogger(PortalScraperService.class);
 
     // URLs
-    private static final String BASE_URL      = "https://online.dkte.ac.in/newparents/";
+    private static final String BASE_URL      = "https://online.dkte.contineo.in:8081/parents/";
     private static final String LOGIN_URL     = BASE_URL + "index.php";
     private static final String DASHBOARD_URL = BASE_URL
             + "index.php?option=com_studentdashboard"

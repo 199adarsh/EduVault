@@ -409,7 +409,7 @@ sequenceDiagram
 #### Module 1: Portal Scraping & Ingestion Service (`PortalScraperService`)
 - **Status:** **Implemented**
 - **Functionality:** 
-  - Automates authentication against `https://online.dkte.ac.in/newparents/`.
+  - Automates authentication against `https://online.dkte.contineo.in:8081/parents/`.
   - Implements a 2-stage handshake: First dispatches a `GET` request using Java `HttpClient` to acquire session cookies and parses the HTML using regular expressions to extract the dynamic 32-character hexadecimal CSRF token (`<input name="[a-f0-9]{32}" value="1">`).
   - Dispatches an HTTP `POST` with credentials (`username=PRN`, `password=DOB`).
   - Fetches the dynamic dashboard, uses Jsoup to parse attendance tables, cleans subject names, and extracts conducted lectures, attended lectures, CIE marks, and daily calendar activity.

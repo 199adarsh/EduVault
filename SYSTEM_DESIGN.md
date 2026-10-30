@@ -24,7 +24,7 @@ EduVault is an intelligent, high-density academic management system and pedagogi
 3. **System Administrators:** Responsible for configuring institution portal targets, storage backends (Local JSON / Supabase / Backblaze B2), and Groq API keys.
 
 ### 1.4 Operating Assumptions and Dependencies
-- **Portal Availability:** The institutional portal (`https://online.dkte.ac.in/newparents/`) is accessible over public or campus intranet networks.
+- **Portal Availability:** The institutional portal (`https://online.dkte.contineo.in:8081/parents/`) is accessible over public or campus intranet networks.
 - **Client Runtime:** Modern Evergreen web browsers supporting WebAssembly, ES2022, and CSS Grid (Chrome 110+, Firefox 110+, Safari 16+).
 - **Backend Runtime:** Java Virtual Machine (OpenJDK 17+) and Maven 3.8+ execution environment.
 - **External AI Services:** Groq Cloud API access for fast LLM inference; fallback local execution for embedding generation via ONNX runtime.
@@ -693,7 +693,7 @@ Algorithm: HeadlessPortalSync(PRN, DOB)
 Input: PRN (String), DOB (String in DD/MM/YYYY)
 Output: PortalDashboardResponse object or Exception
 
-1. Test connection: Dispatch HEAD request to https://online.dkte.ac.in/newparents/index.php
+1. Test connection: Dispatch HEAD request to https://online.dkte.contineo.in:8081/parents/index.php
 2. IF status != 200 THEN THROW "Portal Unreachable Exception"
 3. Configure HttpClient with java.net.CookieManager (Accept All Policy)
 4. Dispatch HTTP GET to LOGIN_URL

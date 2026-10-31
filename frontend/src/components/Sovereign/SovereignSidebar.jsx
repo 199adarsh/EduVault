@@ -28,31 +28,51 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             return;
         }
 
+        // 2-minute client cooldown to reduce load
+        const lastSync = localStorage.getItem('eduvault_last_synced');
+        if (lastSync && Date.now() - parseInt(lastSync, 10) < 2 * 60 * 1000) {
+            toast.info('Data was synced recently (< 2 min ago). Serving cached records.');
+            setShowUserMenu(false);
+            return;
+        }
+
         const id = toast.loading('Synchronizing Sovereign Vault...');
         try {
-            await axios.post(`${API_BASE}/portal/dashboard`, {
+            const resp = await axios.post(`${API_BASE}/portal/dashboard`, {
                 prn: profile.prn,
                 dob: profile.dob
             });
+            if (resp.data) {
+                const updatedProfile = {
+                    ...(resp.data.profile || {}),
+                    prn: profile.prn,
+                    dob: profile.dob
+                };
+                const updatedSubjects = resp.data.subjects || [];
+                localStorage.setItem('eduvault_profile', JSON.stringify(updatedProfile));
+                localStorage.setItem('eduvault_subjects', JSON.stringify(updatedSubjects));
+                localStorage.setItem('eduvault_last_synced', Date.now().toString());
+            }
             toast.success('Synchronization Complete', { id });
             setShowUserMenu(false);
-            setTimeout(() => window.location.reload(), 1000);
+            setTimeout(() => window.location.reload(), 500);
         } catch (err) {
             toast.error('Vault synchronization failed', { id });
             setShowUserMenu(false);
         }
     };
 
-    const handleLogout = async (e) => {
+    const handleLogout = (e) => {
         e.stopPropagation();
         toast.info('Terminating Sovereign Session...');
-        try {
-            await axios.post(`${API_BASE}/profile/logout`);
-        } catch (err) {
-            console.error('Failed to log out on server:', err);
-        }
-        localStorage.clear();
-        setTimeout(() => window.location.href = '/', 1000);
+        localStorage.removeItem('eduvault_profile');
+        localStorage.removeItem('eduvault_subjects');
+        localStorage.removeItem('eduvault_last_synced');
+        localStorage.removeItem('eduvault_user_role');
+        localStorage.removeItem('eduvault_teacher_name');
+        localStorage.removeItem('eduvault_teacher_id');
+        localStorage.removeItem('eduvault_excluded_subjects');
+        setTimeout(() => window.location.href = '/', 400);
     };
 
     const isTeacher = (localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER');

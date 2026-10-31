@@ -60,34 +60,73 @@ public class ApiController {
     private ObjectMapper mapper;
 
     @GetMapping("/subjects")
-    public ResponseEntity<List<Subject>> getSubjects() {
+    public ResponseEntity<List<Subject>> getSubjects(
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String semester,
+            @RequestParam(required = false) String prn) {
         database.relinkOrphanNotes();
-        StudentProfile profile = database.getProfile();
         List<Subject> all = database.getAllSubjects();
         
-        // Always filter by user's department and semester
-        if (profile != null && profile.getDepartment() != null && profile.getSemester() != null) {
+        // Scope to department and semester if provided
+        String targetDept = department;
+        String targetSem = semester;
+        if (targetDept == null && prn != null && !prn.isBlank()) {
+            StudentProfile profile = database.getProfile(prn);
+            if (profile != null) {
+                targetDept = profile.getDepartment();
+                targetSem = profile.getSemester();
+            }
+        }
+
+        if (targetDept != null && targetSem != null) {
+            final String finalDept = targetDept;
+            final String finalSem = targetSem;
             all = all.stream()
-                .filter(s -> s.getDepartment().equalsIgnoreCase(profile.getDepartment()) && 
-                             s.getSemester().equalsIgnoreCase(profile.getSemester()))
+                .filter(s -> s.getDepartment() != null && s.getDepartment().equalsIgnoreCase(finalDept) && 
+                             s.getSemester() != null && s.getSemester().equalsIgnoreCase(finalSem))
                 .collect(java.util.stream.Collectors.toList());
         }
         return ResponseEntity.ok(all);
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<StudentProfile> getProfile() {
-        return ResponseEntity.ok(database.getProfile());
+    public ResponseEntity<StudentProfile> getProfile(
+            @RequestParam(required = false) String prn,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn) {
+        String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
+        if (effectivePrn == null || effectivePrn.isBlank()) {
+            return ResponseEntity.ok(null);
+        }
+        StudentProfile profile = database.getProfile(effectivePrn);
+        if (profile == null) {
+            return ResponseEntity.ok(null);
+        }
+        // Redact plaintext DOB credential to prevent IDOR credential harvesting
+        StudentProfile sanitized = new StudentProfile(
+                profile.getPrn(),
+                profile.getName(),
+                profile.getImage(),
+                profile.getRollNo(),
+                profile.getAbcId(),
+                profile.getDepartment(),
+                profile.getSemester(),
+                profile.getSection(),
+                null
+        );
+        return ResponseEntity.ok(sanitized);
     }
 
     @PostMapping("/profile")
     public ResponseEntity<StudentProfile> updateProfile(@RequestBody StudentProfile profile) {
+        if (profile == null || profile.getPrn() == null || profile.getPrn().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(database.updateProfile(profile));
     }
 
     @PostMapping("/profile/logout")
     public ResponseEntity<Void> logoutProfile() {
-        database.clearProfileAndSubjects();
+        // Individual logout does not clear the database
         return ResponseEntity.ok().build();
     }
 
@@ -95,16 +134,16 @@ public class ApiController {
     public ResponseEntity<Subject> createSubject(@RequestBody Map<String, String> payload) {
         String name = payload.get("name");
         String semester = payload.get("semester");
+        String department = payload.get("department");
         if (name == null || name.trim().isEmpty() || semester == null || semester.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
         
-        StudentProfile profile = database.getProfile();
         Subject subject = Subject.builder()
                 .id(UUID.randomUUID().toString())
                 .name(name.trim())
                 .semester(semester.trim())
-                .department(profile != null ? profile.getDepartment() : "General")
+                .department(department != null && !department.isBlank() ? department.trim() : "General")
                 .createdAt(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                 .noteCount(0)
                 .build();
@@ -120,9 +159,10 @@ public class ApiController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String department,
-            @RequestParam(required = false) String unit) {
+            @RequestParam(required = false) String unit,
+            @RequestParam(required = false) String prn) {
         
-        StudentProfile profile = database.getProfile();
+        StudentProfile profile = (prn != null && !prn.isBlank()) ? database.getProfile(prn) : null;
         String effectiveSemester = (semester != null && !semester.isBlank()) 
                 ? semester 
                 : (profile != null ? profile.getSemester() : null);
@@ -310,10 +350,12 @@ public class ApiController {
             }
         }
 
-        // 2. Get user profile for auto-filling department and semester
-        StudentProfile profile = database.getProfile();
-        String department = profile != null ? profile.getDepartment() : "Unknown";
-        String semester = profile != null ? profile.getSemester() : "Unknown";
+        // 2. Extract department and semester directly from the selected subject
+        Subject targetSubject = database.getAllSubjects().stream()
+                .filter(s -> s.getId().equals(subjectId))
+                .findFirst().orElse(null);
+        String department = targetSubject != null && targetSubject.getDepartment() != null ? targetSubject.getDepartment() : "General";
+        String semester = targetSubject != null && targetSubject.getSemester() != null ? targetSubject.getSemester() : "General";
         
         // 2. Extract text from the in-memory file BEFORE uploading (avoids re-downloading from B2)
         String extractedText = fileStorageService.extractTextFromMultipartFile(file);

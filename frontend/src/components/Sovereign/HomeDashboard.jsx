@@ -160,20 +160,28 @@ const HomeDashboard = () => {
       localStorage.setItem('eduvault_teacher_id', account.id);
       localStorage.setItem('eduvault_teacher_name', account.name);
 
-      await axios.post(`${API_BASE}/profile`, {
+      const teacherProfile = {
         name: account.name,
         prn: account.id,
         dob: 'TEACHER',
         department: account.dept,
         role: 'teacher'
-      });
+      };
+      localStorage.setItem('eduvault_profile', JSON.stringify(teacherProfile));
+      localStorage.setItem('eduvault_subjects', JSON.stringify([]));
+
+      try {
+        await axios.post(`${API_BASE}/profile`, teacherProfile);
+      } catch (e) {
+        console.warn('Backend profile sync skipped:', e);
+      }
 
       setSyncProgress(100);
       setSyncStage('Faculty Vault Initialized!');
       toast.success(`Welcome, Prof. ${account.name}`);
 
       if (refreshData) {
-        await refreshData();
+        await refreshData(teacherProfile, []);
       }
     } catch (err) {
       console.error('Faculty login error:', err);
@@ -245,10 +253,22 @@ const HomeDashboard = () => {
       }, 250);
 
       // Perform live portal scrape (60-70% heavy lifting)
-      await axios.post(`${API_BASE}/portal/dashboard`, {
+      const portalRes = await axios.post(`${API_BASE}/portal/dashboard`, {
         prn: loginPrn,
         dob: loginDob
       });
+
+      const studentProfile = {
+        ...(portalRes.data?.profile || {}),
+        prn: loginPrn,
+        dob: loginDob
+      };
+      const studentSubjects = portalRes.data?.subjects || [];
+
+      // Persist isolated user session locally
+      localStorage.setItem('eduvault_profile', JSON.stringify(studentProfile));
+      localStorage.setItem('eduvault_subjects', JSON.stringify(studentSubjects));
+      localStorage.setItem('eduvault_last_synced', Date.now().toString());
 
       clearInterval(fetchInterval);
       setSyncStep(5);
@@ -257,7 +277,7 @@ const HomeDashboard = () => {
 
       toast.success('Welcome to Campusaxis.');
       if (refreshData) {
-        await refreshData();
+        await refreshData(studentProfile, studentSubjects);
       }
     } catch (err) {
       clearInterval(authInterval);

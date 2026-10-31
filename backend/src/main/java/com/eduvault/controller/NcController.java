@@ -42,7 +42,7 @@ public class NcController {
      */
     @GetMapping("/absent-dates")
     public ResponseEntity<?> getAbsentDates(@RequestParam(required = false) String prn) {
-        StudentProfile profile = database.getProfile();
+        StudentProfile profile = (prn != null && !prn.isBlank()) ? database.getProfile(prn.trim()) : null;
         List<Subject> subjects = database.getAllSubjects();
 
         if (profile != null && profile.getDepartment() != null && profile.getSemester() != null) {
@@ -101,10 +101,10 @@ public class NcController {
             @RequestParam(value = "studentPrn", required = false) String studentPrnParam
     ) {
         try {
-            StudentProfile profile = database.getProfile();
             String studentPrn = (studentPrnParam != null && !studentPrnParam.isBlank())
-                    ? studentPrnParam
-                    : (profile != null ? profile.getPrn() : "UNKNOWN_STUDENT");
+                    ? studentPrnParam.trim()
+                    : "UNKNOWN_STUDENT";
+            StudentProfile profile = database.getProfile(studentPrn);
 
             List<String> absentDates = mapper.readValue(absentDatesJson, new TypeReference<List<String>>() {});
             if (absentDates == null || absentDates.isEmpty()) {
@@ -170,10 +170,10 @@ public class NcController {
      */
     @GetMapping("/my-requests")
     public ResponseEntity<List<NcRequest>> getMyRequests(@RequestParam(required = false) String prn) {
-        StudentProfile profile = database.getProfile();
-        String studentPrn = (prn != null && !prn.isBlank())
-                ? prn
-                : (profile != null ? profile.getPrn() : null);
+        if (prn == null || prn.isBlank()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        String studentPrn = prn.trim();
 
         if (studentPrn == null) {
             return ResponseEntity.ok(Collections.emptyList());
@@ -319,8 +319,7 @@ public class NcController {
             @RequestParam(required = false) String prn,
             @RequestParam(defaultValue = "student") String role
     ) {
-        StudentProfile profile = database.getProfile();
-        String recipientPrn = (prn != null && !prn.isBlank()) ? prn : (profile != null ? profile.getPrn() : "UNKNOWN");
+        String recipientPrn = (prn != null && !prn.isBlank()) ? prn.trim() : "UNKNOWN";
         return ResponseEntity.ok(database.getNotifications(recipientPrn, role));
     }
 

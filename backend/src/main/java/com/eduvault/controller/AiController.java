@@ -44,6 +44,7 @@ public class AiController {
                 question = request.get("prompt");
             }
             String noteId = request.get("noteId"); // Optional context
+            String prn = request.get("prn");
 
             if (question == null || question.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Question or message is required"));
@@ -56,7 +57,7 @@ public class AiController {
                 // Compile full academic context across all sections of EduVault
                 StringBuilder contextBuilder = new StringBuilder();
 
-                com.eduvault.model.StudentProfile profile = database.getProfile();
+                com.eduvault.model.StudentProfile profile = (prn != null && !prn.isBlank()) ? database.getProfile(prn.trim()) : null;
                 if (profile != null && profile.getName() != null) {
                     contextBuilder.append("=== STUDENT PROFILE ===\n")
                             .append("Name: ").append(profile.getName()).append("\n")

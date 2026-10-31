@@ -77,7 +77,7 @@ const AIAssistant = () => {
             const response = await fetch(`${API_BASE}/ai/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: queryText })
+                body: JSON.stringify({ question: queryText, prn: profile?.prn })
             });
 
             if (!response.ok) throw new Error("Synthesis connection interrupted");

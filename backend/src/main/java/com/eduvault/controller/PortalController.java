@@ -40,35 +40,19 @@ public class PortalController {
             logger.debug("Executing portal scraper service...");
             com.eduvault.model.PortalDashboardResponse response = portalScraperService.fetchDashboard(credentials.getPrn(), credentials.getDob());
             
-            // Persist the synced data automatically
+            // Persist the synced data automatically for this specific user
             if (response != null) {
-                // 1. Update Profile (Preserve and add PRN/DOB)
+                // 1. Update Profile (Scoped to this student PRN)
                 com.eduvault.model.StudentProfile profile = response.getProfile();
-                profile.setPrn(credentials.getPrn());
-                profile.setDob(credentials.getDob());
-                database.updateProfile(profile);
-                
-                // 2. Update Subjects (Clear old and add new from portal)
-                if (response.getSubjects() != null) {
-                    List<com.eduvault.model.Subject> subjects = new java.util.ArrayList<>();
-                    for (com.eduvault.model.DashboardSubject ds : response.getSubjects()) {
-                        subjects.add(com.eduvault.model.Subject.builder()
-                            .id(java.util.UUID.randomUUID().toString())
-                            .name(ds.getName())
-                            .code(ds.getCode())
-                            .department(profile.getDepartment())
-                            .semester(profile.getSemester())
-                            .attendance(String.valueOf(ds.getAttendance()))
-                            .cie(String.valueOf(ds.getCie()))
-                            .totalConducted(ds.getTotalConducted())
-                            .totalAttended(ds.getTotalAttended())
-                            .totalScheduled(ds.getTotalScheduled())
-                            .stillToGo(ds.getStillToGo())
-                            .createdAt(java.time.LocalDate.now().toString())
-                            .detailedAttendance(ds.getDetailedAttendance())
-                            .build());
+                if (profile != null) {
+                    profile.setPrn(credentials.getPrn());
+                    profile.setDob(credentials.getDob());
+                    database.updateProfile(profile);
+                    
+                    // 2. Register new subjects in the catalog without overwriting personal attendance
+                    if (response.getSubjects() != null) {
+                        database.registerSubjectsCatalog(response.getSubjects(), profile.getDepartment(), profile.getSemester());
                     }
-                    database.setSubjects(subjects);
                 }
             }
             

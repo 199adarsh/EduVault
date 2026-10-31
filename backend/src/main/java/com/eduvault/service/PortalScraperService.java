@@ -47,14 +47,45 @@ public class PortalScraperService {
                 "<input[^>]+name=\"([a-f0-9]{32})\"[^>]+value=\"1\"",
                 Pattern.CASE_INSENSITIVE);
 
-    public PortalDashboardResponse fetchDashboard(String prn, String dob) throws Exception {
-        log.info("Starting student portal synchronization...");
-        
-        // Test connectivity first
-        if (!testConnectivity()) {
-            throw new Exception("DKTE portal is not reachable. Please check your internet connection.");
+    // In-memory bounded LRU cache to reduce portal & server load (15-minute TTL, max 200 entries)
+    private static final int MAX_CACHE_ENTRIES = 200;
+    private static final long CACHE_TTL_MS = 15 * 60 * 1000L;
+    private final Map<String, CachedResponse> responseCache = Collections.synchronizedMap(
+            new LinkedHashMap<String, CachedResponse>(MAX_CACHE_ENTRIES, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, CachedResponse> eldest) {
+                    return size() > MAX_CACHE_ENTRIES || eldest.getValue().isExpired();
+                }
+            }
+    );
+
+    private static class CachedResponse {
+        final PortalDashboardResponse response;
+        final long timestamp;
+
+        CachedResponse(PortalDashboardResponse response) {
+            this.response = response;
+            this.timestamp = System.currentTimeMillis();
         }
-        
+
+        boolean isValid() {
+            return (System.currentTimeMillis() - timestamp) < CACHE_TTL_MS;
+        }
+
+        boolean isExpired() {
+            return !isValid();
+        }
+    }
+
+    public PortalDashboardResponse fetchDashboard(String prn, String dob) throws Exception {
+        String cacheKey = (prn != null ? prn.trim().toLowerCase() : "");
+        CachedResponse cached = responseCache.get(cacheKey);
+        if (cached != null && cached.isValid()) {
+            log.info("Returning cached portal dashboard for PRN: {}", prn);
+            return cached.response;
+        }
+
+        log.info("Starting student portal synchronization for PRN: {}", prn);
         ScraperService service = new ScraperService();
         ScrapeResult result = service.scrape(prn, dob);
         
@@ -76,10 +107,13 @@ public class PortalScraperService {
                 .build());
         }
         
-        return PortalDashboardResponse.builder()
+        PortalDashboardResponse response = PortalDashboardResponse.builder()
             .profile(result.getProfile())
             .subjects(dashboardSubjects)
             .build();
+
+        responseCache.put(cacheKey, new CachedResponse(response));
+        return response;
     }
     
         

@@ -72,9 +72,6 @@ public class LocalJsonDatabase {
 
         Thread seedThread = new Thread(() -> {
             try {
-                // Seed Profile if empty
-                seedIfEmpty("profile.json", new com.fasterxml.jackson.core.type.TypeReference<StudentProfile>() {}, sp -> studentProfileRepository.save(sp), studentProfileRepository.count());
-
                 // Seed Subjects if empty
                 seedIfEmpty("subjects.json", new com.fasterxml.jackson.core.type.TypeReference<List<Subject>>() {}, list -> subjectRepository.saveAll(list), subjectRepository.count());
 
@@ -442,27 +439,67 @@ public class LocalJsonDatabase {
     }
 
     public StudentProfile getProfile() {
-        List<StudentProfile> profiles = studentProfileRepository.findAll();
-        if (profiles.isEmpty()) {
-            return new StudentProfile();
+        return null;
+    }
+
+    public StudentProfile getProfile(String prn) {
+        if (prn == null || prn.trim().isEmpty()) {
+            return null;
         }
-        return profiles.get(0);
+        return studentProfileRepository.findById(prn.trim()).orElse(null);
     }
     
     public StudentProfile updateProfile(StudentProfile newProfile) {
-        if (newProfile.getPrn() == null || newProfile.getPrn().trim().isEmpty()) {
-            newProfile.setPrn("DEFAULT_PRN");
+        if (newProfile == null || newProfile.getPrn() == null || newProfile.getPrn().trim().isEmpty()) {
+            return null;
         }
         return studentProfileRepository.save(newProfile);
     }
 
     public synchronized void clearProfile() {
-        studentProfileRepository.deleteAll();
+        // Multi-tenant protection: do not delete all profiles
     }
 
     public synchronized void clearProfileAndSubjects() {
-        studentProfileRepository.deleteAll();
-        subjectRepository.deleteAll();
+        // Multi-tenant protection: do not wipe global database
+    }
+
+    public synchronized void registerSubjectsCatalog(List<DashboardSubject> dashboardSubjects, String dept, String sem) {
+        if (dashboardSubjects == null || dashboardSubjects.isEmpty()) return;
+        List<Subject> existing = subjectRepository.findAll();
+        java.util.Map<String, Subject> nameOrCodeMap = new java.util.HashMap<>();
+        for (Subject s : existing) {
+            if (s.getName() != null) nameOrCodeMap.put(s.getName().trim().toLowerCase(), s);
+            if (s.getCode() != null) nameOrCodeMap.put(s.getCode().trim().toLowerCase(), s);
+        }
+
+        List<Subject> toSave = new java.util.ArrayList<>();
+        for (DashboardSubject ds : dashboardSubjects) {
+            String nameKey = ds.getName() != null ? ds.getName().trim().toLowerCase() : "";
+            String codeKey = ds.getCode() != null ? ds.getCode().trim().toLowerCase() : "";
+            Subject matched = nameOrCodeMap.get(nameKey);
+            if (matched == null && !codeKey.isEmpty()) {
+                matched = nameOrCodeMap.get(codeKey);
+            }
+
+            if (matched == null) {
+                Subject newSub = Subject.builder()
+                        .id(java.util.UUID.randomUUID().toString())
+                        .name(ds.getName())
+                        .code(ds.getCode())
+                        .department(dept)
+                        .semester(sem)
+                        .createdAt(java.time.LocalDate.now().toString())
+                        .build();
+                toSave.add(newSub);
+                nameOrCodeMap.put(nameKey, newSub);
+                if (!codeKey.isEmpty()) nameOrCodeMap.put(codeKey, newSub);
+            }
+        }
+        if (!toSave.isEmpty()) {
+            subjectRepository.saveAll(toSave);
+            updateSubjectCounts();
+        }
     }
 
     private void updateSubjectCounts() {

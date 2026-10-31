@@ -242,6 +242,13 @@ const AttendanceAnalytics = () => {
             toast.error("Profile credentials missing in settings");
             return;
         }
+
+        const lastSync = localStorage.getItem('eduvault_last_synced');
+        if (lastSync && Date.now() - parseInt(lastSync, 10) < 2 * 60 * 1000) {
+            toast.info("Recently synchronized (< 2 min ago). Serving cached records.");
+            return;
+        }
+
         setIsSyncing(true);
         const toastId = toast.loading("Syncing with institutional portal...");
         try {
@@ -251,8 +258,21 @@ const AttendanceAnalytics = () => {
                 body: JSON.stringify({ prn: profile.prn, dob: profile.dob })
             });
 
-            if (response.ok && refreshData) {
-                await refreshData();
+            if (response.ok) {
+                const data = await response.json();
+                const updatedProfile = {
+                    ...(data.profile || {}),
+                    prn: profile.prn,
+                    dob: profile.dob
+                };
+                const updatedSubjects = data.subjects || [];
+                localStorage.setItem('eduvault_profile', JSON.stringify(updatedProfile));
+                localStorage.setItem('eduvault_subjects', JSON.stringify(updatedSubjects));
+                localStorage.setItem('eduvault_last_synced', Date.now().toString());
+
+                if (refreshData) {
+                    await refreshData(updatedProfile, updatedSubjects);
+                }
                 toast.success("Synchronized with academic portal", { id: toastId });
             } else {
                 toast.error("Cloud synchronization failed", { id: toastId });

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const ProfilePanel = ({ refreshData, currentProfile }) => {
   const [open, setOpen] = useState(false);
@@ -35,14 +35,7 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
 
     setLoading(true);
     try {
-      // 1. Save credentials to local profile
-      await axios.post(`${API_BASE}/profile`, {
-        ...currentProfile,
-        prn: credentials.prn,
-        dob: credentials.dob
-      });
-
-      // 2. Trigger Portal Sync
+      // 1. Trigger Portal Sync
       toast.info('Syncing with college portal...');
       const syncResponse = await axios.post(`${API_BASE}/portal/dashboard`, {
         prn: credentials.prn,
@@ -50,8 +43,18 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
       });
 
       if (syncResponse.data) {
+        const updatedProfile = {
+          ...(syncResponse.data.profile || {}),
+          prn: credentials.prn,
+          dob: credentials.dob
+        };
+        const updatedSubjects = syncResponse.data.subjects || [];
+        localStorage.setItem('eduvault_profile', JSON.stringify(updatedProfile));
+        localStorage.setItem('eduvault_subjects', JSON.stringify(updatedSubjects));
+        localStorage.setItem('eduvault_last_synced', Date.now().toString());
+
         toast.success('Profile & Academic data synced successfully!');
-        if (refreshData) refreshData();
+        if (refreshData) refreshData(updatedProfile, updatedSubjects);
         setOpen(false);
       }
     } catch (err) {

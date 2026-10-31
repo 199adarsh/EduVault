@@ -27,31 +27,52 @@ const SovereignLayout = () => {
     const match = matchPath({ path: "/notes/:id" }, location.pathname);
     const activeNoteId = match?.params?.id;
 
-    const fetchData = async (retries = 3) => {
+    const fetchData = async (overrideProfile, overrideSubjects) => {
         try {
-            const [profileRes, subjectsRes, notesRes] = await Promise.all([
-                axios.get(`${API_BASE}/profile`),
-                axios.get(`${API_BASE}/subjects`),
-                axios.get(`${API_BASE}/notes`)
-            ]);
-            setProfile(profileRes.data || null);
-            setSubjects(Array.isArray(subjectsRes.data) ? subjectsRes.data : []);
+            // 1. Read isolated user session from localStorage
+            let currentProfile = overrideProfile;
+            let currentSubjects = overrideSubjects;
+
+            if (currentProfile === undefined) {
+                try {
+                    const saved = localStorage.getItem('eduvault_profile');
+                    currentProfile = saved ? JSON.parse(saved) : null;
+                } catch (e) {
+                    currentProfile = null;
+                }
+            }
+
+            if (currentSubjects === undefined) {
+                try {
+                    const savedSubs = localStorage.getItem('eduvault_subjects');
+                    currentSubjects = savedSubs ? JSON.parse(savedSubs) : [];
+                } catch (e) {
+                    currentSubjects = [];
+                }
+            }
+
+            setProfile(currentProfile);
+
+            // 2. Fetch notes from server scoped to PRN if available
+            const notesUrl = currentProfile?.prn 
+                ? `${API_BASE}/notes?prn=${encodeURIComponent(currentProfile.prn)}` 
+                : `${API_BASE}/notes`;
+            const notesRes = await axios.get(notesUrl);
             const fetchedNotes = Array.isArray(notesRes.data) ? notesRes.data : [];
             setNotes(fetchedNotes);
 
-            if (fetchedNotes.length === 0 && retries > 0) {
-                setTimeout(() => fetchData(retries - 1), 2000);
+            // 3. Set subjects: prioritize user's portal subjects from local session, fallback to catalog
+            if (currentSubjects && currentSubjects.length > 0) {
+                setSubjects(currentSubjects);
+            } else if (currentProfile?.department && currentProfile?.semester) {
+                const subsRes = await axios.get(`${API_BASE}/subjects?department=${encodeURIComponent(currentProfile.department)}&semester=${encodeURIComponent(currentProfile.semester)}`);
+                setSubjects(Array.isArray(subsRes.data) ? subsRes.data : []);
+            } else {
+                const subsRes = await axios.get(`${API_BASE}/subjects`);
+                setSubjects(Array.isArray(subsRes.data) ? subsRes.data : []);
             }
         } catch (err) {
             console.error('Error fetching data:', err);
-            if (retries > 0) {
-                setTimeout(() => fetchData(retries - 1), 2000);
-            } else {
-                toast.error('Server offline. Working with local cache.');
-                if (!profile) setProfile({ name: "Academic User", image: null });
-                if (!subjects) setSubjects([]);
-                if (!notes) setNotes([]);
-            }
         } finally {
             setLoading(false);
         }
@@ -65,7 +86,7 @@ const SovereignLayout = () => {
         : [];
 
     useEffect(() => {
-        fetchData(3);
+        fetchData();
     }, []);
 
     const overallAttendance = useMemo(() => {

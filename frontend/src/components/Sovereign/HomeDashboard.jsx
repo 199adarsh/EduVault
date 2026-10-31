@@ -892,7 +892,7 @@ const HomeDashboard = () => {
               )}
               <button
                 onClick={() => setMobileSearchOpen(false)}
-                className="px-2.5 py-1 text-xs font-semibold text-text-secondary hover:text-text-primary bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0 cursor-pointer"
+                className="px-2.5 py-1 text-xs font-semibold text-text-secondary hover:text-text-primary bg-slate-100  rounded-lg shrink-0 cursor-pointer"
               >
                 Cancel
               </button>
@@ -942,8 +942,8 @@ const HomeDashboard = () => {
 
                 <div className="flex flex-col gap-1 min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-base sm:text-xl md:text-2xl font-black text-text-primary tracking-tight leading-snug break-words">
-                      Welcome, {formatName(profile?.name)}
+                    <h1 className="text-base sm:text-xl md:text-2xl font-medium text-text-primary tracking-tight leading-snug break-words">
+                      Welcome, <span className="font-normal text-text-primary">{formatName(profile?.name)}</span>
                     </h1>
                     {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
@@ -1061,7 +1061,7 @@ const HomeDashboard = () => {
               <div className="w-full grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-border-subtle lg:hidden">
                 <div 
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
+                  className="flex flex-col bg-slate-50 /40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-text-secondary">Attendance</span>
@@ -1073,10 +1073,10 @@ const HomeDashboard = () => {
                 </div>
                 <div 
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-red-50 dark:bg-red-950/30 rounded-xl p-2.5 border border-red-200 dark:border-red-900/50 cursor-pointer active:scale-95 transition-transform"
+                  className="flex flex-col bg-red-50  rounded-xl p-2.5 border border-red-200 dark:border-red-900/50 cursor-pointer active:scale-95 transition-transform"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-red-600 dark:text-red-400">Below 75%</span>
+                    <span className="text-[11px] font-medium text-red-600 ">Below 75%</span>
                     <span className="material-symbols-outlined text-red-600 text-[15px]">warning</span>
                   </div>
                   <div className="mt-1 flex items-baseline gap-1">
@@ -1086,7 +1086,7 @@ const HomeDashboard = () => {
                 </div>
                 <div 
                   onClick={() => setCiePopupOpen(true)}
-                  className="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
+                  className="flex flex-col bg-slate-50 /40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-text-secondary">CIE Avg</span>
@@ -1432,7 +1432,7 @@ const HomeDashboard = () => {
                       const day = itemDate.getDate();
 
                       return (
-                        <div key={item.id || i} className="w-full flex items-center justify-between gap-2.5 p-3 bg-white dark:bg-slate-900/60 border border-border-subtle hover:border-slate-300 rounded-xl group transition-all min-w-0 overflow-hidden">
+                        <div key={item.id || i} className="w-full flex items-center justify-between gap-2.5 p-3 bg-white hover:bg-slate-50 border border-border-subtle hover:border-slate-300 rounded-xl group transition-all min-w-0 overflow-hidden">
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col items-center justify-center shrink-0">
                               <span className="text-[9px] font-bold uppercase text-primary leading-tight">{month}</span>
@@ -1590,7 +1590,7 @@ const HomeDashboard = () => {
                 <div className="mt-2.5 pt-0.5">
                   <button
                     onClick={() => setCiePopupOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                    className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50  dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
                   >
                     <span>View All Subject Scores</span>
                     <span className="material-symbols-outlined text-[14px]">chevron_right</span>

@@ -190,7 +190,7 @@ const SovereignLayout = () => {
                 {/* Upload Modal Overlay */}
                 {showUpload && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-border-subtle max-w-4xl w-full shadow-2xl relative overflow-hidden">
+                        <div className="bg-white  rounded-2xl border border-border-subtle max-w-4xl w-full shadow-2xl relative overflow-hidden">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -203,7 +203,7 @@ const SovereignLayout = () => {
                                 </div>
                                 <button 
                                     onClick={() => setShowUpload(false)}
-                                    className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
+                                    className="w-8 h-8 rounded-lg hover:bg-slate-100  text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">close</span>
                                 </button>
@@ -240,7 +240,7 @@ const SovereignLayout = () => {
                 )}
 
                 {/* Mobile Bottom Navigation Dock */}
-                <nav aria-label="Mobile Navigation" className="fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-border-subtle pb-safe md:hidden shadow-nav">
+                <nav aria-label="Mobile Navigation" className="fixed bottom-0 inset-x-0 z-50 bg-white/95  backdrop-blur-md border-t border-border-subtle pb-safe md:hidden shadow-nav">
                     <div className="flex items-center justify-around h-14 px-2">
                         {navTabs.map((tab) => {
                             const isActive = tab.path === '/' 

@@ -60,7 +60,7 @@ const HackathonsFeed = () => {
                 </div>
 
                 {/* City Selector: Horizontally scrollable without page overflow */}
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto no-scrollbar max-w-full touch-pan-x w-full sm:w-auto shrink-0">
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar max-w-full touch-pan-x w-full sm:w-auto shrink-0">
                     {CITIES.map(c => (
                         <button
                             key={c.id}
@@ -68,7 +68,7 @@ const HackathonsFeed = () => {
                             onClick={() => setCity(c.id)}
                             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                                 city === c.id
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                                    ? 'bg-white text-indigo-600 shadow-xs'
                                     : 'text-text-secondary hover:text-text-primary'
                             }`}
                         >
@@ -82,13 +82,13 @@ const HackathonsFeed = () => {
             <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full min-w-0">
                 {loading ? (
                     Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="p-3 bg-slate-50 dark:bg-slate-800/40 border border-border-subtle rounded-xl animate-pulse h-16 w-full" />
+                        <div key={i} className="p-3 bg-slate-50 border border-border-subtle rounded-xl animate-pulse h-16 w-full" />
                     ))
                 ) : listings.length > 0 ? (
                     listings.map((item) => (
                         <div
                             key={item.id}
-                            className="flex items-center justify-between gap-2.5 p-3 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-border-subtle rounded-xl transition-all min-w-0 w-full overflow-hidden"
+                            className="flex items-center justify-between gap-2.5 p-3 bg-white hover:bg-slate-50 border border-border-subtle rounded-xl transition-all min-w-0 w-full overflow-hidden"
                         >
                             <div className="min-w-0 flex-1">
                                 <h3 
@@ -98,13 +98,13 @@ const HackathonsFeed = () => {
                                     {item.title}
                                 </h3>
                                 <div className="flex items-center gap-1.5 text-[10px] text-text-secondary mt-1 flex-wrap">
-                                    <span className="font-medium text-slate-700 dark:text-slate-300">{item.city || 'BLR'}</span>
+                                    <span className="font-medium text-slate-700">{item.city || 'BLR'}</span>
                                     <span>•</span>
-                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{item.fee || 'Free'}</span>
+                                    <span className="text-emerald-700 font-semibold">{item.fee || 'Free'}</span>
                                     {item.mode && (
                                         <>
                                             <span>•</span>
-                                            <span className="uppercase text-[9px] tracking-wider px-1 py-0.2 rounded bg-slate-100 dark:bg-slate-800 font-medium">
+                                            <span className="uppercase text-[9px] tracking-wider px-1 py-0.2 rounded bg-slate-100 font-medium text-slate-600">
                                                 {item.mode}
                                             </span>
                                         </>
@@ -122,7 +122,7 @@ const HackathonsFeed = () => {
                         </div>
                     ))
                 ) : (
-                    <div className="col-span-full py-6 text-center text-xs text-text-secondary bg-slate-50 dark:bg-slate-800/30 border border-dashed border-border-subtle rounded-xl">
+                    <div className="col-span-full py-6 text-center text-xs text-text-secondary bg-slate-50 border border-dashed border-border-subtle rounded-xl">
                         No hackathons found in this region.
                     </div>
                 )}

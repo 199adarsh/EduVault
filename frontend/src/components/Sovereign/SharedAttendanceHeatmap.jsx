@@ -124,17 +124,17 @@ const SharedAttendanceHeatmap = ({
                 const isAllAbsent = cell.entry && cell.entry.total > 0 && cell.entry.present === 0 && cell.entry.absent > 0;
                 const presentCount = cell.entry ? cell.entry.present : 0;
 
-                let bgClass = "bg-slate-200/70 dark:bg-slate-800/60";
+                let bgClass = "bg-slate-200/70";
                 if (isAllAbsent) {
-                  bgClass = "bg-rose-500 dark:bg-rose-600";
+                  bgClass = "bg-rose-500";
                 } else if (presentCount >= 4) {
-                  bgClass = "bg-emerald-700 dark:bg-emerald-500";
+                  bgClass = "bg-emerald-700";
                 } else if (presentCount === 3) {
-                  bgClass = "bg-emerald-600 dark:bg-emerald-600";
+                  bgClass = "bg-emerald-600";
                 } else if (presentCount === 2) {
-                  bgClass = "bg-emerald-500 dark:bg-emerald-700";
+                  bgClass = "bg-emerald-500";
                 } else if (presentCount >= 1) {
-                  bgClass = "bg-emerald-300 dark:bg-emerald-900";
+                  bgClass = "bg-emerald-300";
                 }
 
                 return (
@@ -144,7 +144,7 @@ const SharedAttendanceHeatmap = ({
                     onClick={() => setHoveredDay(cell)}
                     onTouchStart={() => setHoveredDay(cell)}
                     className={cn(
-                      "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2px] transition-transform cursor-pointer hover:scale-125 border border-black/5 dark:border-white/5",
+                      "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2px] transition-transform cursor-pointer hover:scale-125 border border-slate-300/40",
                       bgClass
                     )}
                   />
@@ -156,7 +156,7 @@ const SharedAttendanceHeatmap = ({
       </div>
 
       {/* Date & Lecture status panel */}
-      <div className="w-full lg:w-48 shrink-0 flex flex-col justify-center rounded-xl p-3 bg-slate-50 dark:bg-slate-800/40 border border-border-subtle min-w-0">
+      <div className="w-full lg:w-48 shrink-0 flex flex-col justify-center rounded-xl p-3 bg-slate-50 border border-border-subtle min-w-0">
         {hoveredDay && hoveredDay.entry ? (
           <div className="flex flex-col gap-1.5 animate-in fade-in duration-100 min-w-0 text-[10px]">
             <div className="font-extrabold text-text-primary text-xs truncate">
@@ -164,7 +164,7 @@ const SharedAttendanceHeatmap = ({
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.2 rounded text-[9px]">
+              <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded text-[9px]">
                 Present
               </span>
               <span className="text-text-primary font-bold truncate">
@@ -173,7 +173,7 @@ const SharedAttendanceHeatmap = ({
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-rose-800 dark:text-rose-300 bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-800 px-1.5 py-0.2 rounded text-[9px]">
+              <span className="font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded text-[9px]">
                 Absent
               </span>
               <span className="text-text-primary font-bold truncate">

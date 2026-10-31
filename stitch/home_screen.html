@@ -1,0 +1,350 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+<meta content="mobile_tab" name="shell-type">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f0f5fc",
+            "surface-container": "#e4eefb",
+            "surface-container-high": "#d9e7f7",
+            "surface-container-highest": "#cddff3",
+            "surface": "#f6f9ff",
+            "surface-variant": "#d5e4f3",
+            "on-surface": "#0f1d28",
+            "on-surface-variant": "#505f74",
+            "outline": "#717785",
+            "outline-variant": "#e2e8f0",
+            "primary": "#005bb8",
+            "primary-container": "#0073e6",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#ffffff",
+            "secondary": "#2b568e",
+            "secondary-container": "#dce8fa",
+            "error": "#d92d20",
+            "error-container": "#fef3f2",
+            "on-error-container": "#b42318",
+            "success": "#12b76a",
+            "success-container": "#edfcf2"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"]
+          },
+          boxShadow: {
+            'card': '0 1px 3px 0 rgba(15, 29, 40, 0.05), 0 1px 2px -1px rgba(15, 29, 40, 0.03)',
+            'float': '0 8px 24px -4px rgba(0, 115, 230, 0.35)',
+            'nav': '0 -2px 10px rgba(15, 29, 40, 0.04)'
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @layer base {
+      html, body {
+        width: 100vw;
+        max-width: 100vw;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        overscroll-behavior-y: none;
+      }
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 16px);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-surface font-sans text-on-surface antialiased flex flex-col min-h-screen select-none">
+<!-- Mobile App Header -->
+<header class="fixed top-0 inset-x-0 z-40 bg-surface/90 backdrop-blur-md border-b border-[#e6edf8] pt-safe"><div class="h-14 px-4 flex items-center justify-between"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-white shadow-sm font-black text-sm tracking-tight">CA</div><div class="flex flex-col"><div class="flex items-center gap-1"><span class="text-[17px] font-bold tracking-tight text-[#0f1d28] leading-tight">CampusAxis</span></div><span class="text-[10px] font-medium text-on-surface-variant tracking-normal">Student Dashboard</span></div></div><div class="flex items-center gap-1"><button aria-label="Search" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant active:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[20px]">search</span></button><button aria-label="Notifications" class="relative w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant active:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error ring-2 ring-white"></span></button><div class="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs ml-1">AH</div></div></div></header>
+<!-- Main Native Scroll View -->
+<main class="flex-1 w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-28 px-4 space-y-4">
+<!-- 1. Native Mobile Horizontal Profile Hero -->
+<div class="bg-white rounded-2xl p-4 border border-[#e6edf8] shadow-card mt-3"><div class="flex items-center gap-3.5"><div class="relative shrink-0"><img alt="Student Profile" class="w-14 h-14 rounded-full object-cover ring-2 ring-primary/20 shadow-xs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBSZoINrCoVrQIZH7YFDPcUBYaCvsStUDbbgzsBvSFnfjwFBsMO4hSnJJ3n0sFEat93bsYYddKP41FQBAP9XPg3oEsUkEaVdRmfvRh69hcBW5E1U6MjPo_N-YNbtsxlh1RnGNo8jMoY04PAAs2Tj2ku_ohiUHYPRE2MJPHOQ2UzKPAALE-kuJu7eG39TifA00kmoyxPtRurfbtdNRBPL-3nj8rmDI-6ybM_Ym1Hhg"><span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-success rounded-full ring-2 ring-white"></span></div><div class="min-w-0 flex-1"><h1 class="text-[17px] font-bold text-on-surface truncate">Herwade Adarsh Abhijit</h1><p class="text-xs text-on-surface-variant font-medium mt-0.5 truncate">B.Tech Artificial Intelligence &amp; Data Science</p><div class="flex items-center gap-1.5 mt-2 flex-wrap"><span class="px-2 py-0.5 rounded-md bg-surface-container-low text-primary font-semibold text-[11px] border border-[#e2e8f0]">24UAD022</span><span class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant font-medium text-[11px] border border-[#e2e8f0]">Sem 05</span><span class="px-2 py-0.5 rounded-md bg-surface-container-low text-on-surface-variant font-medium text-[11px] border border-[#e2e8f0]">Sec A</span></div></div></div><div class="grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-[#f0f4fa]"><div class="flex flex-col bg-surface-container-low rounded-xl p-2.5 border border-[#e6edf8]"><div class="flex items-center justify-between"><span class="text-[11px] font-medium text-on-surface-variant">Attendance</span><span class="material-symbols-outlined text-primary text-[15px]">verified</span></div><div class="mt-1 flex items-baseline gap-1"><span class="text-[19px] font-extrabold text-primary leading-none">79.7%</span></div></div><div class="flex flex-col bg-error-container rounded-xl p-2.5 border border-[#ffd5d2]"><div class="flex items-center justify-between"><span class="text-[11px] font-medium text-on-error-container">Below 75%</span><span class="material-symbols-outlined text-error text-[15px]">warning</span></div><div class="mt-1 flex items-baseline gap-1"><span class="text-[19px] font-extrabold text-error leading-none">3</span><span class="text-[10px] text-on-error-container font-medium">Subjects</span></div></div><div class="flex flex-col bg-surface-container-low rounded-xl p-2.5 border border-[#e6edf8]"><div class="flex items-center justify-between"><span class="text-[11px] font-medium text-on-surface-variant">CIE Avg</span><span class="material-symbols-outlined text-secondary text-[15px]">auto_graph</span></div><div class="mt-1 flex items-baseline gap-1"><span class="text-[19px] font-extrabold text-on-surface leading-none">95.3%</span></div></div></div></div>
+<!-- 2. Story-like Quick Action Horizontal Pills -->
+<!-- 3. Urgent Broadcast Notification Card -->
+<div class="bg-white rounded-2xl p-3.5 border border-[#e6edf8] shadow-card flex items-center justify-between gap-3"><div class="flex items-center gap-3 min-w-0 flex-1"><div class="w-9 h-9 rounded-xl bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">campaign</span></div><div class="flex flex-col min-w-0"><div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span><span class="text-[10px] font-bold text-primary-container uppercase tracking-wide">Announcement</span></div><span class="text-xs font-semibold text-on-surface truncate mt-0.5">End-Semester Examination Timetable</span><span class="text-[10px] text-on-surface-variant truncate">2 Announcements· Academic Cell 2h ago</span></div></div><button class="px-3.5 py-1.5 rounded-full bg-primary-container text-white font-semibold text-xs shrink-0 shadow-sm active:opacity-90 flex items-center gap-1"><span class="">View</span><span class="material-symbols-outlined text-[13px]">arrow_forward</span></button></div>
+<!-- 4. Hackathons & Opportunities (Unstop Mobile Style) -->
+<!-- 5. Attendance Activity & CIE Progress (Mobile Optimized) -->
+<section class="bg-white rounded-2xl p-4 border border-[#e6edf8] shadow-card space-y-4">
+<!-- Attendance Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[17px]">calendar_month</span>
+</div>
+<div>
+<h2 class="text-sm font-bold text-on-surface leading-none">Attendance Activity</h2>
+<span class="text-[10px] text-on-surface-variant">286 Total Sessions · Sem 05</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-[11px] font-medium text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded bg-primary-container"></span>Present</span>
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded bg-error"></span>Absent</span>
+</div>
+</div>
+<!-- Mobile-fitted Heatmap Matrix (Width calibrated for 350-390px mobile viewports) -->
+<div class="p-2.5 rounded-xl bg-surface-container-low/70 border border-[#e6edf8] flex flex-col items-center">
+<svg class="w-full h-auto max-w-full" fill="none" viewBox="0 0 310 74" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(2, 2)">
+<!-- Mon -->
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="0" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="17" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="34" y="0"></rect>
+<rect fill="#d92d20" height="11" rx="2.5" width="13" x="51" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="68" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="85" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="102" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="119" y="0"></rect>
+<rect fill="#d5e4f3" height="11" rx="2.5" width="13" x="136" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="153" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="170" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="187" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="204" y="0"></rect>
+<rect fill="#d92d20" height="11" rx="2.5" width="13" x="221" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="238" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="255" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="272" y="0"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="289" y="0"></rect>
+<!-- Tue -->
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="0" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="17" y="14"></rect>
+<rect fill="#d92d20" height="11" rx="2.5" width="13" x="34" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="51" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="68" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="85" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="102" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="119" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="136" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="153" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="170" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="187" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="204" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="221" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="238" y="14"></rect>
+<rect fill="#d5e4f3" height="11" rx="2.5" width="13" x="255" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="272" y="14"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="289" y="14"></rect>
+<!-- Wed -->
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="0" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="17" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="34" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="51" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="68" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="85" y="28"></rect>
+<rect fill="#d92d20" height="11" rx="2.5" width="13" x="102" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="119" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="136" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="153" y="28"></rect>
+<rect fill="#d92d20" height="11" rx="2.5" width="13" x="170" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="187" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="204" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="221" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="238" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="255" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="272" y="28"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="289" y="28"></rect>
+<!-- Thu -->
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="0" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="17" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="34" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="51" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="68" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="85" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="102" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="119" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="136" y="42"></rect>
+<rect fill="#d92d20" height="11" rx="2.5" width="13" x="153" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="170" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="187" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="204" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="221" y="42"></rect>
+<rect fill="#d5e4f3" height="11" rx="2.5" width="13" x="238" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="255" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="272" y="42"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="289" y="42"></rect>
+<!-- Fri -->
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="0" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="17" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="34" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="51" y="56"></rect>
+<rect fill="#d5e4f3" height="11" rx="2.5" width="13" x="68" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="85" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="102" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="119" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="136" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="153" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="170" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="187" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="204" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="221" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="238" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="255" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="272" y="56"></rect>
+<rect fill="#0073e6" height="11" rx="2.5" width="13" x="289" y="56"></rect>
+</g>
+</svg>
+<div class="w-full flex items-center justify-between text-on-surface-variant text-[10px] mt-1.5 px-0.5">
+<span class="">Week 1</span>
+<span class="text-primary font-medium">92% Average Rate</span>
+<span class="">Week 18</span>
+</div>
+</div>
+<!-- Compact CIE Marks Section -->
+<div class="pt-2 border-t border-[#f0f4fa] space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-on-surface">CIE Scores</span>
+<span class="text-[10px] text-on-surface-variant font-medium">(Internal Evaluation)</span>
+</div>
+<span class="text-[11px] font-semibold text-primary">Avg 95.3%</span>
+</div>
+<div class="space-y-2">
+<!-- Subject 1 -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-medium text-on-surface truncate pr-2">Database Engineering Lab</span>
+<span class="font-bold text-on-surface shrink-0">48<span class="text-on-surface-variant font-normal">/50</span> <span class="text-primary ml-1 font-semibold">96%</span></span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<!-- Subject 2 -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-medium text-on-surface truncate pr-2">Mini Project II</span>
+<span class="font-bold text-on-surface shrink-0">48<span class="text-on-surface-variant font-normal">/50</span> <span class="text-secondary ml-1 font-semibold">96%</span></span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<!-- Subject 3 -->
+<div>
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="font-medium text-on-surface truncate pr-2">Machine Learning with Python</span>
+<span class="font-bold text-on-surface shrink-0">47<span class="text-on-surface-variant font-normal">/50</span> <span class="text-primary ml-1 font-semibold">94%</span></span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 94%"></div>
+</div>
+</div>
+</div>
+<button class="w-full mt-1 py-1.5 rounded-lg bg-surface-container-low text-primary text-xs font-semibold flex items-center justify-center gap-1 active:bg-surface-container transition-colors">
+<span class="">View All Subject Breakdown</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</button>
+</div>
+</section><section class="bg-white rounded-2xl p-4 border border-[#e6edf8] shadow-card space-y-3"><div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[17px]">terminal</span></div><h2 class="text-sm font-bold text-on-surface">Hackathons &amp; Opportunities</h2></div><button class="text-xs font-semibold text-primary flex items-center hover:underline">See all (8) <span class="material-symbols-outlined text-[14px]">chevron_right</span></button></div><div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 py-0.5"><button class="px-3.5 py-1 rounded-full bg-primary-container text-white text-xs font-semibold shrink-0 shadow-sm">All</button><button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant text-xs font-medium shrink-0 active:bg-surface-container border border-[#e6edf8]">Mumbai</button><button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant text-xs font-medium shrink-0 active:bg-surface-container border border-[#e6edf8]">Pune</button><button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant text-xs font-medium shrink-0 active:bg-surface-container border border-[#e6edf8]">Bengaluru</button></div><div class="space-y-2.5 pt-1"><div class="p-3 rounded-xl bg-surface-container-low/60 border border-[#e8eff8] flex items-center justify-between gap-2.5"><div class="min-w-0 flex-1"><div class="flex items-center gap-1.5"><span class="text-xs font-bold text-on-surface truncate">ETHGlobal Mumbai</span><span class="px-1.5 py-0.2 rounded bg-success-container text-success font-semibold text-[10px]">Free</span></div><div class="flex items-center gap-2 text-[11px] text-on-surface-variant mt-1"><span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px]">location_on</span> Mumbai</span><span class="">•</span><span class="uppercase font-medium text-[9px] bg-white px-1.5 py-0.5 rounded border border-gray-200 tracking-wider text-on-surface-variant">OFFLINE</span></div></div><button class="h-8 px-4 rounded-full bg-primary-container text-white text-xs font-semibold shrink-0 shadow-sm active:scale-95 transition-transform">Apply</button></div><div class="p-3 rounded-xl bg-surface-container-low/60 border border-[#e8eff8] flex items-center justify-between gap-2.5"><div class="min-w-0 flex-1"><div class="flex items-center gap-1.5"><span class="text-xs font-bold text-on-surface truncate">Singularity 2.0 Hack</span><span class="px-1.5 py-0.2 rounded bg-success-container text-success font-semibold text-[10px]">Free</span></div><div class="flex items-center gap-2 text-[11px] text-on-surface-variant mt-1"><span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px]">location_on</span> Thane</span><span class="">•</span><span class="uppercase font-medium text-[9px] bg-white px-1.5 py-0.5 rounded border border-gray-200 tracking-wider text-on-surface-variant">OFFLINE</span></div></div><button class="h-8 px-4 rounded-full bg-primary-container text-white text-xs font-semibold shrink-0 shadow-sm active:scale-95 transition-transform">Apply</button></div><div class="p-3 rounded-xl bg-surface-container-low/60 border border-[#e8eff8] flex items-center justify-between gap-2.5"><div class="min-w-0 flex-1"><div class="flex items-center gap-1.5"><span class="text-xs font-bold text-on-surface truncate">Quasar 5.0: 36-Hr Sprint</span><span class="px-1.5 py-0.2 rounded bg-success-container text-success font-semibold text-[10px]">Free</span></div><div class="flex items-center gap-2 text-[11px] text-on-surface-variant mt-1"><span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px]">location_on</span> Mumbai</span><span class="">•</span><span class="uppercase font-medium text-[9px] bg-white px-1.5 py-0.5 rounded border border-gray-200 tracking-wider text-on-surface-variant">OFFLINE</span></div></div><button class="h-8 px-4 rounded-full bg-primary-container text-white text-xs font-semibold shrink-0 shadow-sm active:scale-95 transition-transform">Apply</button></div></div></section>
+<!-- 5. Attendance Activity & CIE Progress (Mobile Optimized) -->
+<!-- 6. Upcoming Milestones & Events -->
+<section class="bg-white rounded-2xl p-4 border border-[#e6edf8] shadow-card space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[17px]">flag</span>
+</div>
+<h2 class="text-sm font-bold text-on-surface">Upcoming Milestones</h2>
+</div>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-semibold active:opacity-90"><span class="material-symbols-outlined text-[13px]">add</span><span class="">Add</span></button>
+</div>
+<div class="space-y-2">
+<!-- Event 1 -->
+<div class="p-2.5 rounded-xl bg-surface-container-low/60 border border-[#e8eff8] flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-white border border-[#e0eaf6] flex flex-col items-center justify-center shadow-xs shrink-0">
+<span class="text-[9px] font-bold text-primary uppercase leading-tight">MAY</span>
+<span class="text-[15px] font-extrabold text-on-surface leading-none">10</span>
+</div>
+<div class="min-w-0 flex-1">
+<h3 class="text-xs font-bold text-on-surface truncate">Data Structures Midterm</h3>
+<p class="text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Hall 402 · 10:30 AM
+            </p>
+</div>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:bg-white shrink-0">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+</button>
+</div>
+<!-- Event 2 -->
+<div class="p-2.5 rounded-xl bg-surface-container-low/60 border border-[#e8eff8] flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-white border border-[#e0eaf6] flex flex-col items-center justify-center shadow-xs shrink-0">
+<span class="text-[9px] font-bold text-primary uppercase leading-tight">MAY</span>
+<span class="text-[15px] font-extrabold text-on-surface leading-none">13</span>
+</div>
+<div class="min-w-0 flex-1">
+<h3 class="text-xs font-bold text-on-surface truncate">OS Lab Assignment Submission</h3>
+<p class="text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+              Online Portal · 11:59 PM
+            </p>
+</div>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant active:bg-white shrink-0">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- 7. Mobile Floating Action Button (FAB) / AI Assistant -->
+<div class="fixed bottom-20 right-4 z-40">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary-container text-white shadow-float active:scale-95 transition-transform">
+<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+<span class="material-symbols-outlined text-[19px]">smart_toy</span>
+<span class="text-xs font-bold tracking-tight">Ask AI</span>
+</button>
+</div>
+<!-- 8. Fixed Bottom Tab Bar (Native Mobile Navigation) -->
+<nav class="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-lg border-t border-[#e6edf8] pb-safe shadow-nav">
+<div class="flex items-center justify-around h-14 px-2">
+<!-- Tab 1: Home (Active) -->
+<a aria-current="page" class="flex flex-col items-center justify-center min-w-[54px] text-primary" href="#">
+<span class="material-symbols-outlined text-[22px]">home</span>
+<span class="text-[10px] font-bold mt-0.5">Home</span>
+</a>
+<!-- Tab 2: Notes -->
+<a class="flex flex-col items-center justify-center min-w-[54px] text-on-surface-variant active:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>
+<span class="text-[10px] font-medium mt-0.5">Notes/PYQs</span>
+</a>
+<!-- Tab 3: Roadmaps -->
+<a class="flex flex-col items-center justify-center min-w-[54px] text-on-surface-variant active:text-primary transition-colors" href="#"><span class="material-symbols-outlined text-[22px]">campaign</span><span class="text-[10px] font-medium mt-0.5">Announcements</span></a><a class="flex flex-col items-center justify-center min-w-[54px] text-on-surface-variant active:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">alt_route</span>
+<span class="text-[10px] font-medium mt-0.5">Roadmaps</span>
+</a>
+<!-- Tab 4: Attendance -->
+<a class="flex flex-col items-center justify-center min-w-[54px] text-on-surface-variant active:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">fact_check</span>
+<span class="text-[10px] font-medium mt-0.5">Attendance</span>
+</a>
+<!-- Tab 5: Profile -->
+
+</div>
+</nav>
+
+
+
+
+</body></html>

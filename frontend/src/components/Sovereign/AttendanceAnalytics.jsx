@@ -542,7 +542,7 @@ const AttendanceAnalytics = () => {
     }
 
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-50/60 p-4 sm:p-8 antialiased text-slate-800 font-sans min-h-screen">
+        <div className="flex-1 overflow-y-auto bg-slate-50/60 p-3.5 sm:p-8 pb-24 md:pb-8 antialiased text-slate-800 font-sans min-h-screen">
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* Title & Action Bar */}

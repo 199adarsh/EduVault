@@ -161,7 +161,7 @@ const Announcements = () => {
     }, [announcements, searchQuery, activeFilter, bookmarkedIds]);
 
     return (
-        <main className="w-full px-6 lg:px-10 py-8 bg-[#F7F9FC] min-h-screen text-slate-900">
+        <main className="w-full px-3.5 sm:px-6 lg:px-10 py-4 sm:py-8 pb-24 md:pb-12 bg-[#F7F9FC] min-h-screen text-slate-900">
             <div className="flex flex-col w-full max-w-[1360px] mx-auto pb-12 space-y-6">
                 {/* Interactive Top Action & Heading Row */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -235,6 +235,36 @@ const Announcements = () => {
                         ))}
                     </div>
                 </div>
+
+                {/* Mobile Upcoming Deadlines Horizontal Carousel (Stitch / Unstop Style) */}
+                <section className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs space-y-2 lg:hidden">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            <h3 className="font-bold text-slate-900 text-xs tracking-tight">Upcoming Deadlines</h3>
+                        </div>
+                        <span className="text-[11px] font-semibold text-blue-600">Calendar</span>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-0.5">
+                        {announcements.slice(0, 4).map((ann, i) => {
+                            const d = new Date(ann.createdAt);
+                            const month = !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
+                            const day = !isNaN(d.getTime()) ? d.getDate() : '--';
+                            return (
+                                <div key={ann.id || i} className="flex items-center gap-2 p-1.5 pr-3 rounded-lg bg-slate-50 border border-slate-100 shrink-0 min-w-0">
+                                    <div className="w-8 h-8 rounded-md bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 shadow-xs">
+                                        <span className="text-[8px] font-bold tracking-wider text-slate-400 uppercase leading-none">{month}</span>
+                                        <span className="text-xs font-extrabold text-slate-800 leading-none mt-0.5">{day}</span>
+                                    </div>
+                                    <div className="min-w-0 max-w-[170px]">
+                                        <h4 className="text-[11px] font-semibold text-slate-900 truncate leading-tight">{ann.title}</h4>
+                                        <p className="text-[9px] text-slate-500 truncate leading-none mt-0.5">{ann.type || 'Notice'}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
 
                 {/* Announcement Cards & Sidebar Container */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

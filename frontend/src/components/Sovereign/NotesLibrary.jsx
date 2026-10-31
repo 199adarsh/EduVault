@@ -77,7 +77,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
     return (
         <div className="flex-1 flex flex-col min-h-screen bg-[#f8fafc] text-slate-900 antialiased overflow-y-auto">
-            <main className="p-6 sm:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6">
+            <main className="p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-5 pb-24 md:pb-12">
                 
                 {/* Page Header */}
                 <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
@@ -114,7 +114,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                 </header>
 
                 {/* Sub-navigation tabs: Notes & PYQs */}
-                <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3">
+                <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3 overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => handleTabChange('notes')}
                         className={cn(

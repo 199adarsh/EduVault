@@ -504,7 +504,7 @@ const Roadmaps = () => {
   return (
     <div className="roadmap-container">
       {/* Top Header & Track Selector */}
-      <header className="px-6 py-5 bg-white border-b border-slate-200">
+      <header className="px-3.5 sm:px-6 py-4 sm:py-5 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
@@ -578,7 +578,7 @@ const Roadmaps = () => {
       </header>
 
       {/* Progress & Filtering Toolbar */}
-      <section className="px-6 py-3 bg-white/80 border-b border-slate-200">
+      <section className="px-3.5 sm:px-6 py-3 bg-white/80 border-b border-slate-200">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           {/* Progress stats */}

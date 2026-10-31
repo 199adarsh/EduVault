@@ -115,14 +115,23 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Brand */}
-            <div className="h-16 px-6 flex items-center gap-3 border-b border-border-subtle/60">
-                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm">
-                    <span className="material-symbols-outlined text-[22px]">shield</span>
+            <div className="h-16 px-6 flex items-center justify-between border-b border-border-subtle/60">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm">
+                        <span className="material-symbols-outlined text-[22px]">shield</span>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-[17px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
+                        <span className="text-[11px] font-medium text-text-secondary leading-none">Academic OS</span>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                    <span className="font-bold text-[17px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
-                    <span className="text-[11px] font-medium text-text-secondary leading-none">Academic OS</span>
-                </div>
+                <button
+                    onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
+                    className="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-slate-100 transition-colors cursor-pointer"
+                    aria-label="Close sidebar"
+                >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
             </div>
 
             {/* Navigation */}

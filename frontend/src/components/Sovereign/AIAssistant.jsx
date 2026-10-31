@@ -113,7 +113,7 @@ const AIAssistant = () => {
 
     return (
         <div className="flex-1 flex flex-col h-full bg-canvas-bg font-sans text-text-primary antialiased overflow-hidden">
-            <main className="w-full px-4 sm:px-8 py-3 max-w-4xl mx-auto flex flex-col h-full overflow-hidden">
+            <main className="w-full px-3.5 sm:px-8 py-2.5 max-w-4xl mx-auto flex flex-col h-full overflow-hidden">
                 {/* Section Top Bar */}
                 <div className="w-full pb-3 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle shrink-0">
                     <div>
@@ -251,7 +251,7 @@ const AIAssistant = () => {
                 </div>
 
                 {/* Anchored Input Box Area */}
-                <div className="shrink-0 pt-2 pb-2 bg-canvas-bg">
+                <div className="shrink-0 pt-2 pb-16 md:pb-2 bg-canvas-bg">
                     <div className="rounded-xl bg-surface-card border border-border-subtle p-2.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
                         {/* Context Header Strip */}
                         <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">

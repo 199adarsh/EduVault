@@ -157,7 +157,7 @@ const PYQsDatabase = ({ embedded = false }) => {
             embedded ? "flex flex-col gap-6" : "flex-1 flex flex-col min-h-screen bg-[#f8fafc] text-slate-900 antialiased overflow-y-auto"
         )}>
             <main className={cn(
-                embedded ? "w-full flex flex-col gap-6" : "p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6"
+                embedded ? "w-full flex flex-col gap-5" : "p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6 pb-24 md:pb-8"
             )} data-purpose="pyq-repository">
                 {/* BEGIN: PageHeader */}
                 <section className="flex items-center justify-between flex-wrap gap-4" data-purpose="header-section">

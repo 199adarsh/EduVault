@@ -586,6 +586,14 @@ const HomeDashboard = () => {
     return [];
   }, [subjectRegistry]);
 
+  const cieAverage = useMemo(() => {
+    if (!subjectRegistry || subjectRegistry.length === 0) return null;
+    const withCie = subjectRegistry.filter(s => parseFloat(s.cie) > 0);
+    if (withCie.length === 0) return null;
+    const total = withCie.reduce((acc, s) => acc + (parseFloat(s.cie) || 0), 0);
+    return ((total / (withCie.length * 50)) * 100).toFixed(1);
+  }, [subjectRegistry]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[75vh] gap-4 bg-canvas-bg text-text-primary">
@@ -800,7 +808,7 @@ const HomeDashboard = () => {
   return (
     <div className="flex flex-col min-h-screen bg-canvas-bg text-text-primary">
       {/* Top Header */}
-      <header className="sticky top-0 z-40 h-16 bg-surface-card/95 backdrop-blur-md px-6 lg:px-8 flex items-center justify-between border-b border-border-subtle shrink-0">
+      <header className="hidden md:flex sticky top-0 z-40 h-16 bg-surface-card/95 backdrop-blur-md px-6 lg:px-8 items-center justify-between border-b border-border-subtle shrink-0">
         <div className="flex items-center gap-4 flex-1 max-w-lg">
           <div className="relative w-full">
             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
@@ -861,7 +869,7 @@ const HomeDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="relative py-6 px-4 sm:px-8 pb-10 flex-1">
+      <main className="relative py-4 sm:py-6 px-3.5 sm:px-8 pb-24 md:pb-10 flex-1">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Student Profile & Hero Area */}
           <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-card to-blue-50/40 p-6 border border-border-subtle">
@@ -1006,7 +1014,78 @@ const HomeDashboard = () => {
                 </div>
               )}
             </div>
+
+            {/* Native Mobile Metric Cards Grid (Stitch / Unstop Style) */}
+            {!isTeacher && (
+              <div className="w-full grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-border-subtle lg:hidden">
+                <div 
+                  onClick={() => navigate('/attendance')}
+                  className="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-text-secondary">Attendance</span>
+                    <span className="material-symbols-outlined text-primary text-[15px]">verified</span>
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-[18px] font-extrabold text-primary leading-none">{stats.overall}%</span>
+                  </div>
+                </div>
+                <div 
+                  onClick={() => navigate('/attendance')}
+                  className="flex flex-col bg-red-50 dark:bg-red-950/30 rounded-xl p-2.5 border border-red-200 dark:border-red-900/50 cursor-pointer active:scale-95 transition-transform"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-red-600 dark:text-red-400">Below 75%</span>
+                    <span className="material-symbols-outlined text-red-600 text-[15px]">warning</span>
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-[18px] font-extrabold text-red-600 leading-none">{stats.riskCount}</span>
+                    <span className="text-[10px] text-red-500 font-medium">Subs</span>
+                  </div>
+                </div>
+                <div 
+                  onClick={() => setShowCieCardModal(true)}
+                  className="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-text-secondary">CIE Avg</span>
+                    <span className="material-symbols-outlined text-secondary text-[15px]">auto_graph</span>
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-[18px] font-extrabold text-text-primary leading-none">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
+
+          {/* Urgent Broadcast Notification Banner (Stitch / Unstop Mobile Style) */}
+          {latestAnnouncement && (
+            <div className="lg:hidden bg-surface-card rounded-2xl p-3.5 border border-border-subtle shadow-card flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-primary flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">campaign</span>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-wide">Announcement</span>
+                  </div>
+                  <span className="text-xs font-semibold text-text-primary truncate mt-0.5">{latestAnnouncement.title}</span>
+                  <span className="text-[10px] text-text-secondary truncate">
+                    {latestAnnouncement.type || 'Notice'} • {latestAnnouncement.createdAt ? new Date(latestAnnouncement.createdAt).toLocaleDateString() : 'Recent'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/announcements')}
+                className="px-3.5 py-1.5 rounded-full bg-primary hover:bg-primary-hover text-white font-semibold text-xs shrink-0 shadow-xs active:opacity-90 flex items-center gap-1 cursor-pointer"
+              >
+                <span>View</span>
+                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+              </button>
+            </div>
+          )}
 
           {/* Core Dashboard Layout (Minimal & Compact) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

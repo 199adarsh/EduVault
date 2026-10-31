@@ -119,13 +119,15 @@ const HomeDashboard = () => {
   const [ciePopupOpen, setCiePopupOpen] = useState(false);
   const [exportingCie, setExportingCie] = useState(false);
   const cieCardRef = useRef(null);
+  const cieExportRef = useRef(null);
 
   const handleExportCie = async () => {
-    if (!cieCardRef.current) return;
+    const targetEl = cieExportRef.current || cieCardRef.current;
+    if (!targetEl) return;
     setExportingCie(true);
     const toastId = toast.loading('Rendering high-res CIE image...');
     try {
-      const dataUrl = await toPng(cieCardRef.current, {
+      const dataUrl = await toPng(targetEl, {
         quality: 0.98,
         pixelRatio: 2,
         backgroundColor: '#ffffff',
@@ -1615,6 +1617,149 @@ const HomeDashboard = () => {
                 <span className="text-[10px] text-slate-400 font-mono">
                   Verified Academic Evaluation • EduVault
                 </span>
+              </div>
+            </div>
+
+            {/* Dedicated Off-Screen Export Container - Identical unclipped wide layout on mobile & desktop */}
+            <div
+              style={{
+                position: 'fixed',
+                left: '-9999px',
+                top: 0,
+                width: `${Math.max(940, (subjectRegistry?.length || 0) * 82 + 100)}px`,
+                overflow: 'hidden',
+                pointerEvents: 'none',
+                zIndex: -9999
+              }}
+              aria-hidden="true"
+            >
+              <div
+                ref={cieExportRef}
+                style={{ width: `${Math.max(940, (subjectRegistry?.length || 0) * 82 + 100)}px` }}
+                className="bg-white text-slate-900 flex flex-col p-6 rounded-2xl border border-slate-200"
+              >
+                {/* Header with Title + Student Identity */}
+                <div className="flex items-center justify-between pb-5 border-b border-slate-200 gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
+                      <span className="material-symbols-outlined text-[26px]">analytics</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-slate-900 leading-tight">CIE Performance Analysis</h3>
+                        <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                          {profile?.semester || 'Semester'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1">Continuous Internal Evaluation • DKTE Institutional Vault</p>
+                    </div>
+                  </div>
+
+                  {/* Student Identity Badge */}
+                  <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold uppercase shrink-0 shadow-xs">
+                      {profile?.name ? profile.name.charAt(0) : 'S'}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-bold text-slate-900">
+                        {formatName(profile?.name)}
+                      </span>
+                      <span className="text-xs text-slate-500 font-medium">
+                        PRN: {profile?.prn || profile?.rollNo || '-'} • {getDepartmentName(profile?.department) || profile?.department || 'Engineering'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-4 my-5 p-4 rounded-xl border border-slate-200 bg-slate-50/70">
+                  {(() => {
+                    const subjectsWithCie = (subjectRegistry || []).filter(sub => sub.cie && parseFloat(sub.cie) > 0);
+                    const avgCie = subjectsWithCie.length > 0
+                      ? Math.round(subjectsWithCie.reduce((acc, sub) => acc + parseFloat(sub.cie), 0) / subjectsWithCie.length)
+                      : 0;
+                    const highScorers = subjectsWithCie.filter(sub => parseFloat(sub.cie) >= 40).length;
+                    return [
+                      { value: subjectRegistry?.length || 0, label: 'Enrolled Subjects' },
+                      { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
+                      { value: highScorers, label: 'Excellence (≥40)' }
+                    ].map((stat, i) => (
+                      <div key={i} className="text-center p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
+                        <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
+                        <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{stat.label}</p>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                {/* Full unclipped chart for all subjects */}
+                <div className="p-4 bg-white rounded-xl border border-slate-200">
+                  <div className="flex items-end justify-between gap-3 min-h-[250px] p-6 bg-slate-50/80 rounded-xl border border-slate-200">
+                    {(subjectRegistry || []).length > 0 ? (
+                      subjectRegistry.map((sub, i) => {
+                        const cie = parseFloat(sub.cie) || 0;
+                        const maxCie = 50;
+                        const heightPct = Math.min((cie / maxCie) * 100, 100);
+                        const isHigh = cie >= 40;
+                        const isGood = cie >= 30;
+                        return (
+                          <div key={sub.id || i} className="flex-1 min-w-[56px] max-w-[76px] flex flex-col items-center gap-2">
+                            <span className={cn(
+                              "text-xs font-bold",
+                              cie === 0 ? "text-slate-400" :
+                                isHigh ? "text-emerald-700" : isGood ? "text-blue-600" : "text-amber-600 font-extrabold"
+                            )}>
+                              {cie > 0 ? cie : '-'}
+                            </span>
+
+                            <div className="relative bg-slate-200/90 rounded-t-lg overflow-hidden flex flex-col justify-end border border-slate-300 w-full max-w-[36px]" style={{ height: '140px' }}>
+                              <div
+                                className={cn(
+                                  "w-full rounded-t-lg",
+                                  cie === 0 ? "bg-slate-300" :
+                                    isHigh ? "bg-emerald-600" : isGood ? "bg-blue-600" : "bg-amber-600"
+                                )}
+                                style={{ height: cie > 0 ? `${Math.max(heightPct, 10)}%` : '6px' }}
+                              />
+                            </div>
+
+                            <div className="text-center flex flex-col items-center mt-1 w-full">
+                              <p className="text-[11px] font-bold text-slate-800 truncate w-full text-center" title={sub.code || sub.name}>
+                                {sub.code || sub.name?.slice(0, 8)}
+                              </p>
+                              <p className="text-[10px] text-slate-500 truncate w-full text-center" title={sub.name}>
+                                {sub.name}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-slate-500 font-medium">No CIE performance records loaded yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer with Legend & Watermark */}
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-200 text-xs text-slate-500">
+                  <div className="flex items-center gap-5 uppercase tracking-wider font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600" />
+                      ≥40 Optimal
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
+                      ≥30 Satisfactory
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-amber-600" />
+                      &lt;30 Review
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-400 font-mono">
+                    Verified Academic Evaluation • EduVault
+                  </span>
+                </div>
               </div>
             </div>
 

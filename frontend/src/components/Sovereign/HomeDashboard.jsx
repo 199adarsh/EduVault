@@ -211,7 +211,7 @@ const HomeDashboard = () => {
     }
 
     setSyncing(true);
-    setSyncStage('Authenticating Faculty Account...');
+    setSyncStage('Signing in as faculty...');
     setSyncProgress(50);
 
     try {
@@ -236,7 +236,7 @@ const HomeDashboard = () => {
       }
 
       setSyncProgress(100);
-      setSyncStage('Faculty Vault Initialized!');
+      setSyncStage('Signed in successfully!');
       toast.success(`Welcome, Prof. ${account.name}`);
 
       if (refreshData) {
@@ -244,7 +244,7 @@ const HomeDashboard = () => {
       }
     } catch (err) {
       console.error('Faculty login error:', err);
-      toast.error('Failed to initialize faculty session');
+      toast.error('Failed to sign in');
     } finally {
       setTimeout(() => {
         setSyncing(false);
@@ -262,7 +262,7 @@ const HomeDashboard = () => {
     localStorage.setItem('eduvault_user_role', 'student');
     setSyncing(true);
     setSyncStep(1);
-    setSyncStage('Authenticating with Continuo Portal...');
+    setSyncStage('Verifying your college portal login...');
     setSyncProgress(12);
 
     // Smoothly tick Auth phase from 12% to 30%
@@ -282,7 +282,7 @@ const HomeDashboard = () => {
 
       // Phase 2: Data Fetching & Sync (30% - 100%)
       setSyncStep(2);
-      setSyncStage('Ingesting enrolled subjects & syllabus...');
+      setSyncStage('Loading your subjects and courses...');
       currentPct = 32;
       setSyncProgress(32);
 
@@ -291,13 +291,13 @@ const HomeDashboard = () => {
           currentPct += 2;
           if (currentPct >= 52) {
             setSyncStep(3);
-            setSyncStage('Parsing attendance slots & session logs...');
+            setSyncStage('Fetching attendance records...');
           }
         } else if (currentPct < 74) {
           currentPct += 2;
           if (currentPct >= 74) {
             setSyncStep(4);
-            setSyncStage('Compiling Continuous Evaluation (CIE) scores...');
+            setSyncStage('Loading internal marks and exam scores...');
           }
         } else if (currentPct < 94) {
           currentPct += 1;
@@ -326,9 +326,9 @@ const HomeDashboard = () => {
       clearInterval(fetchInterval);
       setSyncStep(5);
       setSyncProgress(100);
-      setSyncStage('Vault Initialized! Redirecting to Dashboard...');
+      setSyncStage('All set! Loading your dashboard...');
 
-      toast.success('Welcome to Campusaxis.');
+      toast.success('Welcome to CampusAxis!');
       if (refreshData) {
         await refreshData(studentProfile, studentSubjects);
       }
@@ -599,7 +599,7 @@ const HomeDashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center h-[75vh] gap-4 bg-canvas-bg text-text-primary">
         <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs font-semibold text-text-secondary tracking-wide">Synchronizing Interface...</span>
+        <span className="text-xs font-semibold text-text-secondary tracking-wide">Loading dashboard...</span>
       </div>
     );
   }
@@ -612,9 +612,9 @@ const HomeDashboard = () => {
             <div className="w-12 h-12 rounded-xl bg-surface-subtle-blue flex items-center justify-center mb-2">
               <span className="material-symbols-outlined text-[24px] text-primary">shield</span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-text-primary">Campusaxis Integration</h2>
+            <h2 className="text-xl font-bold tracking-tight text-text-primary">CampusAxis Student Portal</h2>
             <p className="text-xs text-text-secondary max-w-xs leading-normal">
-              Enter your college PRN and Date of Birth to synchronize your student portal and initialize your dashboard.
+              Enter your college PRN and Date of Birth to view your attendance, marks, and notes.
             </p>
           </div>
 
@@ -671,10 +671,10 @@ const HomeDashboard = () => {
               {/* Minimalist Vertical Step Timeline */}
               <div className="space-y-3 pt-1 border-t border-slate-100">
                 {[
-                  { step: 1, label: 'Portal Authentication' },
-                  { step: 2, label: 'Curriculum & Subjects Ingestion' },
-                  { step: 3, label: 'Attendance Slots & Session Matrix' },
-                  { step: 4, label: 'Continuous Internal Evaluation (CIE)' }
+                  { step: 1, label: 'Verifying Login' },
+                  { step: 2, label: 'Loading Subjects' },
+                  { step: 3, label: 'Fetching Attendance Records' },
+                  { step: 4, label: 'Loading Internal Marks (CIE)' }
                 ].map((item) => {
                   const isDone = syncStep > item.step;
                   const isCurrent = syncStep === item.step;
@@ -690,10 +690,10 @@ const HomeDashboard = () => {
                         )}
                       </div>
                       <span className={`transition-colors truncate ${isCurrent
-                          ? 'font-bold text-blue-600'
-                          : isDone
-                            ? 'font-medium text-slate-700'
-                            : 'text-slate-400'
+                        ? 'font-bold text-blue-600'
+                        : isDone
+                          ? 'font-medium text-slate-700'
+                          : 'text-slate-400'
                         }`}>
                         {item.label}
                       </span>
@@ -794,7 +794,7 @@ const HomeDashboard = () => {
                 disabled={syncing}
                 className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
-                <span>Initialize &amp; Sync</span>
+                <span>Sign In &amp; Sync</span>
               </button>
             </form>
           )}
@@ -871,41 +871,7 @@ const HomeDashboard = () => {
       {/* Main Content */}
       <main className="relative py-3 sm:py-6 px-3.5 sm:px-6 lg:px-8 pb-28 md:pb-12 flex-1 w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0 overflow-x-hidden">
         {/* Mobile Collapsible Search Bar */}
-        <div className="md:hidden w-full min-w-0">
-          {mobileSearchOpen ? (
-            <div className="flex items-center gap-2 w-full bg-surface-card p-2 rounded-2xl border border-primary/40 shadow-xs animate-in fade-in duration-150">
-              <span className="material-symbols-outlined text-primary text-[19px] ml-1 shrink-0">search</span>
-              <input
-                autoFocus
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                placeholder="Search courses, roadmaps, notes..."
-                className="w-full text-xs text-text-primary placeholder:text-slate-400 bg-transparent outline-none flex-1 min-w-0"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-text-primary shrink-0">
-                  <span className="material-symbols-outlined text-[16px]">cancel</span>
-                </button>
-              )}
-              <button
-                onClick={() => setMobileSearchOpen(false)}
-                className="px-2.5 py-1 text-xs font-semibold text-text-secondary hover:text-text-primary bg-slate-100  rounded-lg shrink-0 cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setMobileSearchOpen(true)}
-              className="w-full h-10 px-3.5 rounded-2xl bg-surface-card border border-border-subtle flex items-center justify-between text-text-secondary hover:text-text-primary hover:border-slate-300 transition-all cursor-pointer shadow-2xs"
-            >
 
-              <span className="material-symbols-outlined text-[16px] text-slate-400 shrink-0">tune</span>
-            </button>
-          )}
-        </div>
 
         <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0">
           {/* Student Profile & Hero Area */}
@@ -991,7 +957,7 @@ const HomeDashboard = () => {
                           Action Needed
                         </span>
                       </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">NC Pending Review</span>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Leave Requests Pending</span>
                     </div>
                   </div>
 
@@ -1009,7 +975,7 @@ const HomeDashboard = () => {
                           Approved
                         </span>
                       </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Absences Condoned</span>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Approved Leaves</span>
                     </div>
                   </div>
                 </div>
@@ -1045,7 +1011,7 @@ const HomeDashboard = () => {
                         <span className="text-sm font-bold text-red-600 tracking-tight">{stats.riskCount}</span>
                         <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-red-50 text-red-600 border border-red-200/60 leading-none">Below 75%</span>
                       </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Attendance Alerts</span>
+                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Low Attendance Alerts</span>
                     </div>
                   </div>
                 </div>
@@ -1140,8 +1106,8 @@ const HomeDashboard = () => {
                         <span className="material-symbols-outlined text-[18px]">verified_user</span>
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Absence Consideration (NC) Queue</h2>
-                        <span className="text-[11px] font-medium text-text-secondary">Student absence claims & proof verification</span>
+                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Attendance Excuse Requests (NC)</h2>
+                        <span className="text-[11px] font-medium text-text-secondary">Review student medical and event leave submissions</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -1167,8 +1133,8 @@ const HomeDashboard = () => {
                           type="button"
                           onClick={() => setNcFilterStatus(st)}
                           className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${ncFilterStatus === st
-                              ? 'bg-primary text-white shadow-xs'
-                              : 'bg-slate-100 text-text-secondary hover:bg-slate-200/70'
+                            ? 'bg-primary text-white shadow-xs'
+                            : 'bg-slate-100 text-text-secondary hover:bg-slate-200/70'
                             }`}
                         >
                           {st === 'ALL' ? `All (${ncStats.total})` : st === 'PENDING' ? `Pending (${ncStats.pending})` : st === 'APPROVED' ? `Approved (${ncStats.approved})` : `Rejected (${ncStats.rejected})`}
@@ -1192,12 +1158,12 @@ const HomeDashboard = () => {
                   {/* Requests List */}
                   <div className="space-y-2.5 max-h-[480px] overflow-y-auto no-scrollbar">
                     {facultyNcLoading ? (
-                      <div className="py-8 text-center text-xs text-text-secondary">Loading NC consideration requests...</div>
+                      <div className="py-8 text-center text-xs text-text-secondary">Loading leave requests...</div>
                     ) : filteredFacultyNc.length === 0 ? (
                       <div className="py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-border-subtle p-4">
                         <span className="material-symbols-outlined text-3xl text-slate-300 mx-auto mb-1">rule</span>
-                        <p className="text-xs font-semibold text-text-primary">No NC requests found</p>
-                        <p className="text-[11px] text-text-secondary mt-0.5">No student submissions matching current filter.</p>
+                        <p className="text-xs font-semibold text-text-primary">No leave requests found</p>
+                        <p className="text-[11px] text-text-secondary mt-0.5">No student requests match the current filter.</p>
                       </div>
                     ) : (
                       filteredFacultyNc.map((req) => (
@@ -1215,8 +1181,8 @@ const HomeDashboard = () => {
                               )}
                             </div>
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                                req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                                  'bg-amber-50 text-amber-700 border border-amber-200'
+                              req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                                'bg-amber-50 text-amber-700 border border-amber-200'
                               }`}>
                               {req.status}
                             </span>
@@ -1238,10 +1204,10 @@ const HomeDashboard = () => {
                                 className="text-primary hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
                               >
                                 <span className="material-symbols-outlined text-[14px]">visibility</span>
-                                <span>View Proof ({req.proofFileName})</span>
+                                <span>View Document ({req.proofFileName})</span>
                               </button>
                             ) : (
-                              <span className="text-slate-400 italic text-[11px]">No proof file</span>
+                              <span className="text-slate-400 italic text-[11px]">No document attached</span>
                             )}
 
                             <button
@@ -1273,7 +1239,7 @@ const HomeDashboard = () => {
                                   className={`py-1 rounded text-xs font-bold transition cursor-pointer ${reviewDecision === 'APPROVED' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
                                     }`}
                                 >
-                                  Approve NC
+                                  Approve Request
                                 </button>
                                 <button
                                   type="button"
@@ -1281,14 +1247,14 @@ const HomeDashboard = () => {
                                   className={`py-1 rounded text-xs font-bold transition cursor-pointer ${reviewDecision === 'REJECTED' ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
                                     }`}
                                 >
-                                  Reject NC
+                                  Reject Request
                                 </button>
                               </div>
                               <input
                                 type="text"
                                 value={reviewComment}
                                 onChange={(e) => setReviewComment(e.target.value)}
-                                placeholder="Faculty remarks or justification..."
+                                placeholder="Add teacher remarks or feedback..."
                                 className="w-full text-xs p-1.5 bg-white border border-slate-200 rounded outline-none"
                               />
                               <div className="flex justify-end gap-1.5">
@@ -1334,7 +1300,7 @@ const HomeDashboard = () => {
 
                   <div className="mt-3">
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <span className="text-[11px] font-bold text-text-primary">Attendance Matrix</span>
+                      <span className="text-[11px] font-bold text-text-primary">Attendance Heatmap</span>
                       <div className="flex items-center gap-2.5 text-[10px] text-text-secondary">
                         <div className="flex items-center gap-1">
                           <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]"></span>
@@ -1364,7 +1330,7 @@ const HomeDashboard = () => {
                       <span className="material-symbols-outlined text-[17px]">flag</span>
                     </div>
                     <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Milestones &amp; Events</h2>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Deadlines &amp; Events</h2>
                       <span className="text-[11px] font-medium text-text-secondary">Academic Schedule</span>
                     </div>
                   </div>
@@ -1456,7 +1422,7 @@ const HomeDashboard = () => {
                 ) : (
                   <div className="mt-3 p-5 rounded-lg bg-slate-50 border border-border-subtle flex flex-col items-center justify-center text-center">
                     <span className="material-symbols-outlined text-[22px] text-text-secondary/70 mb-1.5">event_upcoming</span>
-                    <p className="text-xs font-bold text-text-primary">No Milestones Scheduled</p>
+                    <p className="text-xs font-bold text-text-primary">No Upcoming Deadlines</p>
                     <p className="text-[11px] text-text-secondary mt-0.5 max-w-xs">Track key academic deadlines, lab submissions, and tests.</p>
                   </div>
                 )}
@@ -1473,8 +1439,8 @@ const HomeDashboard = () => {
                       <span className="material-symbols-outlined text-[17px]">campaign</span>
                     </div>
                     <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Broadcasts</h2>
-                      <span className="text-[11px] font-medium text-text-secondary">Latest Notices</span>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Campus Announcements</h2>
+                      <span className="text-[11px] font-medium text-text-secondary">Latest Updates</span>
                     </div>
                   </div>
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
@@ -1514,7 +1480,7 @@ const HomeDashboard = () => {
                   </div>
                 ) : (
                   <div className="mt-2.5 py-2 px-3 rounded-lg bg-slate-50 border border-border-subtle text-center text-xs text-text-secondary">
-                    No active broadcasts or notices.
+                    No active campus announcements.
                   </div>
                 )}
               </section>
@@ -1527,7 +1493,7 @@ const HomeDashboard = () => {
                       <span className="material-symbols-outlined text-[17px]">analytics</span>
                     </div>
                     <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">CIE Scores</h2>
+                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Internal Marks (CIE)</h2>
                       <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Internal Assessment</span>
                     </div>
                   </div>
@@ -1542,7 +1508,7 @@ const HomeDashboard = () => {
                       const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
                       const barColor = i === 0 ? "bg-primary" : i === 1 ? "bg-teal-600" : "bg-badge-purple-text";
                       const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-primary bg-blue-50 border-blue-200" : "text-amber-700 bg-amber-50 border-amber-200";
-                      const statusLabel = cie >= 40 ? "Optimal" : cie >= 30 ? "Passing" : "Review";
+                      const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Needs Attention";
 
                       return (
                         <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
@@ -1573,7 +1539,7 @@ const HomeDashboard = () => {
                     })
                   ) : (
                     <div className="py-5 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
-                      No CIE evaluations registered.
+                      No internal marks available yet.
                     </div>
                   )}
                 </div>
@@ -1584,7 +1550,7 @@ const HomeDashboard = () => {
                     onClick={() => setCiePopupOpen(true)}
                     className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50  dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
                   >
-                    <span>View All Subject Scores</span>
+                    <span>View All Internal Marks</span>
                     <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                   </button>
                 </div>
@@ -1614,12 +1580,12 @@ const HomeDashboard = () => {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-base font-bold text-slate-900 leading-tight">CIE Performance Analysis</h3>
+                      <h3 className="text-base font-bold text-slate-900 leading-tight">Internal Assessment Scores</h3>
                       <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                         {profile?.semester || 'Semester'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Continuous Internal Evaluation • DKTE Institutional Vault</p>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Continuous Internal Evaluation • Student Records</p>
                   </div>
                 </div>
 
@@ -1650,7 +1616,7 @@ const HomeDashboard = () => {
                   return [
                     { value: subjectRegistry.length, label: 'Enrolled Subjects' },
                     { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
-                    { value: highScorers, label: 'Excellence (≥40)' }
+                    { value: highScorers, label: 'Scored ≥40' }
                   ].map((stat, i) => (
                     <div key={i} className="text-center p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
                       <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
@@ -1704,7 +1670,7 @@ const HomeDashboard = () => {
                         );
                       })
                     ) : (
-                      <p className="text-xs text-slate-500 font-medium">No CIE performance records loaded yet.</p>
+                      <p className="text-xs text-slate-500 font-medium">No internal marks recorded yet.</p>
                     )}
                   </div>
                 </div>
@@ -1715,19 +1681,19 @@ const HomeDashboard = () => {
                 <div className="flex items-center gap-4 uppercase tracking-wider font-bold">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600" />
-                    ≥40 Optimal
+                    ≥40 Excellent
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
-                    ≥30 Satisfactory
+                    ≥30 Good
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-amber-600" />
-                    &lt;30 Review
+                    &lt;30 Needs Improvement
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">
-                  Verified Academic Evaluation • EduVault
+                  Internal Assessment Report • CampusAxis
                 </span>
               </div>
             </div>
@@ -1758,12 +1724,12 @@ const HomeDashboard = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-slate-900 leading-tight">CIE Performance Analysis</h3>
+                        <h3 className="text-xl font-bold text-slate-900 leading-tight">Internal Assessment Scores</h3>
                         <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                           {profile?.semester || 'Semester'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium mt-1">Continuous Internal Evaluation • DKTE Institutional Vault</p>
+                      <p className="text-xs text-slate-500 font-medium mt-1">Continuous Internal Evaluation • Student Records</p>
                     </div>
                   </div>
 
@@ -1794,7 +1760,7 @@ const HomeDashboard = () => {
                     return [
                       { value: subjectRegistry?.length || 0, label: 'Enrolled Subjects' },
                       { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
-                      { value: highScorers, label: 'Excellence (≥40)' }
+                      { value: highScorers, label: 'Scored ≥40' }
                     ].map((stat, i) => (
                       <div key={i} className="text-center p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
                         <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
@@ -1847,7 +1813,7 @@ const HomeDashboard = () => {
                         );
                       })
                     ) : (
-                      <p className="text-xs text-slate-500 font-medium">No CIE performance records loaded yet.</p>
+                      <p className="text-xs text-slate-500 font-medium">No internal marks recorded yet.</p>
                     )}
                   </div>
                 </div>
@@ -1857,19 +1823,19 @@ const HomeDashboard = () => {
                   <div className="flex items-center gap-5 uppercase tracking-wider font-bold">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600" />
-                      ≥40 Optimal
+                      ≥40 Excellent
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
-                      ≥30 Satisfactory
+                      ≥30 Good
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-amber-600" />
-                      &lt;30 Review
+                      &lt;30 Needs Improvement
                     </span>
                   </div>
                   <span className="text-xs text-slate-400 font-mono">
-                    Verified Academic Evaluation • EduVault
+                    Internal Assessment Report • CampusAxis
                   </span>
                 </div>
               </div>
@@ -1878,19 +1844,19 @@ const HomeDashboard = () => {
             {/* Modal Controls / Action Bar */}
             <div className="flex items-center justify-between p-4 border-t border-border-subtle bg-surface-card">
               <span className="text-xs text-text-secondary font-medium hidden sm:inline">
-                Export verified evaluation card with student identity
+                Download your marks card with student details
               </span>
               <div className="flex items-center gap-2.5 ml-auto">
                 <button
                   onClick={handleExportCie}
                   disabled={exportingCie}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
-                  title="Export or Share CIE Card as PNG image"
+                  title="Download or share marks card as image"
                 >
                   <span className="material-symbols-outlined text-[17px]">
                     {exportingCie ? 'hourglass_top' : 'share'}
                   </span>
-                  <span>{exportingCie ? 'Rendering...' : 'Share / Export Image'}</span>
+                  <span>{exportingCie ? 'Generating...' : 'Download Marks Card'}</span>
                 </button>
                 <button
                   onClick={() => setCiePopupOpen(false)}

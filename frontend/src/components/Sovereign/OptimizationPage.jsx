@@ -225,7 +225,7 @@ const OptimizationPage = () => {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] w-full text-slate-400 gap-3">
                 <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-medium uppercase tracking-wider">Syncing Optimizer...</span>
+                <span className="text-xs font-medium uppercase tracking-wider">Loading Attendance Planner...</span>
             </div>
         );
     }
@@ -233,7 +233,7 @@ const OptimizationPage = () => {
     if (!engine) {
         return (
             <div className="p-8 text-center text-slate-500">
-                No active subjects found for optimization.
+                No active subjects found.
             </div>
         );
     }
@@ -245,15 +245,15 @@ const OptimizationPage = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pt-1">
                     <div>
                         <h1 className="text-[24px] font-bold text-slate-900 tracking-tight">
-                            Attendance Optimization
+                            Attendance Calculator & Planner
                         </h1>
                         <p className="text-[13px] text-slate-500 mt-0.5">
-                            Predictive planning &amp; session risk mitigation
+                            Plan your classes, calculate safe leaves, and reach your target
                         </p>
                     </div>
                     <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
                         <span className="text-[12px] text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/60 font-medium">
-                            {engine.weeksRemaining} Weeks Horizon
+                            {engine.weeksRemaining} Weeks Remaining
                         </span>
 
                         {/* Target Stepper */}
@@ -291,7 +291,7 @@ const OptimizationPage = () => {
                                     ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
-                            title="Configure Planning Horizon & Weights"
+                            title="Configure Semester Dates & Classes Per Week"
                         >
                             <Settings2 className="w-4 h-4" />
                         </button>
@@ -303,8 +303,8 @@ const OptimizationPage = () => {
                     <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
                         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900">Optimization Parameters</h3>
-                                <p className="text-xs text-slate-500">Fine-tune semester lock date, subject inclusions, and weekly frequency</p>
+                                <h3 className="text-sm font-bold text-slate-900">Planner Settings</h3>
+                                <p className="text-xs text-slate-500">Adjust semester end date, tracked subjects, and weekly classes</p>
                             </div>
                             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
                                 Auto-saved
@@ -314,7 +314,7 @@ const OptimizationPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">
-                                    Semester Lock Date
+                                    Semester End Date
                                 </label>
                                 <div className="relative">
                                     <input
@@ -329,7 +329,7 @@ const OptimizationPage = () => {
 
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">
-                                Subject Inclusions &amp; Weekly Frequency (LPW)
+                                Tracked Subjects &amp; Classes Per Week
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                                 {subjects?.map(s => {
@@ -406,7 +406,7 @@ const OptimizationPage = () => {
                                     ? 'text-emerald-700 bg-emerald-50 border border-emerald-200/50'
                                     : 'text-rose-700 bg-rose-50 border border-rose-200/50'
                                 }`}>
-                                {!engine.isImpossible ? 'Meets Goal' : `Deficit: ${engine.deficit}`}
+                                {!engine.isImpossible ? 'Meets Goal' : `Shortfall: ${engine.deficit}`}
                             </span>
                         </div>
                     </div>
@@ -489,11 +489,11 @@ const OptimizationPage = () => {
                             const isPriority = priorityIds.has(sub.id);
 
                             let statusText = 'Min 75%';
-                            if (isFlawless) statusText = 'Flawless';
+                            if (isFlawless) statusText = 'Excellent (100%)';
                             else if (sub.initialPct >= 80) statusText = 'Safe Margin';
                             else if (sub.initialPct >= 75) statusText = 'Edge Threshold';
                             else if (sub.initialPct >= 70) statusText = 'Coverable';
-                            else statusText = 'High Buffer';
+                            else statusText = 'Needs Attention';
 
                             let pctColor = 'text-blue-600';
                             let barColor = 'bg-blue-600';
@@ -568,7 +568,7 @@ const OptimizationPage = () => {
                                             </span>
                                         ) : sub.rem === 0 && sub.currentPct < target ? (
                                             <span className="inline-flex items-center px-3 py-1 rounded-full bg-rose-50 border border-rose-200/60 text-rose-700 text-[12px] font-semibold">
-                                                Deficit
+                                                Below Target
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-[12px] font-semibold">

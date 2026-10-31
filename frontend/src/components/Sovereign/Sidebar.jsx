@@ -67,12 +67,12 @@ const Sidebar = () => {
                 <div className="mt-4 p-4 bg-surface-container-lowest rounded-lg border border-outline-variant/15">
                     <div className="flex items-center gap-3">
                         <img
-                            alt="Sovereign Scholar User Avatar"
+                            alt="Student User Avatar"
                             className="w-8 h-8 rounded-full bg-surface-container-high"
                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM6xu9pfKEAgvrF0iuZkWYniw8HV2stddtffu76LwvfGClCiM1EJ9eD5Vg-WndlBdvBJZiqISF4VGjm4uOHuB-Dy_2EjjZoA8eRxBFTEvgvA4wiDp9hannNxnWLo4ERTYMG8NJxzYAMeNaNDx28wxVdcXrSx_dANcz-4-NRQ5p10NWzN52UxbddcF1G0wNUOSXpwk3uIxwPKG2PT3jeklfd40RlsdOwk0bNhRo_q_EMpMzlHb3-ij1JDwSsCuH29tnmfCz5TNULw"
                         />
                         <div className="overflow-hidden">
-                            <p className="text-xs font-semibold truncate">Alex Sovereign</p>
+                            <p className="text-xs font-semibold truncate">Student</p>
                             <p className="text-[10px] text-on-surface-variant/60">PRN: 2024098234</p>
                         </div>
                     </div>

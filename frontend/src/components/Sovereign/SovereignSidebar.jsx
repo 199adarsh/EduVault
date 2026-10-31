@@ -36,7 +36,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             return;
         }
 
-        const id = toast.loading('Synchronizing Sovereign Vault...');
+        const id = toast.loading('Syncing student portal...');
         try {
             const resp = await axios.post(`${API_BASE}/portal/dashboard`, {
                 prn: profile.prn,
@@ -53,18 +53,18 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                 localStorage.setItem('eduvault_subjects', JSON.stringify(updatedSubjects));
                 localStorage.setItem('eduvault_last_synced', Date.now().toString());
             }
-            toast.success('Synchronization Complete', { id });
+            toast.success('Sync complete', { id });
             setShowUserMenu(false);
             setTimeout(() => window.location.reload(), 500);
         } catch (err) {
-            toast.error('Vault synchronization failed', { id });
+            toast.error('Failed to sync portal data', { id });
             setShowUserMenu(false);
         }
     };
 
     const handleLogout = (e) => {
         e.stopPropagation();
-        toast.info('Terminating Sovereign Session...');
+        toast.info('Signing out...');
         if (onLogout) {
             onLogout();
         } else {
@@ -122,7 +122,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                     </div>
                     <div className="flex flex-col">
                         <span className="font-bold text-[17px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
-                        <span className="text-[11px] font-medium text-text-secondary leading-none">Academic OS</span>
+                        <span className="text-[11px] font-medium text-text-secondary leading-none">Student Portal</span>
                     </div>
                 </div>
                 <button
@@ -184,7 +184,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-surface-subtle-blue hover:text-primary rounded-lg transition-colors"
                         >
                             <span className="material-symbols-outlined text-[18px] text-primary">sync</span>
-                            <span>Sync Vault</span>
+                            <span>Refresh Data</span>
                         </button>
                         <button
                             onClick={handleLogout}

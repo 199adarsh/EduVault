@@ -76,7 +76,7 @@ const PYQsDatabase = ({ embedded = false }) => {
 
     const handlePredict = async () => {
         if (!predictorPyq.trim()) {
-            toast.error("Context required for neural analysis");
+            toast.error("Please provide question paper or topic text");
             return;
         }
         setPredicting(true);
@@ -86,9 +86,9 @@ const PYQsDatabase = ({ embedded = false }) => {
                 qbText: predictorQb
             });
             setPredictionResult(res.data);
-            toast.success("Priority Matrix Synthesized");
+            toast.success("Important topics generated!");
         } catch (err) {
-            toast.error("AI Logic Engine offline");
+            toast.error("Could not generate predictions. Please try again.");
         } finally {
             setPredicting(false);
         }
@@ -98,7 +98,7 @@ const PYQsDatabase = ({ embedded = false }) => {
         e.preventDefault();
         try {
             await axios.post(`${API_BASE}/pyqs`, newPyq);
-            toast.success("Archival Record Ingested");
+            toast.success("Question paper uploaded successfully!");
             setShowUpload(false);
             setNewPyq({
                 subjectId: '',
@@ -110,7 +110,7 @@ const PYQsDatabase = ({ embedded = false }) => {
             });
             fetchPyqs();
         } catch (err) {
-            toast.error("Ingestion protocol failure");
+            toast.error("Failed to upload question paper.");
         }
     };
 
@@ -164,10 +164,10 @@ const PYQsDatabase = ({ embedded = false }) => {
                     <div>
                         <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 tracking-wide mb-1">
                             <Archive className="w-4 h-4 text-blue-600" />
-                            <span className="uppercase tracking-wider text-[11px]">INSTITUTIONAL REPOSITORY</span>
+                            <span className="uppercase tracking-wider text-[11px]">Past Question Papers</span>
                         </div>
                         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Previous Year Questions</h1>
-                        <p className="text-xs font-normal text-slate-500 mt-1">Official past examination papers &amp; examination sequence mapping</p>
+                        <p className="text-xs font-normal text-slate-500 mt-1">Official past question papers and exam preparation material</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                             type="button"
                         >
                             <Brain className="w-4 h-4 text-blue-600" />
-                            <span>{isPredictorVisible ? 'CLOSE AI PREDICTOR' : 'LAUNCH AI PREDICTOR'}</span>
+                            <span>{isPredictorVisible ? 'Close Exam Helper' : 'Predict Important Topics'}</span>
                         </button>
 
                         {/* Ingest Record Primary Button */}
@@ -190,7 +190,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                             type="button"
                         >
                             <Plus className="w-4 h-4" />
-                            <span>INGEST RECORD</span>
+                            <span>Upload Question Paper</span>
                         </button>
                     </div>
                 </section>
@@ -210,7 +210,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                                 setCurrentPage(1);
                             }}
                             className="w-full pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                            placeholder="Search historical sequences..."
+                            placeholder="Search past question papers, subjects, or years..."
                             type="text"
                         />
                     </div>
@@ -270,7 +270,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                                     <th className="py-3 px-6 uppercase w-2/12" scope="col">Exam</th>
                                     <th className="py-3 px-6 uppercase w-2/12" scope="col">Release</th>
                                     <th className="py-3 px-6 uppercase w-2/12" scope="col">Labels</th>
-                                    <th className="py-3 px-6 uppercase w-1/12 text-center" scope="col">Vault</th>
+                                    <th className="py-3 px-6 uppercase w-1/12 text-center" scope="col">File</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-xs">
@@ -355,7 +355,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                                             <div className="flex flex-col items-center justify-center gap-3 text-slate-400">
                                                 <Inbox className="w-10 h-10 stroke-[1.5] text-slate-300" />
                                                 <p className="text-xs font-semibold text-slate-600">No question papers found</p>
-                                                <p className="text-[11px] text-slate-400">Ingest a paper into the vault to populate records.</p>
+                                                <p className="text-[11px] text-slate-400">Upload past question papers to see them here.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -404,8 +404,8 @@ const PYQsDatabase = ({ embedded = false }) => {
                                     <UploadCloud className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-900">Ingest Archive Record</h3>
-                                    <p className="text-[11px] text-slate-500">Add official examination question sets to repository</p>
+                                    <h3 className="text-sm font-bold text-slate-900">Upload Question Paper</h3>
+                                    <p className="text-[11px] text-slate-500">Add university question papers for students to practice</p>
                                 </div>
                             </div>
                             <button
@@ -577,10 +577,10 @@ const PYQsDatabase = ({ embedded = false }) => {
                             </div>
                             <div>
                                 <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                    AI Question Predictor
+                                    Important Topics Predictor
                                     <span className="text-[10px] px-1.5 py-0.2 font-semibold bg-blue-100 text-blue-700 rounded-full">v4.2</span>
                                 </h3>
-                                <p className="text-[10px] text-slate-500 font-medium">Topic frequency synthesis &amp; priority matrix</p>
+                                <p className="text-[10px] text-slate-500 font-medium">Analyze frequently asked questions and high-weightage topics</p>
                             </div>
                         </div>
                         <button
@@ -593,22 +593,22 @@ const PYQsDatabase = ({ embedded = false }) => {
 
                     <div className="p-4 space-y-3.5 overflow-y-auto flex-1">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Archival PYQ Content</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Past Questions or Topics</label>
                             <textarea
                                 value={predictorPyq}
                                 onChange={(e) => setPredictorPyq(e.target.value)}
                                 className="w-full h-24 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-mono leading-relaxed placeholder:text-slate-400"
-                                placeholder="Paste or push examination question text..."
+                                placeholder="Paste questions or key concepts here..."
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Question Bank / Syllabus Context</label>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Syllabus Units or Chapter List</label>
                             <textarea
                                 value={predictorQb}
                                 onChange={(e) => setPredictorQb(e.target.value)}
                                 className="w-full h-20 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 resize-none outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-mono leading-relaxed placeholder:text-slate-400"
-                                placeholder="Optional: Paste syllabus modules or question bank..."
+                                placeholder="Optional: Paste syllabus modules or topics..."
                             />
                         </div>
 
@@ -618,14 +618,14 @@ const PYQsDatabase = ({ embedded = false }) => {
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
                         >
                             {predicting ? <Activity className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-                            <span>{predicting ? 'Synthesizing Matrix...' : 'Run Neural Prediction'}</span>
+                            <span>{predicting ? 'Analyzing Questions...' : 'Predict Important Topics'}</span>
                         </button>
 
                         {/* Prediction Results */}
                         {predictionResult && (
                             <div className="pt-3 border-t border-slate-200 space-y-2 animate-in fade-in duration-300">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-[11px] font-bold uppercase tracking-wide text-blue-700">Predicted Yield Priority</h4>
+                                    <h4 className="text-[11px] font-bold uppercase tracking-wide text-blue-700">High-Probability Exam Topics</h4>
                                 </div>
 
                                 <div className="space-y-2">
@@ -640,7 +640,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                                                         item.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border-amber-200' :
                                                         'bg-emerald-50 text-emerald-600 border-emerald-200'
                                                     )}>
-                                                        {item.priority} Yield
+                                                        {item.priority} Priority
                                                     </span>
                                                 </div>
                                                 {item.questions && item.questions.length > 0 && (

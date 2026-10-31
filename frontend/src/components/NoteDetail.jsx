@@ -191,7 +191,7 @@ const NoteDetail = () => {
             <div className="flex-1 flex items-center justify-center bg-black min-h-screen">
                 <div className="flex flex-col items-center gap-6">
                     <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">Accessing Vault...</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Loading Document...</span>
                 </div>
             </div>
         );
@@ -283,7 +283,7 @@ const NoteDetail = () => {
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
                             <FileText className="w-16 h-16 text-zinc-700 mb-6" />
-                            <h3 className="text-xl font-bold text-zinc-200 tracking-tight">Word Document Asset</h3>
+                            <h3 className="text-xl font-bold text-zinc-200 tracking-tight">Word Document</h3>
                             <p className="text-xs text-zinc-400 mt-2 max-w-sm">No preview could be parsed automatically. Download original file below.</p>
                             <a 
                                 href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
@@ -312,13 +312,13 @@ const NoteDetail = () => {
                     <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
                         <FileText className="w-16 h-16 text-zinc-800 mb-6" />
                         <h3 className="text-xl font-bold text-zinc-300 tracking-tight">Preview Unavailable</h3>
-                        <p className="text-xs text-zinc-500 mt-2 max-w-sm">This asset format requires external viewing. Please download to access.</p>
+                        <p className="text-xs text-zinc-500 mt-2 max-w-sm">This file cannot be previewed in browser. Please download to view.</p>
                         <a 
                             href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
                             download
                             className="mt-8 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded-xl transition-all text-xs font-bold text-white uppercase tracking-widest cursor-pointer"
                         >
-                            Download Asset
+                            Download File
                         </a>
                     </div>
                 )}
@@ -337,8 +337,8 @@ const NoteDetail = () => {
                 {/* Panel Header */}
                 <div className="flex items-center justify-between p-6 border-b border-zinc-800/50">
                     <div>
-                        <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Interactive Layer</h3>
-                        <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1">AI Assist & Peer Doubts</p>
+                        <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Questions &amp; Discussion</h3>
+                        <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1">AI Study Helper &amp; Discussion</p>
                     </div>
                     <button onClick={() => setIsPanelOpen(false)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all border border-transparent hover:border-zinc-700">
                         <X className="w-5 h-5" />
@@ -352,7 +352,7 @@ const NoteDetail = () => {
                             {note.unit || 'General'}
                         </span>
                         <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded border border-emerald-500/20 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Verified Asset
+                            <CheckCircle2 className="w-3 h-3" /> Verified Notes
                         </span>
                     </div>
                     <h4 className="text-[13px] font-bold text-zinc-200 mb-3 leading-tight">{note.title}</h4>
@@ -376,7 +376,7 @@ const NoteDetail = () => {
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${activeTab === 'ai' ? 'bg-blue-600 text-white border border-blue-500 shadow-lg shadow-blue-500/20' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border border-transparent'}`}
                     >
                         <Bot className="w-3.5 h-3.5" />
-                        DocBot
+                        AI Note Helper
                     </button>
                 </div>
 
@@ -415,7 +415,7 @@ const NoteDetail = () => {
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center opacity-40">
                                 <Inbox className="w-10 h-10 text-zinc-600 mb-4" />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Silence in the vault</p>
+                                <p className="text-xs font-semibold text-zinc-400">No questions posted yet</p>
                             </div>
                         )
                     ) : (
@@ -449,7 +449,7 @@ const NoteDetail = () => {
                                     }
                                 }}
                                 className="w-full bg-transparent border-none focus:ring-0 text-xs text-zinc-200 resize-none py-3 px-4 placeholder:text-zinc-600 outline-none min-h-[44px] max-h-32 scrollbar-none" 
-                                placeholder={activeTab === 'doubts' ? "Ask a specific doubt to instructors..." : "Ask DocBot about this note..."} 
+                                placeholder={activeTab === 'doubts' ? "Ask a question to teachers or classmates..." : "Ask AI about this document..."} 
                                 rows={1}
                             />
                         </div>
@@ -466,7 +466,7 @@ const NoteDetail = () => {
                         </button>
                     </form>
                     <p className="text-[9px] text-zinc-600 mt-3 text-center uppercase font-bold tracking-[0.2em]">
-                        {activeTab === 'doubts' ? 'Doubts are persistent and visible to peers' : 'DocBot uses internal AI nodes'}
+                        {activeTab === 'doubts' ? 'Questions are visible to your classmates and teacher' : 'AI answers based on this document'}
                     </p>
                 </div>
             </div>

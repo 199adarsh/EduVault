@@ -90,7 +90,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
             materialsFound: 0,
             importedCount: 0,
             skippedCount: 0,
-            logs: ['[' + new Date().toLocaleTimeString() + '] Ingestion pipeline started for ' + username.trim()]
+            logs: ['[' + new Date().toLocaleTimeString() + '] Sync started for ' + username.trim()]
         });
 
         if (pollingRef.current) clearInterval(pollingRef.current);
@@ -149,10 +149,10 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-base font-bold tracking-tight text-white uppercase">LMS Notes Synchronizer</h2>
+                                <h2 className="text-base font-bold tracking-tight text-white uppercase">Sync Moodle Notes</h2>
                                 <span className="text-[9px] font-black tracking-widest bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full uppercase">Moodle 4.x</span>
                             </div>
-                            <p className="text-xs text-zinc-400">Automated ingestion from DKTE Society's Academic Portal</p>
+                            <p className="text-xs text-zinc-400">Download course notes and slides directly from Moodle</p>
                         </div>
                     </div>
                     <button
@@ -173,7 +173,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
                             }`}
                     >
-                        Sync Engine
+                        Sync Options
                     </button>
                     <button
                         onClick={() => {
@@ -266,7 +266,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                                 {syncMode === 'test' && <Check className="w-3.5 h-3.5 text-blue-400" />}
                                             </div>
                                             <p className="text-[11px] text-zinc-500 leading-tight">
-                                                Verify pipeline on 1 course (Machine Learning) before syncing all.
+                                                Download notes for 1 subject first to test the connection.
                                             </p>
                                         </div>
                                     </div>
@@ -280,7 +280,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                         <div className="flex items-center gap-2.5">
                                             <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
                                             <span className="text-xs font-bold text-white uppercase tracking-wider">
-                                                {progress?.status || 'INGESTING LMS NOTES'}
+                                                {progress?.status || 'DOWNLOADING MOODLE NOTES'}
                                             </span>
                                         </div>
                                         <span className="text-xs font-mono font-bold text-blue-400">
@@ -338,7 +338,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                         <div className="space-y-1 pt-1">
                                             <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                                                 <span>Live Activity Feed</span>
-                                                <span className="font-mono text-[9px] text-zinc-600">tail -f ingestion.log</span>
+                                                <span className="font-mono text-[9px] text-zinc-600">Activity Log</span>
                                             </div>
                                             <div
                                                 ref={logContainerRef}
@@ -363,7 +363,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                 <div className="space-y-4 animate-in fade-in duration-300">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Synchronization Telemetry
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Sync Summary
                                         </h3>
                                         <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Live Session Data</span>
                                     </div>

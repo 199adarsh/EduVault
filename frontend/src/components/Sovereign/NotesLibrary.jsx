@@ -84,11 +84,11 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                     <div>
                         <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 tracking-wide mb-1">
                             <BookOpen className="w-4 h-4 text-blue-600" />
-                            <span className="uppercase tracking-wider text-[11px]">Academic Knowledge Vault</span>
+                            <span className="uppercase tracking-wider text-[11px]">Class Notes &amp; Study Materials</span>
                         </div>
                         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Study Notes &amp; Resources</h1>
                         <p className="text-xs font-normal text-slate-500 mt-0.5">
-                            Centralized repository for curriculum notes, unit materials, and lecture presentations
+                            Find subject notes, unit study material, and lecture slides
                         </p>
                     </div>
 
@@ -100,7 +100,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                 title="Teacher access: Sync latest materials from Moodle LMS"
                             >
                                 <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
-                                <span>SYNC LMS NOTES</span>
+                                <span>Sync Moodle / LMS</span>
                             </button>
                         )}
                         <button
@@ -108,7 +108,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all shadow-xs cursor-pointer"
                         >
                             <Upload className="w-3.5 h-3.5" />
-                            <span>UPLOAD ASSET</span>
+                            <span>Upload Notes</span>
                         </button>
                     </div>
                 </header>
@@ -125,7 +125,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                         )}
                     >
                         <BookOpen className="w-3.5 h-3.5" />
-                        <span>Curriculum Notes ({notes?.length || 0})</span>
+                        <span>Subject Notes ({notes?.length || 0})</span>
                     </button>
                     <button
                         onClick={() => handleTabChange('pyqs')}
@@ -331,7 +331,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                         </div>
                         <h3 className="text-sm font-bold text-slate-800">No study notes found</h3>
                         <p className="text-xs text-slate-500 mt-1 max-w-sm mb-6">
-                            No materials match your current filter criteria or none have been ingested yet.
+                            No study notes match your filter or none have been uploaded yet.
                         </p>
                         <div className="flex items-center gap-3">
                             {isTeacher && (
@@ -340,7 +340,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all shadow-xs cursor-pointer"
                                 >
                                     <RefreshCw className="w-3.5 h-3.5" />
-                                    <span>SYNC FROM LMS</span>
+                                    <span>Sync Moodle / LMS</span>
                                 </button>
                             )}
                             <button
@@ -348,7 +348,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs cursor-pointer"
                             >
                                 <Upload className="w-3.5 h-3.5" />
-                                <span>UPLOAD LOCAL ASSET</span>
+                                <span>Upload Notes</span>
                             </button>
                         </div>
                     </div>

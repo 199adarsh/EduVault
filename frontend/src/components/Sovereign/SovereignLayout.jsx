@@ -146,7 +146,7 @@ const SovereignLayout = () => {
                             <div className="flex flex-col min-w-0">
                                 <div className="flex items-center gap-1.5 leading-none">
                                     <span className="font-bold text-[15px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
-                                    <span className="px-1 py-0.2 text-[8px] font-bold bg-blue-50 text-primary rounded border border-blue-100">OS</span>
+                                    <span className="px-1 py-0.2 text-[8px] font-bold bg-blue-50 text-primary rounded border border-blue-100">Portal</span>
                                 </div>
                                 <span className="text-[10px] font-medium text-text-secondary truncate mt-0.5">
                                     {profile?.department || 'Student Dashboard'}
@@ -178,7 +178,7 @@ const SovereignLayout = () => {
                     {loading ? (
                         <div className="h-full flex flex-col items-center justify-center gap-4 opacity-40">
                             <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                            <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">Synchronizing Campusaxis...</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">Loading CampusAxis...</p>
                         </div>
                     ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' ? (
                         <Navigate to="/" replace />
@@ -198,7 +198,7 @@ const SovereignLayout = () => {
                                     </div>
                                     <div>
                                         <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Upload Notes</h2>
-                                        <span className="text-[11px] font-medium text-text-secondary">Add documents to student notes repository</span>
+                                        <span className="text-[11px] font-medium text-text-secondary">Share notes and study material with your class</span>
                                     </div>
                                 </div>
                                 <button 
@@ -227,7 +227,7 @@ const SovereignLayout = () => {
                     <button
                         onClick={() => navigate('/ai-assistant')}
                         className="fixed bottom-[4.25rem] md:bottom-4 right-3.5 md:right-5 z-40 flex items-center gap-1.5 p-2 sm:px-3.5 sm:py-2 rounded-full bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-lg shadow-primary/25 border border-primary/30 transition-all duration-200 active:scale-95 cursor-pointer"
-                        title="Open AI Academic Assistant"
+                        title="Ask AI Study Assistant"
                         aria-label="Ask AI Assistant"
                     >
                         <span className="relative flex h-2 w-2">

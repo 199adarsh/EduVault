@@ -409,7 +409,7 @@ const Announcements = () => {
                                                 </div>
                                                 <div className="flex flex-col min-w-0 flex-1">
                                                     <span className="text-xs font-bold text-slate-800 leading-tight truncate">
-                                                        {ann.author || 'SC Sovereign Command'}
+                                                        {ann.author || 'College Administration'}
                                                     </span>
                                                     <span className="text-[11px] text-slate-400 truncate">
                                                         {ann.authorRole || 'Department of AI & Data Science'}
@@ -490,7 +490,7 @@ const Announcements = () => {
                         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                             <div>
                                 <h3 className="text-sm font-bold text-slate-900">Create Academic Notice</h3>
-                                <p className="text-xs text-slate-500">Authorized Sovereign Command broadcast</p>
+                                <p className="text-xs text-slate-500">Post an official announcement for students</p>
                             </div>
                             <button
                                 onClick={() => setShowCreate(false)}

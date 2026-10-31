@@ -56,7 +56,7 @@ function TopicNode({ data }) {
           <Clock3 size={11} /> {topic.duration}
         </span>
         {isContinuoCrucial && (
-          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-0.5" title="Continuo Placement Crucial Subject">
+          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-0.5" title="Key Placement Subject">
             <Sparkles size={8} /> Placement
           </span>
         )}
@@ -102,7 +102,7 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
         <span><Layers3 size={12} /> {topic.level}</span>
         {matchedSubject && (
           <span className="bg-blue-50 text-blue-700 border-blue-200">
-            <GraduationCap size={12} /> Continuo: {matchedSubject.name || topic.collegeSubjectMatch}
+            <GraduationCap size={12} /> College: {matchedSubject.name || topic.collegeSubjectMatch}
           </span>
         )}
       </div>
@@ -111,7 +111,7 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
         <div className="mx-5 my-2 p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-xs">
           <div className="flex items-center gap-1.5 font-bold text-blue-900 mb-1">
             <Sparkles size={13} className="text-blue-600" />
-            <span>Continuo Placement Synergies</span>
+            <span>Placement Skill Match</span>
           </div>
           <p className="text-blue-800 text-[11px] leading-relaxed">
             Your university curriculum subject <strong>{matchedSubject.name}</strong> directly prepares you for this module. Mastering this node solidifies your campus placement interview readiness.
@@ -302,7 +302,7 @@ function FlowCanvas({
           <span className="w-2 h-2 rounded-full bg-slate-300" /> Not Started
         </span>
         <span className="flex items-center gap-1.5 text-blue-600">
-          <Sparkles size={11} /> Continuo Synergies
+          <Sparkles size={11} /> College Syllabus Match
         </span>
       </div>
 
@@ -434,7 +434,7 @@ const Roadmaps = () => {
 
       const res = await axios.post(`${API_BASE}/ai/analyze-roadmap-subjects`, payload);
       setAnalysisData(res.data);
-      toast.success("Gemini Web2API analyzed Continuo subjects for placements!");
+      toast.success("Analyzed college subjects for placement readiness!");
     } catch (err) {
       console.warn("Using fallback subject analysis", err);
       toast.info("Generated curriculum placement insights.");
@@ -509,7 +509,7 @@ const Roadmaps = () => {
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
-                <GraduationCap size={12} /> Continuo Syllabus Sync
+                <GraduationCap size={12} /> College Coursework Matched
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
                 <Award size={12} /> Campus Placement Verified
@@ -666,7 +666,7 @@ const Roadmaps = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">
-                  Continuo ERP Syllabus & Placement Matching
+                  College Syllabus & Career Placement Matching
                 </h4>
                 <p className="text-[11px] text-slate-500">
                   {subjects.length} active college subjects mapped to this roadmap. Gemini highlights core interview topics.
@@ -796,7 +796,7 @@ const Roadmaps = () => {
                       Gemini Web2API
                     </span>
                     <span className="text-xs text-slate-500">
-                      Continuo Placement Intelligence
+                      Placement Readiness & Career Alignment
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-slate-900 mt-0.5">
@@ -819,10 +819,10 @@ const Roadmaps = () => {
                 <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
                   <div className="w-10 h-10 border-3 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
                   <p className="text-xs font-bold text-slate-800">
-                    Synthesizing Continuo syllabus with Gemini Web2API...
+                    Analyzing college syllabus for placement preparation...
                   </p>
                   <p className="text-[11px] text-slate-400 max-w-sm">
-                    Evaluating college course records against campus technical interviews and {currentRoadmap.title} hiring requirements.
+                    Comparing your college coursework with industry skill requirements for {currentRoadmap.title}.
                   </p>
                 </div>
               ) : (
@@ -837,7 +837,7 @@ const Roadmaps = () => {
                         {analysisData?.readinessScore || 85}% Domain Syllabus Match
                       </h4>
                       <p className="text-xs text-slate-300 mt-1 leading-relaxed max-w-lg">
-                        {analysisData?.summary || "Continuo coursework covers foundational software concepts. Pairing college labs with this roadmap will elevate your technical interview performance."}
+                        {analysisData?.summary || "College coursework covers foundational concepts. Pairing college labs with this roadmap will elevate your technical interview performance."}
                       </p>
                     </div>
 
@@ -854,7 +854,7 @@ const Roadmaps = () => {
                         Crucial Subjects for Technical Interviews
                       </h4>
                       <span className="text-[11px] text-slate-400">
-                        From DKTE / Continuo ERP
+                        From College Coursework
                       </span>
                     </div>
 
@@ -876,7 +876,7 @@ const Roadmaps = () => {
                                 {sub.importance}
                               </span>
                               <span className="text-[10px] text-slate-400 font-medium">
-                                {sub.code || 'Continuo'}
+                                {sub.code || 'Course'}
                               </span>
                             </div>
 
@@ -932,7 +932,7 @@ const Roadmaps = () => {
             {/* Modal Footer */}
             <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
               <span className="text-[11px] text-slate-500">
-                Powered by Gemini Web2API & Continuo Academic Database
+                Powered by CampusAxis Career Intelligence
               </span>
               <button
                 onClick={() => runGeminiSubjectAnalysis(true)}

@@ -29,7 +29,7 @@ const AIAssistant = () => {
     const [messages, setMessages] = useState([
         {
             role: 'ai',
-            content: `Core Link Established. Welcome, ${profile?.name ? profile.name.split(' ')[0] : 'Scholar'}. I'm synced with your institutional knowledge vault. How can I assist with your course synthesis today?`,
+            content: `Hi ${profile?.name ? profile.name.split(' ')[0] : 'there'}! I'm your AI Study Assistant. Ask me anything about your subjects, notes, attendance, or upcoming exams.`,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
     ]);
@@ -48,7 +48,7 @@ const AIAssistant = () => {
         setMessages([
             {
                 role: 'ai',
-                content: `Session reset. Academic memory re-initialized. What would you like to explore?`,
+                content: `Chat cleared! What would you like help with?`,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }
         ]);
@@ -178,7 +178,7 @@ const AIAssistant = () => {
                                     <div className="flex flex-col gap-2 min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs font-bold text-text-primary">
-                                                EduVault Synthesizer
+                                                AI Study Assistant
                                             </span>
                                             <span className="text-xs text-text-secondary">{msg.time}</span>
                                         </div>
@@ -238,12 +238,12 @@ const AIAssistant = () => {
                             </div>
                             <div className="flex flex-col gap-2 min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-text-primary">EduVault Synthesizer</span>
-                                    <span className="text-[11px] text-text-secondary">Synthesizing...</span>
+                                    <span className="text-xs font-bold text-text-primary">AI Study Assistant</span>
+                                    <span className="text-[11px] text-text-secondary">Thinking...</span>
                                 </div>
                                 <div className="bg-surface-card rounded-2xl rounded-tl-sm p-4 text-text-secondary border border-border-subtle inline-flex items-center gap-2 w-fit">
                                     <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                                    <span className="text-xs font-medium">Accessing institutional records...</span>
+                                    <span className="text-xs font-medium">Checking your course materials...</span>
                                 </div>
                             </div>
                         </div>
@@ -263,7 +263,7 @@ const AIAssistant = () => {
                             <textarea
                                 className="w-full resize-none bg-slate-50 rounded-lg px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:bg-white border border-transparent focus:border-border-subtle transition-all"
                                 id="aiPromptInput"
-                                placeholder="Inquire about subject patterns or academic synthesis..."
+                                placeholder="Ask a question about your subjects, notes, or exams..."
                                 rows="1"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
@@ -279,7 +279,7 @@ const AIAssistant = () => {
                                 disabled={isTyping || !input.trim()}
                                 className="w-8 h-8 rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 shrink-0 cursor-pointer"
                                 id="sendPromptBtn"
-                                title="Send Query"
+                                title="Send message"
                             >
                                 <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
                             </button>
@@ -293,7 +293,7 @@ const AIAssistant = () => {
                             </span>
                             <span className="flex items-center gap-1 text-[10px]">
                                 <span className="material-symbols-outlined text-[12px] text-primary">verified_user</span>
-                                EduVault Synthesis Engine
+                                AI Assistant
                             </span>
                         </div>
                     </div>

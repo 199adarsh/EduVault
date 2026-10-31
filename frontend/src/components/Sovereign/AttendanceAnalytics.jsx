@@ -161,7 +161,7 @@ const AttendanceAnalytics = () => {
         }
 
         setIsSubmittingNc(true);
-        const toastId = toast.loading('Uploading proof to dedicated Backblaze B2 bucket...');
+        const toastId = toast.loading('Uploading document...');
 
         try {
             const missedSubs = selectedNcDates.map(date => {
@@ -189,14 +189,14 @@ const AttendanceAnalytics = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            toast.success('NC Request Submitted! Stored in dedicated Backblaze B2 bucket.', { id: toastId });
+            toast.success('Leave request submitted successfully!', { id: toastId });
             setSelectedNcDates([]);
             setNcDescription('');
             setNcProofFile(null);
             fetchSubjectNcRequests(selectedSubject);
             if (refreshData) refreshData();
         } catch (err) {
-            const msg = err.response?.data?.error || 'Failed to submit NC request.';
+            const msg = err.response?.data?.error || 'Failed to submit leave request.';
             toast.error(msg, { id: toastId });
         } finally {
             setIsSubmittingNc(false);
@@ -423,7 +423,7 @@ const AttendanceAnalytics = () => {
     const setTargetAttendance = setOptTarget;
 
     const handleRecalculate = () => {
-        toast.success("Attendance pacing model updated");
+        toast.success("Attendance plan updated");
     };
 
     useEffect(() => {
@@ -468,13 +468,13 @@ const AttendanceAnalytics = () => {
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-sm font-bold text-slate-900 tracking-tight">Attendance Optimization &amp; Strategy</h2>
+                                    <h2 className="text-sm font-bold text-slate-900 tracking-tight">Attendance Calculator &amp; Planner</h2>
                                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                                        Pacing Simulator
+                                        Attendance Calculator
                                     </span>
                                 </div>
                                 <p className="text-[11px] text-slate-500">
-                                    Target simulation, safe skip allowances, and required lecture pacing
+                                    Calculate required classes, safe leaves, and target attendance
                                 </p>
                             </div>
                         </div>
@@ -492,7 +492,7 @@ const AttendanceAnalytics = () => {
                             <button 
                                 type="button" 
                                 className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
-                                title={isOptMinimized ? "Expand Optimization Planner" : "Minimize Optimization Planner"}
+                                title={isOptMinimized ? "Expand Attendance Calculator" : "Minimize Attendance Calculator"}
                             >
                                 <span className="material-symbols-outlined text-[20px]">
                                     {isOptMinimized ? 'expand_more' : 'expand_less'}
@@ -508,7 +508,7 @@ const AttendanceAnalytics = () => {
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        Horizon:
+                                        Timeline:
                                     </span>
                                     <span className="text-xs font-medium text-slate-700 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-2xs">
                                         {optEngine.weeksRemaining} Weeks Left
@@ -547,7 +547,7 @@ const AttendanceAnalytics = () => {
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-[15px]">settings</span>
-                                        <span>{showOptSettings ? 'Hide Parameters' : 'Adjust Parameters'}</span>
+                                        <span>{showOptSettings ? 'Hide Settings' : 'Adjust Class Schedule'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -557,14 +557,14 @@ const AttendanceAnalytics = () => {
                                 <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 space-y-4">
                                     <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
                                         <div>
-                                            <h4 className="text-xs font-bold text-slate-800">Semester &amp; Frequency Tuning</h4>
-                                            <p className="text-[11px] text-slate-500">Customize the semester end date and weekly lectures per subject</p>
+                                            <h4 className="text-xs font-bold text-slate-800">Semester End Date &amp; Classes Per Week</h4>
+                                            <p className="text-[11px] text-slate-500">Set your semester end date and weekly class frequency per subject</p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wider">
-                                                Semester Lock Date
+                                                Semester End Date
                                             </label>
                                             <input
                                                 type="date"
@@ -577,8 +577,8 @@ const AttendanceAnalytics = () => {
                                     <div>
                                         <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 mb-3">
                                             <div>
-                                                <h5 className="text-xs font-bold text-slate-800 tracking-tight">Weekly Lecture Frequency &amp; Inclusions</h5>
-                                                <p className="text-[11px] text-slate-400">Include subjects in simulation and adjust lectures per week (LPW)</p>
+                                                <h5 className="text-xs font-bold text-slate-800 tracking-tight">Weekly Classes &amp; Tracked Subjects</h5>
+                                                <p className="text-[11px] text-slate-400">Select subjects and set how many classes happen per week</p>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <button
@@ -629,7 +629,7 @@ const AttendanceAnalytics = () => {
                                                             </span>
                                                         </label>
                                                         <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-slate-100">
-                                                            <span className="text-[10px] font-semibold text-slate-400 uppercase">LPW</span>
+                                                            <span className="text-[10px] font-semibold text-slate-400 uppercase">Per Wk</span>
                                                             <input
                                                                 type="number"
                                                                 min="1"
@@ -661,7 +661,7 @@ const AttendanceAnalytics = () => {
                                         <span className="text-xl font-extrabold text-slate-900">{optEngine.currentOverall.toFixed(1)}%</span>
                                         <span className="text-[11px] text-slate-400 font-medium">({optEngine.totalAttended}/{optEngine.totalConducted})</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400">Institutional baseline</span>
+                                    <span className="text-[10px] text-slate-400">Overall college baseline</span>
                                 </div>
 
                                 <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
@@ -702,8 +702,8 @@ const AttendanceAnalytics = () => {
                                         { id: 'all', label: 'All Subjects', count: optEngine.plan.length },
                                         { id: 'theory', label: 'Theory', count: optEngine.plan.filter(s => !s.isLab).length },
                                         { id: 'lab', label: 'Labs', count: optEngine.plan.filter(s => s.isLab).length },
-                                        { id: 'risk', label: 'Risk (< Target)', count: optEngine.plan.filter(s => s.currentPct < optTarget).length },
-                                        { id: 'priority', label: 'Priority Impact', count: optPriorityIds.size },
+                                        { id: 'risk', label: 'Below Target', count: optEngine.plan.filter(s => s.currentPct < optTarget).length },
+                                        { id: 'priority', label: 'High Priority', count: optPriorityIds.size },
                                     ].map(f => (
                                         <button
                                             key={f.id}
@@ -898,15 +898,15 @@ const AttendanceAnalytics = () => {
                     <div>
                         <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
                             <span className="material-symbols-outlined text-[16px]">{isTeacher ? 'verified_user' : 'trending_up'}</span>
-                            <span>{isTeacher ? 'Faculty Authority' : 'Academic Standing'}</span>
+                            <span>{isTeacher ? 'Faculty Portal' : 'Attendance Overview'}</span>
                         </div>
                         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                            {isTeacher ? 'Faculty Attendance & NC Console' : 'My Attendance'}
+                            {isTeacher ? 'Faculty Attendance & Leave Requests' : 'My Attendance'}
                         </h1>
                         <p className="text-xs text-slate-500 mt-0.5">
                             {isTeacher
-                                ? 'Supervise class absence claims (NC), review uploaded B2 certificates, and audit course registers.'
-                                : 'Quantitative presence tracking & risk analysis across registered coursework'}
+                                ? 'Review student leave and absence requests, check submitted documents, and manage class records.'
+                                : 'Track your daily attendance, calculate safe leaves, and view subject-wise records.'}
                         </p>
                     </div>
 
@@ -954,7 +954,7 @@ const AttendanceAnalytics = () => {
 
                         <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">NC Requests Queue</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Leave Requests Queue</span>
                                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                                     {allFacultyNc.filter(r => r.status === 'PENDING').length} Pending
                                 </span>
@@ -963,7 +963,7 @@ const AttendanceAnalytics = () => {
                                 <span className="text-4xl font-extrabold text-amber-600 tracking-tight">
                                     {allFacultyNc.filter(r => r.status === 'PENDING').length}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium">pending student claims</span>
+                                <span className="text-xs text-slate-400 font-medium">pending student requests</span>
                             </div>
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
                                 <span>Approved: <strong className="text-emerald-600">{allFacultyNc.filter(r => r.status === 'APPROVED').length}</strong></span>
@@ -974,12 +974,12 @@ const AttendanceAnalytics = () => {
 
                         <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Isolated Proof Storage</span>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-700">Backblaze B2</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Attached Documents Storage</span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">Cloud Storage</span>
                             </div>
                             <div className="my-2 space-y-1 text-xs">
-                                <div className="text-slate-700 font-semibold">Bucket: <span className="font-mono text-blue-600">eduvault-nc-proofs</span></div>
-                                <p className="text-[11px] text-slate-500">Student medical &amp; hackathon proof certificates are securely isolated.</p>
+                                <div className="text-slate-700 font-semibold">Storage: <span className="text-blue-600 font-medium">Secure Document Cloud</span></div>
+                                <p className="text-[11px] text-slate-500">Student medical and event certificates are securely stored.</p>
                             </div>
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                                 <button
@@ -987,7 +987,7 @@ const AttendanceAnalytics = () => {
                                     className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                                 >
                                     <RefreshCw className="w-3.5 h-3.5" />
-                                    <span>Sync All NC Requests</span>
+                                    <span>Refresh Leave Requests</span>
                                 </button>
                             </div>
                         </div>
@@ -998,7 +998,7 @@ const AttendanceAnalytics = () => {
                         <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                                    Master Attendance
+                                    Overall Attendance
                                 </span>
                                 <span className={`inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border ${parseFloat(overallPercentage) >= 75
                                         ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
@@ -1069,7 +1069,7 @@ const AttendanceAnalytics = () => {
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
                                     <span className="h-2 w-2 rounded-full bg-rose-500" />
-                                    {riskSubjects.length} Risk Nodes
+                                    {riskSubjects.length} Low Attendance Subjects
                                 </span>
                                 <span className="text-[11px] font-medium text-slate-400">&lt; 75% Cutoff</span>
                             </div>
@@ -1088,12 +1088,12 @@ const AttendanceAnalytics = () => {
                                     ))
                                 ) : (
                                     <div className="py-4 text-center text-emerald-600 font-medium">
-                                        All subjects safely above 75% cutoff
+                                        All subjects are above 75%
                                     </div>
                                 )}
                             </div>
                             <div className="text-[11px] text-slate-400">
-                                {riskSubjects.length > 0 ? 'Immediate recovery action advised' : 'Academic threshold maintained'}
+                                {riskSubjects.length > 0 ? 'Needs attention to reach 75%' : 'Good attendance maintained'}
                             </div>
                         </div>
                     </section>
@@ -1113,7 +1113,7 @@ const AttendanceAnalytics = () => {
                                 }`}
                             >
                                 <span className="material-symbols-outlined text-[16px]">fact_check</span>
-                                <span>Absence Consideration (NC) Queue ({allFacultyNc.length})</span>
+                                <span>Leave Requests Queue ({allFacultyNc.length})</span>
                             </button>
                             <button
                                 type="button"
@@ -1125,7 +1125,7 @@ const AttendanceAnalytics = () => {
                                 }`}
                             >
                                 <span className="material-symbols-outlined text-[16px]">list_alt</span>
-                                <span>Course Registers ({subjects?.length || 0})</span>
+                                <span>Class Attendance Registers ({subjects?.length || 0})</span>
                             </button>
                         </div>
 
@@ -1134,12 +1134,12 @@ const AttendanceAnalytics = () => {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h2 className="text-base font-bold text-slate-900">Student NC Consideration Claims</h2>
+                                            <h2 className="text-base font-bold text-slate-900">Student Leave &amp; Absence Requests</h2>
                                             <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
-                                                B2 Vault
+                                                Verified Documents
                                             </span>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-0.5">Evaluate non-attendance certificates and legitimate absence claims submitted by students.</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Review medical certificates and absence reasons submitted by students.</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -1208,7 +1208,7 @@ const AttendanceAnalytics = () => {
                                     {allFacultyNcLoading ? (
                                         <div className="py-14 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
                                             <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                            <span>Loading student absence requests...</span>
+                                            <span>Loading student leave requests...</span>
                                         </div>
                                     ) : allFacultyNc.filter(r => {
                                         if (globalNcFilterStatus !== 'ALL' && r.status !== globalNcFilterStatus) return false;
@@ -1221,9 +1221,9 @@ const AttendanceAnalytics = () => {
                                     }).length === 0 ? (
                                         <div className="py-14 text-center bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 p-6 space-y-2">
                                             <FileCheck className="w-8 h-8 text-slate-400 mx-auto" />
-                                            <h4 className="font-bold text-sm text-slate-800">No Applications Found</h4>
+                                            <h4 className="font-bold text-sm text-slate-800">No Leave Requests Found</h4>
                                             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                                                There are no student absence consideration claims matching the selected filter.
+                                                There are no student leave requests matching the selected filter.
                                             </p>
                                         </div>
                                     ) : (
@@ -1312,7 +1312,7 @@ const AttendanceAnalytics = () => {
                                                                 className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
                                                             >
                                                                 <Eye className="w-3.5 h-3.5 text-blue-600" />
-                                                                <span>Proof</span>
+                                                                <span>Document</span>
                                                             </button>
                                                         )}
 
@@ -1361,7 +1361,7 @@ const AttendanceAnalytics = () => {
                                             <h3 className="font-bold text-sm text-slate-900 leading-tight">{sub.name}</h3>
                                             <p className="text-[11px] text-slate-500">{sub.department} • {sub.semester}</p>
                                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-bold">
-                                                <span>Open Course Presence &amp; NC</span>
+                                                <span>View Attendance &amp; Leave Requests</span>
                                                 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                                             </div>
                                         </div>
@@ -1497,11 +1497,11 @@ const AttendanceAnalytics = () => {
                         <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5">
                             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                                 <div>
-                                    <h2 className="text-sm font-bold text-slate-900">Session Audit</h2>
-                                    <p className="text-[11px] text-slate-400">Recent chronological logs</p>
+                                    <h2 className="text-sm font-bold text-slate-900">Recent Classes</h2>
+                                    <p className="text-[11px] text-slate-400">Recent attendance records</p>
                                 </div>
                                 <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                                    Latest Logs
+                                    Recent
                                 </span>
                             </div>
 
@@ -1537,7 +1537,7 @@ const AttendanceAnalytics = () => {
                                     })
                                 ) : (
                                     <div className="py-8 text-center text-xs text-slate-400">
-                                        No recent logs found
+                                        No recent attendance records found
                                     </div>
                                 )}
                             </div>
@@ -1546,7 +1546,7 @@ const AttendanceAnalytics = () => {
                             <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 leading-relaxed bg-slate-50/80 p-3 rounded-lg">
                                 <div className="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
                                     <span className="material-symbols-outlined text-[15px] text-blue-600">info</span>
-                                    <span>Academic Attendance Policy</span>
+                                    <span>College Attendance Policy</span>
                                 </div>
                                 75% minimum physical presence is mandatory for End-Semester Examination eligibility. Medical condonation forms must be submitted within 7 calendar days of recovery.
                             </div>
@@ -1562,7 +1562,7 @@ const AttendanceAnalytics = () => {
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                            Aggregate Attendance
+                                            Overall Attendance
                                         </span>
                                         <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
                                             <span className="text-3xl font-extrabold text-blue-600 tracking-tight">
@@ -1633,7 +1633,7 @@ const AttendanceAnalytics = () => {
                             <section className="rounded-2xl bg-white border border-slate-200 p-3.5 shadow-xs flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        Attendance Matrix
+                                        Attendance Heatmap
                                     </span>
                                     <div className="flex items-center gap-2 text-[10px] text-slate-400">
                                         <div className="flex items-center gap-1">
@@ -1652,7 +1652,7 @@ const AttendanceAnalytics = () => {
                             {/* 3. Mobile Subject Ledger */}
                             <section className="rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3 p-3.5 w-full min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                    <h3 className="text-xs font-bold text-slate-900 tracking-tight">Subject Ledger</h3>
+                                    <h3 className="text-xs font-bold text-slate-900 tracking-tight">Subject Attendance</h3>
                                     <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                                         {activeSubjects.length} Courses
                                     </span>
@@ -1755,7 +1755,7 @@ const AttendanceAnalytics = () => {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-blue-600 text-[17px]">history</span>
-                                        <h3 className="text-xs font-bold text-slate-900">Recent Attendance Logs</h3>
+                                        <h3 className="text-xs font-bold text-slate-900">Recent Classes</h3>
                                     </div>
                                     <span className="text-[10px] text-slate-400 font-medium">{sessionLogs.length} records</span>
                                 </div>
@@ -1830,7 +1830,7 @@ const AttendanceAnalytics = () => {
                                 <div className="flex items-center gap-2 text-xs text-slate-500">
                                     <span className="inline-flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60 font-medium">
                                         <Shield className="w-3 h-3 text-blue-600" />
-                                        Dedicated B2 Vault: <span className="font-mono">eduvault-nc-proofs</span>
+                                        Secure Document Storage
                                     </span>
                                     <span className="text-slate-300">•</span>
                                     <span>{isTeacher ? `Faculty: ${teacherName}` : `PRN: ${profile?.prn || 'Student'}`}</span>
@@ -1905,7 +1905,7 @@ const AttendanceAnalytics = () => {
                                                 className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                                             >
                                                 <UploadCloud className="w-3.5 h-3.5" />
-                                                <span>Apply NC for Absences</span>
+                                                <span>Apply for Leave (NC)</span>
                                             </button>
                                         )}
                                     </div>
@@ -1953,15 +1953,15 @@ const AttendanceAnalytics = () => {
                                                                     {existingNc ? (
                                                                         existingNc.status === 'APPROVED' ? (
                                                                             <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold flex items-center gap-1">
-                                                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> NC Approved
+                                                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Leave Approved
                                                                             </span>
                                                                         ) : existingNc.status === 'PENDING' ? (
                                                                             <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold flex items-center gap-1">
-                                                                                <Clock className="w-3 h-3 text-amber-600" /> NC Pending
+                                                                                <Clock className="w-3 h-3 text-amber-600" /> Leave Pending
                                                                             </span>
                                                                         ) : (
                                                                             <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold flex items-center gap-1">
-                                                                                <XCircle className="w-3 h-3 text-rose-600" /> NC Rejected
+                                                                                <XCircle className="w-3 h-3 text-rose-600" /> Leave Rejected
                                                                             </span>
                                                                         )
                                                                     ) : (
@@ -1973,7 +1973,7 @@ const AttendanceAnalytics = () => {
                                                                                 }}
                                                                                 className="px-2 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition"
                                                                             >
-                                                                                <UploadCloud className="w-3 h-3" /> Apply NC
+                                                                                <UploadCloud className="w-3 h-3" /> Request Leave
                                                                             </button>
                                                                         )
                                                                     )}
@@ -2002,7 +2002,7 @@ const AttendanceAnalytics = () => {
                                                     <div className="flex items-center gap-2">
                                                         <Shield className="w-4 h-4 text-blue-600" />
                                                         <span className="font-bold text-xs sm:text-sm text-slate-900">
-                                                            Submit Absence Consideration Request
+                                                            Submit Leave / Absence Request
                                                         </span>
                                                     </div>
                                                     <span className="text-[11px] text-slate-500 font-mono">
@@ -2013,7 +2013,7 @@ const AttendanceAnalytics = () => {
                                                 {/* 1. Pick Absent Date(s) */}
                                                 <div className="space-y-1.5">
                                                     <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                                                        <span>1. Select Absent Date(s) to Regularize</span>
+                                                        <span>1. Select Absent Date(s)</span>
                                                         <span className="text-[11px] font-normal text-slate-500 font-mono">
                                                             {selectedNcDates.length} selected
                                                         </span>
@@ -2123,7 +2123,7 @@ const AttendanceAnalytics = () => {
                                                 {/* 4. Upload Proof File to Backblaze B2 */}
                                                 <div className="space-y-1.5">
                                                     <label className="text-xs font-bold text-slate-700">
-                                                        4. Supporting Proof Document (PDF, PNG, JPG, WEBP)
+                                                        4. Supporting Document (PDF, PNG, JPG)
                                                     </label>
                                                     <div className="border border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-3 text-center bg-white transition cursor-pointer relative">
                                                         <input
@@ -2139,10 +2139,10 @@ const AttendanceAnalytics = () => {
                                                         <div className="space-y-0.5">
                                                             <UploadCloud className="w-5 h-5 text-blue-600 mx-auto" />
                                                             <p className="text-xs font-semibold text-slate-800">
-                                                                {ncProofFile ? ncProofFile.name : 'Upload Certificate / Document'}
+                                                                {ncProofFile ? ncProofFile.name : 'Upload Medical / Event Certificate'}
                                                             </p>
                                                             <p className="text-[10px] text-slate-400">
-                                                                Saved to isolated Backblaze B2 bucket: <span className="font-mono">eduvault-nc-proofs</span>
+                                                                Files are securely stored and viewable by your faculty
                                                             </p>
                                                         </div>
                                                     </div>
@@ -2158,10 +2158,10 @@ const AttendanceAnalytics = () => {
                                                         {isSubmittingNc ? (
                                                             <>
                                                                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                                                <span>Uploading to Backblaze B2...</span>
+                                                                <span>Uploading document...</span>
                                                             </>
                                                         ) : (
-                                                            <span>Submit NC Request</span>
+                                                            <span>Submit Leave Request</span>
                                                         )}
                                                     </button>
                                                 </div>
@@ -2170,10 +2170,10 @@ const AttendanceAnalytics = () => {
                                             {/* Student's Existing NC Requests for this Subject */}
                                             <div className="space-y-2">
                                                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                                                    Your NC Requests for this Course ({subjectNcRequests.length})
+                                                    Your Leave Requests for this Course ({subjectNcRequests.length})
                                                 </span>
                                                 {subjectNcRequests.length === 0 ? (
-                                                    <p className="text-xs text-slate-400 py-3 text-center">No NC requests filed yet for this course.</p>
+                                                    <p className="text-xs text-slate-400 py-3 text-center">No leave requests submitted yet for this course.</p>
                                                 ) : (
                                                     subjectNcRequests.map((req) => (
                                                         <div key={req.id} className="p-3 rounded-xl border border-slate-200 bg-white text-xs space-y-1.5 shadow-xs">
@@ -2205,7 +2205,7 @@ const AttendanceAnalytics = () => {
                                                                         }}
                                                                         className="text-blue-600 hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
                                                                     >
-                                                                        <Eye className="w-3.5 h-3.5" /> View Proof
+                                                                        <Eye className="w-3.5 h-3.5" /> View Document
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -2253,7 +2253,7 @@ const AttendanceAnalytics = () => {
                                             <div className="space-y-2">
                                                 {subjectNcRequests.length === 0 ? (
                                                     <p className="text-xs text-slate-400 py-6 text-center">
-                                                        No NC absence requests found for this course.
+                                                        No leave requests found for this course.
                                                     </p>
                                                 ) : (
                                                     subjectNcRequests.map((req) => (
@@ -2296,10 +2296,10 @@ const AttendanceAnalytics = () => {
                                                                         className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer text-[11px]"
                                                                     >
                                                                         <Eye className="w-3.5 h-3.5" />
-                                                                        <span>View Proof ({req.proofFileName})</span>
+                                                                        <span>View Document ({req.proofFileName})</span>
                                                                     </button>
                                                                 ) : (
-                                                                    <span className="text-slate-400 italic">No proof file attached</span>
+                                                                    <span className="text-slate-400 italic">No document attached</span>
                                                                 )}
 
                                                                 <button
@@ -2343,7 +2343,7 @@ const AttendanceAnalytics = () => {
                                                                     : 'bg-white border border-slate-200 text-slate-700'
                                                             }`}
                                                         >
-                                                            <CheckCircle2 className="w-3.5 h-3.5" /> Approve NC
+                                                            <CheckCircle2 className="w-3.5 h-3.5" /> Approve Leave
                                                         </button>
                                                         <button
                                                             type="button"
@@ -2361,7 +2361,7 @@ const AttendanceAnalytics = () => {
                                                     <textarea
                                                         value={reviewComment}
                                                         onChange={(e) => setReviewComment(e.target.value)}
-                                                        placeholder="Enter faculty review remarks or justification..."
+                                                        placeholder="Enter teacher remarks or feedback..."
                                                         rows={2}
                                                         className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-blue-500"
                                                     />
@@ -2401,7 +2401,7 @@ const AttendanceAnalytics = () => {
                                 <FileText className="w-4 h-4 text-blue-600" />
                                 <span className="font-bold text-xs sm:text-sm text-slate-900">{docPreviewName}</span>
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold font-mono">
-                                    B2 Vault
+                                    Document Cloud
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -2471,7 +2471,7 @@ const AttendanceAnalytics = () => {
                     >
                         <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                             <div>
-                                <h3 className="font-bold text-sm text-slate-900">Review Absence Consideration (NC)</h3>
+                                <h3 className="font-bold text-sm text-slate-900">Review Student Leave Request</h3>
                                 <p className="text-[11px] text-slate-500">
                                     Student: <strong className="text-slate-800">{reviewingReq.studentName}</strong> (PRN: {reviewingReq.studentPrn})
                                 </p>
@@ -2523,7 +2523,7 @@ const AttendanceAnalytics = () => {
                                         className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
                                     >
                                         <Eye className="w-3.5 h-3.5" />
-                                        <span>Preview Proof</span>
+                                        <span>Preview Document</span>
                                     </button>
                                 </div>
                             )}
@@ -2540,7 +2540,7 @@ const AttendanceAnalytics = () => {
                                                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                                         }`}
                                     >
-                                        <CheckCircle2 className="w-4 h-4" /> Approve Consideration
+                                        <CheckCircle2 className="w-4 h-4" /> Approve Leave
                                     </button>
                                     <button
                                         type="button"
@@ -2551,7 +2551,7 @@ const AttendanceAnalytics = () => {
                                                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                                         }`}
                                     >
-                                        <XCircle className="w-4 h-4" /> Reject Claim
+                                        <XCircle className="w-4 h-4" /> Reject Request
                                     </button>
                                 </div>
                             </div>

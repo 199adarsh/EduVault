@@ -23,4 +23,4 @@ COPY --from=backend-build /app/target/*.jar app.jar
 
 ENV PORT=10000
 EXPOSE 10000 8080
-ENTRYPOINT ["sh", "-c", "java -Xmx320m -Xms128m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -jar app.jar --server.port=${PORT}"]
+ENTRYPOINT ["sh", "-c", "java -Xmx320m -Xms128m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -jar app.jar --server.port=${PORT} --server.address=0.0.0.0"]

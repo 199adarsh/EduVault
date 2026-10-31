@@ -122,27 +122,27 @@ const SharedAttendanceHeatmap = ({
   }, [hoveredDay]);
 
   return (
-    <div className={cn("w-full flex flex-col lg:flex-row items-stretch gap-3 min-w-0 overflow-hidden", className)}>
+    <div className={cn("w-full flex flex-col md:flex-row items-center md:items-stretch gap-2.5 justify-between min-w-0 overflow-hidden", className)}>
       {/* Scrollable Heatmap Grid */}
-      <div className="w-full lg:flex-1 overflow-x-auto no-scrollbar touch-pan-x -mx-1 px-1 py-1">
-        <div className="flex gap-1 sm:gap-1.5 md:gap-2 min-w-max">
+      <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar touch-pan-x py-0.5">
+        <div className="flex gap-1 min-w-max">
           {visibleWeeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-1 sm:gap-1.5 md:gap-2">
+            <div key={wi} className="flex flex-col gap-1 shrink-0">
               {week.map((cell) => {
                 const isAllAbsent = cell.entry && cell.entry.total > 0 && cell.entry.present === 0 && cell.entry.absent > 0;
                 const presentCount = cell.entry ? cell.entry.present : 0;
 
                 let bgClass = "bg-slate-200/70";
                 if (isAllAbsent) {
-                  bgClass = "bg-rose-500";
+                  bgClass = "bg-[#f85149]";
                 } else if (presentCount >= 4) {
-                  bgClass = "bg-emerald-700";
+                  bgClass = "bg-[#15803d]";
                 } else if (presentCount === 3) {
-                  bgClass = "bg-emerald-600";
+                  bgClass = "bg-[#16a34a]";
                 } else if (presentCount === 2) {
-                  bgClass = "bg-emerald-500";
+                  bgClass = "bg-[#22c55e]";
                 } else if (presentCount >= 1) {
-                  bgClass = "bg-emerald-300";
+                  bgClass = "bg-[#86efac]";
                 }
 
                 return (
@@ -152,7 +152,7 @@ const SharedAttendanceHeatmap = ({
                     onClick={() => setHoveredDay(cell)}
                     onTouchStart={() => setHoveredDay(cell)}
                     className={cn(
-                      "w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-[18px] lg:h-[18px] xl:w-[20px] xl:h-[20px] rounded-[2px] md:rounded-[4px] transition-transform cursor-pointer hover:scale-125 border border-slate-300/40",
+                      "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2px] transition-transform cursor-pointer hover:scale-125 border border-slate-300/40",
                       bgClass
                     )}
                   />
@@ -164,47 +164,47 @@ const SharedAttendanceHeatmap = ({
       </div>
 
       {/* Date & Lecture status panel - Clean & minimal info */}
-      <div className="w-full lg:w-56 shrink-0 flex flex-col justify-center rounded-xl p-2.5 sm:p-3 bg-slate-50 border border-border-subtle min-w-0">
+      <div className="w-full md:w-36 lg:w-40 xl:w-44 shrink-0 flex flex-col justify-center rounded-lg p-2 bg-slate-50 border border-slate-200/80 min-w-0">
         {hoveredDay && hoveredDay.entry ? (
-          <div className="flex flex-col gap-1 sm:gap-1.5 animate-in fade-in duration-100 min-w-0 text-[11px]">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold text-slate-900 text-xs">{hoveredDay.key}</span>
-              <span className="text-[10px] text-slate-400 font-medium">
+          <div className="flex flex-col gap-1 animate-in fade-in duration-100 min-w-0 text-[10px]">
+            <div className="flex items-center justify-between gap-1">
+              <span className="font-bold text-slate-900 text-[11px] truncate">{hoveredDay.key}</span>
+              <span className="text-[9px] text-slate-400 font-medium shrink-0">
                 {hoveredDay.entry.total} {hoveredDay.entry.total === 1 ? 'class' : 'classes'}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+            <div className="flex flex-col gap-1 pt-0.5">
               {presentAbbrs.length > 0 && (
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md text-[10px]">
-                  <span>✓ {presentAbbrs.length} Present</span>
-                  <span className="text-emerald-800 font-medium truncate max-w-[140px] sm:max-w-none">
-                    ({presentAbbrs.join(', ')})
+                <div className="flex items-center gap-1 text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded">
+                  <span className="font-bold shrink-0">✓ Present:</span>
+                  <span className="font-semibold truncate">
+                    {presentAbbrs.join(', ')}
                   </span>
-                </span>
+                </div>
               )}
 
               {absentAbbrs.length > 0 && (
-                <span className="inline-flex items-center gap-1 font-semibold text-rose-700 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded-md text-[10px]">
-                  <span>✗ {absentAbbrs.length} Absent</span>
-                  <span className="text-rose-800 font-medium truncate max-w-[140px] sm:max-w-none">
-                    ({absentAbbrs.join(', ')})
+                <div className="flex items-center gap-1 text-[9px] text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded">
+                  <span className="font-bold shrink-0">✗ Absent:</span>
+                  <span className="font-semibold truncate">
+                    {absentAbbrs.join(', ')}
                   </span>
-                </span>
+                </div>
               )}
 
               {presentAbbrs.length === 0 && absentAbbrs.length === 0 && (
-                <span className="text-[10px] text-slate-400">No sessions recorded</span>
+                <span className="text-[9px] text-slate-400">No sessions recorded</span>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between text-[11px] text-slate-400 py-0.5">
-            <span>{hoveredDay ? hoveredDay.key : 'Select date'}</span>
-            <span className="text-[10px]">
+          <div className="flex flex-col justify-center text-[10px] text-slate-400 py-0.5">
+            <span className="font-medium text-slate-600 truncate">{hoveredDay ? hoveredDay.key : 'Select Date'}</span>
+            <span className="text-[9px] text-slate-400">
               {hoveredDay
                 ? (hoveredDay.isFuture ? 'Upcoming date' : 'No sessions recorded')
-                : 'Tap square to view presence'}
+                : 'Hover square to inspect'}
             </span>
           </div>
         )}

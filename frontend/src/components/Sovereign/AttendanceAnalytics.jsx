@@ -404,6 +404,25 @@ const AttendanceAnalytics = () => {
     const [showOptSettings, setShowOptSettings] = useState(false);
     const [optFilter, setOptFilter] = useState('all');
 
+    const weeksRemaining = useMemo(() => {
+        if (optEngine?.weeksRemaining) return optEngine.weeksRemaining;
+        const diffMs = new Date(semesterLockDate).getTime() - new Date().getTime();
+        return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24 * 7)));
+    }, [optEngine, semesterLockDate]);
+
+    const setWeeksRemaining = (w) => {
+        const d = new Date();
+        d.setDate(d.getDate() + Math.max(1, w) * 7);
+        setSemesterLockDate(d.toISOString().split('T')[0]);
+    };
+
+    const targetAttendance = optTarget;
+    const setTargetAttendance = setOptTarget;
+
+    const handleRecalculate = () => {
+        toast.success("Attendance pacing model updated");
+    };
+
     useEffect(() => {
         localStorage.setItem('eduvault_opt_minimized', JSON.stringify(isOptMinimized));
         localStorage.setItem('eduvault_opt_target', JSON.stringify(optTarget));
@@ -1194,21 +1213,21 @@ const AttendanceAnalytics = () => {
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase">Current Standing</span>
-                                            <p className="text-lg font-bold text-slate-900 mt-0.5">{optEngine.currentOverall}%</p>
+                                            <p className="text-lg font-bold text-slate-900 mt-0.5">{optEngine?.currentOverall ?? overallPercentage}%</p>
                                         </div>
                                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase">Projected Outcome</span>
-                                            <p className={`text-lg font-bold mt-0.5 ${optEngine.projectedFinal >= targetAttendance ? 'text-blue-600' : 'text-rose-600'}`}>
-                                                {optEngine.projectedFinal}%
+                                            <p className={`text-lg font-bold mt-0.5 ${(optEngine?.projectedFinal ?? overallPercentage) >= targetAttendance ? 'text-blue-600' : 'text-rose-600'}`}>
+                                                {optEngine?.projectedFinal ?? overallPercentage}%
                                             </p>
                                         </div>
                                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase">Must Attend</span>
-                                            <p className="text-lg font-bold text-amber-600 mt-0.5">{optEngine.mustAttendOverall} classes</p>
+                                            <p className="text-lg font-bold text-amber-600 mt-0.5">{optEngine?.mustAttendOverall ?? 0} classes</p>
                                         </div>
                                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase">Safe Skips</span>
-                                            <p className="text-lg font-bold text-blue-600 mt-0.5">{optEngine.skipableOverall} classes</p>
+                                            <p className="text-lg font-bold text-blue-600 mt-0.5">{optEngine?.SkipableOverall ?? optEngine?.skipableOverall ?? 0} classes</p>
                                         </div>
                                     </div>
 
@@ -1218,20 +1237,26 @@ const AttendanceAnalytics = () => {
                                             Strategic Pacing Directives
                                         </span>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            {optEngine.plan.map((item, idx) => (
-                                                <div 
-                                                    key={idx}
-                                                    className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-start gap-2.5 text-xs"
-                                                >
-                                                    <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                                                        item.actionType === 'RECOVER' ? 'bg-amber-500' : 'bg-emerald-500'
-                                                    }`} />
-                                                    <div className="flex-1 min-w-0">
-                                                        <span className="font-bold text-slate-800 block truncate">{item.subjectName}</span>
-                                                        <span className="text-[11px] text-slate-500 mt-0.5 block">{item.directive}</span>
+                                            {(optEngine?.plan || []).map((item, idx) => {
+                                                const isRecover = (item.attend || 0) > 0;
+                                                const directive = isRecover 
+                                                    ? `Must attend next ${item.attend} classes to hit target` 
+                                                    : `Safe to miss up to ${item.skip ?? item.rem ?? 0} classes`;
+                                                return (
+                                                    <div 
+                                                        key={idx}
+                                                        className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-start gap-2.5 text-xs"
+                                                    >
+                                                        <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                                                            isRecover ? 'bg-amber-500' : 'bg-emerald-500'
+                                                        }`} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="font-bold text-slate-800 block truncate">{item.name}</span>
+                                                            <span className="text-[11px] text-slate-500 mt-0.5 block">{directive}</span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>

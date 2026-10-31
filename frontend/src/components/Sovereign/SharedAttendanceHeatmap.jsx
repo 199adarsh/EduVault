@@ -125,9 +125,9 @@ const SharedAttendanceHeatmap = ({
     <div className={cn("w-full flex flex-col lg:flex-row items-stretch gap-3 min-w-0 overflow-hidden", className)}>
       {/* Scrollable Heatmap Grid */}
       <div className="w-full lg:flex-1 overflow-x-auto no-scrollbar touch-pan-x -mx-1 px-1 py-1">
-        <div className="flex gap-1 sm:gap-1.5 min-w-max">
+        <div className="flex gap-1 sm:gap-1.5 md:gap-2 min-w-max">
           {visibleWeeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-1 sm:gap-1.5">
+            <div key={wi} className="flex flex-col gap-1 sm:gap-1.5 md:gap-2">
               {week.map((cell) => {
                 const isAllAbsent = cell.entry && cell.entry.total > 0 && cell.entry.present === 0 && cell.entry.absent > 0;
                 const presentCount = cell.entry ? cell.entry.present : 0;
@@ -152,7 +152,7 @@ const SharedAttendanceHeatmap = ({
                     onClick={() => setHoveredDay(cell)}
                     onTouchStart={() => setHoveredDay(cell)}
                     className={cn(
-                      "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2px] transition-transform cursor-pointer hover:scale-125 border border-slate-300/40",
+                      "w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-[18px] lg:h-[18px] xl:w-[20px] xl:h-[20px] rounded-[2px] md:rounded-[4px] transition-transform cursor-pointer hover:scale-125 border border-slate-300/40",
                       bgClass
                     )}
                   />
@@ -163,41 +163,48 @@ const SharedAttendanceHeatmap = ({
         </div>
       </div>
 
-      {/* Date & Lecture status panel */}
-      <div className="w-full lg:w-48 shrink-0 flex flex-col justify-center rounded-xl p-3 bg-slate-50 border border-border-subtle min-w-0">
+      {/* Date & Lecture status panel - Clean & minimal info */}
+      <div className="w-full lg:w-56 shrink-0 flex flex-col justify-center rounded-xl p-2.5 sm:p-3 bg-slate-50 border border-border-subtle min-w-0">
         {hoveredDay && hoveredDay.entry ? (
-          <div className="flex flex-col gap-1.5 animate-in fade-in duration-100 min-w-0 text-[10px]">
-            <div className="font-extrabold text-text-primary text-xs truncate">
-              {hoveredDay.key}
-            </div>
-
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded text-[9px]">
-                Present
-              </span>
-              <span className="text-text-primary font-bold truncate">
-                {presentAbbrs.length > 0 ? presentAbbrs.join(', ') : 'None'}
+          <div className="flex flex-col gap-1 sm:gap-1.5 animate-in fade-in duration-100 min-w-0 text-[11px]">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-bold text-slate-900 text-xs">{hoveredDay.key}</span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                {hoveredDay.entry.total} {hoveredDay.entry.total === 1 ? 'class' : 'classes'}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded text-[9px]">
-                Absent
-              </span>
-              <span className="text-text-primary font-bold truncate">
-                {absentAbbrs.length > 0 ? absentAbbrs.join(', ') : 'None'}
-              </span>
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              {presentAbbrs.length > 0 && (
+                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md text-[10px]">
+                  <span>✓ {presentAbbrs.length} Present</span>
+                  <span className="text-emerald-800 font-medium truncate max-w-[140px] sm:max-w-none">
+                    ({presentAbbrs.join(', ')})
+                  </span>
+                </span>
+              )}
+
+              {absentAbbrs.length > 0 && (
+                <span className="inline-flex items-center gap-1 font-semibold text-rose-700 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded-md text-[10px]">
+                  <span>✗ {absentAbbrs.length} Absent</span>
+                  <span className="text-rose-800 font-medium truncate max-w-[140px] sm:max-w-none">
+                    ({absentAbbrs.join(', ')})
+                  </span>
+                </span>
+              )}
+
+              {presentAbbrs.length === 0 && absentAbbrs.length === 0 && (
+                <span className="text-[10px] text-slate-400">No sessions recorded</span>
+              )}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center gap-0.5 text-[9px] min-w-0">
-            <span className="font-bold text-text-primary text-[11px] truncate">
-              {hoveredDay ? hoveredDay.key : 'Tap / hover square'}
-            </span>
-            <span className="text-[10px] text-text-secondary leading-snug">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 py-0.5">
+            <span>{hoveredDay ? hoveredDay.key : 'Select date'}</span>
+            <span className="text-[10px]">
               {hoveredDay
-                ? (hoveredDay.isFuture ? 'Upcoming date.' : 'No sessions recorded.')
-                : 'Select any cell to inspect date-wise lecture presence.'}
+                ? (hoveredDay.isFuture ? 'Upcoming date' : 'No sessions recorded')
+                : 'Tap square to view presence'}
             </span>
           </div>
         )}

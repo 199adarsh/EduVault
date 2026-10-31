@@ -161,12 +161,12 @@ const Announcements = () => {
     }, [announcements, searchQuery, activeFilter, bookmarkedIds]);
 
     return (
-        <main className="w-full px-3.5 sm:px-6 lg:px-10 py-4 sm:py-8 pb-24 md:pb-12 bg-[#F7F9FC] min-h-screen text-slate-900">
-            <div className="flex flex-col w-full max-w-[1360px] mx-auto pb-12 space-y-6">
+        <main className="w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-20 md:pb-8 bg-[#F7F9FC] text-slate-900 min-w-0 max-w-full overflow-x-hidden">
+            <div className="flex flex-col w-full max-w-[1360px] mx-auto space-y-4 sm:space-y-6 min-w-0">
                 {/* Interactive Top Action & Heading Row */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full min-w-0">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h1 className="text-[26px] font-bold text-slate-900 tracking-tight">
                                 Announcements
                             </h1>
@@ -200,21 +200,21 @@ const Announcements = () => {
                 </div>
 
                 {/* Filter & Search Toolbar */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-                    {/* Search Input */}
-                    <div className="relative w-full md:max-w-md">
-                        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full min-w-0 max-w-full overflow-hidden">
+                    {/* Search Input: Stays within screen width */}
+                    <div className="relative w-full md:max-w-md min-w-0">
+                        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 shrink-0" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Search announcements, keywords..."
-                            className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
+                            className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all min-w-0"
                         />
                     </div>
 
-                    {/* Filter Chips */}
-                    <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+                    {/* Filter Chips: Horizontally scrollable with hidden scrollbar */}
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar touch-pan-x -mx-1 px-1 py-1 max-w-full w-full md:w-auto shrink-0">
                         {[
                             { id: 'all', label: 'All Bulletins' },
                             { id: 'official', label: 'Official Notices' },
@@ -224,7 +224,7 @@ const Announcements = () => {
                             <button
                                 key={chip.id}
                                 onClick={() => setActiveFilter(chip.id)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                                     activeFilter === chip.id
                                         ? 'bg-blue-600 text-white shadow-xs'
                                         : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
@@ -236,29 +236,29 @@ const Announcements = () => {
                     </div>
                 </div>
 
-                {/* Mobile Upcoming Deadlines Horizontal Carousel (Stitch / Unstop Style) */}
-                <section className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs space-y-2 lg:hidden">
-                    <div className="flex items-center justify-between">
+                {/* Mobile Upcoming Deadlines (Responsive vertical stack on mobile, 2 cols on sm) */}
+                <section className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-xs space-y-2.5 lg:hidden w-full min-w-0 overflow-hidden">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                         <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                             <h3 className="font-bold text-slate-900 text-xs tracking-tight">Upcoming Deadlines</h3>
                         </div>
                         <span className="text-[11px] font-semibold text-blue-600">Calendar</span>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar py-0.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
                         {announcements.slice(0, 4).map((ann, i) => {
                             const d = new Date(ann.createdAt);
                             const month = !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
                             const day = !isNaN(d.getTime()) ? d.getDate() : '--';
                             return (
-                                <div key={ann.id || i} className="flex items-center gap-2 p-1.5 pr-3 rounded-lg bg-slate-50 border border-slate-100 shrink-0 min-w-0">
-                                    <div className="w-8 h-8 rounded-md bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 shadow-xs">
+                                <div key={ann.id || i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 w-full min-w-0">
+                                    <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 shadow-xs">
                                         <span className="text-[8px] font-bold tracking-wider text-slate-400 uppercase leading-none">{month}</span>
                                         <span className="text-xs font-extrabold text-slate-800 leading-none mt-0.5">{day}</span>
                                     </div>
-                                    <div className="min-w-0 max-w-[170px]">
-                                        <h4 className="text-[11px] font-semibold text-slate-900 truncate leading-tight">{ann.title}</h4>
-                                        <p className="text-[9px] text-slate-500 truncate leading-none mt-0.5">{ann.type || 'Notice'}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="text-xs font-bold text-slate-900 truncate leading-snug">{ann.title}</h4>
+                                        <p className="text-[10px] text-slate-500 truncate leading-none mt-0.5">{ann.type || 'Notice'}</p>
                                     </div>
                                 </div>
                             );
@@ -298,11 +298,11 @@ const Announcements = () => {
                                 return (
                                     <article
                                         key={ann.id || idx}
-                                        className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                                        className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group w-full min-w-0 max-w-full overflow-hidden"
                                     >
-                                        <div>
+                                        <div className="w-full min-w-0">
                                             {/* Header / Metadata */}
-                                            <div className="flex items-center justify-between pb-3">
+                                            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pb-3 w-full min-w-0">
                                                 <div className="flex items-center gap-3">
                                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                                                         isOfficial
@@ -352,18 +352,18 @@ const Announcements = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h2 className="text-[17px] font-bold text-slate-900 mt-1 group-hover:text-blue-600 transition-colors">
+                                            <h2 className="text-base sm:text-[17px] font-bold text-slate-900 mt-1.5 group-hover:text-blue-600 transition-colors leading-snug break-words w-full min-w-0">
                                                 {ann.title}
                                             </h2>
 
                                             {/* Message Body */}
-                                            <p className="text-[13px] text-slate-600 mt-3 leading-relaxed">
+                                            <p className="text-xs sm:text-[13px] text-slate-600 mt-2.5 leading-relaxed break-words w-full min-w-0">
                                                 {ann.description}
                                             </p>
 
                                             {/* Details Meta Box */}
                                             {ann.meta && (
-                                                <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                                                <div className="mt-3.5 p-3 sm:p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-500 w-full min-w-0">
                                                     {ann.meta.duration && (
                                                         <div className="flex items-center gap-1.5">
                                                             <Timer className="w-4 h-4 text-blue-600" />
@@ -387,7 +387,7 @@ const Announcements = () => {
 
                                             {/* Attachments */}
                                             {ann.attachments && (
-                                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                                <div className="mt-3.5 flex flex-wrap items-center gap-2 w-full min-w-0">
                                                     {ann.attachments.map((att, aIdx) => (
                                                         <span
                                                             key={aIdx}
@@ -402,16 +402,16 @@ const Announcements = () => {
                                         </div>
 
                                         {/* Footer Row */}
-                                        <div className="pt-5 mt-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                                        <div className="pt-4 mt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full min-w-0">
+                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
                                                     {ann.authorInitials || 'SC'}
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-slate-800 leading-tight">
+                                                <div className="flex flex-col min-w-0 flex-1">
+                                                    <span className="text-xs font-bold text-slate-800 leading-tight truncate">
                                                         {ann.author || 'SC Sovereign Command'}
                                                     </span>
-                                                    <span className="text-[11px] text-slate-400">
+                                                    <span className="text-[11px] text-slate-400 truncate">
                                                         {ann.authorRole || 'Department of AI & Data Science'}
                                                     </span>
                                                 </div>
@@ -420,7 +420,7 @@ const Announcements = () => {
                                             {isAck ? (
                                                 <button
                                                     disabled
-                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50 text-xs font-semibold cursor-default"
+                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50 text-xs font-semibold cursor-default shrink-0 self-start sm:self-auto"
                                                 >
                                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                                     <span>Acknowledged ✓</span>
@@ -428,7 +428,7 @@ const Announcements = () => {
                                             ) : (
                                                 <button
                                                     onClick={() => handleAcknowledge(ann.id)}
-                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 hover:bg-blue-600 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 hover:bg-blue-600 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-xs shrink-0 self-start sm:self-auto"
                                                 >
                                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                                     <span>Acknowledge</span>

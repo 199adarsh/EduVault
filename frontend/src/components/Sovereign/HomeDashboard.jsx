@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toPng } from 'html-to-image';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
@@ -116,6 +117,61 @@ const HomeDashboard = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [timeline, setTimeline] = useState([]);
   const [ciePopupOpen, setCiePopupOpen] = useState(false);
+  const [exportingCie, setExportingCie] = useState(false);
+  const cieCardRef = useRef(null);
+
+  const handleExportCie = async () => {
+    if (!cieCardRef.current) return;
+    setExportingCie(true);
+    const toastId = toast.loading('Rendering high-res CIE image...');
+    try {
+      const dataUrl = await toPng(cieCardRef.current, {
+        quality: 0.98,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        cacheBust: true,
+      });
+
+      const studentPrn = profile?.prn || profile?.rollNo || 'Student';
+      const filename = `CIE_Performance_${studentPrn}_${new Date().toISOString().slice(0, 10)}.png`;
+
+      // Try Web Share API (mobile/desktop browsers supporting file sharing)
+      if (navigator.share && navigator.canShare) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: `CIE Performance - ${formatName(profile?.name)}`,
+              text: `Continuous Internal Evaluation (CIE) Performance Card for ${formatName(profile?.name)} (${studentPrn})`
+            });
+            toast.success('Shared successfully!', { id: toastId });
+            return;
+          }
+        } catch (shareErr) {
+          if (shareErr.name !== 'AbortError') {
+            console.warn('Native share failed, falling back to download:', shareErr);
+          } else {
+            toast.dismiss(toastId);
+            return;
+          }
+        }
+      }
+
+      // Direct download fallback
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = dataUrl;
+      link.click();
+      toast.success('CIE image downloaded!', { id: toastId });
+    } catch (err) {
+      console.error('Failed to export CIE image:', err);
+      toast.error('Failed to generate image. Please try again.', { id: toastId });
+    } finally {
+      setExportingCie(false);
+    }
+  };
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '', date: new Date().toISOString().split('T')[0] });
   const [hoveredDay, setHoveredDay] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -1427,125 +1483,165 @@ const HomeDashboard = () => {
       {/* CIE Popup Modal */}
       {ciePopupOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setCiePopupOpen(false)}
         >
           <div
-            className="relative w-full max-w-4xl max-h-[85vh] bg-surface-card border border-border-subtle rounded-2xl overflow-hidden flex flex-col"
+            className="relative w-full max-w-4xl max-h-[90vh] bg-surface-card border border-border-subtle rounded-2xl overflow-hidden flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-border-subtle">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-badge-purple-bg text-badge-purple-text flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[20px]">analytics</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-text-primary leading-tight">CIE Performance Analysis</h3>
-                  <p className="text-[11px] text-text-secondary font-medium">All Semester Subjects Evaluation</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setCiePopupOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
-
-            {/* Modal Stats */}
-            <div className="grid grid-cols-3 gap-3 p-5 border-b border-border-subtle bg-slate-50/50">
-              {(() => {
-                const subjectsWithCie = subjectRegistry.filter(sub => sub.cie && parseFloat(sub.cie) > 0);
-                const avgCie = subjectsWithCie.length > 0
-                  ? Math.round(subjectsWithCie.reduce((acc, sub) => acc + parseFloat(sub.cie), 0) / subjectsWithCie.length)
-                  : 0;
-                const highScorers = subjectsWithCie.filter(sub => parseFloat(sub.cie) >= 40).length;
-                return [
-                  { value: subjectRegistry.length, label: 'Enrolled Subjects' },
-                  { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
-                  { value: highScorers, label: 'Excellence (≥40)' }
-                ].map((stat, i) => (
-                  <div key={i} className="text-center p-3 bg-surface-card rounded-xl border border-border-subtle">
-                    <p className="text-xl font-bold text-text-primary">{stat.value}</p>
-                    <p className="text-[10px] text-text-secondary uppercase tracking-wider font-semibold mt-0.5">{stat.label}</p>
+            {/* Exportable Canvas Container */}
+            <div ref={cieCardRef} className="bg-white text-slate-900 flex flex-col overflow-hidden">
+              {/* Modal Header with Student Identity Badge */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-slate-200 gap-3 bg-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
+                    <span className="material-symbols-outlined text-[22px]">analytics</span>
                   </div>
-                ));
-              })()}
-            </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-slate-900 leading-tight">CIE Performance Analysis</h3>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                        {profile?.semester || 'Semester'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Continuous Internal Evaluation • DKTE Institutional Vault</p>
+                  </div>
+                </div>
 
-            {/* Modal Chart */}
-            <div className="p-6 overflow-y-auto flex-1">
-              <div className="w-full overflow-x-auto pb-2">
-                <div className="flex items-end justify-between gap-1.5 sm:gap-2.5 min-w-[620px] md:min-w-full min-h-[230px] p-4 sm:p-6 bg-slate-50 rounded-xl border border-border-subtle">
-                  {subjectRegistry.length > 0 ? (
-                    subjectRegistry.map((sub, i) => {
-                      const cie = parseFloat(sub.cie) || 0;
-                      const maxCie = 50;
-                      const heightPct = Math.min((cie / maxCie) * 100, 100);
-                      const isHigh = cie >= 40;
-                      const isGood = cie >= 30;
-                      return (
-                        <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-2">
-                          <span className={cn(
-                            "text-xs font-bold",
-                            cie === 0 ? "text-slate-400" :
-                              isHigh ? "text-status-success-text" : isGood ? "text-primary" : "text-amber-600 font-extrabold"
-                          )}>
-                            {cie > 0 ? cie : '-'}
-                          </span>
-
-                          <div className="relative bg-slate-200/90 rounded-t-lg overflow-hidden flex flex-col justify-end border border-slate-300/80 w-full max-w-[32px] sm:max-w-[36px]" style={{ height: '140px' }}>
-                            <div
-                              className={cn(
-                                "w-full rounded-t-lg transition-all duration-500",
-                                cie === 0 ? "bg-slate-300" :
-                                  isHigh ? "bg-status-success-text" : isGood ? "bg-primary" : "bg-amber-600"
-                              )}
-                              style={{ height: cie > 0 ? `${Math.max(heightPct, 10)}%` : '6px' }}
-                            />
-                          </div>
-
-                          <div className="text-center flex flex-col items-center mt-1 w-full">
-                            <p className="text-[10px] font-bold text-text-primary truncate w-full text-center" title={sub.code || sub.name}>
-                              {sub.code || sub.name.slice(0, 8)}
-                            </p>
-                            <p className="text-[9px] text-text-secondary truncate w-full text-center" title={sub.name}>
-                              {sub.name}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <p className="text-xs text-text-secondary font-medium">No CIE performance records loaded yet.</p>
-                  )}
+                {/* Verified Student Badge on Exported Image */}
+                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0 shadow-xs">
+                    {profile?.name ? profile.name.charAt(0) : 'S'}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-slate-900 truncate">
+                      {formatName(profile?.name)}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-medium truncate">
+                      PRN: {profile?.prn || profile?.rollNo || '-'} • {getDepartmentName(profile?.department) || profile?.department || 'Engineering'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Modal Footer */}
-            <div className="flex items-center justify-between p-4 border-t border-border-subtle bg-slate-50/80">
-              <div className="flex items-center gap-4 text-[10px] text-text-secondary uppercase tracking-wider font-bold">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm bg-status-success-text" />
-                  ≥40 Optimal
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm bg-primary" />
-                  ≥30 Satisfactory
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm bg-amber-600" />
-                  &lt;30 Review
+              {/* Modal Stats */}
+              <div className="grid grid-cols-3 gap-3 p-5 border-b border-slate-200 bg-slate-50/70">
+                {(() => {
+                  const subjectsWithCie = subjectRegistry.filter(sub => sub.cie && parseFloat(sub.cie) > 0);
+                  const avgCie = subjectsWithCie.length > 0
+                    ? Math.round(subjectsWithCie.reduce((acc, sub) => acc + parseFloat(sub.cie), 0) / subjectsWithCie.length)
+                    : 0;
+                  const highScorers = subjectsWithCie.filter(sub => parseFloat(sub.cie) >= 40).length;
+                  return [
+                    { value: subjectRegistry.length, label: 'Enrolled Subjects' },
+                    { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
+                    { value: highScorers, label: 'Excellence (≥40)' }
+                  ].map((stat, i) => (
+                    <div key={i} className="text-center p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                      <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{stat.label}</p>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              {/* Modal Chart */}
+              <div className="p-6 overflow-y-auto max-h-[46vh] bg-white">
+                <div className="w-full overflow-x-auto pb-2">
+                  <div className="flex items-end justify-between gap-2 min-w-[620px] md:min-w-full min-h-[240px] p-4 sm:p-6 bg-slate-50/80 rounded-xl border border-slate-200">
+                    {subjectRegistry.length > 0 ? (
+                      subjectRegistry.map((sub, i) => {
+                        const cie = parseFloat(sub.cie) || 0;
+                        const maxCie = 50;
+                        const heightPct = Math.min((cie / maxCie) * 100, 100);
+                        const isHigh = cie >= 40;
+                        const isGood = cie >= 30;
+                        return (
+                          <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-2">
+                            <span className={cn(
+                              "text-xs font-bold",
+                              cie === 0 ? "text-slate-400" :
+                                isHigh ? "text-emerald-700" : isGood ? "text-blue-600" : "text-amber-600 font-extrabold"
+                            )}>
+                              {cie > 0 ? cie : '-'}
+                            </span>
+
+                            <div className="relative bg-slate-200/90 rounded-t-lg overflow-hidden flex flex-col justify-end border border-slate-300 w-full max-w-[32px] sm:max-w-[36px]" style={{ height: '140px' }}>
+                              <div
+                                className={cn(
+                                  "w-full rounded-t-lg transition-all duration-500",
+                                  cie === 0 ? "bg-slate-300" :
+                                    isHigh ? "bg-emerald-600" : isGood ? "bg-blue-600" : "bg-amber-600"
+                                )}
+                                style={{ height: cie > 0 ? `${Math.max(heightPct, 10)}%` : '6px' }}
+                              />
+                            </div>
+
+                            <div className="text-center flex flex-col items-center mt-1 w-full">
+                              <p className="text-[10px] font-bold text-slate-800 truncate w-full text-center" title={sub.code || sub.name}>
+                                {sub.code || sub.name.slice(0, 8)}
+                              </p>
+                              <p className="text-[9px] text-slate-500 truncate w-full text-center" title={sub.name}>
+                                {sub.name}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-slate-500 font-medium">No CIE performance records loaded yet.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Legend & Verification Stamp inside Card */}
+              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-3 border-t border-slate-200 bg-slate-50 text-[10px] text-slate-500 gap-2">
+                <div className="flex items-center gap-4 uppercase tracking-wider font-bold">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600" />
+                    ≥40 Optimal
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
+                    ≥30 Satisfactory
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-amber-600" />
+                    &lt;30 Review
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  Verified Academic Evaluation • EduVault
                 </span>
               </div>
-              <button
-                onClick={() => setCiePopupOpen(false)}
-                className="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-colors border border-primary cursor-pointer"
-              >
-                CLOSE
-              </button>
+            </div>
+
+            {/* Modal Controls / Action Bar */}
+            <div className="flex items-center justify-between p-4 border-t border-border-subtle bg-surface-card">
+              <span className="text-xs text-text-secondary font-medium hidden sm:inline">
+                Export verified evaluation card with student identity
+              </span>
+              <div className="flex items-center gap-2.5 ml-auto">
+                <button
+                  onClick={handleExportCie}
+                  disabled={exportingCie}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+                  title="Export or Share CIE Card as PNG image"
+                >
+                  <span className="material-symbols-outlined text-[17px]">
+                    {exportingCie ? 'hourglass_top' : 'share'}
+                  </span>
+                  <span>{exportingCie ? 'Rendering...' : 'Share / Export Image'}</span>
+                </button>
+                <button
+                  onClick={() => setCiePopupOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer border border-border-subtle"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

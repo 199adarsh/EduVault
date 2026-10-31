@@ -178,6 +178,7 @@ const HomeDashboard = () => {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
 
   const [loginPrn, setLoginPrn] = useState('');
@@ -806,7 +807,7 @@ const HomeDashboard = () => {
   const latestAnnouncement = announcements[0];
 
   return (
-    <div className="flex flex-col min-h-screen bg-canvas-bg text-text-primary">
+    <div className="flex flex-col min-h-screen bg-canvas-bg text-text-primary w-full max-w-full overflow-x-hidden min-w-0">
       {/* Top Header */}
       <header className="hidden md:flex sticky top-0 z-40 h-16 bg-surface-card/95 backdrop-blur-md px-6 lg:px-8 items-center justify-between border-b border-border-subtle shrink-0">
         <div className="flex items-center gap-4 flex-1 max-w-lg">
@@ -869,10 +870,50 @@ const HomeDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="relative py-4 sm:py-6 px-3.5 sm:px-8 pb-24 md:pb-10 flex-1">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <main className="relative py-3 sm:py-6 px-3.5 sm:px-6 lg:px-8 pb-28 md:pb-12 flex-1 w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0 overflow-x-hidden">
+        {/* Mobile Collapsible Search Bar */}
+        <div className="md:hidden w-full min-w-0">
+          {mobileSearchOpen ? (
+            <div className="flex items-center gap-2 w-full bg-surface-card p-2 rounded-2xl border border-primary/40 shadow-xs animate-in fade-in duration-150">
+              <span className="material-symbols-outlined text-primary text-[19px] ml-1 shrink-0">search</span>
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search courses, roadmaps, notes..."
+                className="w-full text-xs text-text-primary placeholder:text-slate-400 bg-transparent outline-none flex-1 min-w-0"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-text-primary shrink-0">
+                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                </button>
+              )}
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="px-2.5 py-1 text-xs font-semibold text-text-secondary hover:text-text-primary bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="w-full h-10 px-3.5 rounded-2xl bg-surface-card border border-border-subtle flex items-center justify-between text-text-secondary hover:text-text-primary hover:border-slate-300 transition-all cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-2 text-xs truncate">
+                <span className="material-symbols-outlined text-[18px] text-text-secondary shrink-0">search</span>
+                <span className="truncate">Search courses, roadmaps, notices...</span>
+              </div>
+              <span className="material-symbols-outlined text-[16px] text-slate-400 shrink-0">tune</span>
+            </button>
+          )}
+        </div>
+
+        <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0">
           {/* Student Profile & Hero Area */}
-          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-card to-blue-50/40 p-6 border border-border-subtle">
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-card to-blue-50/40 p-4 sm:p-6 border border-border-subtle shadow-2xs w-full min-w-0">
             <div className="absolute top-0 right-0 w-80 h-full bg-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
 
             <div className="relative flex flex-wrap lg:flex-nowrap items-center justify-between gap-6">
@@ -901,7 +942,7 @@ const HomeDashboard = () => {
 
                 <div className="flex flex-col gap-1 min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight leading-tight truncate">
+                    <h1 className="text-base sm:text-xl md:text-2xl font-black text-text-primary tracking-tight leading-snug break-words">
                       Welcome, {formatName(profile?.name)}
                     </h1>
                     {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? (
@@ -939,7 +980,7 @@ const HomeDashboard = () => {
               </div>
 
               {isTeacher ? (
-                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap ml-auto lg:ml-0">
+                <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
                   <div
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-amber-400 transition-colors duration-200 cursor-pointer group shadow-2xs"
@@ -977,7 +1018,7 @@ const HomeDashboard = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap ml-auto lg:ml-0">
+                <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
                   <div
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-primary/40 transition-colors duration-200 cursor-pointer group"
@@ -1044,7 +1085,7 @@ const HomeDashboard = () => {
                   </div>
                 </div>
                 <div 
-                  onClick={() => setShowCieCardModal(true)}
+                  onClick={() => setCiePopupOpen(true)}
                   className="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
                 >
                   <div className="flex items-center justify-between">
@@ -1071,7 +1112,7 @@ const HomeDashboard = () => {
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <span className="text-[10px] font-bold text-primary uppercase tracking-wide">Announcement</span>
                   </div>
-                  <span className="text-xs font-semibold text-text-primary truncate mt-0.5">{latestAnnouncement.title}</span>
+                  <span className="text-xs font-bold text-text-primary leading-snug line-clamp-2 break-words mt-0.5">{latestAnnouncement.title}</span>
                   <span className="text-[10px] text-text-secondary truncate">
                     {latestAnnouncement.type || 'Notice'} • {latestAnnouncement.createdAt ? new Date(latestAnnouncement.createdAt).toLocaleDateString() : 'Recent'}
                   </span>
@@ -1283,7 +1324,7 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               ) : (
-                <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle" id="attendance-radar">
+                <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden" id="attendance-radar">
                   <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
@@ -1324,8 +1365,8 @@ const HomeDashboard = () => {
               )}
 
               {/* Section 3: Milestones & Events */}
-              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+              <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
                       <span className="material-symbols-outlined text-[17px]">flag</span>
@@ -1337,7 +1378,7 @@ const HomeDashboard = () => {
                   </div>
                   <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary hover:bg-primary-hover text-white text-xs font-semibold transition-colors cursor-pointer"
+                    className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shadow-xs"
                   >
                     <span className="material-symbols-outlined text-[14px]">{showAddForm ? 'close' : 'add'}</span>
                     <span>{showAddForm ? 'Cancel' : 'Add Event'}</span>
@@ -1391,8 +1432,8 @@ const HomeDashboard = () => {
                       const day = itemDate.getDate();
 
                       return (
-                        <div key={item.id || i} className="w-full flex items-center justify-between p-2.5 bg-white border border-border-subtle hover:border-slate-300 rounded-lg group transition-all">
-                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                        <div key={item.id || i} className="w-full flex items-center justify-between gap-2.5 p-3 bg-white dark:bg-slate-900/60 border border-border-subtle hover:border-slate-300 rounded-xl group transition-all min-w-0 overflow-hidden">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col items-center justify-center shrink-0">
                               <span className="text-[9px] font-bold uppercase text-primary leading-tight">{month}</span>
                               <span className="text-xs font-extrabold text-text-primary leading-none">{day}</span>
@@ -1411,7 +1452,7 @@ const HomeDashboard = () => {
                           </div>
                           <button
                             onClick={() => handleDeleteMilestone(i, item.id)}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-status-danger-text transition-opacity p-1 rounded hover:bg-slate-50 cursor-pointer"
+                            className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-slate-400 hover:text-status-danger-text transition-opacity p-1.5 rounded-lg hover:bg-slate-50 shrink-0 cursor-pointer"
                             title="Delete"
                           >
                             <span className="material-symbols-outlined text-[15px]">delete</span>
@@ -1433,8 +1474,8 @@ const HomeDashboard = () => {
             {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
             <div className="lg:col-span-5 space-y-4">
               {/* Section 4: Broadcasts */}
-              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+              <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center">
                       <span className="material-symbols-outlined text-[17px]">campaign</span>
@@ -1466,7 +1507,7 @@ const HomeDashboard = () => {
                           }`}
                         title={latestAnnouncement.colorTag || 'Notice'}
                       />
-                      <h3 className="text-xs font-semibold text-text-primary truncate">
+                      <h3 className="text-xs font-semibold text-text-primary leading-snug line-clamp-2 break-words flex-1 min-w-0">
                         {latestAnnouncement.title}
                       </h3>
                     </div>
@@ -1487,8 +1528,8 @@ const HomeDashboard = () => {
               </section>
 
               {/* Section 5: CIE Scores */}
-              <section className="bg-surface-card rounded-xl p-4 sm:p-4.5 border border-border-subtle">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+              <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
                       <span className="material-symbols-outlined text-[17px]">analytics</span>
@@ -1514,7 +1555,7 @@ const HomeDashboard = () => {
                       return (
                         <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-text-primary tracking-tight truncate max-w-[180px]">
+                            <span className="text-xs font-bold text-text-primary tracking-tight truncate flex-1 min-w-0">
                               {sub.name}
                             </span>
                             <span className="text-xs font-extrabold text-text-primary">
@@ -1549,7 +1590,7 @@ const HomeDashboard = () => {
                 <div className="mt-2.5 pt-0.5">
                   <button
                     onClick={() => setCiePopupOpen(true)}
-                    className="w-full py-1.5 px-3 rounded-full bg-white hover:bg-slate-50 text-text-primary border border-border-subtle hover:border-border-hover text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
                   >
                     <span>View All Subject Scores</span>
                     <span className="material-symbols-outlined text-[14px]">chevron_right</span>

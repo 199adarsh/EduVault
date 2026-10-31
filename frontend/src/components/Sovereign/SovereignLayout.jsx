@@ -18,8 +18,6 @@ const SovereignLayout = () => {
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showResults, setShowResults] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const location = useLocation();
 
@@ -78,13 +76,6 @@ const SovereignLayout = () => {
         }
     };
 
-    const searchResults = searchQuery.length > 1 
-        ? [
-            ...notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase())).map(n => ({ ...n, type: 'note', icon: 'description' })),
-            ...subjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).map(s => ({ ...s, type: 'subject', icon: 'auto_stories' }))
-        ].slice(0, 5)
-        : [];
-
     useEffect(() => {
         fetchData();
     }, []);
@@ -133,37 +124,36 @@ const SovereignLayout = () => {
     ];
 
     return (
-        <div className="flex h-screen overflow-hidden bg-canvas-bg text-text-primary font-sans antialiased selection:bg-primary/20">
+        <div className="flex h-screen w-full max-w-full overflow-hidden bg-canvas-bg text-text-primary font-sans antialiased selection:bg-primary/20">
             {/* Sidebar */}
             <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} onLogout={handleLogout} />
 
             {/* Mobile Overlay */}
             {mobileMenuOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/40 z-[45] md:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/40 z-[45] md:hidden backdrop-blur-xs transition-opacity"
                     onClick={() => setMobileMenuOpen(false)}
                 />
             )}
 
             {/* Content Area */}
-            <main className="flex-1 md:pl-64 flex flex-col min-w-0 h-full overflow-hidden relative">
-
-                {/* Mobile Header */}
-                <header className="md:hidden sticky top-0 inset-x-0 z-40 bg-surface-card/95 backdrop-blur-md border-b border-border-subtle pt-safe">
-                    <div className="h-14 px-4 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-xs font-black text-xs tracking-tight">CA</div>
-                            <div className="flex flex-col">
+            <main className="flex-1 md:pl-64 flex flex-col min-w-0 w-full max-w-full h-full overflow-hidden relative">
+                {/* Mobile Header (Single Clean App Header) */}
+                <header className="md:hidden sticky top-0 inset-x-0 z-40 bg-surface-card/95 backdrop-blur-md border-b border-border-subtle pt-safe shrink-0">
+                    <div className="h-14 px-3.5 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-xs font-black text-xs tracking-tight shrink-0">CA</div>
+                            <div className="flex flex-col min-w-0">
                                 <div className="flex items-center gap-1.5 leading-none">
                                     <span className="font-bold text-[15px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
-                                    <span className="px-1.5 py-0.2 text-[9px] font-semibold bg-blue-50 text-primary rounded border border-blue-100">OS</span>
+                                    <span className="px-1 py-0.2 text-[8px] font-bold bg-blue-50 text-primary rounded border border-blue-100">OS</span>
                                 </div>
-                                <span className="text-[10px] font-medium text-text-secondary truncate max-w-[150px] mt-0.5">
-                                    {profile?.department || 'Academic Vault'}
+                                <span className="text-[10px] font-medium text-text-secondary truncate mt-0.5">
+                                    {profile?.department || 'Student Dashboard'}
                                 </span>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1 shrink-0">
                             <button
                                 onClick={() => navigate('/announcements')}
                                 aria-label="Notifications"
@@ -174,7 +164,7 @@ const SovereignLayout = () => {
                             </button>
                             <button
                                 onClick={() => setMobileMenuOpen(true)}
-                                className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs ml-1"
+                                className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs ml-0.5"
                                 aria-label="Open menu"
                             >
                                 {profile?.name ? profile.name.split(' ').map(n=>n[0]).slice(0,2).join('') : <Menu className="w-4 h-4 text-text-secondary" />}
@@ -184,11 +174,11 @@ const SovereignLayout = () => {
                 </header>
 
                 {/* Page Content */}
-                <div className={`flex-1 relative ${location.pathname === '/ai-assistant' ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-20 md:pb-0'}`}>
+                <div className={`flex-1 w-full max-w-full min-w-0 relative ${location.pathname === '/ai-assistant' ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-24 md:pb-0'}`}>
                     {loading ? (
                         <div className="h-full flex flex-col items-center justify-center gap-4 opacity-40">
-                            <div className="w-12 h-12 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                            <p className="text-xs font-bold uppercase tracking-widest">Synchronizing Campusaxis...</p>
+                            <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                            <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">Synchronizing Campusaxis...</p>
                         </div>
                     ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' ? (
                         <Navigate to="/" replace />
@@ -197,23 +187,23 @@ const SovereignLayout = () => {
                     )}
                 </div>
 
-                {/* Upload Modal Overlay (Clean Plain Modal) */}
+                {/* Upload Modal Overlay */}
                 {showUpload && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60">
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-4xl w-full shadow-2xl relative overflow-hidden">
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-border-subtle max-w-4xl w-full shadow-2xl relative overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                                         <span className="material-symbols-outlined text-[18px]">upload_file</span>
                                     </div>
                                     <div>
-                                        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">Upload Notes</h2>
-                                        <span className="text-[11px] font-medium text-slate-500">Add documents to student notes repository</span>
+                                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Upload Notes</h2>
+                                        <span className="text-[11px] font-medium text-text-secondary">Add documents to student notes repository</span>
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => setShowUpload(false)}
-                                    className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+                                    className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">close</span>
                                 </button>
@@ -232,24 +222,25 @@ const SovereignLayout = () => {
                     </div>
                 )}
 
-                {/* Floating AI Assistant Quick Access */}
+                {/* Floating AI Assistant Quick Access (Adjusted fixed positioning and clearance) */}
                 {location.pathname !== '/ai-assistant' && !location.pathname.startsWith('/notes') && (
                     <button
                         onClick={() => navigate('/ai-assistant')}
-                        className="fixed bottom-20 md:bottom-3 right-4 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full bg-primary hover:bg-primary-hover text-white font-medium text-xs shadow-lg shadow-primary/20 border border-primary/30 transition-all duration-200 group active:scale-95 cursor-pointer"
+                        className="fixed bottom-[4.25rem] md:bottom-4 right-3.5 md:right-5 z-40 flex items-center gap-1.5 p-2 sm:px-3.5 sm:py-2 rounded-full bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-lg shadow-primary/25 border border-primary/30 transition-all duration-200 active:scale-95 cursor-pointer"
                         title="Open AI Academic Assistant"
+                        aria-label="Ask AI Assistant"
                     >
-                        <span className="relative flex h-1.5 w-1.5">
+                        <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                         </span>
-                        <span className="material-symbols-outlined text-[17px]">smart_toy</span>
-                        <span>Ask AI</span>
+                        <span className="material-symbols-outlined text-[18px]">smart_toy</span>
+                        <span className="hidden sm:inline">Ask AI</span>
                     </button>
                 )}
 
                 {/* Mobile Bottom Navigation Dock */}
-                <nav aria-label="Mobile Navigation" className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-border-subtle pb-safe md:hidden shadow-nav">
+                <nav aria-label="Mobile Navigation" className="fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-border-subtle pb-safe md:hidden shadow-nav">
                     <div className="flex items-center justify-around h-14 px-2">
                         {navTabs.map((tab) => {
                             const isActive = tab.path === '/' 

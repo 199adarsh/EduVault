@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { cn } from '../../lib/utils';
-import { formatAttendanceDaySubjects, getSubjectAbbreviation, normalizeDateKey } from '../../lib/attendanceUtils';
+import { getSubjectAbbreviation, normalizeDateKey } from '../../lib/attendanceUtils';
 
 export function buildSharedHeatmapData(subjects, weeksCount = 18) {
   const dayMap = new Map();
@@ -114,82 +114,82 @@ const SharedAttendanceHeatmap = ({
   }, [hoveredDay]);
 
   return (
-    <div className={cn("w-full flex flex-col md:flex-row items-center md:items-stretch gap-2.5 justify-between overflow-hidden", className)}>
-      {/* Left: Scrollable Heatmap Grid */}
-      <div className="flex gap-1 shrink-0 overflow-x-auto max-w-full pb-1 md:pb-0">
-        {visibleWeeks.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-1">
-            {week.map((cell) => {
-              const isAllAbsent = cell.entry && cell.entry.total > 0 && cell.entry.present === 0 && cell.entry.absent > 0;
-              const presentCount = cell.entry ? cell.entry.present : 0;
+    <div className={cn("w-full flex flex-col lg:flex-row items-stretch gap-3 min-w-0 overflow-hidden", className)}>
+      {/* Scrollable Heatmap Grid */}
+      <div className="w-full lg:flex-1 overflow-x-auto no-scrollbar touch-pan-x -mx-1 px-1 py-1">
+        <div className="flex gap-1 sm:gap-1.5 min-w-max">
+          {visibleWeeks.map((week, wi) => (
+            <div key={wi} className="flex flex-col gap-1 sm:gap-1.5">
+              {week.map((cell) => {
+                const isAllAbsent = cell.entry && cell.entry.total > 0 && cell.entry.present === 0 && cell.entry.absent > 0;
+                const presentCount = cell.entry ? cell.entry.present : 0;
 
-              let bgClass = "bg-slate-200/70 dark:bg-slate-800/40";
-              if (isAllAbsent) {
-                bgClass = "bg-[#ef4444] dark:bg-[#da3633]";
-              } else if (presentCount >= 4) {
-                bgClass = "bg-[#15803d] dark:bg-[#39d353]";
-              } else if (presentCount === 3) {
-                bgClass = "bg-[#16a34a] dark:bg-[#26a641]";
-              } else if (presentCount === 2) {
-                bgClass = "bg-[#22c55e] dark:bg-[#006d32]";
-              } else if (presentCount >= 1) {
-                bgClass = "bg-[#86efac] dark:bg-[#2ea043]";
-              }
+                let bgClass = "bg-slate-200/70 dark:bg-slate-800/60";
+                if (isAllAbsent) {
+                  bgClass = "bg-rose-500 dark:bg-rose-600";
+                } else if (presentCount >= 4) {
+                  bgClass = "bg-emerald-700 dark:bg-emerald-500";
+                } else if (presentCount === 3) {
+                  bgClass = "bg-emerald-600 dark:bg-emerald-600";
+                } else if (presentCount === 2) {
+                  bgClass = "bg-emerald-500 dark:bg-emerald-700";
+                } else if (presentCount >= 1) {
+                  bgClass = "bg-emerald-300 dark:bg-emerald-900";
+                }
 
-              return (
-                <div
-                  key={cell.key}
-                  onMouseEnter={() => setHoveredDay(cell)}
-                  onMouseLeave={() => setHoveredDay(null)}
-                  className={cn(
-                    "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-xs transition-transform cursor-pointer hover:scale-125 border border-black/5",
-                    bgClass
-                  )}
-                />
-              );
-            })}
-          </div>
-        ))}
+                return (
+                  <div
+                    key={cell.key}
+                    onMouseEnter={() => setHoveredDay(cell)}
+                    onClick={() => setHoveredDay(cell)}
+                    onTouchStart={() => setHoveredDay(cell)}
+                    className={cn(
+                      "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2px] transition-transform cursor-pointer hover:scale-125 border border-black/5 dark:border-white/5",
+                      bgClass
+                    )}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Right Side: 3 items - Date, Present in Green, Absent in Red */}
-      <div className="flex-1 min-w-[150px] w-full flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-200 dark:border-border-subtle pt-2 md:pt-0 md:pl-3 overflow-hidden bg-slate-100/90 dark:bg-slate-900/40 border border-slate-200/80 rounded-lg p-2.5">
+      {/* Date & Lecture status panel */}
+      <div className="w-full lg:w-48 shrink-0 flex flex-col justify-center rounded-xl p-3 bg-slate-50 dark:bg-slate-800/40 border border-border-subtle min-w-0">
         {hoveredDay && hoveredDay.entry ? (
           <div className="flex flex-col gap-1.5 animate-in fade-in duration-100 min-w-0 text-[10px]">
-            {/* 1. Date */}
-            <div className="font-extrabold text-slate-950 dark:text-slate-100 text-[12px] truncate">
+            <div className="font-extrabold text-text-primary text-xs truncate">
               {hoveredDay.key}
             </div>
 
-            {/* 2. Present in Green */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-emerald-900 dark:text-emerald-300 bg-emerald-200/80 dark:bg-emerald-950/80 border border-emerald-400 dark:border-emerald-700 px-1.5 py-0.5 rounded text-[9px]">
+              <span className="font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.2 rounded text-[9px]">
                 Present
               </span>
-              <span className="text-emerald-950 dark:text-emerald-200 font-bold truncate">
+              <span className="text-text-primary font-bold truncate">
                 {presentAbbrs.length > 0 ? presentAbbrs.join(', ') : 'None'}
               </span>
             </div>
 
-            {/* 3. Absent in Red */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-rose-900 dark:text-rose-300 bg-rose-200/80 dark:bg-rose-950/80 border border-rose-400 dark:border-rose-700 px-1.5 py-0.5 rounded text-[9px]">
+              <span className="font-bold text-rose-800 dark:text-rose-300 bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-800 px-1.5 py-0.2 rounded text-[9px]">
                 Absent
               </span>
-              <span className="text-rose-950 dark:text-rose-200 font-bold truncate">
+              <span className="text-text-primary font-bold truncate">
                 {absentAbbrs.length > 0 ? absentAbbrs.join(', ') : 'None'}
               </span>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center gap-0.5 text-[9px] py-1 min-w-0">
-            <span className="font-bold text-slate-900 dark:text-slate-200 text-[11px] truncate">
-              {hoveredDay ? hoveredDay.key : 'Hover over a date'}
+          <div className="flex flex-col justify-center gap-0.5 text-[9px] min-w-0">
+            <span className="font-bold text-text-primary text-[11px] truncate">
+              {hoveredDay ? hoveredDay.key : 'Tap / hover square'}
             </span>
-            <span className="text-[9px] text-slate-700 dark:text-slate-400 font-medium leading-tight">
+            <span className="text-[10px] text-text-secondary leading-snug">
               {hoveredDay
-                ? (hoveredDay.isFuture ? 'Upcoming date.' : 'Recess or holiday.')
-                : 'Hover over attendance squares to inspect date-wise status.'}
+                ? (hoveredDay.isFuture ? 'Upcoming date.' : 'No sessions recorded.')
+                : 'Select any cell to inspect date-wise lecture presence.'}
             </span>
           </div>
         )}

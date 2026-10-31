@@ -942,17 +942,17 @@ const HomeDashboard = () => {
                       Welcome, <span className="font-normal text-text-primary">{formatName(profile?.name)}</span>
                     </h1>
                     {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
+                      <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
                         <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Teacher
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80">
+                      <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80">
                         <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Student
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[10px] text-text-secondary flex-wrap">
+                  <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-text-secondary flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
                       <span className="inline-flex items-center gap-1 font-mono font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/60 text-[10px]">
                         <span className="material-symbols-outlined text-[11px] text-text-secondary">badge</span>

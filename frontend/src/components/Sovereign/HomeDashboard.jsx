@@ -624,8 +624,8 @@ const HomeDashboard = () => {
               type="button"
               onClick={() => setLoginRole('student')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${loginRole === 'student'
-                  ? 'bg-white text-primary shadow-xs'
-                  : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-white text-primary shadow-xs'
+                : 'text-text-secondary hover:text-text-primary'
                 }`}
             >
               Student Login
@@ -634,8 +634,8 @@ const HomeDashboard = () => {
               type="button"
               onClick={() => setLoginRole('teacher')}
               className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${loginRole === 'teacher'
-                  ? 'bg-white text-primary shadow-xs'
-                  : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-white text-primary shadow-xs'
+                : 'text-text-secondary hover:text-text-primary'
                 }`}
             >
               Teacher / Faculty
@@ -689,13 +689,12 @@ const HomeDashboard = () => {
                           <span className="w-2 h-2 rounded-full bg-slate-200" />
                         )}
                       </div>
-                      <span className={`transition-colors truncate ${
-                        isCurrent
+                      <span className={`transition-colors truncate ${isCurrent
                           ? 'font-bold text-blue-600'
                           : isDone
-                          ? 'font-medium text-slate-700'
-                          : 'text-slate-400'
-                      }`}>
+                            ? 'font-medium text-slate-700'
+                            : 'text-slate-400'
+                        }`}>
                         {item.label}
                       </span>
                     </div>
@@ -902,10 +901,7 @@ const HomeDashboard = () => {
               onClick={() => setMobileSearchOpen(true)}
               className="w-full h-10 px-3.5 rounded-2xl bg-surface-card border border-border-subtle flex items-center justify-between text-text-secondary hover:text-text-primary hover:border-slate-300 transition-all cursor-pointer shadow-2xs"
             >
-              <div className="flex items-center gap-2 text-xs truncate">
-                <span className="material-symbols-outlined text-[18px] text-text-secondary shrink-0">search</span>
-                <span className="truncate">Search courses, roadmaps, notices...</span>
-              </div>
+
               <span className="material-symbols-outlined text-[16px] text-slate-400 shrink-0">tune</span>
             </button>
           )}
@@ -1059,7 +1055,7 @@ const HomeDashboard = () => {
             {/* Native Mobile Metric Cards Grid (Stitch / Unstop Style) */}
             {!isTeacher && (
               <div className="w-full grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-border-subtle lg:hidden">
-                <div 
+                <div
                   onClick={() => navigate('/attendance')}
                   className="flex flex-col bg-slate-50 /40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
                 >
@@ -1071,7 +1067,7 @@ const HomeDashboard = () => {
                     <span className="text-[18px] font-extrabold text-primary leading-none">{stats.overall}%</span>
                   </div>
                 </div>
-                <div 
+                <div
                   onClick={() => navigate('/attendance')}
                   className="flex flex-col bg-red-50  rounded-xl p-2.5 border border-red-200 dark:border-red-900/50 cursor-pointer active:scale-95 transition-transform"
                 >
@@ -1084,7 +1080,7 @@ const HomeDashboard = () => {
                     <span className="text-[10px] text-red-500 font-medium">Subs</span>
                   </div>
                 </div>
-                <div 
+                <div
                   onClick={() => setCiePopupOpen(true)}
                   className="flex flex-col bg-slate-50 /40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
                 >
@@ -1170,11 +1166,10 @@ const HomeDashboard = () => {
                           key={st}
                           type="button"
                           onClick={() => setNcFilterStatus(st)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
-                            ncFilterStatus === st
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${ncFilterStatus === st
                               ? 'bg-primary text-white shadow-xs'
                               : 'bg-slate-100 text-text-secondary hover:bg-slate-200/70'
-                          }`}
+                            }`}
                         >
                           {st === 'ALL' ? `All (${ncStats.total})` : st === 'PENDING' ? `Pending (${ncStats.pending})` : st === 'APPROVED' ? `Approved (${ncStats.approved})` : `Rejected (${ncStats.rejected})`}
                         </button>
@@ -1219,11 +1214,10 @@ const HomeDashboard = () => {
                                 </span>
                               )}
                             </div>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                              req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                              'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                                  'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}>
                               {req.status}
                             </span>
                           </div>
@@ -1276,18 +1270,16 @@ const HomeDashboard = () => {
                                 <button
                                   type="button"
                                   onClick={() => setReviewDecision('APPROVED')}
-                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${
-                                    reviewDecision === 'APPROVED' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
-                                  }`}
+                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${reviewDecision === 'APPROVED' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                                    }`}
                                 >
                                   Approve NC
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setReviewDecision('REJECTED')}
-                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${
-                                    reviewDecision === 'REJECTED' ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
-                                  }`}
+                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${reviewDecision === 'REJECTED' ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                                    }`}
                                 >
                                   Reject NC
                                 </button>
@@ -1498,12 +1490,12 @@ const HomeDashboard = () => {
                       {/* Priority Circle: Red / Green / Yellow */}
                       <span
                         className={`w-2 h-2 rounded-full shrink-0 ${latestAnnouncement.colorTag === 'red'
-                            ? 'bg-rose-500 ring-2 ring-rose-200'
-                            : latestAnnouncement.colorTag === 'green'
-                              ? 'bg-emerald-500 ring-2 ring-emerald-200'
-                              : latestAnnouncement.colorTag === 'yellow' || latestAnnouncement.colorTag === 'amber'
-                                ? 'bg-amber-500 ring-2 ring-amber-200'
-                                : 'bg-blue-500 ring-2 ring-blue-200'
+                          ? 'bg-rose-500 ring-2 ring-rose-200'
+                          : latestAnnouncement.colorTag === 'green'
+                            ? 'bg-emerald-500 ring-2 ring-emerald-200'
+                            : latestAnnouncement.colorTag === 'yellow' || latestAnnouncement.colorTag === 'amber'
+                              ? 'bg-amber-500 ring-2 ring-amber-200'
+                              : 'bg-blue-500 ring-2 ring-blue-200'
                           }`}
                         title={latestAnnouncement.colorTag || 'Notice'}
                       />

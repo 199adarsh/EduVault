@@ -404,6 +404,9 @@ const AttendanceAnalytics = () => {
     const [showOptSettings, setShowOptSettings] = useState(false);
     const [optFilter, setOptFilter] = useState('all');
 
+    const optEngine = useMemo(() => computeEngine(subjects, optTarget, excludedIds, semesterLockDate, manualLPWs),
+        [subjects, optTarget, excludedIds, semesterLockDate, manualLPWs]);
+
     const weeksRemaining = useMemo(() => {
         if (optEngine?.weeksRemaining) return optEngine.weeksRemaining;
         const diffMs = new Date(semesterLockDate).getTime() - new Date().getTime();
@@ -429,9 +432,6 @@ const AttendanceAnalytics = () => {
         localStorage.setItem('eduvault_opt_semdate', semesterLockDate);
         localStorage.setItem('eduvault_opt_lpws', JSON.stringify(manualLPWs));
     }, [isOptMinimized, optTarget, semesterLockDate, manualLPWs]);
-
-    const optEngine = useMemo(() => computeEngine(subjects, optTarget, excludedIds, semesterLockDate, manualLPWs),
-        [subjects, optTarget, excludedIds, semesterLockDate, manualLPWs]);
 
     const optPriorityIds = useMemo(() => {
         if (!optEngine || !optEngine.plan) return new Set();

@@ -14,10 +14,10 @@ const QuickStatsPanel = () => {
         axios.get(`${API_BASE}/notes`).then(res => setNotes(res.data)).catch(() => {});
     }, []);
 
-    const daysUntilExam = 14;
+    const daysUntilExam = 0;
     const totalNotes = notes.length;
     const yourUploads = profile?.name ? notes.filter(n => n.uploadedBy === profile.name).length : 0;
-    const verifiedNotes = Math.max(0, totalNotes - 1); // Mock verified logic
+    const verifiedNotes = notes.filter(n => n.status === 'ready' || n.status === 'processed').length;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">

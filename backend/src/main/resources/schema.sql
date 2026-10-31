@@ -134,35 +134,3 @@ CREATE TABLE IF NOT EXISTS nc_notifications (
     created_at VARCHAR(255),
     read BOOLEAN DEFAULT FALSE
 );
-
--- Insert Dummy Seeding Data
-INSERT INTO subjects (id, name, department, semester, created_at, note_count) VALUES
-('sub-1', 'Operating Systems', 'B.Tech-UAD', 'SEM 04', '2023-10-01', 1),
-('sub-2', 'Database Systems', 'B.Tech-UAD', 'SEM 04', '2023-10-01', 1),
-('sub-3', 'Mobile Computing', 'B.Tech-UAD', 'SEM 04', '2023-10-01', 0),
-('sub-4', 'Software Engineering', 'B.Tech-UAD', 'SEM 04', '2023-10-01', 0),
-('sub-5', 'Computer Networks', 'B.Tech-UAD', 'SEM 05', '2023-10-01', 1)
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO notes (id, title, subject_id, department, semester, unit, exam_type, file_url, status, created_at, tags, ai_important_topics, ai_generated_questions, extracted_text) VALUES
-('note-1', 'Operating Systems - Process Scheduling', 'sub-1', 'B.Tech-UAD', 'SEM 04', 'Unit 2', 'Midterm', 'os_scheduling.pdf', 'ready', '2024-01-15T10:30:00', 
- '[]'::jsonb, 
- '["Process Scheduling", "FCFS Algorithm", "SJF Algorithm", "Priority Scheduling", "Round Robin"]'::jsonb,
- '[{"q": "What is the purpose of process scheduling?", "type": "short", "difficulty": "medium"}]'::jsonb,
- 'Process scheduling is a fundamental concept in operating systems. The scheduler decides which process runs at any given time.'),
-('note-2', 'Database Systems - Normalization', 'sub-2', 'B.Tech-UAD', 'SEM 04', 'Unit 3', 'Final', 'db_normalization.pdf', 'ready', '2024-01-16T14:20:00',
- '[]'::jsonb,
- '["Database Normalization", "First Normal Form", "Second Normal Form", "Third Normal Form"]'::jsonb,
- '[]'::jsonb,
- 'Database normalization is the process of organizing the fields and tables of a relational database.')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO announcements (id, title, description, tag, color, posted_by, created_at) VALUES
-('ann-1', 'Operating Systems Lab Schedule Updated', 'Lab sessions for Operating Systems have been rescheduled.', 'Schedule', 'yellow', 'Admin', '2024-01-18T10:00:00'),
-('ann-2', 'Database Systems Midterm Results', 'Results for the Database Systems midterm are available.', 'Results', 'green', 'Admin', '2024-01-17T16:30:00')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO timeline_events (id, title, event_date, event_time, tag, priority, active) VALUES
-('e1', 'Data Structures Midterm', '2026-08-05', '09:30 AM', 'Exam', 'high', true),
-('e2', 'OS Lab Assignment', '2026-08-10', '11:59 PM', 'Assignment', 'medium', true)
-ON CONFLICT (id) DO NOTHING;

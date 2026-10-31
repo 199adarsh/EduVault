@@ -81,6 +81,12 @@ public class LocalJsonDatabase {
                 // Seed Announcements if empty
                 seedIfEmpty("announcements.json", new com.fasterxml.jackson.core.type.TypeReference<List<Announcement>>() {}, list -> announcementRepository.saveAll(list), announcementRepository.count());
 
+                // Purge legacy dummy timeline seeds if present
+                try {
+                    if (timelineEventRepository.existsById("e1")) timelineEventRepository.deleteById("e1");
+                    if (timelineEventRepository.existsById("e2")) timelineEventRepository.deleteById("e2");
+                } catch (Exception ignored) {}
+
                 // Seed Timeline Events if empty
                 seedIfEmpty("timeline.json", new com.fasterxml.jackson.core.type.TypeReference<List<TimelineEvent>>() {}, list -> timelineEventRepository.saveAll(list), timelineEventRepository.count());
 

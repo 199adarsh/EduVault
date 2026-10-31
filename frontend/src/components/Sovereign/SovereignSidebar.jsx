@@ -6,7 +6,7 @@ import { cn } from '../../lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
-const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOpen }) => {
+const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOpen, onLogout }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const menuRef = useRef(null);
 
@@ -65,14 +65,14 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
     const handleLogout = (e) => {
         e.stopPropagation();
         toast.info('Terminating Sovereign Session...');
-        localStorage.removeItem('eduvault_profile');
-        localStorage.removeItem('eduvault_subjects');
-        localStorage.removeItem('eduvault_last_synced');
-        localStorage.removeItem('eduvault_user_role');
-        localStorage.removeItem('eduvault_teacher_name');
-        localStorage.removeItem('eduvault_teacher_id');
-        localStorage.removeItem('eduvault_excluded_subjects');
-        setTimeout(() => window.location.href = '/', 400);
+        if (onLogout) {
+            onLogout();
+        } else {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace('/');
+            window.location.reload();
+        }
     };
 
     const isTeacher = (localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER');

@@ -110,10 +110,19 @@ const SovereignLayout = () => {
         return null;
     }, [subjects]);
 
+    const handleLogout = () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        setProfile(null);
+        setSubjects([]);
+        window.location.replace('/');
+        window.location.reload();
+    };
+
     return (
         <div className="flex h-screen overflow-hidden bg-canvas-bg text-text-primary font-sans antialiased selection:bg-primary/20">
             {/* Sidebar */}
-            <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+            <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} onLogout={handleLogout} />
 
             {/* Mobile Overlay */}
             {mobileMenuOpen && (

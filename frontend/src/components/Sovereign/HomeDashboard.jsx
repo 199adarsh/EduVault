@@ -218,12 +218,6 @@ const HomeDashboard = () => {
 
     try {
       // Phase 1: Authentication (0 - 30%)
-      await axios.post(`${API_BASE}/profile`, {
-        ...profile,
-        prn: loginPrn,
-        dob: loginDob
-      });
-
       clearInterval(authInterval);
       setSyncProgress(30);
 

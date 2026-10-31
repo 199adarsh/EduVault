@@ -498,67 +498,6 @@ const AttendanceAnalytics = () => {
         return { totalAttended: att, totalConducted: cond };
     }, [activeSubjects]);
 
-    // 30-Day Activity Matrix
-    const matrix30Days = useMemo(() => {
-        const dayMap = {};
-        activeSubjects.forEach(sub => {
-            (sub.detailedAttendance || []).forEach(rec => {
-                if (!rec.date) return;
-                if (!dayMap[rec.date]) {
-                    dayMap[rec.date] = { present: 0, absent: 0, date: rec.date };
-                }
-                if (rec.status === 'Present') dayMap[rec.date].present += 1;
-                else dayMap[rec.date].absent += 1;
-            });
-        });
-
-        const parseDate = (dStr) => {
-            const p = dStr.split('-');
-            if (p.length === 3) {
-                if (p[0].length === 4) return new Date(`${p[0]}-${p[1]}-${p[2]}`).getTime();
-                return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();
-            }
-            return new Date(dStr).getTime();
-        };
-
-        const sortedDays = Object.values(dayMap).sort((a, b) => parseDate(b.date) - parseDate(a.date));
-        const recent = sortedDays.slice(0, 30);
-
-        let presentDays = 0;
-        let absentDays = 0;
-        const dots = recent.map(d => {
-            const isAbsent = d.absent > 0 && d.present === 0;
-            if (isAbsent) absentDays++;
-            else presentDays++;
-            return {
-                date: d.date,
-                status: isAbsent ? 'Absent' : 'Present',
-                present: d.present,
-                absent: d.absent
-            };
-        });
-
-        const holidayCount = Math.max(0, 30 - dots.length);
-        while (dots.length < 30) {
-            dots.push({ date: 'Off / Holiday', status: 'Holiday', present: 0, absent: 0 });
-        }
-
-        return {
-            dots,
-            presentCount: presentDays,
-            absentCount: absentDays,
-            holidayCount
-        };
-    }, [activeSubjects]);
-
-    const matrixDateRange = useMemo(() => {
-        const dates = matrix30Days.dots.filter(d => d.status !== 'Holiday').map(d => d.date);
-        if (dates.length >= 2) {
-            return `${dates[dates.length - 1]} - ${dates[0]}`;
-        }
-        return 'Recent 30 Class Days';
-    }, [matrix30Days]);
-
     // Heatmap data matrix
     const activityMap = useMemo(() => {
         const map = {};
@@ -1058,53 +997,29 @@ const AttendanceAnalytics = () => {
                                 </div>
                             </div>
 
-                            {/* Activity Matrix Overview (30-Day Activity Matrix) */}
-                            <div className="flex flex-col gap-2 pt-1">
+                            {/* Real Full Semester Attendance Heatmap */}
+                            <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        30-Day Activity Matrix
+                                        Attendance Matrix Activity
                                     </span>
-                                    <span className="text-[10px] text-slate-400 font-medium">
-                                        {matrixDateRange}
-                                    </span>
+                                    <div className="flex items-center gap-2.5 text-[10px] text-slate-400 font-medium">
+                                        <div className="flex items-center gap-1">
+                                            <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]" />
+                                            <span>Present</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <span className="w-2 h-2 rounded-[2px] bg-[#f85149]" />
+                                            <span>Absent</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <span className="w-2 h-2 rounded-[2px] bg-slate-200" />
+                                            <span>Holiday</span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Dot Grid Matrix (30 dots in 10-column responsive grid) */}
-                                <div 
-                                    aria-label="Attendance dot matrix for last 30 class days"
-                                    className="grid grid-cols-10 gap-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100"
-                                >
-                                    {matrix30Days.dots.map((dot, idx) => {
-                                        const bg = dot.status === 'Present'
-                                            ? 'bg-blue-600'
-                                            : dot.status === 'Absent'
-                                                ? 'bg-rose-500'
-                                                : 'bg-slate-200';
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className={`w-full aspect-square rounded-full ${bg} transition-transform hover:scale-125 cursor-pointer shadow-2xs`}
-                                                title={`${dot.date}: ${dot.status}`}
-                                            />
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Legend */}
-                                <div className="flex items-center justify-between text-slate-500 px-1 text-[11px] font-medium flex-wrap gap-2">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
-                                        <span>Present ({matrix30Days.presentCount})</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                                        <span>Absent ({matrix30Days.absentCount})</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0" />
-                                        <span>Holiday ({matrix30Days.holidayCount})</span>
-                                    </div>
-                                </div>
+                                <SharedAttendanceHeatmap subjects={activeSubjects} weeksCount={18} />
                             </div>
 
                             {/* Risk Nodes Alert Card (Stitch Exact Architecture) */}

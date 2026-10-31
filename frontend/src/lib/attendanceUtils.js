@@ -86,19 +86,26 @@ export function formatAttendanceDaySubjects(lectures, compact = false) {
  */
 export function normalizeDateKey(dateStr) {
   if (!dateStr) return { ddmmyyyy: '', yyyymmdd: '' };
-  const parts = dateStr.split('-');
+  const normalized = String(dateStr).replace(/\//g, '-').trim();
+  const parts = normalized.split('-');
   if (parts.length === 3) {
     if (parts[0].length === 4) {
       // YYYY-MM-DD
+      const yyyy = parts[0];
+      const mm = parts[1].padStart(2, '0');
+      const dd = parts[2].padStart(2, '0');
       return {
-        ddmmyyyy: `${parts[2]}-${parts[1]}-${parts[0]}`,
-        yyyymmdd: dateStr
+        ddmmyyyy: `${dd}-${mm}-${yyyy}`,
+        yyyymmdd: `${yyyy}-${mm}-${dd}`
       };
     } else {
       // DD-MM-YYYY
+      const dd = parts[0].padStart(2, '0');
+      const mm = parts[1].padStart(2, '0');
+      const yyyy = parts[2];
       return {
-        ddmmyyyy: dateStr,
-        yyyymmdd: `${parts[2]}-${parts[1]}-${parts[0]}`
+        ddmmyyyy: `${dd}-${mm}-${yyyy}`,
+        yyyymmdd: `${yyyy}-${mm}-${dd}`
       };
     }
   }

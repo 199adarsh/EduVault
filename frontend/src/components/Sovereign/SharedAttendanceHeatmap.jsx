@@ -47,11 +47,19 @@ export function buildSharedHeatmapData(subjects, weeksCount = 18) {
   let weeksToShow = weeksCount;
 
   if (dates.length > 0) {
-    const earliestStr = dates.sort()[0];
+    const sortedDates = [...dates].sort();
+    const earliestStr = sortedDates[0];
+    const latestStr = sortedDates[sortedDates.length - 1];
+
     const earliest = new Date(earliestStr.replace(/-/g, '/'));
+    const latest = new Date(latestStr.replace(/-/g, '/'));
+    const effectiveEnd = latest > today ? latest : today;
+
     const startSunday = new Date(earliest);
     startSunday.setDate(earliest.getDate() - earliest.getDay());
-    weeksToShow = Math.max(weeksCount, 18);
+
+    const totalDays = Math.max(1, Math.ceil((effectiveEnd.getTime() - startSunday.getTime()) / (24 * 60 * 60 * 1000)));
+    weeksToShow = Math.max(weeksCount, Math.ceil(totalDays / 7) + 1);
     startOfGrid = startSunday;
   }
 
@@ -88,7 +96,7 @@ const SharedAttendanceHeatmap = ({
     [subjects, weeksCount]
   );
 
-  const visibleWeeks = useMemo(() => grid.slice(-weeksCount), [grid, weeksCount]);
+  const visibleWeeks = useMemo(() => grid, [grid]);
 
   const { presentAbbrs, absentAbbrs } = useMemo(() => {
     if (!hoveredDay?.entry?.lectures) return { presentAbbrs: [], absentAbbrs: [] };

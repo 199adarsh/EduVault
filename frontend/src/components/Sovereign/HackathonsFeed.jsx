@@ -77,33 +77,33 @@ const HackathonsFeed = () => {
                 </div>
             </div>
 
-            {/* List: Responsive 1 col on mobile, 2 col on sm+ */}
-            <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full min-w-0">
+            {/* List: Compact Watermelon UI cards with semibold typography */}
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
                 {loading ? (
                     Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="p-3 bg-slate-50 border border-border-subtle rounded-xl animate-pulse h-16 w-full" />
+                        <div key={i} className="h-12 bg-slate-50 border border-border-subtle rounded-lg animate-pulse w-full" />
                     ))
                 ) : listings.length > 0 ? (
                     listings.map((item) => (
                         <div
                             key={item.id}
-                            className="flex items-center justify-between gap-2.5 p-3 bg-white hover:bg-slate-50 border border-border-subtle rounded-xl transition-all min-w-0 w-full overflow-hidden"
+                            className="flex items-center justify-between gap-2.5 px-3 py-2 bg-surface-card hover:bg-slate-50/80 border border-border-subtle hover:border-slate-300 rounded-lg transition-all min-w-0 w-full shadow-2xs group"
                         >
                             <div className="min-w-0 flex-1">
                                 <h3
-                                    className="text-xs sm:text-sm font-medium text-text-primary leading-snug line-clamp-2 break-words"
+                                    className="text-xs font-semibold text-text-primary tracking-tight truncate leading-tight"
                                     title={item.title}
                                 >
                                     {item.title}
                                 </h3>
-                                <div className="flex items-center gap-1.5 text-[10px] text-text-secondary mt-1 flex-wrap">
-                                    <span className="font-medium text-slate-700">{item.city || 'BLR'}</span>
+                                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-text-secondary mt-0.5">
+                                    <span className="text-slate-600">{item.city || 'BLR'}</span>
                                     <span>•</span>
-                                    <span className="text-emerald-700 font-medium">{item.fee || 'Free'}</span>
+                                    <span className="text-emerald-600">{item.fee || 'Free'}</span>
                                     {item.mode && (
                                         <>
-                                            <span>•</span>
-                                            <span className="uppercase text-[9px] tracking-wider px-1 py-0.2 rounded bg-slate-100 font-medium text-slate-600">
+                                            <span className="text-slate-300">•</span>
+                                            <span className="uppercase text-[9px] font-semibold tracking-wider text-slate-500">
                                                 {item.mode}
                                             </span>
                                         </>
@@ -114,14 +114,14 @@ const HackathonsFeed = () => {
                                 href={item.url || item.shareUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shrink-0 transition-transform shadow-xs min-w-[62px] text-center whitespace-nowrap"
+                                className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shrink-0 transition-transform shadow-xs text-center whitespace-nowrap"
                             >
                                 Apply
                             </a>
                         </div>
                     ))
                 ) : (
-                    <div className="col-span-full py-6 text-center text-xs text-text-secondary bg-slate-50 border border-dashed border-border-subtle rounded-xl">
+                    <div className="col-span-full py-6 text-center text-xs text-text-secondary bg-slate-50 border border-dashed border-border-subtle rounded-lg">
                         No hackathons found in this region.
                     </div>
                 )}

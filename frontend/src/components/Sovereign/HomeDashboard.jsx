@@ -3,6 +3,8 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toPng } from 'html-to-image';
 import { cn } from '../../lib/utils';
+import { motion } from 'framer-motion';
+import { getSubjectAbbreviation } from '../../lib/attendanceUtils';
 import { toast } from 'sonner';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
@@ -607,14 +609,13 @@ const HomeDashboard = () => {
 
   const displayCieList = useMemo(() => {
     if (subjectRegistry && subjectRegistry.length > 0) {
-      const sorted = [...subjectRegistry].sort((a, b) => {
+      return [...subjectRegistry].sort((a, b) => {
         const aCie = parseFloat(a.cie) || 0;
         const bCie = parseFloat(b.cie) || 0;
         if (aCie > 0 && bCie === 0) return -1;
         if (bCie > 0 && aCie === 0) return 1;
         return bCie - aCie;
       });
-      return sorted.slice(0, 3);
     }
     return [];
   }, [subjectRegistry]);
@@ -1602,10 +1603,10 @@ const HomeDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Compact Subject Scores List */}
+                  {/* Compact Subject Scores Progress List */}
                   <div className="mt-3 space-y-2">
                     {displayCieList.length > 0 ? (
-                      displayCieList.map((sub, i) => {
+                      displayCieList.slice(0, 4).map((sub, i) => {
                         const cie = parseFloat(sub.cie) || 0;
                         const maxCie = 50;
                         const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
@@ -1742,29 +1743,46 @@ const HomeDashboard = () => {
                         const isHigh = cie >= 40;
                         const isGood = cie >= 30;
                         return (
-                          <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-2">
+                          <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-1.5">
                             <span className={cn(
-                              "text-xs font-bold",
-                              cie === 0 ? "text-slate-400" :
-                                isHigh ? "text-emerald-700" : isGood ? "text-blue-600" : "text-amber-600 font-extrabold"
+                              "text-[11px] sm:text-xs font-bold whitespace-nowrap",
+                              cie === 0 ? "text-slate-400" : isHigh ? "text-emerald-600" : isGood ? "text-primary" : "text-amber-600"
                             )}>
-                              {cie > 0 ? cie : '-'}
+                              {cie > 0 ? `${cie}` : '-'} <span className="text-[9px] sm:text-[10px] text-slate-400 font-normal">/50</span>
                             </span>
 
-                            <div className="relative bg-slate-200/90 rounded-t-lg overflow-hidden flex flex-col justify-end border border-slate-300 w-full max-w-[32px] sm:max-w-[36px]" style={{ height: '140px' }}>
-                              <div
+                            {/* Bar container with striped background */}
+                            <div
+                              className="relative flex h-36 w-full items-end overflow-hidden rounded-lg bg-slate-100 border border-slate-200/50"
+                              style={{
+                                backgroundImage:
+                                  'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(226, 232, 240, 0.6) 4px, rgba(226, 232, 240, 0.6) 8px)',
+                                backgroundSize: '16px 16px',
+                              }}
+                            >
+                              <motion.div
                                 className={cn(
-                                  "w-full rounded-t-lg transition-all duration-500",
-                                  cie === 0 ? "bg-slate-300" :
-                                    isHigh ? "bg-emerald-600" : isGood ? "bg-blue-600" : "bg-amber-600"
+                                  'relative w-full rounded-t-md transition-colors',
+                                  cie === 0 ? 'bg-slate-300' : isHigh ? 'bg-emerald-500 shadow-xs' : isGood ? 'bg-primary shadow-xs' : 'bg-amber-500 shadow-xs'
                                 )}
-                                style={{ height: cie > 0 ? `${Math.max(heightPct, 10)}%` : '6px' }}
-                              />
+                                initial={{ height: '0%' }}
+                                animate={{ height: `${cie > 0 ? Math.max(heightPct, 14) : 6}%` }}
+                                transition={{
+                                  duration: 0.8,
+                                  delay: i * 0.08,
+                                  ease: [0.22, 1, 0.36, 1],
+                                }}
+                              >
+                                <div className="absolute left-1/2 top-1 h-1 w-1/3 -translate-x-1/2 rounded-full bg-white/60" />
+                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-bold text-white tabular-nums drop-shadow-xs">
+                                  {heightPct}%
+                                </span>
+                              </motion.div>
                             </div>
 
                             <div className="text-center flex flex-col items-center mt-1 w-full">
-                              <p className="text-[10px] font-bold text-slate-800 truncate w-full text-center" title={sub.code || sub.name}>
-                                {sub.code || sub.name.slice(0, 8)}
+                              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 truncate w-full text-center" title={sub.code || sub.name}>
+                                {getSubjectAbbreviation(sub.name) || sub.code || sub.name.slice(0, 8)}
                               </p>
                               <p className="text-[9px] text-slate-500 truncate w-full text-center" title={sub.name}>
                                 {sub.name}
@@ -1885,29 +1903,40 @@ const HomeDashboard = () => {
                         const isHigh = cie >= 40;
                         const isGood = cie >= 30;
                         return (
-                          <div key={sub.id || i} className="flex-1 min-w-[56px] max-w-[76px] flex flex-col items-center gap-2">
+                          <div key={sub.id || i} className="flex-1 min-w-[56px] max-w-[76px] flex flex-col items-center gap-1.5">
                             <span className={cn(
-                              "text-xs font-bold",
-                              cie === 0 ? "text-slate-400" :
-                                isHigh ? "text-emerald-700" : isGood ? "text-blue-600" : "text-amber-600 font-extrabold"
+                              "text-xs font-bold whitespace-nowrap",
+                              cie === 0 ? "text-slate-400" : isHigh ? "text-emerald-600" : isGood ? "text-primary" : "text-amber-600"
                             )}>
-                              {cie > 0 ? cie : '-'}
+                              {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] text-slate-400 font-normal">/50</span>
                             </span>
 
-                            <div className="relative bg-slate-200/90 rounded-t-lg overflow-hidden flex flex-col justify-end border border-slate-300 w-full max-w-[36px]" style={{ height: '140px' }}>
+                            {/* Bar container with striped background */}
+                            <div
+                              className="relative flex h-36 w-full items-end overflow-hidden rounded-lg bg-slate-100 border border-slate-200/50"
+                              style={{
+                                backgroundImage:
+                                  'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(226, 232, 240, 0.6) 4px, rgba(226, 232, 240, 0.6) 8px)',
+                                backgroundSize: '16px 16px',
+                              }}
+                            >
                               <div
                                 className={cn(
-                                  "w-full rounded-t-lg",
-                                  cie === 0 ? "bg-slate-300" :
-                                    isHigh ? "bg-emerald-600" : isGood ? "bg-blue-600" : "bg-amber-600"
+                                  'relative w-full rounded-t-md transition-colors',
+                                  cie === 0 ? 'bg-slate-300' : isHigh ? 'bg-emerald-500 shadow-xs' : isGood ? 'bg-primary shadow-xs' : 'bg-amber-500 shadow-xs'
                                 )}
-                                style={{ height: cie > 0 ? `${Math.max(heightPct, 10)}%` : '6px' }}
-                              />
+                                style={{ height: `${cie > 0 ? Math.max(heightPct, 14) : 6}%` }}
+                              >
+                                <div className="absolute left-1/2 top-1 h-1 w-1/3 -translate-x-1/2 rounded-full bg-white/60" />
+                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white tabular-nums drop-shadow-xs">
+                                  {heightPct}%
+                                </span>
+                              </div>
                             </div>
 
                             <div className="text-center flex flex-col items-center mt-1 w-full">
-                              <p className="text-[11px] font-bold text-slate-800 truncate w-full text-center" title={sub.code || sub.name}>
-                                {sub.code || sub.name?.slice(0, 8)}
+                              <p className="text-[11px] font-bold text-slate-900 truncate w-full text-center" title={sub.code || sub.name}>
+                                {getSubjectAbbreviation(sub.name) || sub.code || sub.name?.slice(0, 8)}
                               </p>
                               <p className="text-[10px] text-slate-500 truncate w-full text-center" title={sub.name}>
                                 {sub.name}

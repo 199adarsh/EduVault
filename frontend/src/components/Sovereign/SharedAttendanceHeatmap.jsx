@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { cn } from '../../lib/utils';
 import { getSubjectAbbreviation, normalizeDateKey } from '../../lib/attendanceUtils';
+import { Check, X } from 'lucide-react';
 
 export function buildSharedHeatmapData(subjects, weeksCount = 18) {
   const dayMap = new Map();
@@ -83,6 +84,8 @@ export function buildSharedHeatmapData(subjects, weeksCount = 18) {
   return { grid, dayMap };
 }
 
+const DAY_LABELS = ['', 'M', '', 'W', '', 'F', ''];
+
 const SharedAttendanceHeatmap = ({
   subjects = [],
   weeksCount = 18,
@@ -97,6 +100,23 @@ const SharedAttendanceHeatmap = ({
   );
 
   const visibleWeeks = useMemo(() => grid, [grid]);
+
+  // Compute month headers
+  const monthHeaders = useMemo(() => {
+    const headers = [];
+    let lastMonth = -1;
+    visibleWeeks.forEach((week, index) => {
+      const month = week[0]?.dateObj?.getMonth();
+      if (month !== undefined && month !== lastMonth) {
+        lastMonth = month;
+        headers.push({
+          index,
+          label: week[0].dateObj.toLocaleString('default', { month: 'short' })
+        });
+      }
+    });
+    return headers;
+  }, [visibleWeeks]);
 
   const { presentAbbrs, absentAbbrs } = useMemo(() => {
     if (!hoveredDay?.entry?.lectures) return { presentAbbrs: [], absentAbbrs: [] };
@@ -121,49 +141,102 @@ const SharedAttendanceHeatmap = ({
     return { presentAbbrs: p, absentAbbrs: a };
   }, [hoveredDay]);
 
+  const getCellColor = (cell) => {
+    if (!cell.entry || cell.entry.total === 0) {
+      return cell.isFuture ? 'bg-slate-100/50' : 'bg-slate-100';
+    }
+    const { present, absent, total } = cell.entry;
+    if (total > 0 && present === 0 && absent > 0) {
+      return 'bg-rose-500/85 text-white shadow-2xs';
+    }
+    if (present >= 4) {
+      return 'bg-emerald-600 text-white';
+    }
+    if (present === 3) {
+      return 'bg-emerald-500';
+    }
+    if (present === 2) {
+      return 'bg-emerald-400/80';
+    }
+    return 'bg-emerald-300/70';
+  };
+
   return (
     <div className={cn("w-full flex flex-col md:flex-row items-center md:items-stretch gap-2.5 justify-between min-w-0 overflow-hidden", className)}>
       {/* Scrollable Heatmap Grid */}
       <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar touch-pan-x py-0.5">
-        <div className="flex gap-1 min-w-max">
-          {visibleWeeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-1 shrink-0">
-              {week.map((cell) => {
-                const isAllAbsent = cell.entry && cell.entry.total > 0 && cell.entry.present === 0 && cell.entry.absent > 0;
-                const presentCount = cell.entry ? cell.entry.present : 0;
+        <div className="flex flex-col gap-1 min-w-max">
+          {/* Month labels */}
+          <div className="flex pl-4 text-[9px] font-semibold text-slate-400 h-3.5 relative">
+            {monthHeaders.map(mh => (
+              <span
+                key={mh.index}
+                style={{ marginLeft: `${mh.index * 14}px` }}
+                className="absolute"
+              >
+                {mh.label}
+              </span>
+            ))}
+          </div>
 
-                let bgClass = "bg-slate-200/70";
-                if (isAllAbsent) {
-                  bgClass = "bg-[#f85149]";
-                } else if (presentCount >= 4) {
-                  bgClass = "bg-[#15803d]";
-                } else if (presentCount === 3) {
-                  bgClass = "bg-[#16a34a]";
-                } else if (presentCount === 2) {
-                  bgClass = "bg-[#22c55e]";
-                } else if (presentCount >= 1) {
-                  bgClass = "bg-[#86efac]";
-                }
-
-                return (
-                  <div
-                    key={cell.key}
-                    onMouseEnter={() => setHoveredDay(cell)}
-                    onClick={() => setHoveredDay(cell)}
-                    onTouchStart={() => setHoveredDay(cell)}
-                    className={cn(
-                      "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[2px] transition-transform cursor-pointer hover:scale-125 border border-slate-300/40",
-                      bgClass
-                    )}
-                  />
-                );
-              })}
+          {/* Grid with Day of week labels */}
+          <div className="flex gap-1 items-start">
+            {/* Day labels column */}
+            <div className="flex flex-col gap-1 pr-1 text-[8px] font-bold text-slate-400 leading-none justify-around select-none">
+              {DAY_LABELS.map((lbl, idx) => (
+                <div key={idx} className="h-2.5 sm:h-3 flex items-center justify-center w-2.5">
+                  {lbl}
+                </div>
+              ))}
             </div>
-          ))}
+
+            {/* Week columns */}
+            {visibleWeeks.map((week, wi) => (
+              <div key={wi} className="flex flex-col gap-1 shrink-0">
+                {week.map((cell) => {
+                  const isHovered = hoveredDay?.key === cell.key;
+                  return (
+                    <div
+                      key={cell.key}
+                      onMouseEnter={() => setHoveredDay(cell)}
+                      onClick={() => setHoveredDay(cell)}
+                      onTouchStart={() => setHoveredDay(cell)}
+                      className={cn(
+                        "w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-[3px] transition-all cursor-pointer",
+                        getCellColor(cell),
+                        isHovered && "ring-2 ring-primary ring-offset-1 scale-125 z-10"
+                      )}
+                      title={`${cell.key}: ${cell.entry ? `${cell.entry.present}/${cell.entry.total} present` : 'No classes'}`}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* Heat Calendar Legend */}
+          <div className="flex items-center justify-between text-[9px] text-slate-400 font-medium pt-1.5 pl-4 pr-1">
+            <div className="flex items-center gap-1.5">
+              <span>Less</span>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-[2px] bg-slate-100" />
+                <span className="w-2 h-2 rounded-[2px] bg-emerald-300/70" />
+                <span className="w-2 h-2 rounded-[2px] bg-emerald-400/80" />
+                <span className="w-2 h-2 rounded-[2px] bg-emerald-500" />
+                <span className="w-2 h-2 rounded-[2px] bg-emerald-600" />
+              </div>
+              <span>More</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-[2px] bg-rose-500/85" />
+              <span>Absent</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Date & Lecture status panel - Clean & minimal info */}
+      {/* Date & Lecture status panel (Preserved Sidebar) */}
       <div className="w-full md:w-36 lg:w-40 xl:w-44 shrink-0 flex flex-col justify-center rounded-lg p-2 bg-slate-50 border border-slate-200/80 min-w-0">
         {hoveredDay && hoveredDay.entry ? (
           <div className="flex flex-col gap-1 animate-in fade-in duration-100 min-w-0 text-[10px]">
@@ -177,7 +250,8 @@ const SharedAttendanceHeatmap = ({
             <div className="flex flex-col gap-1 pt-0.5">
               {presentAbbrs.length > 0 && (
                 <div className="flex items-center gap-1 text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded">
-                  <span className="font-bold shrink-0">✓ Present:</span>
+                  <Check className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                  <span className="font-bold shrink-0">Present:</span>
                   <span className="font-semibold truncate">
                     {presentAbbrs.join(', ')}
                   </span>
@@ -186,7 +260,8 @@ const SharedAttendanceHeatmap = ({
 
               {absentAbbrs.length > 0 && (
                 <div className="flex items-center gap-1 text-[9px] text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded">
-                  <span className="font-bold shrink-0">✗ Absent:</span>
+                  <X className="w-2.5 h-2.5 text-rose-600 shrink-0" />
+                  <span className="font-bold shrink-0">Absent:</span>
                   <span className="font-semibold truncate">
                     {absentAbbrs.join(', ')}
                   </span>

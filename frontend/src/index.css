@@ -260,7 +260,25 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.011em;
   background-attachment: fixed;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.032em;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  text-wrap: balance;
+}
+
+/* Watermelon UI Eyebrow Micro-Label */
+.eyebrow {
+  font-size: 0.625rem;
+  line-height: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 ::selection {

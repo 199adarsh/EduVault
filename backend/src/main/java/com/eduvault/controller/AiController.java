@@ -34,7 +34,9 @@ public class AiController {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @PostMapping("/chat")
-    public ResponseEntity<?> chat(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> chat(
+            @RequestHeader(value = "X-Gemini-Api-Key", required = false) String apiKeyHeader,
+            @RequestBody Map<String, String> request) {
         try {
             String question = request.get("question");
             if (question == null || question.trim().isEmpty()) {
@@ -45,6 +47,13 @@ public class AiController {
             }
             String noteId = request.get("noteId"); // Optional context
             String prn = request.get("prn");
+            String customApiKey = apiKeyHeader;
+            if (customApiKey == null || customApiKey.isBlank()) {
+                customApiKey = request.get("apiKey");
+            }
+            if (customApiKey == null || customApiKey.isBlank()) {
+                customApiKey = request.get("customApiKey");
+            }
 
             if (question == null || question.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Question or message is required"));
@@ -52,7 +61,7 @@ public class AiController {
 
             String jsonResponse;
             if (noteId != null && !noteId.isEmpty()) {
-                jsonResponse = ragService.askChapter(question, noteId);
+                jsonResponse = ragService.askChapter(question, noteId, customApiKey);
             } else {
                 // Compile full academic context across all sections of EduVault
                 StringBuilder contextBuilder = new StringBuilder();
@@ -108,7 +117,7 @@ public class AiController {
                     fullContext = "EduVault Academic Vault ready to assist.";
                 }
 
-                jsonResponse = geminiService.askTutor(question, fullContext);
+                jsonResponse = geminiService.askTutor(question, fullContext, customApiKey);
             }
 
             if (jsonResponse == null || jsonResponse.trim().isEmpty()) {

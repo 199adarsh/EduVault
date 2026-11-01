@@ -22,22 +22,22 @@ public class Subject {
     private String createdAt;
     
     @Column(name = "note_count")
-    private int noteCount; 
+    private Integer noteCount = 0; 
     
     private String attendance; 
     private String cie; 
     
     @Column(name = "total_conducted")
-    private int totalConducted;
+    private Integer totalConducted = 0;
     
     @Column(name = "total_attended")
-    private int totalAttended;
+    private Integer totalAttended = 0;
     
     @Column(name = "total_scheduled")
-    private int totalScheduled;
+    private Integer totalScheduled = 0;
     
     @Column(name = "still_to_go")
-    private int stillToGo;
+    private Integer stillToGo = 0;
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "detailed_attendance", columnDefinition = "jsonb")
@@ -46,7 +46,7 @@ public class Subject {
     public Subject() {
     }
 
-    public Subject(String id, String name, String code, String department, String semester, String createdAt, int noteCount, String attendance, String cie, int totalConducted, int totalAttended, int totalScheduled, int stillToGo, List<DashboardSubject.AttendanceRecord> detailedAttendance) {
+    public Subject(String id, String name, String code, String department, String semester, String createdAt, Integer noteCount, String attendance, String cie, Integer totalConducted, Integer totalAttended, Integer totalScheduled, Integer stillToGo, List<DashboardSubject.AttendanceRecord> detailedAttendance) {
         this.id = id;
         this.name = name;
         this.code = code;

@@ -12,7 +12,9 @@ import {
   BookOpen,
   Layers,
   Sparkles,
-  Loader2
+  Loader2,
+  GraduationCap,
+  Building2
 } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
@@ -116,14 +118,98 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
   const [title, setTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [unit, setUnit] = useState('Unit 1');
+  const [category, setCategory] = useState('Notes');
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Map subjects for CustomSelect
-  const subjectOptions = subjects.map(s => ({ label: s.name, value: s.id }));
+  const normalizeDept = (dept) => {
+    if (!dept) return 'AIDS';
+    const upper = dept.toUpperCase();
+    if (upper.includes('UAD') || upper.includes('AIDS') || upper.includes('AI&DS') || upper.includes('AI & DS') || upper.includes('ARTIFICIAL')) return 'AIDS';
+    if (upper.includes('CSE') || upper.includes('COMPUTER')) return 'CSE';
+    if (upper.includes('ECE') || upper.includes('ELECTRONIC')) return 'ECE';
+    if (upper.includes('MECH')) return 'MECH';
+    if (upper.includes('CIVIL')) return 'CIVIL';
+    return upper.replace(/[^A-Z0-9]/g, '');
+  };
+
+  const normalizeSem = (sem) => {
+    if (!sem) return 'S05';
+    const m = sem.toString().match(/(?:sem|semester|s)?\s*0?([1-8])/i);
+    return m ? `S0${m[1]}` : sem.toString().toUpperCase().trim();
+  };
+
+  const departmentOptions = [
+    { label: 'AI & Data Science (AIDS)', value: 'AIDS' },
+    { label: 'Computer Science (CSE)', value: 'CSE' },
+    { label: 'Electronics & Comm (ECE)', value: 'ECE' },
+    { label: 'Mechanical Eng (MECH)', value: 'MECH' },
+    { label: 'Civil Eng (CIVIL)', value: 'CIVIL' }
+  ];
+
+  const semesterOptions = [
+    { label: 'Semester 01 (S01)', value: 'SEM 01' },
+    { label: 'Semester 02 (S02)', value: 'SEM 02' },
+    { label: 'Semester 03 (S03)', value: 'SEM 03' },
+    { label: 'Semester 04 (S04)', value: 'SEM 04' },
+    { label: 'Semester 05 (S05)', value: 'SEM 05' },
+    { label: 'Semester 06 (S06)', value: 'SEM 06' },
+    { label: 'Semester 07 (S07)', value: 'SEM 07' },
+    { label: 'Semester 08 (S08)', value: 'SEM 08' }
+  ];
+
+  const [selectedDept, setSelectedDept] = useState(() => normalizeDept(profile?.department) || 'AIDS');
+  const [selectedSem, setSelectedSem] = useState(() => profile?.semester || 'SEM 05');
+  const [catalogList, setCatalogList] = useState(subjects || []);
+
+  useEffect(() => {
+    if (subjects && subjects.length > 0) {
+      setCatalogList(subjects);
+    } else {
+      axios.get(`${API_BASE}/subjects`)
+        .then(res => {
+          if (Array.isArray(res.data) && res.data.length > 0) {
+            setCatalogList(res.data);
+          }
+        })
+        .catch(err => console.warn('Could not fetch catalog subjects in upload view:', err));
+    }
+  }, [subjects]);
+
+  // Dynamically filter subjects for chosen Department and Semester
+  const filteredSubjects = (catalogList || []).filter(s => {
+    const dMatch = normalizeDept(s.department) === normalizeDept(selectedDept);
+    const sMatch = normalizeSem(s.semester) === normalizeSem(selectedSem);
+    return dMatch && sMatch;
+  });
+
+  const subjectOptions = filteredSubjects.map(s => ({
+    label: s.code ? `${s.name} (${s.code})` : s.name,
+    value: s.id
+  }));
+
   const unitOptions = Array.from({ length: 10 }, (_, i) => ({ label: `Unit ${i + 1}`, value: `Unit ${i + 1}` }));
+
+  const categoryOptions = [
+    { label: 'Notes', value: 'Notes' },
+    { label: 'PYQ', value: 'PYQ' },
+    { label: 'Syllabus', value: 'Syllabus' },
+    { label: 'Lab Manual', value: 'Lab Manual' },
+    { label: 'Lecture Plan', value: 'Lecture Plan' }
+  ];
+
+  // Auto-align subject when department or semester changes
+  useEffect(() => {
+    if (filteredSubjects.length > 0) {
+      if (!filteredSubjects.some(s => s.id === subjectId)) {
+        setSubjectId(filteredSubjects[0].id);
+      }
+    } else {
+      setSubjectId('');
+    }
+  }, [selectedDept, selectedSem, catalogList]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: acceptedFiles => {
@@ -177,9 +263,12 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
     formData.append('file', file);
     formData.append('title', title);
     formData.append('subjectId', subjectId);
+    formData.append('department', selectedDept);
+    formData.append('semester', selectedSem);
     formData.append('unit', unit);
+    formData.append('category', category);
     formData.append('tags', JSON.stringify(tags));
-    formData.append('uploaderName', profile?.name || 'Anonymous');
+    formData.append('uploaderName', profile?.name || 'Academic Administration');
 
     try {
       await axios.post(`${API_BASE}/notes/upload`, formData, {
@@ -195,7 +284,7 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
       setFile(null);
       setTitle('');
       onSuccess();
-    } catch (err) {
+    } catch {
       toast.error('Upload failed. Connection error.');
     } finally {
       setIsUploading(false);
@@ -284,26 +373,60 @@ const UploadNotesView = ({ subjects, onSuccess, profile }) => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-2">
+              <CustomSelect
+                label="Department"
+                icon={Building2}
+                value={selectedDept}
+                options={departmentOptions}
+                onChange={setSelectedDept}
+                placeholder="Department..."
+                disabled={isUploading}
+              />
+
+              <CustomSelect
+                label="Semester"
+                icon={GraduationCap}
+                value={selectedSem}
+                options={semesterOptions}
+                onChange={setSelectedSem}
+                placeholder="Semester..."
+                disabled={isUploading}
+              />
+            </div>
+
             <CustomSelect
               label="Subject"
               icon={BookOpen}
               value={subjectId}
               options={subjectOptions}
               onChange={setSubjectId}
-              placeholder="Select Subject..."
+              placeholder={filteredSubjects.length > 0 ? "Select Subject..." : "No subjects for Dept/Sem"}
               searchable={true}
-              disabled={isUploading}
+              disabled={isUploading || filteredSubjects.length === 0}
             />
 
-            <CustomSelect
-              label="Unit"
-              icon={Layers}
-              value={unit}
-              options={unitOptions}
-              onChange={setUnit}
-              placeholder="Select Unit..."
-              disabled={isUploading}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <CustomSelect
+                label="Unit"
+                icon={Layers}
+                value={unit}
+                options={unitOptions}
+                onChange={setUnit}
+                placeholder="Select Unit..."
+                disabled={isUploading}
+              />
+
+              <CustomSelect
+                label="Category"
+                icon={FileText}
+                value={category}
+                options={categoryOptions}
+                onChange={setCategory}
+                placeholder="Category..."
+                disabled={isUploading}
+              />
+            </div>
 
             <div className="space-y-1">
               <label className="text-xs font-bold text-slate-700 dark:text-white px-0.5">Tags</label>

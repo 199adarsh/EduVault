@@ -79,8 +79,11 @@ CREATE TABLE IF NOT EXISTS announcements (
     tag VARCHAR(255),
     color VARCHAR(255),
     posted_by VARCHAR(255),
-    created_at VARCHAR(255)
+    created_at VARCHAR(255),
+    deadline VARCHAR(255)
 );
+
+ALTER TABLE announcements ADD COLUMN IF NOT EXISTS deadline VARCHAR(255);
 
 CREATE TABLE IF NOT EXISTS predefined_roadmaps (
     id VARCHAR(255) PRIMARY KEY,

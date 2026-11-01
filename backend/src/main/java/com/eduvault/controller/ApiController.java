@@ -9,6 +9,7 @@ import com.eduvault.service.BackblazeStorageService;
 import com.eduvault.service.FileStorageService;
 import com.eduvault.service.GeminiService;
 import com.eduvault.service.RAGService;
+import com.eduvault.util.AcademicNormalizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
@@ -78,12 +79,15 @@ public class ApiController {
             }
         }
 
-        if (targetDept != null && targetSem != null) {
+        if (targetDept != null || targetSem != null) {
             final String finalDept = targetDept;
             final String finalSem = targetSem;
             all = all.stream()
-                .filter(s -> s.getDepartment() != null && s.getDepartment().equalsIgnoreCase(finalDept) && 
-                             s.getSemester() != null && s.getSemester().equalsIgnoreCase(finalSem))
+                .filter(s -> {
+                    boolean deptMatch = finalDept == null || AcademicNormalizer.isDepartmentMatch(s.getDepartment(), finalDept);
+                    boolean semMatch = finalSem == null || AcademicNormalizer.isSemesterMatch(s.getSemester(), finalSem);
+                    return deptMatch && semMatch;
+                })
                 .collect(java.util.stream.Collectors.toList());
         }
         return ResponseEntity.ok(all);
@@ -160,32 +164,99 @@ public class ApiController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String unit,
-            @RequestParam(required = false) String prn) {
-        
-        StudentProfile profile = (prn != null && !prn.isBlank()) ? database.getProfile(prn) : null;
-        String effectiveSemester = (semester != null && !semester.isBlank()) 
-                ? semester 
-                : (profile != null ? profile.getSemester() : null);
-        String effectiveDept = (department != null && !department.isBlank()) 
-                ? department 
-                : (profile != null ? profile.getDepartment() : null);
-        
-        List<Note> notes = database.getNotesByFilter(subjectId, effectiveSemester, examType, keyword, search, effectiveDept, unit);
+            @RequestParam(required = false) String folder,
+            @RequestParam(required = false) String prn,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
 
-        // Ensure synced notes are visible ONLY to students who have the corresponding subject in Continuo
-        if (profile != null && profile.getDepartment() != null && profile.getSemester() != null) {
-            java.util.Set<String> activeSubjectIds = database.getAllSubjects().stream()
-                    .filter(s -> s.getDepartment() != null && s.getDepartment().equalsIgnoreCase(profile.getDepartment()) &&
-                            s.getSemester() != null && s.getSemester().equalsIgnoreCase(profile.getSemester()))
-                    .map(com.eduvault.model.Subject::getId)
-                    .collect(java.util.stream.Collectors.toSet());
+        boolean isTeacher = roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin"));
+        String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
+        StudentProfile profile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
 
-            notes = notes.stream()
-                    .filter(n -> n.getSubjectId() != null && activeSubjectIds.contains(n.getSubjectId()))
-                    .collect(java.util.stream.Collectors.toList());
+        String queryDept = department;
+        String querySem = semester;
+        if (folder != null && folder.contains("-")) {
+            String[] parts = folder.split("-", 2);
+            queryDept = parts[0];
+            querySem = parts[1];
         }
-        
-        return ResponseEntity.ok(notes);
+
+        // Students must ONLY see notes matching their academic profile
+        if (!isTeacher) {
+            if (profile != null) {
+                String profDept = profile.getDepartment();
+                String profSem = profile.getSemester();
+                // Reject unauthorized cross-department or cross-semester folder queries by students
+                if (queryDept != null && !queryDept.isBlank() && !AcademicNormalizer.isDepartmentMatch(queryDept, profDept)) {
+                    return ResponseEntity.ok(java.util.List.of());
+                }
+                if (querySem != null && !querySem.isBlank() && !AcademicNormalizer.isSemesterMatch(querySem, profSem)) {
+                    return ResponseEntity.ok(java.util.List.of());
+                }
+                queryDept = profDept;
+                querySem = profSem;
+            } else if (effectivePrn != null && !effectivePrn.isBlank()) {
+                String inferredDept = AcademicNormalizer.normalizeDepartment(effectivePrn);
+                if (queryDept != null && !queryDept.isBlank() && !AcademicNormalizer.isDepartmentMatch(queryDept, inferredDept)) {
+                    return ResponseEntity.ok(java.util.List.of());
+                }
+                if (queryDept == null || queryDept.isBlank()) {
+                    queryDept = inferredDept;
+                }
+            }
+        }
+
+        List<Note> allNotes = database.getAllNotes();
+        final String finalDept = queryDept;
+        final String finalSem = querySem;
+        final String finalSubjectId = subjectId;
+        final String finalUnit = unit;
+        final String finalSearch = (search != null && !search.isBlank()) ? search.toLowerCase() : ((keyword != null && !keyword.isBlank()) ? keyword.toLowerCase() : null);
+
+        Map<String, Subject> subjectMap = database.getAllSubjects().stream()
+                .filter(s -> s.getId() != null)
+                .collect(java.util.stream.Collectors.toMap(Subject::getId, s -> s, (s1, s2) -> s1));
+
+        List<Note> filtered = allNotes.stream()
+                .filter(n -> {
+                    if (finalSubjectId != null && !finalSubjectId.isBlank() && !finalSubjectId.equalsIgnoreCase(n.getSubjectId())) {
+                        return false;
+                    }
+                    if (finalUnit != null && !finalUnit.isBlank() && (n.getUnit() == null || !n.getUnit().equalsIgnoreCase(finalUnit))) {
+                        return false;
+                    }
+                    if (finalDept != null && !finalDept.isBlank()) {
+                        String noteDept = n.getDepartment();
+                        if ((noteDept == null || noteDept.isBlank()) && n.getSubjectId() != null) {
+                            Subject s = subjectMap.get(n.getSubjectId());
+                            if (s != null) noteDept = s.getDepartment();
+                        }
+                        if (noteDept == null || !AcademicNormalizer.isDepartmentMatch(noteDept, finalDept)) {
+                            return false;
+                        }
+                    }
+                    if (finalSem != null && !finalSem.isBlank()) {
+                        String noteSem = n.getSemester();
+                        if ((noteSem == null || noteSem.isBlank()) && n.getSubjectId() != null) {
+                            Subject s = subjectMap.get(n.getSubjectId());
+                            if (s != null) noteSem = s.getSemester();
+                        }
+                        if (noteSem == null || !AcademicNormalizer.isSemesterMatch(noteSem, finalSem)) {
+                            return false;
+                        }
+                    }
+                    if (finalSearch != null) {
+                        String title = n.getTitle() != null ? n.getTitle().toLowerCase() : "";
+                        String text = n.getExtractedText() != null ? n.getExtractedText().toLowerCase() : "";
+                        if (!title.contains(finalSearch) && !text.contains(finalSearch)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(filtered);
     }
 
     @RequestMapping(value = "/notes/sync-b2", method = {RequestMethod.GET, RequestMethod.POST})
@@ -219,11 +290,29 @@ public class ApiController {
     public ResponseEntity<Map<String, String>> deleteNote(@PathVariable String id) {
         return database.getNoteById(id).map(note -> {
             // Delete from B2 (primary) and also attempt local cleanup for legacy files
-            backblazeStorageService.deleteFile(note.getFileUrl());
+            String b2Key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
+            backblazeStorageService.deleteFile(b2Key);
             fileStorageService.deleteFile(note.getFileUrl());
             database.deleteNote(id);
             return ResponseEntity.ok(Map.of("message", "Note deleted successfully"));
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/notes")
+    public ResponseEntity<Map<String, Object>> deleteAllNotes(
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+        List<Note> all = database.getAllNotes();
+        int count = all.size();
+        for (Note note : all) {
+            try {
+                String b2Key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
+                backblazeStorageService.deleteFile(b2Key);
+                fileStorageService.deleteFile(note.getFileUrl());
+            } catch (Exception ignored) {}
+        }
+        int purgedB2 = backblazeStorageService.purgeAllBucketObjects();
+        database.deleteAllNotes();
+        return ResponseEntity.ok(Map.of("message", "All notes and B2 files deleted successfully", "deletedNotes", count, "purgedB2Objects", purgedB2));
     }
 
     @GetMapping("/files/{noteId}")
@@ -329,8 +418,11 @@ public class ApiController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
             @RequestParam("subjectId") String subjectId,
+            @RequestParam(value = "department", required = false) String departmentParam,
+            @RequestParam(value = "semester", required = false) String semesterParam,
             @RequestParam(value = "unit", required = false, defaultValue = "Unit 1") String unit,
             @RequestParam(value = "examType", required = false, defaultValue = "mid-sem") String examType,
+            @RequestParam(value = "category", required = false, defaultValue = "Notes") String category,
             @RequestParam(value = "tags", required = false) String tagsJson,
             @RequestParam(value = "uploaderName", required = false, defaultValue = "Anonymous") String uploaderName) {
 
@@ -350,18 +442,33 @@ public class ApiController {
             }
         }
 
-        // 2. Extract department and semester directly from the selected subject
+        // 2. Extract department and semester directly from selected subject or request parameters
         Subject targetSubject = database.getAllSubjects().stream()
                 .filter(s -> s.getId().equals(subjectId))
                 .findFirst().orElse(null);
-        String department = targetSubject != null && targetSubject.getDepartment() != null ? targetSubject.getDepartment() : "General";
-        String semester = targetSubject != null && targetSubject.getSemester() != null ? targetSubject.getSemester() : "General";
+        String department = (targetSubject != null && targetSubject.getDepartment() != null && !targetSubject.getDepartment().isBlank())
+                ? targetSubject.getDepartment()
+                : ((departmentParam != null && !departmentParam.isBlank()) ? departmentParam.trim() : "General");
+        String semester = (targetSubject != null && targetSubject.getSemester() != null && !targetSubject.getSemester().isBlank())
+                ? targetSubject.getSemester()
+                : ((semesterParam != null && !semesterParam.isBlank()) ? semesterParam.trim() : "General");
         
         // 2. Extract text from the in-memory file BEFORE uploading (avoids re-downloading from B2)
         String extractedText = fileStorageService.extractTextFromMultipartFile(file);
 
-        // 3. Upload to Backblaze B2
-        String savedFileName = backblazeStorageService.uploadFile(file);
+        // 3. Construct deterministic B2 key: [CourseCode] [SubjectName]/[Unit]/[filename]
+        String safeSubject = targetSubject != null && targetSubject.getName() != null
+                ? targetSubject.getName().replaceAll("[\\\\/:*?\"<>|]", "_").trim()
+                : "General";
+        String safeUnit = (unit != null && !unit.isBlank()) ? unit.replaceAll("[\\\\/:*?\"<>|]", "_").trim() : "General";
+        String coursePrefix = (targetSubject != null && targetSubject.getCode() != null && !targetSubject.getCode().isBlank())
+                ? targetSubject.getCode().trim().toUpperCase() + " "
+                : "";
+        String courseFolder = (coursePrefix + safeSubject).trim();
+        String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document.pdf";
+        String b2Key = courseFolder + "/" + safeUnit + "/" + UUID.randomUUID() + "-" + originalName;
+
+        String savedFileName = backblazeStorageService.uploadFile(file, b2Key);
         
         // 4. Create Note Record
         Note note = Note.builder()
@@ -372,10 +479,13 @@ public class ApiController {
                 .semester(semester) // Auto-filled from profile
                 .unit(unit)
                 .examType(examType)
-                .fileUrl(savedFileName) // This is now just the file name
+                .fileUrl(savedFileName)
+                .b2ObjectKey(savedFileName)
+                .originalFilename(file.getOriginalFilename())
                 .uploadedBy(uploaderName)
                 .createdAt(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
-                .status("processing")
+                .status("ready")
+                .category(category != null && !category.isBlank() ? category : "Notes")
                 .tags(tags != null ? tags : List.of())
                 .extractedText(extractedText)
                 .build();

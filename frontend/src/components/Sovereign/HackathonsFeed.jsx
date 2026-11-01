@@ -66,11 +66,10 @@ const HackathonsFeed = () => {
                             key={c.id}
                             type="button"
                             onClick={() => setCity(c.id)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
-                                city === c.id
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${city === c.id
                                     ? 'bg-white text-indigo-600 shadow-xs'
                                     : 'text-text-secondary hover:text-text-primary'
-                            }`}
+                                }`}
                         >
                             {c.label}
                         </button>
@@ -91,8 +90,8 @@ const HackathonsFeed = () => {
                             className="flex items-center justify-between gap-2.5 p-3 bg-white hover:bg-slate-50 border border-border-subtle rounded-xl transition-all min-w-0 w-full overflow-hidden"
                         >
                             <div className="min-w-0 flex-1">
-                                <h3 
-                                    className="text-xs sm:text-sm font-bold text-text-primary leading-snug line-clamp-2 break-words"
+                                <h3
+                                    className="text-xs sm:text-sm font-medium text-text-primary leading-snug line-clamp-2 break-words"
                                     title={item.title}
                                 >
                                     {item.title}
@@ -100,7 +99,7 @@ const HackathonsFeed = () => {
                                 <div className="flex items-center gap-1.5 text-[10px] text-text-secondary mt-1 flex-wrap">
                                     <span className="font-medium text-slate-700">{item.city || 'BLR'}</span>
                                     <span>•</span>
-                                    <span className="text-emerald-700 font-semibold">{item.fee || 'Free'}</span>
+                                    <span className="text-emerald-700 font-medium">{item.fee || 'Free'}</span>
                                     {item.mode && (
                                         <>
                                             <span>•</span>
@@ -115,7 +114,7 @@ const HackathonsFeed = () => {
                                 href={item.url || item.shareUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shrink-0 transition-transform shadow-xs min-w-[62px] text-center whitespace-nowrap"
+                                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 shrink-0 transition-transform shadow-xs min-w-[62px] text-center whitespace-nowrap"
                             >
                                 Apply
                             </a>

@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DashboardSubject {
+    private String id;
     private String code;
     private String name;
     private int attendance;

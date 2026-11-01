@@ -27,6 +27,24 @@ public class AcademicYearResolver {
      * - In June 2027: Year of study = 2027 - 2025 + 1 = 3 -> "TY-UAD"
      */
     public static String resolveYearFolder(String prn, String fallbackDepartment) {
+        return resolveYearFolder(prn, fallbackDepartment, null);
+    }
+
+    public static String resolveYearFolder(String prn, String fallbackDepartment, String semester) {
+        if (semester != null && !semester.isBlank()) {
+            int semNum = AcademicNormalizer.getSemesterNumber(semester);
+            String yearPrefix;
+            if (semNum <= 2) yearPrefix = "FY";
+            else if (semNum <= 4) yearPrefix = "SY";
+            else if (semNum <= 6) yearPrefix = "TY";
+            else yearPrefix = "FINAL";
+
+            String branch = (fallbackDepartment != null && !fallbackDepartment.isBlank())
+                    ? AcademicNormalizer.normalizeDepartment(fallbackDepartment)
+                    : "UAD";
+            return yearPrefix + "-" + branch;
+        }
+
         if (prn == null || prn.trim().isEmpty()) {
             return fallbackDepartment != null && !fallbackDepartment.isBlank() 
                     ? "TY-" + fallbackDepartment.replace("B.Tech-", "") 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -17,19 +17,108 @@ import {
     UploadCloud
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import DocumentLoadingBar from '../DocumentLoadingBar';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
+const normalizeDept = (dept) => {
+    if (!dept) return 'AIDS';
+    const upper = dept.toUpperCase();
+    if (upper.includes('UAD') || upper.includes('AIDS') || upper.includes('AI&DS') || upper.includes('AI & DS') || upper.includes('ARTIFICIAL')) return 'AIDS';
+    if (upper.includes('CSE') || upper.includes('COMPUTER')) return 'CSE';
+    if (upper.includes('ECE') || upper.includes('ELECTRONIC')) return 'ECE';
+    if (upper.includes('MECH')) return 'MECH';
+    if (upper.includes('CIVIL')) return 'CIVIL';
+    return upper.replace(/[^A-Z0-9]/g, '');
+};
+
+const normalizeSem = (sem) => {
+    if (!sem) return 'S05';
+    const m = sem.toString().match(/(?:sem|semester|s)?\s*0?([1-8])/i);
+    return m ? `S0${m[1]}` : sem.toString().toUpperCase().trim();
+};
+
 const PYQsDatabase = ({ embedded = false }) => {
-    const outletCtx = useOutletContext() || {};
-    const subjects = outletCtx.subjects || [];
+    const outletCtx = useOutletContext();
+    const rawSubjects = outletCtx?.subjects || null;
+    const catalogSubjects = outletCtx?.catalogSubjects || null;
+    const profile = outletCtx?.profile || (() => {
+        try {
+            const saved = localStorage.getItem('eduvault_profile');
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    })();
+
+    const userRole = localStorage.getItem('eduvault_user_role') || (profile?.dob === 'TEACHER' ? 'teacher' : 'student');
+    const isTeacher = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
+
+    const studentDept = normalizeDept(profile?.department);
+    const studentSem = normalizeSem(profile?.semester);
+
+    // Show only the subjects that the student has (matching profile dept & semester, or teacher assigned subjects)
+    const subjects = useMemo(() => {
+        const currentRaw = rawSubjects || [];
+        const currentCatalog = catalogSubjects || [];
+
+        if (isTeacher) {
+            try {
+                const savedTeacher = localStorage.getItem('eduvault_teacher_subjects');
+                if (savedTeacher) {
+                    const parsed = JSON.parse(savedTeacher);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        const pool = currentCatalog.length > 0 ? currentCatalog : currentRaw;
+                        const matched = pool.filter(s =>
+                            parsed.includes(s.id) || parsed.includes(s.name) || parsed.includes(s.code)
+                        );
+                        if (matched.length > 0) return matched;
+                    }
+                }
+            } catch {
+                /* ignore */
+            }
+            return currentCatalog.length > 0 ? currentCatalog : currentRaw;
+        }
+
+        const enrolled = currentRaw.filter(s => {
+            const sDept = s.department ? normalizeDept(s.department) : null;
+            const sSem = s.semester ? normalizeSem(s.semester) : null;
+            if (sDept && sSem) {
+                return sDept === studentDept && sSem === studentSem;
+            }
+            const catMatch = currentCatalog.find(cs => cs.id === s.id || (cs.code && s.code && cs.code.toLowerCase() === s.code.toLowerCase()));
+            if (catMatch) {
+                return normalizeDept(catMatch.department) === studentDept && normalizeSem(catMatch.semester) === studentSem;
+            }
+            return false;
+        });
+
+        if (enrolled.length > 0) return enrolled;
+
+        if (currentCatalog.length > 0) {
+            const matchedCatalog = currentCatalog.filter(cs =>
+                normalizeDept(cs.department) === studentDept &&
+                normalizeSem(cs.semester) === studentSem
+            );
+            if (matchedCatalog.length > 0) return matchedCatalog;
+        }
+
+        return [];
+    }, [rawSubjects, catalogSubjects, isTeacher, studentDept, studentSem]);
+
     const [pyqs, setPyqs] = useState([]);
+    const [allPyqs, setAllPyqs] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterSubject, setFilterSubject] = useState('');
     const [filterExam, setFilterExam] = useState('');
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
+
+    // Loading Bar state for document/PYQ opening
+    const [openingPyq, setOpeningPyq] = useState(null);
+    const [openProgress, setOpenProgress] = useState(0);
 
     // AI Predictor State
     const [predictorPyq, setPredictorPyq] = useState('');
@@ -53,11 +142,20 @@ const PYQsDatabase = ({ embedded = false }) => {
         textContent: ''
     });
 
-    useEffect(() => {
-        fetchPyqs();
-    }, [filterSubject, filterExam]);
+    const fetchAllPyqs = useCallback(async () => {
+        try {
+            const res = await axios.get(`${API_BASE}/pyqs`);
+            setAllPyqs(Array.isArray(res.data) ? res.data : []);
+        } catch (e) {
+            console.error("Archive pool sync failed", e);
+        }
+    }, []);
 
-    const fetchPyqs = async () => {
+    useEffect(() => {
+        fetchAllPyqs();
+    }, [fetchAllPyqs]);
+
+    const fetchPyqs = useCallback(async () => {
         setLoading(true);
         try {
             const res = await axios.get(`${API_BASE}/pyqs`, {
@@ -67,11 +165,63 @@ const PYQsDatabase = ({ embedded = false }) => {
                 }
             });
             setPyqs(Array.isArray(res.data) ? res.data : []);
-        } catch (err) {
+        } catch {
             toast.error("Archive synchronization failed");
         } finally {
             setLoading(false);
         }
+    }, [filterSubject, filterExam]);
+
+    useEffect(() => {
+        fetchPyqs();
+    }, [fetchPyqs]);
+
+    // Filter subjects dropdown to ONLY show subjects that have at least 1 PYQ document available
+    const subjectsWithPyqs = useMemo(() => {
+        if (!subjects || subjects.length === 0) return [];
+        const pool = allPyqs.length > 0 ? allPyqs : (pyqs || []);
+        return subjects.filter(s => {
+            return pool.some(q => 
+                (q.subjectId && q.subjectId === s.id) ||
+                (q.subjectName && s.name && q.subjectName.toLowerCase().trim() === s.name.toLowerCase().trim()) ||
+                (s.code && q.subjectId && s.code.toLowerCase().trim() === q.subjectId.toLowerCase().trim())
+            );
+        });
+    }, [subjects, allPyqs, pyqs]);
+
+    // Reset filterSubject if selected subject has no PYQs
+    useEffect(() => {
+        if (filterSubject && subjectsWithPyqs.length > 0) {
+            const exists = subjectsWithPyqs.some(s => s.id === filterSubject);
+            if (!exists) {
+                setFilterSubject('');
+            }
+        }
+    }, [filterSubject, subjectsWithPyqs]);
+
+    const handleViewPyq = (q) => {
+        setOpeningPyq(q);
+        setOpenProgress(15);
+        const interval = setInterval(() => {
+            setOpenProgress(p => {
+                if (p >= 92) {
+                    clearInterval(interval);
+                    return 95;
+                }
+                return p + Math.floor(Math.random() * 18 + 12);
+            });
+        }, 90);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            setOpenProgress(100);
+            setTimeout(() => {
+                setSelectedPyq(q);
+                setShowViewModal(true);
+                setOpeningPyq(null);
+                setOpenProgress(0);
+            }, 250);
+        }, 550);
     };
 
     const handlePredict = async () => {
@@ -87,7 +237,7 @@ const PYQsDatabase = ({ embedded = false }) => {
             });
             setPredictionResult(res.data);
             toast.success("Important topics generated!");
-        } catch (err) {
+        } catch {
             toast.error("Could not generate predictions. Please try again.");
         } finally {
             setPredicting(false);
@@ -109,14 +259,20 @@ const PYQsDatabase = ({ embedded = false }) => {
                 textContent: ''
             });
             fetchPyqs();
-        } catch (err) {
+            fetchAllPyqs();
+        } catch {
             toast.error("Failed to upload question paper.");
         }
     };
 
-    // Filter by client search query
+    // Filter by client search query and enrolled student subjects
     const filteredPyqs = useMemo(() => {
         return pyqs.filter(q => {
+            // Students only see question papers matching their enrolled subjects
+            if (!isTeacher && subjects.length > 0) {
+                const belongsToStudent = subjects.some(s => s.id === q.subjectId || (q.subjectName && s.name && s.name.toLowerCase() === q.subjectName.toLowerCase()));
+                if (!belongsToStudent) return false;
+            }
             const subject = subjects.find(s => s.id === q.subjectId);
             const subjectName = (subject?.name || q.subjectName || '').toLowerCase();
             const term = searchQuery.toLowerCase().trim();
@@ -128,7 +284,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                 (q.tags && q.tags.toLowerCase().includes(term))
             );
         });
-    }, [pyqs, subjects, searchQuery]);
+    }, [pyqs, subjects, isTeacher, searchQuery]);
 
     const totalPages = Math.max(1, Math.ceil(filteredPyqs.length / itemsPerPage));
     const paginatedPyqs = useMemo(() => {
@@ -156,6 +312,14 @@ const PYQsDatabase = ({ embedded = false }) => {
         <div className={cn(
             embedded ? "flex flex-col gap-6" : "flex-1 flex flex-col min-h-screen bg-[#f8fafc] text-slate-900 antialiased overflow-y-auto"
         )}>
+            {/* Smooth animated dummy loading progress bar for opening question papers */}
+            {openingPyq && (
+                <DocumentLoadingBar 
+                    progress={openProgress} 
+                    message="Loading document..." 
+                    submessage={openingPyq.subjectName || "Fetching question paper archive..."} 
+                />
+            )}
             <main className={cn(
                 embedded ? "w-full flex flex-col gap-5" : "p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6 pb-24 md:pb-8"
             )} data-purpose="pyq-repository">
@@ -225,10 +389,14 @@ const PYQsDatabase = ({ embedded = false }) => {
                             }}
                             className="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer"
                         >
-                            <option value="">GLOBAL ARCHIVE</option>
-                            {(subjects || []).map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                            ))}
+                            <option value="">{isTeacher ? "ALL SUBJECTS" : "ALL MY SUBJECTS"}</option>
+                            {subjectsWithPyqs.length === 0 ? (
+                                <option value="" disabled>No subjects with PYQs available</option>
+                            ) : (
+                                subjectsWithPyqs.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name} {s.code ? `(${s.code})` : ''}</option>
+                                ))
+                            )}
                         </select>
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                             <ChevronDown className="w-3.5 h-3.5" />
@@ -335,10 +503,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                                                 </td>
                                                 <td className="py-3.5 px-6 text-center">
                                                     <button
-                                                        onClick={() => {
-                                                            setSelectedPyq(q);
-                                                            setShowViewModal(true);
-                                                        }}
+                                                        onClick={() => handleViewPyq(q)}
                                                         className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                                                         title="View Question Paper"
                                                         type="button"
@@ -431,7 +596,7 @@ const PYQsDatabase = ({ embedded = false }) => {
                                         className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                     >
                                         <option value="">Select Target Subject</option>
-                                        {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        {subjects.map(s => <option key={s.id} value={s.id}>{s.name} {s.code ? `(${s.code})` : ''}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">

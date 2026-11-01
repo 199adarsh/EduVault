@@ -32,6 +32,10 @@ public class Announcement {
     @Column(name = "author_role")
     private String authorRole; // e.g. "Department of AI & Data Science"
 
+    @Column(name = "deadline")
+    @JsonAlias({"dueDate"})
+    private String deadline;
+
     @Column(name = "is_pinned")
     private Boolean isPinned = false;
 

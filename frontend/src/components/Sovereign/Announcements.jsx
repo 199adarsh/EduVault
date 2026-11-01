@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import DeadlinesPopover from './DeadlinesPopover';
 import {
     Plus,
     Search,
@@ -48,12 +49,17 @@ const Announcements = () => {
     });
     const [showCreate, setShowCreate] = useState(false);
     const [editingAnn, setEditingAnn] = useState(null);
+    const [showCalendarPopup, setShowCalendarPopup] = useState(false);
+    const [calendarAnchor, setCalendarAnchor] = useState('top');
+    const topCalendarRef = useRef(null);
+    const cardCalendarRef = useRef(null);
     const [userRole, setUserRole] = useState(() => localStorage.getItem('eduvault_user_role') || 'student');
     const [newAnn, setNewAnn] = useState({
         title: '',
         description: '',
         colorTag: 'blue',
-        type: 'Official Notice'
+        type: 'Official Notice',
+        deadline: ''
     });
 
     const isManager = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
@@ -99,6 +105,7 @@ const Announcements = () => {
         try {
             const payload = {
                 ...newAnn,
+                deadline: newAnn.deadline || null,
                 createdAt: new Date().toISOString()
             };
             await axios.post(`${API_BASE}/announcements`, payload, {
@@ -106,7 +113,7 @@ const Announcements = () => {
             });
             toast.success("Notice published successfully");
             setShowCreate(false);
-            setNewAnn({ title: '', description: '', colorTag: 'blue', type: 'Official Notice' });
+            setNewAnn({ title: '', description: '', colorTag: 'blue', type: 'Official Notice', deadline: '' });
             fetchAnnouncements();
         } catch (err) {
             toast.error(err.response?.data?.error || "Failed to publish notice. Check permissions.");
@@ -117,7 +124,11 @@ const Announcements = () => {
         e.preventDefault();
         if (!editingAnn?.id) return;
         try {
-            await axios.put(`${API_BASE}/announcements/${editingAnn.id}`, editingAnn, {
+            const payload = {
+                ...editingAnn,
+                deadline: editingAnn.deadline || null
+            };
+            await axios.put(`${API_BASE}/announcements/${editingAnn.id}`, payload, {
                 headers: { 'X-User-Role': userRole }
             });
             toast.success("Notice updated successfully");
@@ -160,6 +171,26 @@ const Announcements = () => {
         });
     }, [announcements, searchQuery, activeFilter, bookmarkedIds]);
 
+    // Filter and sort upcoming deadlines: prioritize announcements that have deadlines
+    const upcomingDeadlines = useMemo(() => {
+        const withDeadlines = announcements.filter(a => a.deadline);
+        const withoutDeadlines = announcements.filter(a => !a.deadline);
+
+        withDeadlines.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        return [...withDeadlines, ...withoutDeadlines];
+    }, [announcements]);
+
+    // Active deadlines specifically for calendar views and deadline badges
+    const availableDeadlines = useMemo(() => {
+        return (announcements || [])
+            .filter(a => a && (a.deadline || a.dueDate || a.meta?.deadline))
+            .map(a => ({
+                ...a,
+                deadline: a.deadline || a.dueDate || a.meta?.deadline
+            }))
+            .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+    }, [announcements]);
+
     return (
         <main className="w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-20 md:pb-8 bg-[#F7F9FC] text-slate-900 min-w-0 max-w-full overflow-x-hidden">
             <div className="flex flex-col w-full max-w-[1360px] mx-auto space-y-4 sm:space-y-6 min-w-0">
@@ -180,6 +211,40 @@ const Announcements = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <div className="relative" ref={topCalendarRef}>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setCalendarAnchor('top');
+                                    setShowCalendarPopup(prev => (calendarAnchor === 'top' ? !prev : true));
+                                }}
+                                className={`relative w-9 h-9 rounded-full border transition-all flex items-center justify-center shadow-xs cursor-pointer ${
+                                    showCalendarPopup && calendarAnchor === 'top'
+                                        ? 'bg-blue-50 border-blue-300 text-blue-600'
+                                        : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-blue-600'
+                                }`}
+                                title="Upcoming Deadlines Calendar"
+                                aria-label="Upcoming Deadlines Calendar"
+                                aria-expanded={showCalendarPopup && calendarAnchor === 'top'}
+                            >
+                                <CalendarIcon className="w-4 h-4" />
+                                {availableDeadlines.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
+                                        {availableDeadlines.length}
+                                    </span>
+                                )}
+                            </button>
+
+                            {showCalendarPopup && calendarAnchor === 'top' && (
+                                <DeadlinesPopover
+                                    isOpen={showCalendarPopup && calendarAnchor === 'top'}
+                                    deadlines={availableDeadlines}
+                                    onClose={() => setShowCalendarPopup(false)}
+                                    anchorRef={topCalendarRef}
+                                />
+                            )}
+                        </div>
+
                         <button
                             className="relative w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center text-slate-500 hover:text-blue-600 shadow-xs"
                             title="Bulletin Subscriptions"
@@ -240,25 +305,38 @@ const Announcements = () => {
                 <section className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-xs space-y-2.5 lg:hidden w-full min-w-0 overflow-hidden">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
                             <h3 className="font-bold text-slate-900 text-xs tracking-tight">Upcoming Deadlines</h3>
                         </div>
-                        <span className="text-[11px] font-semibold text-blue-600">Calendar</span>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setCalendarAnchor('top');
+                                setShowCalendarPopup(true);
+                            }}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
+                            title="Open Deadlines Calendar"
+                        >
+                            <CalendarIcon className="w-3 h-3" />
+                            <span>Calendar</span>
+                        </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
-                        {announcements.slice(0, 4).map((ann, i) => {
-                            const d = new Date(ann.createdAt);
-                            const month = !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
-                            const day = !isNaN(d.getTime()) ? d.getDate() : '--';
+                        {upcomingDeadlines.slice(0, 4).map((ann, i) => {
+                            const deadlineDate = ann.deadline ? new Date(ann.deadline) : new Date(ann.createdAt);
+                            const month = !isNaN(deadlineDate.getTime()) ? deadlineDate.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
+                            const day = !isNaN(deadlineDate.getTime()) ? deadlineDate.getDate() : '--';
                             return (
                                 <div key={ann.id || i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 w-full min-w-0">
-                                    <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 shadow-xs">
-                                        <span className="text-[8px] font-bold tracking-wider text-slate-400 uppercase leading-none">{month}</span>
-                                        <span className="text-xs font-extrabold text-slate-800 leading-none mt-0.5">{day}</span>
+                                    <div className="w-9 h-9 rounded-lg bg-white border border-rose-200 text-rose-600 flex flex-col items-center justify-center shrink-0 shadow-xs font-bold">
+                                        <span className="text-[8px] font-bold tracking-wider text-rose-400 uppercase leading-none">{month}</span>
+                                        <span className="text-xs font-extrabold text-rose-700 leading-none mt-0.5">{day}</span>
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <h4 className="text-xs font-bold text-slate-900 truncate leading-snug">{ann.title}</h4>
-                                        <p className="text-[10px] text-slate-500 truncate leading-none mt-0.5">{ann.type || 'Notice'}</p>
+                                        <p className="text-[10px] text-rose-600 font-semibold truncate leading-none mt-0.5">
+                                            {ann.deadline ? `Due: ${new Date(ann.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : (ann.type || 'Notice')}
+                                        </p>
                                     </div>
                                 </div>
                             );
@@ -303,7 +381,7 @@ const Announcements = () => {
                                         <div className="w-full min-w-0">
                                             {/* Header / Metadata */}
                                             <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pb-3 w-full min-w-0">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2 flex-wrap">
                                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                                                         isOfficial
                                                             ? 'bg-blue-50 text-blue-600 border border-blue-200/50'
@@ -316,6 +394,12 @@ const Announcements = () => {
                                                         <CalendarIcon className="w-3.5 h-3.5" />
                                                         {dateFormatted}
                                                     </span>
+                                                    {ann.deadline && (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
+                                                            <Clock className="w-3.5 h-3.5 text-rose-600" />
+                                                            Deadline: {new Date(ann.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </span>
+                                                    )}
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5">
@@ -447,34 +531,54 @@ const Announcements = () => {
                         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
                             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                                 <h3 className="text-sm font-bold text-slate-900">Upcoming Deadlines</h3>
-                                <span className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">
-                                    Calendar
-                                </span>
+                                <div className="relative" ref={cardCalendarRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCalendarAnchor('card');
+                                            setShowCalendarPopup(prev => (calendarAnchor === 'card' ? !prev : true));
+                                        }}
+                                        className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                        title="View All Deadlines"
+                                    >
+                                        <CalendarIcon className="w-3.5 h-3.5" />
+                                        <span>Calendar</span>
+                                    </button>
+
+                                    {showCalendarPopup && calendarAnchor === 'card' && (
+                                        <DeadlinesPopover
+                                            isOpen={showCalendarPopup && calendarAnchor === 'card'}
+                                            deadlines={availableDeadlines}
+                                            onClose={() => setShowCalendarPopup(false)}
+                                            anchorRef={cardCalendarRef}
+                                        />
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-3 mt-4">
-                                {announcements.slice(0, 3).map((ann, i) => {
-                                    const d = new Date(ann.createdAt);
-                                    const month = !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
-                                    const day = !isNaN(d.getTime()) ? d.getDate() : '--';
+                                {upcomingDeadlines.slice(0, 4).map((ann, i) => {
+                                    const deadlineDate = ann.deadline ? new Date(ann.deadline) : new Date(ann.createdAt);
+                                    const month = !isNaN(deadlineDate.getTime()) ? deadlineDate.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
+                                    const day = !isNaN(deadlineDate.getTime()) ? deadlineDate.getDate() : '--';
                                     return (
                                         <div key={ann.id || i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 text-blue-600 flex flex-col items-center justify-center font-bold shadow-xs shrink-0">
-                                                <span className="text-[9px] uppercase text-slate-400 leading-none">{month}</span>
-                                                <span className="text-sm font-bold leading-tight">{day}</span>
+                                            <div className="w-10 h-10 rounded-lg bg-white border border-rose-200 text-rose-600 flex flex-col items-center justify-center font-bold shadow-xs shrink-0">
+                                                <span className="text-[9px] uppercase text-rose-400 leading-none">{month}</span>
+                                                <span className="text-sm font-bold leading-tight text-rose-700">{day}</span>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-bold text-slate-800 truncate">
                                                     {ann.title}
                                                 </p>
-                                                <p className="text-[11px] text-slate-400 truncate">
-                                                    {ann.type || 'Notice'} • {ann.authorRole || 'Department'}
+                                                <p className="text-[11px] text-rose-600 font-semibold truncate">
+                                                    {ann.deadline ? `Deadline: ${new Date(ann.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : (ann.type || 'Notice')}
                                                 </p>
                                             </div>
                                         </div>
                                     );
                                 })}
-                                {announcements.length === 0 && (
+                                {upcomingDeadlines.length === 0 && (
                                     <p className="text-xs text-slate-400 py-6 text-center">No upcoming deadlines logged</p>
                                 )}
                             </div>
@@ -543,6 +647,18 @@ const Announcements = () => {
                                         <option value="red">Red (Urgent)</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    Deadline / Submission Due Date (Optional)
+                                </label>
+                                <input
+                                    type="date"
+                                    value={newAnn.deadline || ''}
+                                    onChange={e => setNewAnn({ ...newAnn, deadline: e.target.value })}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                />
                             </div>
 
                             <div>
@@ -630,6 +746,18 @@ const Announcements = () => {
                                         <option value="red">Red (Urgent)</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    Deadline / Submission Due Date (Optional)
+                                </label>
+                                <input
+                                    type="date"
+                                    value={editingAnn.deadline || ''}
+                                    onChange={e => setEditingAnn({ ...editingAnn, deadline: e.target.value })}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                />
                             </div>
 
                             <div>

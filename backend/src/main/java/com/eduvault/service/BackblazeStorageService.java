@@ -56,11 +56,15 @@ public class BackblazeStorageService {
      * @return the object key (UUID + original extension) stored in B2
      */
     public String uploadFile(MultipartFile file) {
+        return uploadFile(file, null);
+    }
+
+    public String uploadFile(MultipartFile file, String targetKey) {
         String originalName = file.getOriginalFilename();
         String ext = (originalName != null && originalName.contains("."))
                 ? originalName.substring(originalName.lastIndexOf('.'))
                 : "";
-        String key = UUID.randomUUID() + ext;
+        String key = (targetKey != null && !targetKey.isBlank()) ? targetKey : (UUID.randomUUID() + ext);
 
         try {
             PutObjectRequest request = PutObjectRequest.builder()
@@ -204,6 +208,9 @@ public class BackblazeStorageService {
      * @param key the object key to delete
      */
     public void deleteFile(String key) {
+        if (key == null || key.isBlank() || key.startsWith("http://") || key.startsWith("https://")) {
+            return;
+        }
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(bucketName)
@@ -213,6 +220,21 @@ public class BackblazeStorageService {
         } catch (S3Exception e) {
             logger.error("B2 S3 error during delete for key {}: {}", key, e.awsErrorDetails().errorMessage(), e);
         }
+    }
+
+    public int purgeAllBucketObjects() {
+        List<S3Object> objects = listAllObjects();
+        int count = 0;
+        for (S3Object obj : objects) {
+            try {
+                deleteFile(obj.key());
+                count++;
+            } catch (Exception e) {
+                logger.warn("Failed to delete B2 object {}: {}", obj.key(), e.getMessage());
+            }
+        }
+        logger.info("Purged {} total objects from B2 bucket {}", count, bucketName);
+        return count;
     }
 
     /**

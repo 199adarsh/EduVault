@@ -10,7 +10,7 @@ import './RoadmapFlow.css';
 import {
   BookOpen, Check, CheckCircle2, Circle, Clock3, ExternalLink,
   FileText, GitBranch, Layers3, LockKeyhole, Search, Sparkles, Target,
-  X, Briefcase, GraduationCap, ArrowRight, RotateCcw, Award, AlertCircle
+  X, Briefcase, GraduationCap, ArrowRight, RotateCcw, Award, AlertCircle, ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -215,7 +215,6 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
 function FlowCanvas({
   topics,
   topicById,
-  statuses,
   selectedId,
   setSelectedId,
   isUnlocked,
@@ -278,6 +277,7 @@ function FlowCanvas({
       }
     }, 120);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topics, fitView, setCenter]);
 
   useEffect(() => {
@@ -287,6 +287,7 @@ function FlowCanvas({
         setCenter(node.position.x + 115, node.position.y + 65, { zoom: 1.2, duration: 350 });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, setCenter]);
 
   return (
@@ -479,7 +480,7 @@ const Roadmaps = () => {
   const totalTopics = currentRoadmap.topics.length;
   const completedCount = currentRoadmap.topics.filter(t => getStatus(t.id) === 'completed').length;
   const inProgressCount = currentRoadmap.topics.filter(t => getStatus(t.id) === 'in-progress').length;
-  const progressPercent = Math.round((completedCount / totalTopics) * 100);
+  const progressPercent = totalTopics > 0 ? Math.round((completedCount / totalTopics) * 100) : 0;
 
   // Selected topic object
   const selectedTopic = selectedId ? topicById[selectedId] : null;
@@ -548,32 +549,46 @@ const Roadmaps = () => {
           </div>
         </div>
 
-        {/* Preferred Track Selector Tabs */}
-        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0">
-            Select Track:
-          </span>
-          {ROADMAP_CATEGORIES.map(cat => {
-            const isSelected = selectedDomain === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedDomain(cat.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
-                }`}
+        {/* Single Selected Roadmap Selector */}
+        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
+              Active Roadmap:
+            </span>
+            <div className="relative">
+              <select
+                value={selectedDomain}
+                onChange={(e) => setSelectedDomain(e.target.value)}
+                className="bg-blue-50 border border-blue-200 text-blue-900 font-bold text-xs py-1.5 pl-3 pr-8 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
-                <span>{cat.name}</span>
-                <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-200/60 text-slate-500'
-                }`}>
-                  {cat.badge}
-                </span>
-              </button>
-            );
-          })}
+                {ROADMAP_CATEGORIES.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name} ({cat.badge})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {ROADMAP_CATEGORIES.map(cat => {
+              const isSelected = selectedDomain === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedDomain(cat.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
@@ -690,7 +705,6 @@ const Roadmaps = () => {
               <FlowCanvas
                 topics={visibleTopics}
                 topicById={topicById}
-                statuses={statuses}
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
                 isUnlocked={isUnlocked}

@@ -2,6 +2,7 @@ package com.eduvault.service;
 
 import com.eduvault.model.*;
 import com.eduvault.repository.LocalJsonDatabase;
+import com.eduvault.util.AcademicNormalizer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
@@ -213,7 +214,7 @@ public class LmsScraperService {
             return result;
         }
 
-        List<Subject> existingSubjects = getCurrentStudentSubjects();
+        List<Subject> existingSubjects = database.getAllSubjects();
 
         for (JsonNode cNode : coursesNode) {
             String id = cNode.path("id").asText();
@@ -223,6 +224,7 @@ public class LmsScraperService {
 
             String courseCode = extractCourseCode(fullname, shortname);
             Subject matchedSubject = matchSubject(courseCode, fullname, existingSubjects);
+            String displayName = matchedSubject != null ? matchedSubject.getName() : AcademicNormalizer.cleanCourseName(fullname);
 
             result.add(LmsSyncResponse.DiscoveredCourseInfo.builder()
                     .id(id)
@@ -230,8 +232,8 @@ public class LmsScraperService {
                     .fullname(fullname)
                     .shortname(shortname)
                     .viewurl(viewurl)
-                    .matched(matchedSubject != null)
-                    .matchedSubjectName(matchedSubject != null ? matchedSubject.getName() : null)
+                    .matched(true)
+                    .matchedSubjectName(displayName)
                     .matchedSubjectId(matchedSubject != null ? matchedSubject.getId() : null)
                     .build());
         }
@@ -272,7 +274,7 @@ public class LmsScraperService {
         }
 
         List<LmsSyncResponse.DiscoveredCourseInfo> discovered = fetchDiscoveredCourses(session);
-        List<Subject> allSubjects = getCurrentStudentSubjects();
+        List<Subject> allSubjects = new ArrayList<>(database.getAllSubjects());
 
         List<LmsSyncResponse.CourseSyncSummary> courseSummaries = new ArrayList<>();
         List<String> unmatchedCourses = new ArrayList<>();
@@ -328,6 +330,30 @@ public class LmsScraperService {
             int basePct = 20 + (int) (((double) (courseIdx - 1) / Math.max(1, totalToProcess)) * 75);
 
             Subject matchedSubject = matchSubject(courseInfo.getCode(), courseInfo.getFullname(), allSubjects);
+
+            if (matchedSubject == null) {
+                // Auto-register newly discovered course from 1st, 2nd, 3rd, or 4th year
+                String dept = com.eduvault.util.AcademicNormalizer.inferDepartmentFromCourse(courseInfo.getCode(), courseInfo.getFullname());
+                String sem = com.eduvault.util.AcademicNormalizer.inferSemesterFromCourse(courseInfo.getCode(), courseInfo.getFullname());
+                String cleanName = com.eduvault.util.AcademicNormalizer.cleanCourseName(courseInfo.getFullname());
+
+                Subject autoSub = Subject.builder()
+                        .id(UUID.randomUUID().toString())
+                        .name(cleanName)
+                        .code(courseInfo.getCode() != null && !courseInfo.getCode().isBlank() ? courseInfo.getCode().trim().toUpperCase() : "")
+                        .department(dept)
+                        .semester(sem)
+                        .createdAt(LocalDate.now().toString())
+                        .noteCount(0)
+                        .build();
+                try {
+                    matchedSubject = database.addSubject(autoSub);
+                    allSubjects.add(matchedSubject);
+                    logger.info("Auto-registered new curriculum course: {} ({}, {})", cleanName, dept, sem);
+                } catch (Exception ex) {
+                    logger.warn("Could not auto-register course {}: {}", cleanName, ex.getMessage());
+                }
+            }
 
             if (matchedSubject == null) {
                 unmatchedCount++;
@@ -633,17 +659,15 @@ public class LmsScraperService {
             // Store file locally and upload to B2 organized folder-by-folder
             String savedFileName = fileStorageService.storeFile(bytes, filename);
 
-            // Compute dynamic Academic Year & Branch folder (e.g. 24UAD022 -> TY-UAD)
-            String studentPrn = session.username;
-            if (studentPrn == null || studentPrn.isBlank()) {
-                StudentProfile prof = database.getProfile();
-                if (prof != null) studentPrn = prof.getPrn();
-            }
-            String yearFolder = com.eduvault.util.AcademicYearResolver.resolveYearFolder(studentPrn, subject.getDepartment());
+            // Compute deterministic Course Folder: [CourseCode] [SubjectName]/[Unit]
             String safeSubject = subject.getName() != null ? subject.getName().replaceAll("[\\\\/:*?\"<>|]", "_").trim() : "Subject";
             String safeUnit = (unit != null && !unit.isBlank()) ? unit.replaceAll("[\\\\/:*?\"<>|]", "_").trim() : "General";
+            String coursePrefix = (subject.getCode() != null && !subject.getCode().isBlank())
+                    ? subject.getCode().trim().toUpperCase() + " "
+                    : "";
+            String courseFolder = (coursePrefix + safeSubject).trim();
 
-            String b2Folder = yearFolder + "/" + safeSubject + "/" + safeUnit;
+            String b2Folder = courseFolder + "/" + safeUnit;
             String b2Key = b2Folder + "/" + savedFileName;
 
             String uploadedKey = backblazeStorageService.uploadBytes(bytes, b2Key);
@@ -862,8 +886,13 @@ public class LmsScraperService {
             boolean subIsLab = cleanSubject.contains("lab") || (s.getCode() != null && s.getCode().toUpperCase().contains("P"));
             if (subIsLab != courseIsLab) continue;
 
-            if (cleanCourse.contains(cleanSubject) || cleanSubject.contains(cleanCourse)) {
+            if (cleanCourse.equals(cleanSubject)) {
                 return s;
+            }
+            if (cleanCourse.startsWith(cleanSubject) || cleanSubject.startsWith(cleanCourse)) {
+                if (Math.min(cleanCourse.length(), cleanSubject.length()) >= 10) {
+                    return s;
+                }
             }
         }
 

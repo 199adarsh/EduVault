@@ -54,4 +54,15 @@ public class GeminiServiceTest {
         String cleanedList = (String) cleanMethod.invoke(geminiService, textWithPrefix);
         assertEquals("[\"Topic 1\", \"Topic 2\"]", cleanedList);
     }
+
+    @Test
+    void testEffectiveApiKeyResolution() throws Exception {
+        Method method = GeminiService.class.getDeclaredMethod("getEffectiveApiKey");
+        method.setAccessible(true);
+
+        assertEquals("test-api-key", method.invoke(geminiService));
+
+        ReflectionTestUtils.setField(geminiService, "apiKey", "");
+        assertNull(method.invoke(geminiService));
+    }
 }

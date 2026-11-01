@@ -58,6 +58,9 @@ public class LocalJsonDatabase {
     @org.springframework.context.annotation.Lazy
     private com.eduvault.service.FileStorageService fileStorageService;
 
+    @Autowired(required = false)
+    private javax.sql.DataSource dataSource;
+
     private final ObjectMapper mapper = mapperWithJava8Time();
 
     private ObjectMapper mapperWithJava8Time() {
@@ -69,6 +72,15 @@ public class LocalJsonDatabase {
     @PostConstruct
     public void init() {
         logger.info("LocalJsonDatabase redirected to Supabase/PostgreSQL");
+
+        if (dataSource != null) {
+            try (java.sql.Connection conn = dataSource.getConnection();
+                 java.sql.Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE announcements ADD COLUMN IF NOT EXISTS deadline VARCHAR(255)");
+            } catch (Exception e) {
+                logger.warn("Could not alter announcements table for deadline column: {}", e.getMessage());
+            }
+        }
 
         Thread seedThread = new Thread(() -> {
             try {
@@ -116,6 +128,13 @@ public class LocalJsonDatabase {
                     }
                 }
 
+                // Seed Profile if empty
+                if (studentProfileRepository.count() == 0) {
+                    seedIfEmpty("profile.json", new com.fasterxml.jackson.core.type.TypeReference<StudentProfile>() {}, prof -> {
+                        if (prof != null) studentProfileRepository.save(prof);
+                    }, 0);
+                }
+
                 updateSubjectCounts();
                 repairExistingNotes();
             } catch (Exception e) {
@@ -129,7 +148,7 @@ public class LocalJsonDatabase {
 
     public synchronized int repairExistingNotes() {
         try {
-            subjectRepository.findById("ef0e44fc-760d-4b34-93ad-e525d4a5e1c8").ifPresent(subjectRepository::delete);
+            ensureCoreSubjects();
             List<Subject> subjects = subjectRepository.findAll();
             List<Note> allNotes = noteRepository.findAll();
             int repaired = 0;
@@ -140,7 +159,12 @@ public class LocalJsonDatabase {
                 }
 
                 boolean validSubject = note.getSubjectId() != null && subjects.stream().anyMatch(s -> s.getId().equals(note.getSubjectId()));
-                if (!validSubject || "PENDING_MAPPING".equals(note.getStatus())) {
+                if (validSubject) {
+                    if ("PENDING_MAPPING".equalsIgnoreCase(note.getStatus())) {
+                        note.setStatus("ready");
+                        repaired++;
+                    }
+                } else {
                     Subject matched = findSubjectFromContent(note.getExtractedText(), subjects);
                     if (matched == null && note.getTitle() != null) {
                         matched = findSubjectFromContent(note.getTitle(), subjects);
@@ -151,9 +175,6 @@ public class LocalJsonDatabase {
                         note.setSemester(matched.getSemester());
                         note.setStatus("ready");
                         repaired++;
-                    } else {
-                        note.setSubjectId(null);
-                        note.setStatus("PENDING_MAPPING");
                     }
                 }
             }
@@ -445,7 +466,7 @@ public class LocalJsonDatabase {
     }
 
     public StudentProfile getProfile() {
-        return null;
+        return studentProfileRepository.findAll().stream().findFirst().orElse(null);
     }
 
     public StudentProfile getProfile(String prn) {
@@ -500,6 +521,9 @@ public class LocalJsonDatabase {
                 toSave.add(newSub);
                 nameOrCodeMap.put(nameKey, newSub);
                 if (!codeKey.isEmpty()) nameOrCodeMap.put(codeKey, newSub);
+                ds.setId(newSub.getId());
+            } else {
+                ds.setId(matched.getId());
             }
         }
         if (!toSave.isEmpty()) {
@@ -547,8 +571,97 @@ public class LocalJsonDatabase {
     }
 
     public synchronized void ensureCoreSubjects() {
-        subjectRepository.findById("ef0e44fc-760d-4b34-93ad-e525d4a5e1c8").ifPresent(subjectRepository::delete);
-        subjectRepository.findById("af189579-731a-445b-8dd1-ff89b8168157").ifPresent(subjectRepository::delete);
+        // Ensure Sem 4 subjects for AIDS (UAD) exist so legacy notes remain fully mapped
+        if (!subjectRepository.existsById("ef0e44fc-760d-4b34-93ad-e525d4a5e1c8")) {
+            subjectRepository.save(Subject.builder()
+                    .id("ef0e44fc-760d-4b34-93ad-e525d4a5e1c8")
+                    .name("Computer Algorithms")
+                    .code("01ADL204")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(7)
+                    .build());
+        }
+        if (!subjectRepository.existsById("af189579-731a-445b-8dd1-ff89b8168157")) {
+            subjectRepository.save(Subject.builder()
+                    .id("af189579-731a-445b-8dd1-ff89b8168157")
+                    .name("Operating Systems")
+                    .code("01ADL205")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(2)
+                    .build());
+        }
+
+        // Ensure representative dynamic virtual folder subjects for CSE-S05 and CSE-S04
+        if (!subjectRepository.existsById("c501-cse-networks")) {
+            subjectRepository.save(Subject.builder()
+                    .id("c501-cse-networks")
+                    .name("Computer Networks")
+                    .code("01CS501")
+                    .department("CSE")
+                    .semester("SEM 05")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (!subjectRepository.existsById("c502-cse-softeng")) {
+            subjectRepository.save(Subject.builder()
+                    .id("c502-cse-softeng")
+                    .name("Software Engineering")
+                    .code("01CS502")
+                    .department("CSE")
+                    .semester("SEM 05")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (!subjectRepository.existsById("c503-cse-ai")) {
+            subjectRepository.save(Subject.builder()
+                    .id("c503-cse-ai")
+                    .name("Artificial Intelligence")
+                    .code("01CS503")
+                    .department("CSE")
+                    .semester("SEM 05")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (!subjectRepository.existsById("c401-cse-dsa")) {
+            subjectRepository.save(Subject.builder()
+                    .id("c401-cse-dsa")
+                    .name("Data Structures & Algorithms")
+                    .code("01CS401")
+                    .department("CSE")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (!subjectRepository.existsById("c402-cse-dbms")) {
+            subjectRepository.save(Subject.builder()
+                    .id("c402-cse-dbms")
+                    .name("Database Management Systems")
+                    .code("01CS402")
+                    .department("CSE")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (!subjectRepository.existsById("c403-cse-toc")) {
+            subjectRepository.save(Subject.builder()
+                    .id("c403-cse-toc")
+                    .name("Theory of Computation")
+                    .code("01CS403")
+                    .department("CSE")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
     }
 
     private Subject matchSubjectForNote(Note note, List<Subject> subjects) {
@@ -628,6 +741,11 @@ public class LocalJsonDatabase {
         return subjectRepository.findAll();
     }
 
+    public Optional<Subject> getSubjectById(String id) {
+        if (id == null) return Optional.empty();
+        return subjectRepository.findById(id);
+    }
+
     public List<Note> getAllNotes() {
         return noteRepository.findAll();
     }
@@ -655,6 +773,11 @@ public class LocalJsonDatabase {
 
     public void deleteNote(String id) {
         noteRepository.deleteById(id);
+        updateSubjectCounts();
+    }
+
+    public synchronized void deleteAllNotes() {
+        noteRepository.deleteAll();
         updateSubjectCounts();
     }
     
@@ -754,6 +877,7 @@ public class LocalJsonDatabase {
             if (updated.getColor() != null) existing.setColor(updated.getColor());
             if (updated.getPostedBy() != null) existing.setPostedBy(updated.getPostedBy());
             if (updated.getAuthorRole() != null) existing.setAuthorRole(updated.getAuthorRole());
+            if (updated.getDeadline() != null) existing.setDeadline(updated.getDeadline());
             if (updated.getIsPinned() != null) existing.setIsPinned(updated.getIsPinned());
             Announcement saved = announcementRepository.save(existing);
             saveAnnouncementsBackup();

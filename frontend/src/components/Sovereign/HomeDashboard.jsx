@@ -4,8 +4,10 @@ import axios from 'axios';
 import { toPng } from 'html-to-image';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import HackathonsFeed from './HackathonsFeed';
+import DeadlinesPopover from './DeadlinesPopover';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -118,8 +120,38 @@ const HomeDashboard = () => {
   const [timeline, setTimeline] = useState([]);
   const [ciePopupOpen, setCiePopupOpen] = useState(false);
   const [exportingCie, setExportingCie] = useState(false);
+  const [showHomeCalendar, setShowHomeCalendar] = useState(false);
+  const [showHeaderCalendar, setShowHeaderCalendar] = useState(false);
   const cieCardRef = useRef(null);
   const cieExportRef = useRef(null);
+  const homeCalendarRef = useRef(null);
+  const topHeaderCalendarRef = useRef(null);
+
+  const annoDeadlinesList = useMemo(() => {
+    return (announcements || [])
+      .filter(a => a && (a.deadline || a.dueDate || a.meta?.deadline))
+      .map(a => ({
+        ...a,
+        deadline: a.deadline || a.dueDate || a.meta?.deadline
+      }))
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  }, [announcements]);
+
+  const combinedTimeline = useMemo(() => {
+    const annoDeadlines = (announcements || [])
+      .filter(a => a.deadline)
+      .map(a => ({
+        id: `ann-${a.id}`,
+        title: a.title,
+        description: a.description || `Notice: ${a.type || 'Academic'}`,
+        date: a.deadline,
+        isAnnouncement: true
+      }));
+
+    const all = [...(timeline || []), ...annoDeadlines];
+    all.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return all;
+  }, [timeline, announcements]);
 
   const handleExportCie = async () => {
     const targetEl = cieExportRef.current || cieCardRef.current;
@@ -832,6 +864,36 @@ const HomeDashboard = () => {
               <span className="material-symbols-outlined text-[15px]">task_alt</span>Attendance {stats.overall}%
             </span>
           )}
+          <div className="relative" ref={topHeaderCalendarRef}>
+            <button
+              type="button"
+              onClick={() => setShowHeaderCalendar(prev => !prev)}
+              className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
+                showHeaderCalendar
+                  ? 'bg-blue-50 border-blue-300 text-primary'
+                  : 'bg-slate-50 hover:bg-slate-100 border-border-subtle text-text-secondary hover:text-text-primary'
+              }`}
+              title="Deadlines Calendar"
+              aria-label="Upcoming Deadlines Calendar"
+              aria-expanded={showHeaderCalendar}
+            >
+              <CalendarIcon className="w-4 h-4" />
+              {annoDeadlinesList.length > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
+                  {annoDeadlinesList.length}
+                </span>
+              )}
+            </button>
+            {showHeaderCalendar && (
+              <DeadlinesPopover
+                isOpen={showHeaderCalendar}
+                deadlines={annoDeadlinesList}
+                onClose={() => setShowHeaderCalendar(false)}
+                anchorRef={topHeaderCalendarRef}
+              />
+            )}
+          </div>
+
           <button
             onClick={() => navigate('/announcements')}
             className="relative w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
@@ -904,8 +966,8 @@ const HomeDashboard = () => {
 
                 <div className="flex flex-col gap-1 min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-base sm:text-xl md:text-2xl font-medium text-text-primary tracking-tight leading-snug break-words">
-                      Welcome, <span className="font-normal text-text-primary">{formatName(profile?.name)}</span>
+                    <h1 className="text-base sm:text-xl md:text-2xl font-bold text-text-primary tracking-tight leading-snug break-words">
+                      Welcome, <span className="font-bold text-text-primary">{formatName(profile?.name)}</span>
                     </h1>
                     {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? (
                       <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
@@ -942,7 +1004,7 @@ const HomeDashboard = () => {
               </div>
 
               {isTeacher ? (
-                <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
+                <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap mt-3 lg:mt-0">
                   <div
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-amber-400 transition-colors duration-200 cursor-pointer group shadow-2xs"
@@ -1018,7 +1080,7 @@ const HomeDashboard = () => {
               )}
             </div>
 
-            {/* Native Mobile Metric Cards Grid (Stitch / Unstop Style) */}
+          {/* Native Mobile Metric Cards Grid (Stitch / Unstop Style) */}
             {!isTeacher && (
               <div className="w-full grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-border-subtle lg:hidden">
                 <div
@@ -1094,10 +1156,7 @@ const HomeDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* Left Column: Core Academics & Tracking (7 Cols) */}
             <div className="lg:col-span-7 space-y-4">
-              {/* Section 1: Brabble.ai Hackathons Feed */}
-              <HackathonsFeed />
-
-              {/* Section 2: Attendance Activity Heatmap OR Faculty NC Management */}
+              {/* Section 1: Attendance Activity Heatmap OR Faculty NC Management */}
               {isTeacher ? (
                 <section className="bg-surface-card rounded-xl p-4 sm:p-5 border border-border-subtle space-y-3 shadow-2xs" id="faculty-nc-hub">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border-subtle gap-2">
@@ -1322,6 +1381,9 @@ const HomeDashboard = () => {
                 </section>
               )}
 
+              {/* Section 2: Brabble.ai Hackathons Feed */}
+              <HackathonsFeed />
+
               {/* Section 3: Milestones & Events */}
               <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
@@ -1334,13 +1396,46 @@ const HomeDashboard = () => {
                       <span className="text-[11px] font-medium text-text-secondary">Academic Schedule</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shadow-xs"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">{showAddForm ? 'close' : 'add'}</span>
-                    <span>{showAddForm ? 'Cancel' : 'Add Event'}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="relative" ref={homeCalendarRef}>
+                      <button
+                        type="button"
+                        onClick={() => setShowHomeCalendar(prev => !prev)}
+                        className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shadow-2xs ${
+                          showHomeCalendar
+                            ? 'bg-blue-50 border-blue-300 text-primary'
+                            : 'bg-white border-border-subtle hover:bg-slate-50 text-text-primary'
+                        }`}
+                        title="View Announcements Deadlines Calendar"
+                        aria-expanded={showHomeCalendar}
+                      >
+                        <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                        <span className="hidden sm:inline">Calendar</span>
+                        {annoDeadlinesList.length > 0 && (
+                          <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-bold">
+                            {annoDeadlinesList.length}
+                          </span>
+                        )}
+                      </button>
+
+                      {showHomeCalendar && (
+                        <DeadlinesPopover
+                          isOpen={showHomeCalendar}
+                          deadlines={annoDeadlinesList}
+                          onClose={() => setShowHomeCalendar(false)}
+                          anchorRef={homeCalendarRef}
+                        />
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => setShowAddForm(!showAddForm)}
+                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">{showAddForm ? 'close' : 'add'}</span>
+                      <span>{showAddForm ? 'Cancel' : 'Add Event'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {showAddForm ? (
@@ -1382,12 +1477,12 @@ const HomeDashboard = () => {
                       </button>
                     </div>
                   </div>
-                ) : timeline.length > 0 ? (
+                ) : combinedTimeline.length > 0 ? (
                   <div className="mt-3 space-y-2">
-                    {timeline.map((item, i) => {
+                    {combinedTimeline.map((item, i) => {
                       const itemDate = new Date(item.date);
-                      const month = itemDate.toLocaleDateString('en-US', { month: 'short' });
-                      const day = itemDate.getDate();
+                      const month = !isNaN(itemDate.getTime()) ? itemDate.toLocaleDateString('en-US', { month: 'short' }) : 'Now';
+                      const day = !isNaN(itemDate.getTime()) ? itemDate.getDate() : '--';
 
                       return (
                         <div key={item.id || i} className="w-full flex items-center justify-between gap-2.5 p-3 bg-white hover:bg-slate-50 border border-border-subtle hover:border-slate-300 rounded-xl group transition-all min-w-0 overflow-hidden">
@@ -1398,7 +1493,12 @@ const HomeDashboard = () => {
                             </div>
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-text-primary truncate">{item.title}</p>
-                              {item.description ? (
+                              {item.isAnnouncement ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 mt-0.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                  Announcement Deadline
+                                </span>
+                              ) : item.description ? (
                                 <p className="text-[11px] text-text-secondary truncate mt-0.5">{item.description}</p>
                               ) : (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 mt-0.5">
@@ -1408,13 +1508,15 @@ const HomeDashboard = () => {
                               )}
                             </div>
                           </div>
-                          <button
-                            onClick={() => handleDeleteMilestone(i, item.id)}
-                            className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-slate-400 hover:text-status-danger-text transition-opacity p-1.5 rounded-lg hover:bg-slate-50 shrink-0 cursor-pointer"
-                            title="Delete"
-                          >
-                            <span className="material-symbols-outlined text-[15px]">delete</span>
-                          </button>
+                          {!item.isAnnouncement && (
+                            <button
+                              onClick={() => handleDeleteMilestone(i, item.id)}
+                              className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-slate-400 hover:text-status-danger-text transition-opacity p-1.5 rounded-lg hover:bg-slate-50 shrink-0 cursor-pointer"
+                              title="Delete"
+                            >
+                              <span className="material-symbols-outlined text-[15px]">delete</span>
+                            </button>
+                          )}
                         </div>
                       );
                     })}
@@ -1486,82 +1588,84 @@ const HomeDashboard = () => {
               </section>
 
               {/* Section 5: CIE Scores */}
-              <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 min-w-0 w-full">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[17px]">analytics</span>
-                    </div>
-                    <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Internal Marks (CIE)</h2>
-                      <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Internal Assessment</span>
+              {!isTeacher && (
+                <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 min-w-0 w-full">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[17px]">analytics</span>
+                      </div>
+                      <div>
+                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Internal Marks (CIE)</h2>
+                        <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Internal Assessment</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Compact Subject Scores List */}
-                <div className="mt-3 space-y-2">
-                  {displayCieList.length > 0 ? (
-                    displayCieList.map((sub, i) => {
-                      const cie = parseFloat(sub.cie) || 0;
-                      const maxCie = 50;
-                      const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
-                      const barColor = i === 0 ? "bg-primary" : i === 1 ? "bg-teal-600" : "bg-badge-purple-text";
-                      const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-primary bg-blue-50 border-blue-200" : "text-amber-700 bg-amber-50 border-amber-200";
-                      const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Needs Attention";
+                  {/* Compact Subject Scores List */}
+                  <div className="mt-3 space-y-2">
+                    {displayCieList.length > 0 ? (
+                      displayCieList.map((sub, i) => {
+                        const cie = parseFloat(sub.cie) || 0;
+                        const maxCie = 50;
+                        const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
+                        const barColor = i === 0 ? "bg-primary" : i === 1 ? "bg-teal-600" : "bg-badge-purple-text";
+                        const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-primary bg-blue-50 border-blue-200" : "text-amber-700 bg-amber-50 border-amber-200";
+                        const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Needs Attention";
 
-                      return (
-                        <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-text-primary tracking-tight truncate flex-1 min-w-0">
-                              {sub.name}
-                            </span>
-                            <span className="text-xs font-extrabold text-text-primary">
-                              {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] font-semibold text-text-secondary">/ 50</span>
-                            </span>
-                          </div>
-                          <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                            <div
-                              className={cn("h-full rounded-full transition-all duration-500", barColor)}
-                              style={{ width: cie > 0 ? `${pct}%` : '0%' }}
-                            />
-                          </div>
-                          <div className="flex justify-between items-center mt-1.5 text-[10px]">
-                            <span className="font-medium text-text-secondary">{cie > 0 ? `${pct}% Score` : 'Pending evaluation'}</span>
-                            {cie > 0 && (
-                              <span className={cn("px-1.5 py-0.2 rounded text-[9px] font-bold border", tagColor)}>
-                                {statusLabel}
+                        return (
+                          <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-bold text-text-primary tracking-tight truncate flex-1 min-w-0">
+                                {sub.name}
                               </span>
-                            )}
+                              <span className="text-xs font-extrabold text-text-primary">
+                                {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] font-semibold text-text-secondary">/ 50</span>
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                              <div
+                                className={cn("h-full rounded-full transition-all duration-500", barColor)}
+                                style={{ width: cie > 0 ? `${pct}%` : '0%' }}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center mt-1.5 text-[10px]">
+                              <span className="font-medium text-text-secondary">{cie > 0 ? `${pct}% Score` : 'Pending evaluation'}</span>
+                              {cie > 0 && (
+                                <span className={cn("px-1.5 py-0.2 rounded text-[9px] font-bold border", tagColor)}>
+                                  {statusLabel}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="py-5 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
-                      No internal marks available yet.
-                    </div>
-                  )}
-                </div>
+                        );
+                      })
+                    ) : (
+                      <div className="py-5 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
+                        No internal marks available yet.
+                      </div>
+                    )}
+                  </div>
 
-                {/* All Subjects CTA */}
-                <div className="mt-2.5 pt-0.5">
-                  <button
-                    onClick={() => setCiePopupOpen(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50  dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
-                  >
-                    <span>View All Internal Marks</span>
-                    <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                  </button>
-                </div>
-              </section>
+                  {/* All Subjects CTA */}
+                  <div className="mt-2.5 pt-0.5">
+                    <button
+                      onClick={() => setCiePopupOpen(true)}
+                      className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50  dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                    >
+                      <span>View All Internal Marks</span>
+                      <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                    </button>
+                  </div>
+                </section>
+              )}
             </div>
           </div>
         </div>
       </main>
 
       {/* CIE Popup Modal */}
-      {ciePopupOpen && (
+      {!isTeacher && ciePopupOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setCiePopupOpen(false)}

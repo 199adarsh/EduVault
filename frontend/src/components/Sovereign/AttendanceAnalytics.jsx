@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
+import FacultyAttendance from './FacultyAttendance';
 import { computeEngine, calculateLPW } from '../../lib/optimizationEngine';
 import {
     Calendar,
@@ -48,6 +49,16 @@ const AttendanceAnalytics = () => {
     const teacherName = localStorage.getItem('eduvault_teacher_name') || profile?.name || 'Faculty Member';
 
     const [modalTab, setModalTab] = useState('presence'); // 'presence' | 'nc'
+    const [showNcModal, setShowNcModal] = useState(false);
+    const [ncModalTab, setNcModalTab] = useState('requests'); // 'requests' | 'apply'
+    const [ncModalSubject, setNcModalSubject] = useState(null);
+    const [myNcRequests, setMyNcRequests] = useState([]);
+    const [myNcLoading, setMyNcLoading] = useState(false);
+
+    // Subject Notion-style list filters
+    const [subjectFilterTab, setSubjectFilterTab] = useState('all'); // 'all', 'Present', 'Absent', 'Excused'
+    const [subjectSearchQuery, setSubjectSearchQuery] = useState('');
+
     const [subjectNcRequests, setSubjectNcRequests] = useState([]);
     const [ncLoading, setNcLoading] = useState(false);
 
@@ -102,11 +113,46 @@ const AttendanceAnalytics = () => {
         }
     };
 
+    const fetchMyNcRequests = async () => {
+        if (isTeacher) return;
+        setMyNcLoading(true);
+        try {
+            const res = await axios.get(`${API_BASE}/nc/my-requests`, {
+                params: { prn: profile?.prn }
+            });
+            const data = Array.isArray(res.data) ? res.data : [];
+            setMyNcRequests(data);
+        } catch (e) {
+            console.error('Failed to load student NC requests', e);
+        } finally {
+            setMyNcLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (isTeacher) {
             fetchAllFacultyNc();
+        } else {
+            fetchMyNcRequests();
         }
-    }, [isTeacher]);
+    }, [isTeacher, profile?.prn]);
+
+    const openNcModal = (tab = 'requests', subject = null, preselectedDate = null) => {
+        setNcModalTab(tab);
+        const targetSub = subject || selectedSubject || (globalSubjects && globalSubjects.length > 0 ? globalSubjects[0] : null);
+        setNcModalSubject(targetSub);
+        if (preselectedDate) {
+            setSelectedNcDates([preselectedDate]);
+        } else {
+            setSelectedNcDates([]);
+        }
+        setShowNcModal(true);
+        if (isTeacher) {
+            fetchAllFacultyNc();
+        } else {
+            fetchMyNcRequests();
+        }
+    };
 
     const [excludedIds, setExcludedIds] = useState(() => {
         const saved = localStorage.getItem('eduvault_excluded_subjects');
@@ -150,7 +196,12 @@ const AttendanceAnalytics = () => {
     };
 
     const handleSubmitSubjectNc = async (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
+        const targetSub = ncModalSubject || selectedSubject;
+        if (!targetSub) {
+            toast.error('Please select a course for this request.');
+            return;
+        }
         if (selectedNcDates.length === 0) {
             toast.error('Please select at least one absent date.');
             return;
@@ -165,11 +216,11 @@ const AttendanceAnalytics = () => {
 
         try {
             const missedSubs = selectedNcDates.map(date => {
-                const rec = selectedSubject?.detailedAttendance?.find(r => r.date === date && r.status === 'Absent');
+                const rec = targetSub?.detailedAttendance?.find(r => r.date === date && r.status === 'Absent');
                 return {
-                    subjectId: selectedSubject?.id,
-                    subjectName: selectedSubject?.name,
-                    subjectCode: selectedSubject?.code,
+                    subjectId: targetSub?.id,
+                    subjectName: targetSub?.name,
+                    subjectCode: targetSub?.code,
                     date: date,
                     slot: rec?.slot || rec?.time || ''
                 };
@@ -193,7 +244,11 @@ const AttendanceAnalytics = () => {
             setSelectedNcDates([]);
             setNcDescription('');
             setNcProofFile(null);
-            fetchSubjectNcRequests(selectedSubject);
+            setNcModalTab('requests');
+            fetchMyNcRequests();
+            if (targetSub) {
+                fetchSubjectNcRequests(targetSub);
+            }
             if (refreshData) refreshData();
         } catch (err) {
             const msg = err.response?.data?.error || 'Failed to submit leave request.';
@@ -376,6 +431,109 @@ const AttendanceAnalytics = () => {
         if (filterTab === 'safe') return safeSubjects;
         return activeSubjects;
     }, [filterTab, activeSubjects, riskSubjects, safeSubjects]);
+
+    // Notion-Style Single Subject Attendance Sorting & Helpers
+    const parseDateObj = (dateStr) => {
+        if (!dateStr) return null;
+        const str = String(dateStr).trim();
+        const sep = str.includes('-') ? '-' : str.includes('/') ? '/' : null;
+        if (!sep) {
+            const d = new Date(str);
+            return isNaN(d.getTime()) ? null : d;
+        }
+        const parts = str.split(sep);
+        if (parts.length === 3) {
+            let y, m, d;
+            if (parts[0].length === 4) {
+                y = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10) - 1;
+                d = parseInt(parts[2], 10);
+            } else {
+                d = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10) - 1;
+                y = parseInt(parts[2], 10);
+            }
+            const date = new Date(y, m, d);
+            return isNaN(date.getTime()) ? null : date;
+        }
+        const d = new Date(str);
+        return isNaN(d.getTime()) ? null : d;
+    };
+
+    const getSortTimestamp = (dateStr, timeStr = '') => {
+        const d = parseDateObj(dateStr);
+        if (!d) return 0;
+        let ms = d.getTime();
+        if (timeStr) {
+            const match = String(timeStr).match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+            if (match) {
+                let hours = parseInt(match[1], 10);
+                const mins = parseInt(match[2], 10);
+                const ampm = (match[3] || '').toLowerCase();
+                if (ampm === 'pm' && hours < 12) hours += 12;
+                if (ampm === 'am' && hours === 12) hours = 0;
+                ms += (hours * 3600 + mins * 60) * 1000;
+            }
+        }
+        return ms;
+    };
+
+    const sortedSubjectRecords = useMemo(() => {
+        if (!selectedSubject?.detailedAttendance) return [];
+        const records = [...selectedSubject.detailedAttendance].map((rec, origIdx) => {
+            const dObj = parseDateObj(rec.date);
+            const dayName = dObj ? dObj.toLocaleDateString('en-US', { weekday: 'short' }) : '';
+            const matchingNc = (subjectNcRequests || myNcRequests || []).find(r =>
+                r.absentDates && r.absentDates.includes(rec.date)
+            );
+            let effectiveStatus = rec.status;
+            if (rec.status === 'Absent' && matchingNc?.status === 'APPROVED') {
+                effectiveStatus = 'Excused';
+            }
+            const timestamp = getSortTimestamp(rec.date, rec.slot || rec.time || '');
+            return {
+                ...rec,
+                origIdx,
+                dayName,
+                matchingNc,
+                effectiveStatus,
+                timestamp
+            };
+        });
+
+        // Sorted by date/time descending (most recent first)
+        return records.sort((a, b) => b.timestamp - a.timestamp);
+    }, [selectedSubject, subjectNcRequests, myNcRequests]);
+
+    const filteredSubjectRecords = useMemo(() => {
+        return sortedSubjectRecords.filter(rec => {
+            if (subjectFilterTab !== 'all' && rec.effectiveStatus !== subjectFilterTab) {
+                return false;
+            }
+            if (subjectSearchQuery.trim()) {
+                const q = subjectSearchQuery.toLowerCase().trim();
+                const matchDate = (rec.date || '').toLowerCase().includes(q);
+                const matchDay = (rec.dayName || '').toLowerCase().includes(q);
+                const matchSlot = (rec.slot || rec.time || '').toLowerCase().includes(q);
+                const matchStatus = (rec.effectiveStatus || '').toLowerCase().includes(q);
+                return matchDate || matchDay || matchSlot || matchStatus;
+            }
+            return true;
+        });
+    }, [sortedSubjectRecords, subjectFilterTab, subjectSearchQuery]);
+
+    const subjectPresentCount = useMemo(() => 
+        sortedSubjectRecords.filter(r => r.effectiveStatus === 'Present').length,
+        [sortedSubjectRecords]
+    );
+    const subjectAbsentCount = useMemo(() => 
+        sortedSubjectRecords.filter(r => r.effectiveStatus === 'Absent').length,
+        [sortedSubjectRecords]
+    );
+    const subjectExcusedCount = useMemo(() => 
+        sortedSubjectRecords.filter(r => r.effectiveStatus === 'Excused').length,
+        [sortedSubjectRecords]
+    );
 
     // Optimization planner state (minimizable)
     const [isOptMinimized, setIsOptMinimized] = useState(() => {
@@ -889,6 +1047,16 @@ const AttendanceAnalytics = () => {
         );
     }
 
+    if (isTeacher) {
+        return (
+            <div className="flex-1 overflow-y-auto bg-[#F7F9FC] p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
+                <div className="max-w-7xl mx-auto w-full min-w-0">
+                    <FacultyAttendance profile={profile} subjects={globalSubjects || subjects} onRefresh={refreshData} />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex-1 overflow-y-auto bg-[#F7F9FC] p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full min-w-0">
@@ -911,6 +1079,19 @@ const AttendanceAnalytics = () => {
                     </div>
 
                     <div className="flex items-center gap-2.5 shrink-0">
+                        <button
+                            onClick={() => openNcModal('requests')}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-full shadow-xs transition cursor-pointer"
+                            title="View NC & Leave Requests"
+                        >
+                            <Shield className="w-3.5 h-3.5 text-blue-600" />
+                            <span>NC Requests</span>
+                            {(isTeacher ? allFacultyNc.filter(r => r.status === 'PENDING').length : myNcRequests.length) > 0 && (
+                                <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
+                                    {isTeacher ? allFacultyNc.filter(r => r.status === 'PENDING').length : myNcRequests.length}
+                                </span>
+                            )}
+                        </button>
                         <button
                             onClick={isTeacher ? fetchAllFacultyNc : handleBackgroundSync}
                             disabled={isSyncing || allFacultyNcLoading}
@@ -969,26 +1150,6 @@ const AttendanceAnalytics = () => {
                                 <span>Approved: <strong className="text-emerald-600">{allFacultyNc.filter(r => r.status === 'APPROVED').length}</strong></span>
                                 <span>Rejected: <strong className="text-rose-600">{allFacultyNc.filter(r => r.status === 'REJECTED').length}</strong></span>
                                 <span>Total: <strong>{allFacultyNc.length}</strong></span>
-                            </div>
-                        </div>
-
-                        <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Attached Documents Storage</span>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">Cloud Storage</span>
-                            </div>
-                            <div className="my-2 space-y-1 text-xs">
-                                <div className="text-slate-700 font-semibold">Storage: <span className="text-blue-600 font-medium">Secure Document Cloud</span></div>
-                                <p className="text-[11px] text-slate-500">Student medical and event certificates are securely stored.</p>
-                            </div>
-                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                                <button
-                                    onClick={fetchAllFacultyNc}
-                                    className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                                >
-                                    <RefreshCw className="w-3.5 h-3.5" />
-                                    <span>Refresh Leave Requests</span>
-                                </button>
                             </div>
                         </div>
                     </section>
@@ -2391,6 +2552,449 @@ const AttendanceAnalytics = () => {
                     </div>
                 </div>
             )}
+            {/* Global NC & Leave Requests Modal Popup */}
+            {showNcModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+                    onClick={() => setShowNcModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+                                    <Shield className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                                        Attendance Excuse Requests (NC)
+                                    </h3>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                        {isTeacher
+                                            ? 'Review and decide on student leave and duty submissions'
+                                            : 'Medical, duty leave & event excuse requests'}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowNcModal(false)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 cursor-pointer transition"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Student View */}
+                        {!isTeacher ? (
+                            <>
+                                {/* Tab Navigation */}
+                                <div className="px-5 pt-3 border-b border-slate-200 bg-white flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setNcModalTab('requests')}
+                                            className={`px-3.5 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
+                                                ncModalTab === 'requests'
+                                                    ? 'border-blue-600 text-blue-600'
+                                                    : 'border-transparent text-slate-500 hover:text-slate-900'
+                                            }`}
+                                        >
+                                            <FileText className="w-3.5 h-3.5" />
+                                            <span>My Requests ({myNcRequests.length})</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNcModalTab('apply')}
+                                            className={`px-3.5 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
+                                                ncModalTab === 'apply'
+                                                    ? 'border-blue-600 text-blue-600'
+                                                    : 'border-transparent text-slate-500 hover:text-slate-900'
+                                            }`}
+                                        >
+                                            <UploadCloud className="w-3.5 h-3.5" />
+                                            <span>+ Apply for Leave</span>
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={fetchMyNcRequests}
+                                        disabled={myNcLoading}
+                                        className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                        title="Refresh requests"
+                                    >
+                                        <RefreshCw className={`w-3.5 h-3.5 ${myNcLoading ? 'animate-spin text-blue-600' : ''}`} />
+                                    </button>
+                                </div>
+
+                                {/* Body */}
+                                <div className="p-5 overflow-y-auto flex-1 space-y-4">
+                                    {ncModalTab === 'requests' ? (
+                                        myNcLoading ? (
+                                            <div className="py-12 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
+                                                <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+                                                <span>Loading your leave requests...</span>
+                                            </div>
+                                        ) : myNcRequests.length === 0 ? (
+                                            <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200 p-6 space-y-2">
+                                                <Shield className="w-10 h-10 text-slate-300 mx-auto" />
+                                                <h4 className="text-xs font-bold text-slate-800">No Leave Requests Found</h4>
+                                                <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                                                    You haven't submitted any absence excuse or medical leave requests yet.
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNcModalTab('apply')}
+                                                    className="mt-2 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-2xs cursor-pointer inline-flex items-center gap-1"
+                                                >
+                                                    <UploadCloud className="w-3.5 h-3.5" />
+                                                    <span>Apply for Leave Now</span>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {myNcRequests.map((req) => (
+                                                    <div key={req.id} className="p-4 rounded-xl border border-slate-200 bg-white text-xs space-y-2.5 shadow-2xs hover:border-slate-300 transition">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-bold text-slate-900">{req.reason}</span>
+                                                                {req.missedSubjects && req.missedSubjects.length > 0 && (
+                                                                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold">
+                                                                        {req.missedSubjects[0].subjectName}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                                                req.status === 'APPROVED'
+                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                                    : req.status === 'REJECTED'
+                                                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                                                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                                                            }`}>
+                                                                {req.status}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="text-[11px] text-slate-600 space-y-1">
+                                                            <div className="flex items-center gap-1.5 font-mono">
+                                                                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                                                <span>Absent: <strong className="text-slate-800">{(req.absentDates || []).join(', ')}</strong></span>
+                                                            </div>
+                                                            {req.description && (
+                                                                <p className="text-slate-600 italic">"{req.description}"</p>
+                                                            )}
+                                                            {req.reviewComment && (
+                                                                <div className="mt-1 p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700">
+                                                                    <strong className="text-slate-900 font-semibold">Faculty Remarks:</strong> {req.reviewComment}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {req.proofFileName && (
+                                                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setDocPreviewUrl(getNcProofUrl(req));
+                                                                        setDocPreviewName(req.proofFileName);
+                                                                    }}
+                                                                    className="text-blue-600 hover:underline font-semibold flex items-center gap-1.5 text-[11px] cursor-pointer"
+                                                                >
+                                                                    <Eye className="w-3.5 h-3.5" />
+                                                                    <span>View Proof ({req.proofFileName})</span>
+                                                                </button>
+                                                                <span className="text-[10px] text-slate-400">
+                                                                    {req.createdAt ? new Date(req.createdAt).toLocaleDateString() : ''}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )
+                                    ) : (
+                                        /* Student Apply Form */
+                                        <form onSubmit={handleSubmitSubjectNc} className="space-y-4">
+                                            {/* Course Selector */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-slate-700">Select Subject</label>
+                                                <select
+                                                    value={ncModalSubject?.id || ''}
+                                                    onChange={(e) => {
+                                                        const match = (subjects || []).find(s => s.id === e.target.value);
+                                                        setNcModalSubject(match || null);
+                                                        setSelectedNcDates([]);
+                                                    }}
+                                                    className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
+                                                >
+                                                    <option value="" disabled>-- Choose Enrolled Course --</option>
+                                                    {(subjects || []).map(s => (
+                                                        <option key={s.id} value={s.id}>
+                                                            {s.name} ({s.code || 'Course'})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Absent Dates */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                                    <span>Absent Date(s)</span>
+                                                    <span className="text-[11px] font-normal text-slate-500 font-mono">
+                                                        {selectedNcDates.length} selected
+                                                    </span>
+                                                </label>
+
+                                                {/* Absent records from detailedAttendance if available */}
+                                                {ncModalSubject?.detailedAttendance && ncModalSubject.detailedAttendance.filter(r => r.status === 'Absent').length > 0 && (
+                                                    <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto p-1 border border-slate-100 rounded-lg bg-slate-50/50">
+                                                        {ncModalSubject.detailedAttendance.filter(r => r.status === 'Absent').map((rec, idx) => {
+                                                            const isSel = selectedNcDates.includes(rec.date);
+                                                            return (
+                                                                <button
+                                                                    key={idx}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setSelectedNcDates(prev =>
+                                                                            prev.includes(rec.date) ? prev.filter(d => d !== rec.date) : [...prev, rec.date]
+                                                                        );
+                                                                    }}
+                                                                    className={`p-1.5 rounded-lg border text-[11px] font-mono text-left transition cursor-pointer ${
+                                                                        isSel ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                                                                    }`}
+                                                                >
+                                                                    {rec.date}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {/* Manual date input to add custom dates */}
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="date"
+                                                        id="manual-nc-date"
+                                                        onChange={(e) => {
+                                                            if (e.target.value && !selectedNcDates.includes(e.target.value)) {
+                                                                setSelectedNcDates(prev => [...prev, e.target.value]);
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                        className="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:ring-1 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-[11px] text-slate-400">Pick date to add to list</span>
+                                                </div>
+
+                                                {selectedNcDates.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                                        {selectedNcDates.map(d => (
+                                                            <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-mono font-semibold">
+                                                                {d}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setSelectedNcDates(prev => prev.filter(x => x !== d))}
+                                                                    className="hover:text-rose-600 cursor-pointer"
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Reason dropdown */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-slate-700">Reason for Absence</label>
+                                                <select
+                                                    value={ncReason}
+                                                    onChange={(e) => setNcReason(e.target.value)}
+                                                    className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
+                                                >
+                                                    {NC_REASONS.map(r => (
+                                                        <option key={r} value={r}>{r}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Explanation textarea */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-slate-700">Detailed Explanation (Optional)</label>
+                                                <textarea
+                                                    value={ncDescription}
+                                                    onChange={(e) => setNcDescription(e.target.value)}
+                                                    placeholder="Specify medical hospital, competition event details, etc."
+                                                    rows={2}
+                                                    className="w-full text-xs bg-white border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500"
+                                                />
+                                            </div>
+
+                                            {/* Supporting Document Proof */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                                    <span>Supporting Proof Document</span>
+                                                    <span className="text-[10px] text-slate-400 font-normal">PDF, JPG, PNG (Max 15MB)</span>
+                                                </label>
+                                                <input
+                                                    type="file"
+                                                    accept=".pdf,image/png,image/jpeg,image/jpg"
+                                                    onChange={(e) => {
+                                                        if (e.target.files && e.target.files[0]) {
+                                                            setNcProofFile(e.target.files[0]);
+                                                        }
+                                                    }}
+                                                    className="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-xl p-1.5 bg-slate-50/50"
+                                                />
+                                            </div>
+
+                                            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNcModalTab('requests')}
+                                                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    disabled={isSubmittingNc}
+                                                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition disabled:opacity-50"
+                                                >
+                                                    {isSubmittingNc ? 'Submitting...' : 'Submit Request'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            /* Teacher View */
+                            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-1">
+                                        {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((st) => (
+                                            <button
+                                                key={st}
+                                                type="button"
+                                                onClick={() => setTeacherNcFilterStatus(st)}
+                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                                                    teacherNcFilterStatus === st
+                                                        ? 'bg-blue-600 text-white shadow-xs'
+                                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                                                }`}
+                                            >
+                                                {st === 'ALL'
+                                                    ? `All (${allFacultyNc.length})`
+                                                    : st === 'PENDING'
+                                                    ? `Pending (${allFacultyNc.filter(r => r.status === 'PENDING').length})`
+                                                    : st === 'APPROVED'
+                                                    ? `Approved (${allFacultyNc.filter(r => r.status === 'APPROVED').length})`
+                                                    : `Rejected (${allFacultyNc.filter(r => r.status === 'REJECTED').length})`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={fetchAllFacultyNc}
+                                        disabled={allFacultyNcLoading}
+                                        className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                        title="Refresh requests"
+                                    >
+                                        <RefreshCw className={`w-3.5 h-3.5 ${allFacultyNcLoading ? 'animate-spin text-blue-600' : ''}`} />
+                                    </button>
+                                </div>
+
+                                {allFacultyNcLoading ? (
+                                    <div className="py-12 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
+                                        <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+                                        <span>Loading student leave requests...</span>
+                                    </div>
+                                ) : (
+                                    (() => {
+                                        const list = allFacultyNc.filter(r => teacherNcFilterStatus === 'ALL' || r.status === teacherNcFilterStatus);
+                                        if (list.length === 0) {
+                                            return (
+                                                <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200 p-6">
+                                                    <Shield className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                                                    <h4 className="text-xs font-bold text-slate-800">No Leave Requests Found</h4>
+                                                    <p className="text-[11px] text-slate-500">No student submissions match this filter.</p>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <div className="space-y-2.5">
+                                                {list.map(req => (
+                                                    <div key={req.id} className="p-3.5 rounded-xl border border-slate-200 bg-white text-xs space-y-2 shadow-2xs hover:border-blue-200 transition">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-bold text-slate-900">{req.studentName}</span>
+                                                                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">
+                                                                    {req.studentPrn}
+                                                                </span>
+                                                                {req.missedSubjects && req.missedSubjects.length > 0 && (
+                                                                    <span className="px-2 py-0.2 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold">
+                                                                        {req.missedSubjects[0].subjectName}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                                                req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                                req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                                                                'bg-amber-50 text-amber-700 border-amber-200'
+                                                            }`}>
+                                                                {req.status}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="text-[11px] text-slate-600 space-y-0.5">
+                                                            <div>Absent: <strong className="font-mono text-slate-800">{(req.absentDates || []).join(', ')}</strong></div>
+                                                            <div>Reason: <strong className="text-slate-800">{req.reason}</strong>{req.description ? ` - "${req.description}"` : ''}</div>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                                                            {req.proofFileName ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setDocPreviewUrl(getNcProofUrl(req));
+                                                                        setDocPreviewName(req.proofFileName);
+                                                                    }}
+                                                                    className="text-blue-600 hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
+                                                                >
+                                                                    <Eye className="w-3.5 h-3.5" />
+                                                                    <span>View Document</span>
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-slate-400 italic text-[11px]">No file attached</span>
+                                                            )}
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setReviewingReq(req);
+                                                                    setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
+                                                                    setReviewComment(req.reviewComment || '');
+                                                                }}
+                                                                className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] cursor-pointer shadow-2xs"
+                                                            >
+                                                                Review
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
 
             {/* Document Preview Modal */}
             {docPreviewUrl && (

@@ -15,6 +15,7 @@ const SovereignLayout = () => {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [subjects, setSubjects] = useState([]);
+    const [catalogSubjects, setCatalogSubjects] = useState([]);
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
@@ -51,23 +52,80 @@ const SovereignLayout = () => {
 
             setProfile(currentProfile);
 
-            // 2. Fetch notes from server scoped to PRN if available
-            const notesUrl = currentProfile?.prn 
+            // 2. Fetch notes from server scoped to PRN/role if available
+            const role = localStorage.getItem('eduvault_user_role') || (currentProfile?.dob === 'TEACHER' ? 'teacher' : 'student');
+            const isTeacher = role === 'teacher' || role === 'faculty' || role === 'admin';
+            const notesUrl = (currentProfile?.prn && !isTeacher) 
                 ? `${API_BASE}/notes?prn=${encodeURIComponent(currentProfile.prn)}` 
                 : `${API_BASE}/notes`;
-            const notesRes = await axios.get(notesUrl);
+            const notesRes = await axios.get(notesUrl, {
+                headers: { 'X-User-Role': role, 'X-Student-PRN': currentProfile?.prn || '' }
+            });
             const fetchedNotes = Array.isArray(notesRes.data) ? notesRes.data : [];
             setNotes(fetchedNotes);
 
-            // 3. Set subjects: prioritize user's portal subjects from local session, fallback to catalog
-            if (currentSubjects && currentSubjects.length > 0) {
-                setSubjects(currentSubjects);
+            // 3. Fetch full catalog subjects from backend
+            const subsRes = await axios.get(`${API_BASE}/subjects`);
+            const catalogSubs = Array.isArray(subsRes.data) ? subsRes.data : [];
+            setCatalogSubjects(catalogSubs);
+
+            // 4. Set enrolled subjects: maintain student attendance/CIE integrity
+            if (isTeacher) {
+                const savedTeacherSubs = localStorage.getItem('eduvault_teacher_subjects');
+                if (savedTeacherSubs) {
+                    try {
+                        const parsed = JSON.parse(savedTeacherSubs);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            const filtered = catalogSubs.filter(cs =>
+                                parsed.includes(cs.name) || parsed.includes(cs.id) || parsed.some(p => p === cs.name || p === cs.id)
+                            );
+                            setSubjects(filtered.length > 0 ? filtered : catalogSubs);
+                        } else {
+                            setSubjects(catalogSubs);
+                        }
+                    } catch (e) {
+                        setSubjects(catalogSubs);
+                    }
+                } else {
+                    setSubjects(catalogSubs);
+                }
+            } else if (currentSubjects && currentSubjects.length > 0) {
+                // Student has portal-scraped subjects: reconcile and guarantee id, department, and semester
+                const repairedLocal = currentSubjects.map(ls => {
+                    const match = catalogSubs.find(cs =>
+                        (ls.id && cs.id === ls.id) ||
+                        (ls.code && cs.code && ls.code.toLowerCase() === cs.code.toLowerCase()) ||
+                        (ls.name && cs.name && ls.name.toLowerCase() === cs.name.toLowerCase())
+                    );
+                    return {
+                        ...ls,
+                        id: match?.id || ls.id || (ls.code ? `sub-${ls.code.toLowerCase()}` : `sub-${ls.name?.toLowerCase().replace(/\s+/g, '-')}`),
+                        department: match?.department || ls.department || currentProfile?.department || 'B.Tech-UAD',
+                        semester: match?.semester || ls.semester || currentProfile?.semester || 'SEM 05'
+                    };
+                });
+                localStorage.setItem('eduvault_subjects', JSON.stringify(repairedLocal));
+                setSubjects(repairedLocal);
             } else if (currentProfile?.department && currentProfile?.semester) {
-                const subsRes = await axios.get(`${API_BASE}/subjects?department=${encodeURIComponent(currentProfile.department)}&semester=${encodeURIComponent(currentProfile.semester)}`);
-                setSubjects(Array.isArray(subsRes.data) ? subsRes.data : []);
+                const normDept = (d) => {
+                    if (!d) return 'AIDS';
+                    const u = d.toUpperCase();
+                    if (u.includes('UAD') || u.includes('AIDS') || u.includes('AI&DS') || u.includes('AI & DS') || u.includes('ARTIFICIAL')) return 'AIDS';
+                    if (u.includes('CSE') || u.includes('COMPUTER')) return 'CSE';
+                    return u.replace(/[^A-Z0-9]/g, '');
+                };
+                const normSem = (s) => {
+                    if (!s) return 'S05';
+                    const m = s.toString().match(/(?:sem|semester|s)?\s*0?([1-8])/i);
+                    return m ? `S0${m[1]}` : s.toString().toUpperCase().trim();
+                };
+                const scoped = catalogSubs.filter(cs =>
+                    normDept(cs.department) === normDept(currentProfile.department) &&
+                    normSem(cs.semester) === normSem(currentProfile.semester)
+                );
+                setSubjects(scoped.length > 0 ? scoped : catalogSubs);
             } else {
-                const subsRes = await axios.get(`${API_BASE}/subjects`);
-                setSubjects(Array.isArray(subsRes.data) ? subsRes.data : []);
+                setSubjects(catalogSubs);
             }
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -180,10 +238,10 @@ const SovereignLayout = () => {
                             <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                             <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">Loading CampusAxis...</p>
                         </div>
-                    ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' ? (
+                    ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' && location.pathname !== '/settings' ? (
                         <Navigate to="/" replace />
                     ) : (
-                        <Outlet context={{ profile, subjects, notes, refreshData: fetchData, setShowUpload }} />
+                        <Outlet context={{ profile, subjects, catalogSubjects, notes, refreshData: fetchData, setShowUpload }} />
                     )}
                 </div>
 
@@ -211,7 +269,7 @@ const SovereignLayout = () => {
                             <div className="p-6 max-h-[80vh] overflow-y-auto">
                                 <UploadNotesView 
                                     profile={profile} 
-                                    subjects={subjects} 
+                                    subjects={catalogSubjects.length > 0 ? catalogSubjects : subjects} 
                                     onSuccess={() => {
                                         fetchData();
                                         setShowUpload(false);

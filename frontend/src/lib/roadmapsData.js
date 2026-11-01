@@ -6,7 +6,6 @@ const r = (title, kind, url, free = true) => ({ title, kind, url, free });
 export const ROADMAP_CATEGORIES = [
   { id: 'frontend', name: 'Frontend Development', icon: 'palette', badge: 'Client & UI Systems' },
   { id: 'backend', name: 'Backend & Systems', icon: 'dns', badge: 'Services & DB Architecture' },
-  { id: 'fullstack', name: 'Full Stack Engineering', icon: 'layers', badge: 'End-to-End Production' },
   { id: 'ai-ml', name: 'AI & Machine Learning', icon: 'psychology', badge: 'Models & RAG Engineering' },
   { id: 'devops', name: 'DevOps & Cloud', icon: 'cloud_sync', badge: 'Infra & CI/CD Pipelines' },
   { id: 'dsa-placement', name: 'Campus Placement DSA', icon: 'code_blocks', badge: 'Interviews & Tech Rounds' }

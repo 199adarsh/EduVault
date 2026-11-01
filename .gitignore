@@ -70,3 +70,6 @@ gemini-web2api/
 
 
 .neon
+
+backend/data/*.php
+backend/data/*.doc

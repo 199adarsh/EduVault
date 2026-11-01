@@ -133,7 +133,11 @@ public class RAGService {
     }
 
     public String askChapter(String question, String noteId) {
-        logger.info("RAG query for noteId {}: {}", noteId, question);
+        return askChapter(question, noteId, null);
+    }
+
+    public String askChapter(String question, String noteId, String customApiKey) {
+        logger.info("RAG query for noteId {} (customApiKey: {}): {}", noteId, (customApiKey != null ? "provided" : "none"), question);
 
         if (embeddingModel == null) {
             return "{\"answer\": \"AI features are not available. Embedding model not initialized.\", \"confidence\": 0.0}";
@@ -195,7 +199,7 @@ public class RAGService {
             String prompt = "Context:\n" + context + "\nQuestion: " + question;
 
             try {
-                String response = geminiService.chat(systemInstruction, prompt, 0.2);
+                String response = geminiService.chat(systemInstruction, prompt, 0.2, customApiKey);
                 if (response != null && !response.trim().isEmpty()) {
                     return response.trim();
                 }

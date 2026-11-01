@@ -20,7 +20,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:10000',
         changeOrigin: true,
       }
     },
@@ -33,7 +33,7 @@ export default defineConfig({
         "img-src 'self' data: blob: https: http:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
-        "connect-src 'self' http://localhost:8081 https://api.dicebear.com https://s3.ca-east-006.backblazeb2.com",
+        "connect-src 'self' http://localhost:10000 http://localhost:8081 https://api.dicebear.com https://s3.ca-east-006.backblazeb2.com",
         "media-src 'self' blob: https://www.youtube-nocookie.com https://www.youtube.com",
       ].join('; '),
       'Permissions-Policy': 'autoplay=*, fullscreen=*, picture-in-picture=*',

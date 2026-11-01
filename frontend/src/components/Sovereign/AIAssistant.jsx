@@ -73,34 +73,79 @@ const AIAssistant = () => {
         setInput('');
         setIsTyping(true);
 
+        let answer = null;
+        let confidence = 0.95;
+        const customApiKey = localStorage.getItem('eduvault_custom_gemini_key') || localStorage.getItem('eduvault_gemini_api_key');
+
         try {
             const response = await fetch(`${API_BASE}/ai/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: queryText, prn: profile?.prn })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(customApiKey ? { 'X-Gemini-Api-Key': customApiKey } : {})
+                },
+                body: JSON.stringify({ 
+                    question: queryText, 
+                    prn: profile?.prn,
+                    customApiKey: customApiKey || undefined,
+                    apiKey: customApiKey || undefined
+                })
             });
 
-            if (!response.ok) throw new Error("Synthesis connection interrupted");
-
-            const data = await response.json();
-
-            setMessages(prev => [...prev, {
-                role: 'ai',
-                content: data.answer || "I processed your request but could not synthesize a conclusive response.",
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                confidence: data.confidence
-            }]);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.answer && !data.answer.toLowerCase().includes("encountered an error") && !data.answer.toLowerCase().includes("error processing")) {
+                    answer = data.answer;
+                    confidence = data.confidence || 0.95;
+                }
+            }
         } catch (err) {
-            toast.error(err.message);
+            console.warn("Backend AI chat error:", err);
+        }
+
+        // Direct Google Gemini API fallback if custom key is provided and backend didn't respond or errored
+        if (!answer && customApiKey) {
+            try {
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(customApiKey)}`;
+                const directRes = await fetch(geminiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: queryText }] }]
+                    })
+                });
+
+                if (directRes.ok) {
+                    const directData = await directRes.json();
+                    const candidate = directData.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (candidate) {
+                        answer = candidate;
+                        confidence = 0.98;
+                    }
+                }
+            } catch (directErr) {
+                console.error("Direct Gemini call failed:", directErr);
+            }
+        }
+
+        if (answer) {
             setMessages(prev => [...prev, {
                 role: 'ai',
-                content: "Unable to process query: " + err.message,
+                content: answer,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                confidence: confidence
+            }]);
+        } else {
+            const fallbackMsg = "Unable to synthesize response. Ensure the backend is active or verify your custom Gemini API key in Settings.";
+            toast.error(fallbackMsg);
+            setMessages(prev => [...prev, {
+                role: 'ai',
+                content: fallbackMsg,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 isError: true
             }]);
-        } finally {
-            setIsTyping(false);
         }
+        setIsTyping(false);
     };
 
     if (loading) {
@@ -121,6 +166,12 @@ const AIAssistant = () => {
                             <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">
                                 AI Assistant
                             </h1>
+                            {localStorage.getItem('eduvault_custom_gemini_key') && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
+                                    Custom Key Active
+                                </span>
+                            )}
                         </div>
                         <p className="text-xs text-text-secondary mt-0.5">
                             Your academic AI assistant

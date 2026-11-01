@@ -8,6 +8,7 @@ import {
     ArrowLeft, Download, ExternalLink, MessageSquare, Bot, X,
     FileText, User, Calendar, CheckCircle2, Send, Inbox, Loader2
 } from 'lucide-react';
+import DocumentLoadingBar from './DocumentLoadingBar';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -27,6 +28,8 @@ const NoteDetail = () => {
     const [blobUrl, setBlobUrl] = useState(null);
     const [docxHtml, setDocxHtml] = useState(null);
     const [docLoading, setDocLoading] = useState(false);
+    const [downloading, setDownloading] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
     const [chatMessages, setChatMessages] = useState([
         { role: 'assistant', text: "Hello! I'm your AI academic assistant. Ask me anything about this document." }
     ]);
@@ -153,21 +156,58 @@ const NoteDetail = () => {
         setIsSubmitting(true);
         
         try {
+            const customApiKey = localStorage.getItem('eduvault_custom_gemini_key') || localStorage.getItem('eduvault_gemini_api_key');
             const response = await fetch(`${API_BASE}/ai/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(customApiKey ? { 'X-Gemini-Api-Key': customApiKey } : {})
+                },
                 body: JSON.stringify({ 
                     question: userMsg.text,
-                    noteId: noteId
+                    noteId: noteId,
+                    customApiKey: customApiKey || undefined,
+                    apiKey: customApiKey || undefined
                 })
             });
 
-            if (!response.ok) throw new Error("AI Logic Engine offline");
+            let answer = null;
+            if (response.ok) {
+                const data = await response.json();
+                if (data.answer && !data.answer.toLowerCase().includes("encountered an error")) {
+                    answer = data.answer;
+                }
+            }
 
-            const data = await response.json();
+            // Direct Gemini client fallback if backend didn't provide answer
+            if (!answer && customApiKey && note?.extractedText) {
+                try {
+                    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(customApiKey)}`;
+                    const directRes = await fetch(geminiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ 
+                                parts: [{ 
+                                    text: `You are an AI study tutor for the chapter "${note.title}". Answer the student's question concisely using the chapter content:\n\n=== CONTENT ===\n${note.extractedText.slice(0, 4000)}\n\n=== QUESTION ===\n${userMsg.text}` 
+                                }] 
+                            }]
+                        })
+                    });
+                    if (directRes.ok) {
+                        const directData = await directRes.json();
+                        answer = directData.candidates?.[0]?.content?.parts?.[0]?.text;
+                    }
+                } catch (directErr) {
+                    console.warn("Direct Gemini call in NoteDetail failed:", directErr);
+                }
+            }
+
+            if (!answer) throw new Error("AI Logic Engine offline");
+
             setChatMessages(prev => [...prev, { 
                 role: 'assistant', 
-                text: data.answer || "No synthesis generated." 
+                text: answer 
             }]);
         } catch (err) {
             toast.error(err.message);
@@ -180,6 +220,44 @@ const NoteDetail = () => {
         }
     };
 
+    const handleDownload = () => {
+        const downloadUrl = presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : null);
+        if (!downloadUrl) {
+            toast.error('File URL not available for download.');
+            return;
+        }
+
+        setDownloading(true);
+        setDownloadProgress(12);
+
+        const interval = setInterval(() => {
+            setDownloadProgress(p => {
+                if (p >= 92) {
+                    clearInterval(interval);
+                    return 95;
+                }
+                return p + Math.floor(Math.random() * 15 + 10);
+            });
+        }, 110);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            setDownloadProgress(100);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = note?.fileUrl ? note.fileUrl.split('/').pop() : `${note?.title || 'document'}.pdf`;
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            toast.success('Document download started');
+            setTimeout(() => {
+                setDownloading(false);
+                setDownloadProgress(0);
+            }, 500);
+        }, 650);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (activeTab === 'doubts') handlePostDoubt();
@@ -188,11 +266,13 @@ const NoteDetail = () => {
 
     if (loading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-black min-h-screen">
-                <div className="flex flex-col items-center gap-6">
-                    <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Loading Document...</span>
-                </div>
+            <div className="flex-1 flex items-center justify-center bg-zinc-950 min-h-screen p-6">
+                <DocumentLoadingBar 
+                    inline 
+                    dark 
+                    message="Loading document..." 
+                    submessage="Fetching document metadata, security tokens, and discussions..." 
+                />
             </div>
         );
     }
@@ -206,6 +286,16 @@ const NoteDetail = () => {
 
     return (
         <div className="relative flex-1 flex flex-col bg-zinc-950 overflow-hidden antialiased h-full w-full">
+            {/* Global Overlay while downloading */}
+            {downloading && (
+                <DocumentLoadingBar 
+                    progress={downloadProgress} 
+                    message="Downloading document..." 
+                    submessage={note.title} 
+                    dark
+                />
+            )}
+
             {/* Header - Slim, Non-intrusive Top Bar */}
             <div className="h-12 px-3 sm:px-5 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 flex items-center justify-between shrink-0 z-20">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -241,31 +331,45 @@ const NoteDetail = () => {
                             </span>
                         )}
                     </button>
-                    <a 
-                        href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
-                        download
+                    <button 
+                        onClick={handleDownload}
                         className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer" 
                         title="Download Document"
                     >
                         <Download className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Download</span>
-                    </a>
+                    </button>
                 </div>
             </div>
 
             {/* Document Viewer Area - Full Viewport Coverage */}
             <div className="flex-1 w-full h-[calc(100%-3rem)] min-h-0 bg-white relative flex flex-col overflow-hidden">
                 {isPdf ? (
-                    <iframe 
-                        src={blobUrl ? `${blobUrl}#toolbar=0` : 'about:blank'} 
-                        className="w-full h-full border-none bg-white"
-                        title="Document Preview"
-                    />
+                    (docLoading || !blobUrl) ? (
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
+                            <DocumentLoadingBar 
+                                inline 
+                                dark 
+                                message="Loading document..." 
+                                submessage={note.title || "Preparing PDF viewer and caching streams..."} 
+                            />
+                        </div>
+                    ) : (
+                        <iframe 
+                            src={`${blobUrl}#toolbar=0`} 
+                            className="w-full h-full border-none bg-white"
+                            title="Document Preview"
+                        />
+                    )
                 ) : isOfficeDoc ? (
                     docLoading ? (
                         <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
-                            <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
-                            <p className="text-xs text-zinc-400 font-medium">Parsing document content...</p>
+                            <DocumentLoadingBar 
+                                inline 
+                                dark 
+                                message="Loading document..." 
+                                submessage="Parsing document layout and generating inline preview..." 
+                            />
                         </div>
                     ) : docxHtml ? (
                         <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
@@ -285,13 +389,13 @@ const NoteDetail = () => {
                             <FileText className="w-16 h-16 text-zinc-700 mb-6" />
                             <h3 className="text-xl font-bold text-zinc-200 tracking-tight">Word Document</h3>
                             <p className="text-xs text-zinc-400 mt-2 max-w-sm">No preview could be parsed automatically. Download original file below.</p>
-                            <a 
-                                href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
-                                download
-                                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all text-xs font-bold text-white shadow-lg cursor-pointer"
+                            <button 
+                                onClick={handleDownload}
+                                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all text-xs font-bold text-white shadow-lg cursor-pointer flex items-center gap-2"
                             >
-                                Download Document
-                            </a>
+                                <Download className="w-4 h-4" />
+                                <span>Download Document</span>
+                            </button>
                         </div>
                     )
                 ) : isImage ? (
@@ -313,13 +417,13 @@ const NoteDetail = () => {
                         <FileText className="w-16 h-16 text-zinc-800 mb-6" />
                         <h3 className="text-xl font-bold text-zinc-300 tracking-tight">Preview Unavailable</h3>
                         <p className="text-xs text-zinc-500 mt-2 max-w-sm">This file cannot be previewed in browser. Please download to view.</p>
-                        <a 
-                            href={presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : '#')}
-                            download
-                            className="mt-8 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded-xl transition-all text-xs font-bold text-white uppercase tracking-widest cursor-pointer"
+                        <button 
+                            onClick={handleDownload}
+                            className="mt-8 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded-xl transition-all text-xs font-bold text-white uppercase tracking-widest cursor-pointer flex items-center gap-2"
                         >
-                            Download File
-                        </a>
+                            <Download className="w-4 h-4" />
+                            <span>Download File</span>
+                        </button>
                     </div>
                 )}
             </div>

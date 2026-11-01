@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, Loader2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import DocumentLoadingBar from './DocumentLoadingBar';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -13,6 +14,8 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -21,6 +24,32 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
 
   const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
   const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
+
+  const handleDownload = () => {
+    if (!fileUrl) return;
+    setDownloading(true);
+    setDownloadProgress(12);
+
+    const interval = setInterval(() => {
+      setDownloadProgress(p => {
+        if (p >= 92) {
+          clearInterval(interval);
+          return 95;
+        }
+        return p + Math.floor(Math.random() * 15 + 10);
+      });
+    }, 110);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setDownloadProgress(100);
+      window.open(fileUrl, '_blank');
+      setTimeout(() => {
+        setDownloading(false);
+        setDownloadProgress(0);
+      }, 500);
+    }, 650);
+  };
 
   const fileExt = (note?.fileUrl || '').split('.').pop().toLowerCase();
   const isPdf = fileExt === 'pdf';
@@ -32,21 +61,31 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
         <DialogHeader className="p-4 border-b bg-background flex flex-row items-center justify-between flex-shrink-0 space-y-0">
           <DialogTitle className="truncate pr-4 leading-tight">{note?.title || 'Document Preview'}</DialogTitle>
           <div className="flex items-center gap-2">
-             <Button variant="outline" size="sm" onClick={() => window.open(fileUrl, '_blank')}>
+             <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" /> Download
              </Button>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 flex justify-center items-start bg-zinc-100/50">
+        <div className="flex-1 overflow-y-auto p-4 flex justify-center items-start bg-zinc-100/50 relative">
+           {downloading && (
+             <DocumentLoadingBar 
+               progress={downloadProgress} 
+               message="Downloading document..." 
+               submessage={note?.title} 
+             />
+           )}
            {fileUrl && isPdf ? (
                <Document
                  file={fileUrl}
                  onLoadSuccess={onDocumentLoadSuccess}
                  loading={
-                     <div className="flex flex-col items-center justify-center p-20 text-muted-foreground">
-                         <Loader2 className="w-8 h-8 animate-spin mb-4" />
-                         <p>Loading PDF...</p>
+                     <div className="flex flex-col items-center justify-center p-12 w-full">
+                         <DocumentLoadingBar 
+                             inline 
+                             message="Loading document..." 
+                             submessage={note?.title || "Rendering PDF pages..."} 
+                         />
                      </div>
                  }
                  error={

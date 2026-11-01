@@ -11,6 +11,7 @@ import PYQsDatabase from './components/Sovereign/PYQsDatabase';
 import Announcements from './components/Sovereign/Announcements';
 import AIAssistant from './components/Sovereign/AIAssistant';
 import OptimizationPage from './components/Sovereign/OptimizationPage';
+import Settings from './components/Sovereign/Settings';
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
           <Route path="announcements" element={<Announcements />} />
           <Route path="attendance" element={<AttendanceAnalytics />} />
           <Route path="optimization" element={<OptimizationPage />} />
-          <Route path="settings" element={<div className="p-10 text-on-surface-variant">Settings Module - Coming Soon</div>} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
       <Toaster />

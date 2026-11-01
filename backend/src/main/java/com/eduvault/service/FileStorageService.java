@@ -132,10 +132,13 @@ public class FileStorageService {
     }
     
     public void deleteFile(String fileName) {
+        if (fileName == null || fileName.isBlank() || fileName.startsWith("http://") || fileName.startsWith("https://")) {
+            return;
+        }
         try {
             Files.deleteIfExists(this.fileStorageLocation.resolve(fileName).normalize());
-        } catch (IOException e) {
-            logger.error("Could not delete file " + fileName, e);
+        } catch (Exception e) {
+            logger.warn("Could not delete file " + fileName + ": " + e.getMessage());
         }
     }
 

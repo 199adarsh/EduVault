@@ -107,7 +107,11 @@ public class GeminiService {
     }
 
     public String chat(String systemInstruction, String prompt, double temperature) throws Exception {
-        return callGemini(systemInstruction, prompt, temperature);
+        return callGemini(systemInstruction, prompt, temperature, null);
+    }
+
+    public String chat(String systemInstruction, String prompt, double temperature, String customApiKey) throws Exception {
+        return callGemini(systemInstruction, prompt, temperature, customApiKey);
     }
 
     @Async("geminiTaskExecutor")
@@ -170,6 +174,10 @@ public class GeminiService {
     }
 
     public String askTutor(String question, String contextTexts) {
+        return askTutor(question, contextTexts, null);
+    }
+
+    public String askTutor(String question, String contextTexts, String customApiKey) {
         try {
             ensureProxyRunning();
             // Truncate context to fit token limits
@@ -182,7 +190,7 @@ public class GeminiService {
             String prompt = "Context:\n" + truncatedContext + "\n\nQuestion: " + question + "\n\nProvide a detailed, well-structured answer using markdown formatting. Return: {\"answer\": \"your detailed answer here\", \"confidence\": 0.95}";
 
             logger.info("askTutor prompt length: {} chars", prompt.length());
-            String responseText = callGemini(systemInstruction, prompt, 0.2);
+            String responseText = callGemini(systemInstruction, prompt, 0.2, customApiKey);
             String cleaned = cleanJson(responseText);
             if (!cleaned.startsWith("{")) {
                 Map<String, Object> jsonMap = Map.of(
@@ -553,17 +561,29 @@ public class GeminiService {
     }
 
     private String callGemini(String systemInstruction, String prompt, double temperature) throws Exception {
+        return callGemini(systemInstruction, prompt, temperature, null);
+    }
+
+    private String callGemini(String systemInstruction, String prompt, double temperature, String customApiKey) throws Exception {
         String completionsUrl = getCompletionsUrl();
-        String effectiveApiKey = getEffectiveApiKey();
+        String effectiveApiKey = (customApiKey != null && !customApiKey.trim().isEmpty()) ? customApiKey.trim() : getEffectiveApiKey();
+
+        if (effectiveApiKey != null && (effectiveApiKey.startsWith("AIza") || effectiveApiKey.length() > 30)) {
+            completionsUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         if (effectiveApiKey != null && !effectiveApiKey.isEmpty()) {
             headers.setBearerAuth(effectiveApiKey);
+            headers.set("x-goog-api-key", effectiveApiKey);
         }
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", (model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-3.5-flash");
+        String reqModel = (effectiveApiKey != null && (effectiveApiKey.startsWith("AIza") || effectiveApiKey.length() > 30))
+                ? "gemini-1.5-flash"
+                : ((model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-1.5-flash");
+        requestBody.put("model", reqModel);
         requestBody.put("messages", List.of(
                 Map.of("role", "system", "content", systemInstruction),
                 Map.of("role", "user", "content", prompt)

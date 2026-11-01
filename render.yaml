@@ -10,15 +10,15 @@ services:
       - key: PORT
         value: 10000
       - key: NEON_JDBC_URL
-        value: jdbc:postgresql://ep-raspy-cell-a1e1shtq-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+        sync: false
       - key: NEON_DB_USER
-        value: neondb_owner
+        sync: false
       - key: NEON_DB_PASSWORD
-        value: npg_0G8csDpdReyC
+        sync: false
       - key: B2_ACCESS_KEY_ID
-        value: 00634e50813f00b0000000001
+        sync: false
       - key: B2_SECRET_ACCESS_KEY
-        value: K006TQAXscCLXflCRyGdTMIxDl4LrPM
+        sync: false
       - key: B2_ENDPOINT
         value: s3.ca-east-006.backblazeb2.com
       - key: B2_BUCKET_NAME

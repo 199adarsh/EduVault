@@ -2,6 +2,21 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
+import {
+    LayoutDashboard,
+    BookOpen,
+    Compass,
+    Sparkles,
+    Bell,
+    CalendarCheck2,
+    Settings,
+    GraduationCap,
+    RefreshCw,
+    LogOut,
+    X,
+    ChevronUp,
+    User
+} from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
@@ -28,7 +43,6 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             return;
         }
 
-        // 2-minute client cooldown to reduce load
         const lastSync = localStorage.getItem('eduvault_last_synced');
         if (lastSync && Date.now() - parseInt(lastSync, 10) < 2 * 60 * 1000) {
             toast.info('Data was synced recently (< 2 min ago). Serving cached records.');
@@ -56,7 +70,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             toast.success('Sync complete', { id });
             setShowUserMenu(false);
             setTimeout(() => window.location.reload(), 500);
-        } catch (err) {
+        } catch {
             toast.error('Failed to sync portal data', { id });
             setShowUserMenu(false);
         }
@@ -78,24 +92,38 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
     const isTeacher = (localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER');
 
     const navItems = [
-        { name: 'Home', icon: 'home', path: '/' },
-        { name: 'Notes & PYQs', icon: 'menu_book', path: '/notes' },
-        { name: 'Roadmaps', icon: 'alt_route', path: '/roadmaps' },
-        { 
-            name: 'AI Assistant', 
-            icon: 'smart_toy', 
-            path: '/ai-assistant',
-            
+        {
+            name: 'Home',
+            icon: LayoutDashboard,
+            path: '/'
         },
-        { name: 'Announcements', icon: 'campaign', path: '/announcements' },
-        { 
-            name: isTeacher ? 'Attendance & NC' : 'Attendance', 
-            icon: 'event_available', 
+        {
+            name: 'Notes & PYQs',
+            icon: BookOpen,
+            path: '/notes'
+        },
+        {
+            name: 'Roadmaps',
+            icon: Compass,
+            path: '/roadmaps'
+        },
+
+        {
+            name: 'Announcements',
+            icon: Bell,
+            path: '/announcements'
+        },
+        {
+            name: isTeacher ? 'Attendance & NC' : 'Attendance',
+            icon: CalendarCheck2,
             path: '/attendance',
             badge: attendance ? `${attendance}%` : null,
-            badgeClass: 'bg-status-success-bg text-status-success-text'
         },
-        { name: 'Settings', icon: 'settings', path: '/settings' },
+        {
+            name: 'Settings',
+            icon: Settings,
+            path: '/settings'
+        },
     ];
 
     const formatName = (fullName) => {
@@ -113,90 +141,113 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             "fixed left-0 top-0 h-full w-64 bg-white border-r border-[#E2E2E2] z-50 flex flex-col transition-transform duration-300 md:translate-x-0 select-none",
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
-            {/* Brand */}
-            <div className="h-16 px-5 flex items-center justify-between border-b border-[#E2E2E2]">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#0073E6] flex items-center justify-center text-white shadow-xs">
-                        <span className="material-symbols-outlined text-[19px]">shield</span>
+            {/* Brand Header */}
+            <div className="h-16 px-4 flex items-center justify-between border-b border-[#E2E2E2] shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#0073E6] flex items-center justify-center text-white shadow-xs shrink-0">
+                        <GraduationCap className="w-5 h-5" strokeWidth={2} />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="font-bold text-[15px] tracking-tight text-[#383838] leading-tight">Campusaxis</span>
-                        <span className="text-[10px] font-medium text-[#727272] leading-none">Student Portal</span>
+                    <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5 leading-none">
+                            <span className="font-extrabold text-[15px] tracking-tight text-[#383838]">Campusaxis</span>
+                            <span className="px-1.5 py-0.5 rounded-full bg-[#DEEDFC] text-[#0073E6] text-[8px] font-bold uppercase tracking-wider shrink-0">
+                                Portal
+                            </span>
+                        </div>
+                        <span className="text-[11px] font-medium text-[#727272] mt-0.5 truncate">
+                            Student Academic Vault
+                        </span>
                     </div>
                 </div>
                 <button
                     onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
-                    className="md:hidden p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-[#DEEDFC]/50 transition-colors cursor-pointer"
+                    className="md:hidden ml-2 p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-[#F2F7FC] transition-colors cursor-pointer shrink-0"
                     aria-label="Close sidebar"
                 >
-                    <span className="material-symbols-outlined text-[18px]">close</span>
+                    <X className="w-4 h-4" />
                 </button>
             </div>
 
-            {/* Navigation */}
-            <div className="px-3 py-4 flex-1 overflow-y-auto">
-                <div className="text-[10px] font-semibold text-[#727272] uppercase tracking-wider px-2.5 mb-2">Workspace</div>
-                <nav className="space-y-0.5">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            end={item.path === '/'}
-                            onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
-                            className={({ isActive }) => cn(
-                                "flex items-center justify-between px-2.5 py-1.5 rounded-xl font-medium text-xs transition-all duration-150",
-                                isActive
-                                    ? "bg-slate-100 text-[#383838] font-semibold"
-                                    : "text-[#383838] hover:text-[#383838] hover:bg-[#DEEDFC]/40 hover:text-[#0073E6]"
-                            )}
-                        >
-                            {({ isActive }) => (
-                                <>
-                                    <div className="flex items-center gap-2.5">
-                                        <span className={cn(
-                                            "material-symbols-outlined text-[18px] text-[#727272]",
-                                            isActive && "text-[#0073E6]"
-                                        )}>
-                                            {item.icon}
-                                        </span>
-                                        <span>{item.name}</span>
-                                    </div>
-                                    {item.badge && (
-                                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                </>
-                            )}
-                        </NavLink>
-                    ))}
+            {/* Navigation Body */}
+            <div className="px-3.5 py-4 flex-1 overflow-y-auto">
+                <div className="text-[11px] font-bold text-[#727272] uppercase tracking-wider px-2 mb-2">
+                    Workspace
+                </div>
+                <nav className="space-y-1">
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                end={item.path === '/'}
+                                onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
+                                className={({ isActive }) => cn(
+                                    "group flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 cursor-pointer",
+                                    isActive
+                                        ? "bg-[#DEEDFC] text-[#0073E6] font-semibold shadow-2xs"
+                                        : "text-[#383838] hover:bg-[#F2F7FC] hover:text-[#0073E6]"
+                                )}
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <Icon
+                                                className={cn(
+                                                    "w-[18px] h-[18px] shrink-0 transition-colors",
+                                                    isActive
+                                                        ? "text-[#0073E6]"
+                                                        : "text-[#727272] group-hover:text-[#0073E6]"
+                                                )}
+                                                strokeWidth={isActive ? 2.2 : 1.8}
+                                            />
+                                            <span className="truncate">{item.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                                            {item.chip && (
+                                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-[#6A5AF9]/10 text-[#6A5AF9] border border-[#6A5AF9]/20">
+                                                    {item.chip}
+                                                </span>
+                                            )}
+                                            {item.badge && (
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]">
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
             </div>
 
-            {/* Active Session Indicator */}
-            <div className="p-3 border-t border-[#E2E2E2] relative" ref={menuRef}>
+            {/* Active Session User Dock */}
+            <div className="p-3 border-t border-[#E2E2E2] relative shrink-0 bg-white" ref={menuRef}>
                 {showUserMenu && (
-                    <div className="absolute bottom-full left-3 right-3 mb-2 p-1 bg-white border border-[#E2E2E2] rounded-lg shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
+                    <div className="absolute bottom-full left-3 right-3 mb-2 p-1.5 bg-white border border-[#E2E2E2] rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
                         <button
                             onClick={handleSync}
-                            className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-[#383838] hover:bg-[#DEEDFC]/40 hover:text-[#0073E6] hover:text-[#0073E6] rounded transition-colors cursor-pointer"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#383838] hover:bg-[#DEEDFC]/50 hover:text-[#0073E6] rounded-lg transition-colors cursor-pointer"
                         >
-                            <span className="material-symbols-outlined text-[16px] text-[#0073E6]">sync</span>
+                            <RefreshCw className="w-4 h-4 text-[#0073E6]" />
                             <span>Refresh Data</span>
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                         >
-                            <span className="material-symbols-outlined text-[16px]">logout</span>
+                            <LogOut className="w-4 h-4" />
                             <span>Logout</span>
                         </button>
                     </div>
                 )}
 
-                <div 
+                <div
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="p-2 rounded-lg bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:bg-[#DEEDFC]/50/70 transition-all flex items-center justify-between cursor-pointer"
+                    className="p-2.5 rounded-xl bg-[#F2F7FC] hover:bg-[#DEEDFC]/50 border border-[#E2E2E2] transition-colors flex items-center justify-between cursor-pointer group"
+                    title="User Session"
                 >
                     <div className="flex items-center gap-2.5 min-w-0">
                         {profile?.image ? (
@@ -204,7 +255,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                                 src={profile.image}
                                 alt={formatName(profile?.name)}
                                 referrerPolicy="no-referrer"
-                                className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
+                                className="w-8 h-8 rounded-full object-cover shrink-0 ring-2 ring-white"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     if (e.currentTarget.nextElementSibling) {
@@ -213,17 +264,22 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                                 }}
                             />
                         ) : null}
-                        <div className={`w-7 h-7 rounded-full bg-blue-50 text-[#0073E6] items-center justify-center shrink-0 ${profile?.image ? 'hidden' : 'flex'}`}>
-                            <span className="material-symbols-outlined text-[16px]">verified_user</span>
+                        <div className={`w-8 h-8 rounded-full bg-[#0073E6] text-white items-center justify-center shrink-0 font-bold text-xs ring-2 ring-white ${profile?.image ? 'hidden' : 'flex'}`}>
+                            {profile?.name ? profile.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-semibold text-[#383838] truncate">{formatName(profile?.name)}</span>
-                            <span className="text-[10px] text-[#727272] font-mono truncate">
-                                {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? 'Faculty Account' : (profile?.prn || profile?.rollNo || '—')}
+                            <span className="text-xs font-bold text-[#383838] group-hover:text-[#0073E6] transition-colors truncate">
+                                {formatName(profile?.name)}
+                            </span>
+                            <span className="text-[10px] text-[#727272] truncate font-medium">
+                                {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? 'Faculty Account' : (profile?.prn || profile?.rollNo || 'Student')}
                             </span>
                         </div>
                     </div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 ml-1.5" title="Active Session"></div>
+                    <div className="flex items-center gap-1.5 shrink-0 pl-1">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white shrink-0" title="Active Session" />
+                        <ChevronUp className={cn("w-3.5 h-3.5 text-[#727272] transition-transform duration-200", showUserMenu && "rotate-180")} />
+                    </div>
                 </div>
             </div>
         </aside>

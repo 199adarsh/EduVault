@@ -860,11 +860,10 @@ const HomeDashboard = () => {
             <button
               type="button"
               onClick={() => setShowHeaderCalendar(prev => !prev)}
-              className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
-                showHeaderCalendar
-                  ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
-                  : 'bg-[#FFFFFF] hover:bg-[#DEEDFC]/40 border-[#E2E2E2] text-[#383838]'
-              }`}
+              className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer ${showHeaderCalendar
+                ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
+                : 'bg-[#FFFFFF] hover:bg-[#DEEDFC]/40 border-[#E2E2E2] text-[#383838]'
+                }`}
               title="Deadlines Calendar"
               aria-label="Upcoming Deadlines Calendar"
               aria-expanded={showHeaderCalendar}
@@ -1289,7 +1288,7 @@ const HomeDashboard = () => {
                 </section>
               ) : (
                 <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden" id="attendance-radar">
-                  <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2]">
+                  <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
                         <span className="material-symbols-outlined text-[18px]">calendar_month</span>
@@ -1299,30 +1298,28 @@ const HomeDashboard = () => {
                         <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Records</span>
                       </div>
                     </div>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#DEEDFC]/60 text-[#174073] border border-[#D9ECFF]">
-                      <span className="tabular-nums font-bold text-[#0073E6] mr-1">{totalSessionsRecorded}</span> Sessions
-                    </span>
-                  </div>
-
-                  <div className="mt-3.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                      <span className="text-xs font-semibold text-[#383838]">Attendance Distribution</span>
-                      <div className="flex items-center gap-3 text-[11px] text-[#727272] font-normal">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5 text-[11px] text-[#727272] font-medium">
                         <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#30a14e]"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#30a14e]"></span>
                           <span>Present</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48]"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#E11D48]"></span>
                           <span>Absent</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#E2E2E2]"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#DEEDFC]"></span>
                           <span>Off Day</span>
                         </div>
                       </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#DEEDFC]/60 text-[#174073] border border-[#D9ECFF]">
+                        <span className="tabular-nums font-bold text-[#0073E6] mr-1">{totalSessionsRecorded}</span> Sessions
+                      </span>
                     </div>
+                  </div>
 
+                  <div className="mt-3.5">
                     <SharedAttendanceHeatmap subjects={subjects} weeksCount={18} />
                   </div>
                 </section>
@@ -1348,11 +1345,10 @@ const HomeDashboard = () => {
                       <button
                         type="button"
                         onClick={() => setShowHomeCalendar(prev => !prev)}
-                        className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                          showHomeCalendar
-                            ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
-                            : 'bg-white border-[#E2E2E2] hover:bg-[#DEEDFC]/40 text-[#383838]'
-                        }`}
+                        className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${showHomeCalendar
+                          ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
+                          : 'bg-white border-[#E2E2E2] hover:bg-[#DEEDFC]/40 text-[#383838]'
+                          }`}
                         title="View Announcements Deadlines Calendar"
                         aria-expanded={showHomeCalendar}
                       >
@@ -1487,76 +1483,66 @@ const HomeDashboard = () => {
             {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
             <div className="lg:col-span-5 space-y-4">
               {/* Section 4: Campus Announcements Feed (Desktop Only) */}
-              <section className="hidden lg:block bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
+              <section className="hidden lg:flex flex-col justify-between bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined text-[18px]">campaign</span>
                     </div>
                     <div>
                       <h2 className="text-base font-semibold text-[#383838] leading-tight">Campus Announcements</h2>
-                      <span className="text-xs font-normal text-[#727272]">Latest Updates</span>
+                      <span className="text-[0.625rem] font-normal text-[#727272]">Official Notices</span>
                     </div>
                   </div>
                   <button
                     onClick={() => navigate('/announcements')}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-[#0073E6] hover:bg-[#D9ECFF]/50 border border-transparent hover:border-[#D9ECFF] transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-[#0073E6] bg-white hover:bg-[#D9ECFF]/50 border border-[#D9ECFF] transition-all cursor-pointer"
                   >
                     <span>View All</span>
-                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
                   </button>
                 </div>
 
-                {/* Announcement Items List */}
-                <div className="mt-2 divide-y divide-[#E2E2E2]">
+                <div className="mt-3.5 flex-1 flex flex-col justify-between gap-2">
                   {announcements && announcements.length > 0 ? (
-                    announcements.slice(0, 3).map((item, idx) => (
+                    announcements.slice(0, 2).map((item, idx) => (
                       <div
                         key={item.id || idx}
                         onClick={() => navigate('/announcements')}
-                        className="py-3 first:pt-2 last:pb-1 flex items-center justify-between gap-3 group cursor-pointer"
+                        className="p-3 rounded-lg bg-white border border-[#E2E2E2] hover:border-[#0073E6] hover:shadow-2xs transition-all cursor-pointer group flex items-start gap-3"
                       >
-                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                          <span
-                            className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                              item.colorTag === 'red'
-                                ? 'bg-[#E11D48]'
-                                : item.colorTag === 'green'
-                                  ? 'bg-emerald-500'
-                                  : item.colorTag === 'yellow' || item.colorTag === 'amber'
-                                    ? 'bg-amber-500'
-                                    : 'bg-[#0073E6]'
-                            }`}
-                            title={item.colorTag || 'Notice'}
-                          />
-                          <div className="flex flex-col min-w-0">
-                            <h3 className="text-xs font-semibold text-[#383838] group-hover:text-[#0073E6] transition-colors truncate">
-                              {item.title}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-[#727272]">
-                              <span className="px-1.5 py-0.2 rounded bg-[#DEEDFC] text-[#174073] font-medium">
-                                {item.type || 'Notice'}
-                              </span>
-                              {item.createdAt && (
-                                <span>{new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-                              )}
-                              {item.deadline && (
-                                <>
-                                  <span>•</span>
-                                  <span className="text-amber-600 font-medium">Due {new Date(item.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
+                        <div className="w-9 h-9 rounded-md bg-[#DEEDFC]/60 border border-[#D9ECFF] flex flex-col items-center justify-center shrink-0 text-[#174073]">
+                          <span className="text-[9px] uppercase font-bold text-[#0073E6] leading-none">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { month: 'short' }) : 'Oct'}
+                          </span>
+                          <span className="text-xs font-bold leading-none mt-0.5 tabular-nums text-[#174073]">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit' }) : '14'}
+                          </span>
                         </div>
 
-                        <span className="material-symbols-outlined text-[15px] text-[#727272] group-hover:text-[#0073E6] group-hover:translate-x-0.5 transition-all shrink-0">
-                          chevron_right
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-[#DEEDFC] text-[#174073]">
+                              {item.type || 'Notice'}
+                            </span>
+                            {item.deadline && (
+                              <span className="text-[10px] font-medium text-[#E11D48]">
+                                Due {new Date(item.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="text-xs font-semibold text-[#383838] group-hover:text-[#0073E6] transition-colors truncate mt-1">
+                            {item.title}
+                          </h3>
+                        </div>
+
+                        <span className="material-symbols-outlined text-[14px] text-[#727272] group-hover:text-[#0073E6] group-hover:translate-x-0.5 transition-all shrink-0 mt-2">
+                          arrow_forward
                         </span>
                       </div>
                     ))
                   ) : (
-                    <div className="py-4 text-center text-xs text-[#727272]">
+                    <div className="py-6 text-center text-xs text-[#727272] bg-white border border-[#E2E2E2] rounded-lg">
                       No active campus announcements.
                     </div>
                   )}
@@ -1568,7 +1554,7 @@ const HomeDashboard = () => {
                 <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                   <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-[18px]">bar_chart</span>
                       </div>
                       <div>
@@ -1576,62 +1562,54 @@ const HomeDashboard = () => {
                         <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Assessment</span>
                       </div>
                     </div>
+                    <button
+                      onClick={() => setCiePopupOpen(true)}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-[#0073E6] bg-white hover:bg-[#D9ECFF]/50 border border-[#D9ECFF] transition-all cursor-pointer"
+                    >
+                      <span>View All</span>
+                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    </button>
                   </div>
 
-                  {/* Compact Subject Scores Progress List */}
-                  <div className="mt-3.5 space-y-2.5">
+                  {/* High-Density Subject Scores Ledger */}
+                  <div className="mt-3.5 space-y-2">
                     {displayCieList.length > 0 ? (
                       displayCieList.slice(0, 4).map((sub, i) => {
                         const cie = parseFloat(sub.cie) || 0;
                         const maxCie = 50;
                         const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
-                        const barColor = i === 0 ? "bg-[#0073E6]" : i === 1 ? "bg-[#6A5AF9]" : "bg-[#174073]";
                         const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-[#0073E6] bg-[#D9ECFF] border-[#0073E6]/20" : "text-amber-700 bg-amber-50 border-amber-200";
-                        const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Needs Review";
+                        const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Review";
 
                         return (
-                          <div key={sub.id || i} className="p-3.5 rounded-xl bg-white border border-[#E2E2E2] hover:border-[#4A9AF0] transition-all duration-150">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs font-semibold text-[#383838] tracking-tight truncate flex-1 min-w-0">
-                                {sub.name}
-                              </span>
-                              <span className="text-xs font-bold text-[#383838] tabular-nums">
-                                {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] font-normal text-[#727272]">/ 50</span>
-                              </span>
-                            </div>
-                            <div className="w-full h-2 rounded-full bg-[#DEEDFC] overflow-hidden">
-                              <div
-                                className={cn("h-full rounded-full transition-all duration-500", barColor)}
-                                style={{ width: cie > 0 ? `${pct}%` : '0%' }}
-                              />
-                            </div>
-                            <div className="flex justify-between items-center mt-2 text-[11px]">
-                              <span className="font-normal text-[#727272]">{cie > 0 ? `${pct}% Score` : 'Pending evaluation'}</span>
-                              {cie > 0 && (
-                                <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium border", tagColor)}>
-                                  {statusLabel}
+                          <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-[#E2E2E2] hover:border-[#0073E6]/40 transition-colors flex items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-[#383838] truncate">{sub.name}</span>
+                                <span className="text-xs font-bold text-[#383838] tabular-nums ml-2 shrink-0">
+                                  {cie > 0 ? cie : '-'} <span className="text-[10px] font-normal text-[#727272]">/ 50</span>
                                 </span>
-                              )}
+                              </div>
+                              <div className="w-full h-1.5 rounded-full bg-[#DEEDFC] overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-[#0073E6] transition-all duration-300"
+                                  style={{ width: cie > 0 ? `${pct}%` : '0%' }}
+                                />
+                              </div>
                             </div>
+                            {cie > 0 && (
+                              <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0", tagColor)}>
+                                {statusLabel}
+                              </span>
+                            )}
                           </div>
                         );
                       })
                     ) : (
-                      <div className="py-5 text-center text-xs text-[#727272] bg-slate-50 border border-[#E2E2E2] rounded-lg">
+                      <div className="py-5 text-center text-xs text-[#727272] bg-white border border-[#E2E2E2] rounded-lg">
                         No internal marks available yet.
                       </div>
                     )}
-                  </div>
-
-                  {/* All Subjects CTA */}
-                  <div className="mt-3.5 pt-0.5">
-                    <button
-                      onClick={() => setCiePopupOpen(true)}
-                      className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-[#DEEDFC]/40 text-[#0073E6] border border-[#0073E6] text-xs font-medium transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      <span>View All Internal Marks</span>
-                      <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                    </button>
                   </div>
                 </section>
               )}

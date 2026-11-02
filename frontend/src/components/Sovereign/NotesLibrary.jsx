@@ -41,11 +41,47 @@ const normalizeUnit = (u) => (u || '').toString().toLowerCase().replace(/[^0-9]/
 const CORE_CATEGORIES = [
     { id: 'All', label: 'All' },
     { id: 'Notes', label: 'Notes' },
+    { id: 'Links', label: 'Links' },
     { id: 'PYQ', label: 'PYQ' },
     { id: 'Syllabus', label: 'Syllabus' },
     { id: 'Lab Manual', label: 'Lab Manual' },
     { id: 'Lecture Plan', label: 'Lecture Plan' },
 ];
+
+
+
+
+
+export const isLinkNote = (note) => {
+    if (!note) return false;
+    const raw = (note.fileUrl || note.sourceUrl || '').trim();
+    if (!raw) return (note.category || '').toLowerCase() === 'link';
+    const hasDocExt = raw.match(/\.(pdf|docx?|pptx?|xlsx?|txt|zip)(\?.*)?$/i);
+    if (hasDocExt) return false;
+    return raw.startsWith('http') || raw.includes('/') || (note.category || '').toLowerCase() === 'link';
+};
+
+export const getNoteBadge = (note) => {
+    if (isLinkNote(note)) return 'LINK';
+    const raw = note.fileUrl || '';
+    const parts = raw.split('.');
+    if (parts.length > 1) {
+        const ext = parts.pop().split(/[?#]/)[0].toUpperCase();
+        if (ext.length <= 5) return ext;
+    }
+    return 'PDF';
+};
+
+export const getCleanTitle = (title) => {
+    if (!title) return 'Study Material';
+    if (title.includes('/') && !title.includes(' ')) {
+        const last = title.split('/').filter(Boolean).pop();
+        if (last) {
+            return last.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+    }
+    return title;
+};
 
 const matchesCategory = (note, cat) => {
     if (!cat || cat === 'All') return true;
@@ -77,6 +113,9 @@ const matchesCategory = (note, cat) => {
             noteTitle.includes('lecture plan') ||
             noteTitle.includes('teaching plan');
     }
+    if (cat === 'Links' || cat === 'Link') {
+        return isLinkNote(note);
+    }
     if (cat === 'Notes') {
         return !note.category ||
             noteCat.includes('note') ||
@@ -96,6 +135,9 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedUnit, setSelectedUnit] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [pyqSearch, setPyqSearch] = useState('');
+    const [pyqSubject, setPyqSubject] = useState('');
+    const [pyqExam, setPyqExam] = useState('');
 
     const userRole = localStorage.getItem('eduvault_user_role') || (profile?.dob === 'TEACHER' ? 'teacher' : 'student');
     const isTeacher = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
@@ -298,9 +340,13 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             const isMatch = resolvedId === activeSubjectId || note.subjectId === activeSubjectId;
             if (!isMatch) return false;
 
-            // 2. Unit match
+            // 2. Unit & Category match
             if (selectedUnit !== 'all') {
-                if (normalizeUnit(note.unit) !== normalizeUnit(selectedUnit)) {
+                if (selectedUnit === 'cat:Lab Manual') {
+                    if (!matchesCategory(note, 'Lab Manual')) return false;
+                } else if (selectedUnit === 'cat:Other') {
+                    if (normalizeUnit(note.unit) || matchesCategory(note, 'Lab Manual')) return false;
+                } else if (normalizeUnit(note.unit) !== normalizeUnit(selectedUnit)) {
                     return false;
                 }
             }
@@ -344,203 +390,250 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             <main className="p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-5 pb-24 md:pb-12">
 
                 {/* Page Header */}
-                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
                     <div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 tracking-wide mb-1">
-                            <BookOpen className="w-4 h-4 text-blue-600" />
-                            <span className="uppercase tracking-wider text-[11px]">Subject Notes • Backblaze B2</span>
-                        </div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Study Notes &amp; Resources</h1>
-                        <p className="text-xs font-normal text-slate-500 mt-0.5">
-                            Browse notes categorized by subject, study units, and material type
+                        <span className="text-[10px] font-bold text-[#0073E6] uppercase tracking-wider block mb-0.5">
+                            Academic Vault
+                        </span>
+                        <h1 className="text-xl sm:text-2xl font-bold text-[#383838] tracking-tight">Study Notes &amp; Question Papers</h1>
+                        <p className="text-xs text-[#727272] mt-0.5">
+                            Verified unit modules, lecture notes, and past examination papers
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                         {isTeacher && (
                             <button
                                 onClick={() => setShowLmsSync(true)}
-                                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-xs cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#174073] bg-[#DEEDFC] hover:bg-[#D9ECFF] border border-[#D9ECFF] transition-all cursor-pointer"
                                 title="Teacher access: Sync latest materials from Moodle LMS"
                             >
-                                <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
-                                <span>Sync Moodle / LMS</span>
+                                <RefreshCw className="w-3.5 h-3.5 text-[#0073E6]" />
+                                <span>Sync LMS</span>
                             </button>
                         )}
                         <button
                             onClick={() => setShowUpload(true)}
-                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all shadow-xs cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] transition-all cursor-pointer shadow-2xs"
                         >
                             <Upload className="w-3.5 h-3.5" />
-                            <span>Upload Notes</span>
+                            <span>Upload Material</span>
                         </button>
                     </div>
                 </header>
 
-                {/* Sub-navigation tabs: Notes & PYQs */}
-                <div className="border-b border-slate-200/80 pb-3 overflow-x-auto no-scrollbar">
-                    <FluidTabs
-                        value={activeTab}
-                        onChange={handleTabChange}
-                        size="sm"
-                        layoutId="notes-library-tabs"
-                        tabs={[
-                            {
-                                id: 'notes',
-                                label: `Subject Notes (${notes?.length || 0})`,
-                                icon: <BookOpen className="w-3.5 h-3.5 mr-1" />
-                            },
-                            {
-                                id: 'pyqs',
-                                label: 'Previous Year Questions (PYQs)',
-                                icon: <GraduationCap className="w-3.5 h-3.5 mr-1" />
-                            }
-                        ]}
-                    />
-                </div>
+                {/* Unified Control Console: Tabs, Search & Subject Filters */}
+                <section className="bg-white border border-[#E2E2E2] rounded-xl p-3 sm:p-3.5 shadow-2xs space-y-3">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        {/* Navigation Tabs */}
+                        <FluidTabs
+                            value={activeTab}
+                            onChange={handleTabChange}
+                            size="sm"
+                            layoutId="notes-library-fluid-tabs"
+                            className="bg-[#DEEDFC]/40 border-[#D9ECFF] shrink-0"
+                            activeClassName="font-semibold text-[#0073E6]"
+                            inactiveClassName="font-medium text-[#727272] hover:text-[#383838]"
+                            indicatorClassName="absolute inset-0 rounded-full border border-[#D9ECFF] bg-white shadow-xs"
+                            tabs={[
+                                {
+                                    id: 'notes',
+                                    label: (
+                                        <span className="inline-flex items-center gap-1.5">
+                                            <span>Subject Notes</span>
+                                            <span className={cn(
+                                                "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
+                                                activeTab === 'notes' ? "bg-[#DEEDFC] text-[#0073E6]" : "bg-slate-200/70 text-[#727272]"
+                                            )}>
+                                                {notes?.length || 0}
+                                            </span>
+                                        </span>
+                                    ),
+                                    icon: <BookOpen className="w-3.5 h-3.5" />
+                                },
+                                {
+                                    id: 'pyqs',
+                                    label: 'Previous Year Questions (PYQs)',
+                                    icon: <GraduationCap className="w-3.5 h-3.5" />
+                                }
+                            ]}
+                        />
 
-                {activeTab === 'pyqs' ? (
-                    <PYQsDatabase embedded={true} />
-                ) : (
-                    <>
-                        {/* Search & Filters Bar */}
-                        <section className="bg-white border border-slate-200/90 rounded-xl p-3 shadow-xs flex flex-col md:flex-row items-center gap-3">
-                            <div className="relative flex-1 w-full">
-                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <Search className="w-4 h-4 text-slate-400" />
+                        {/* Search & Filters */}
+                        {activeTab === 'notes' ? (
+                            <div className="flex items-center gap-2 flex-1 lg:max-w-md w-full">
+                                <div className="relative flex-1">
+                                    <Search className="w-3.5 h-3.5 text-[#727272] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search notes, chapters, topics..."
+                                        className="w-full pl-8 pr-3 py-1.5 text-xs text-[#383838] placeholder-[#727272] bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white transition-all"
+                                    />
                                 </div>
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search notes, chapters, topics, or subjects..."
-                                    className="w-full pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                {/* Subject Dropdown */}
-                                <div className="relative flex-1 md:w-56">
-                                    <select
-                                        value={activeSubjectId}
-                                        onChange={(e) => setSelectedSubject(e.target.value)}
-                                        className="w-full bg-slate-50/50 border border-slate-200 rounded-lg py-2 pl-3 pr-8 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
-                                    >
-                                        {availableSubjects.length === 0 ? (
-                                            <option value="" disabled>No subjects with notes available</option>
-                                        ) : (
-                                            availableSubjects.map(sub => (
-                                                <option key={sub.id} value={sub.id}>
-                                                    {sub.name} {sub.code ? `(${sub.code})` : ''}
-                                                </option>
-                                            ))
-                                        )}
-                                    </select>
-                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-3.5 h-3.5" />
-                                </div>
-
-                                {/* Unit Dropdown */}
-                                <div className="relative flex-1 md:w-36">
+                                <div className="relative shrink-0 w-28 sm:w-32">
                                     <select
                                         value={selectedUnit}
                                         onChange={(e) => setSelectedUnit(e.target.value)}
-                                        className="w-full bg-slate-50/50 border border-slate-200 rounded-lg py-2 pl-3 pr-8 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                                        className="w-full bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg py-1.5 pl-3 pr-7 text-xs font-medium text-[#383838] focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white appearance-none cursor-pointer"
                                     >
-                                        <option value="all">All Units</option>
-                                        {units.map(u => (
-                                            <option key={u} value={u}>{u}</option>
-                                        ))}
+                                        <option value="all">All</option>
+                                        <option value="UNIT 01">Unit 1</option>
+                                        <option value="UNIT 02">Unit 2</option>
+                                        <option value="UNIT 03">Unit 3</option>
+                                        <option value="UNIT 04">Unit 4</option>
+                                        <option value="UNIT 05">Unit 5</option>
+                                        <option value="UNIT 06">Unit 6</option>
+                                        <option value="cat:Lab Manual">Lab</option>
+                                        <option value="cat:Other">Other</option>
                                     </select>
-                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-3.5 h-3.5" />
+                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-[#727272] pointer-events-none w-3.5 h-3.5" />
                                 </div>
                             </div>
-                        </section>
+                        ) : (
+                            <div className="flex items-center gap-2 flex-1 lg:max-w-lg w-full">
+                                <div className="relative flex-1">
+                                    <Search className="w-3.5 h-3.5 text-[#727272] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        value={pyqSearch}
+                                        onChange={(e) => setPyqSearch(e.target.value)}
+                                        placeholder="Search past question papers, subjects, years..."
+                                        className="w-full pl-8 pr-3 py-1.5 text-xs text-[#383838] placeholder-[#727272] bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white transition-all"
+                                    />
+                                </div>
+                                <div className="relative shrink-0 w-36">
+                                    <select
+                                        value={pyqExam}
+                                        onChange={(e) => setPyqExam(e.target.value)}
+                                        className="w-full bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg py-1.5 pl-3 pr-7 text-xs font-medium text-[#383838] focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white appearance-none cursor-pointer"
+                                    >
+                                        <option value="">All Exams</option>
+                                        <option value="ESE">End Semester (ESE)</option>
+                                        <option value="MSE">Mid Semester (MSE)</option>
+                                        <option value="ISE">In-Sem (ISE)</option>
+                                        <option value="UT-1">Unit Test 1 (UT-1)</option>
+                                        <option value="UT-2">Unit Test 2 (UT-2)</option>
+                                        <option value="Backlog">Backlog Exam</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-[#727272] pointer-events-none w-3.5 h-3.5" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-                        {/* Subject Selection Pills */}
-                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0">
-                                Subject:
-                            </span>
-                            {availableSubjects.length === 0 ? (
-                                <span className="text-xs text-slate-400 italic px-2">No subjects with notes available</span>
-                            ) : (
-                                availableSubjects.map(sub => {
-                                    const isSelected = activeSubjectId === sub.id;
-                                    return (
-                                        <button
-                                            key={sub.id}
-                                            onClick={() => setSelectedSubject(sub.id)}
-                                            className={cn(
-                                                "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
-                                                isSelected
-                                                    ? "bg-blue-600 text-white shadow-xs"
-                                                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                            )}
-                                        >
-                                            {sub.name} {sub.code ? `(${sub.code})` : ''}
-                                        </button>
-                                    );
-                                })
-                            )}
-                        </div>
+                    {/* Integrated Subject Pills Row */}
+                    <div className="pt-2.5 border-t border-[#E2E2E2] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                        <span className="text-[10px] font-bold text-[#727272] uppercase tracking-wider mr-1 shrink-0">
+                            Subject:
+                        </span>
+                        {activeTab === 'notes' ? (
+                            availableSubjects.map(sub => (
+                                <button
+                                    key={sub.id}
+                                    onClick={() => setSelectedSubject(sub.id)}
+                                    className={cn(
+                                        "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
+                                        activeSubjectId === sub.id ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
+                                    )}
+                                >
+                                    {sub.name} {sub.code ? `(${sub.code})` : ''}
+                                </button>
+                            ))
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => setPyqSubject('')}
+                                    className={cn(
+                                        "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
+                                        !pyqSubject ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
+                                    )}
+                                >
+                                    All Subjects
+                                </button>
+                                {allKnownSubjects.map(sub => (
+                                    <button
+                                        key={sub.id}
+                                        onClick={() => setPyqSubject(sub.id === pyqSubject ? '' : sub.id)}
+                                        className={cn(
+                                            "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
+                                            pyqSubject === sub.id ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
+                                        )}
+                                    >
+                                        {sub.name} {sub.code ? `(${sub.code})` : ''}
+                                    </button>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                </section>
 
-                        {/* Category Filter Pills (Core 5 Categories) */}
-
-
-                        {/* Active Filter State Header */}
-
-
+                {activeTab === 'pyqs' ? (
+                    <PYQsDatabase 
+                        embedded={true} 
+                        searchQuery={pyqSearch}
+                        setSearchQuery={setPyqSearch}
+                        filterSubject={pyqSubject}
+                        setFilterSubject={setPyqSubject}
+                        filterExam={pyqExam}
+                        setFilterExam={setPyqExam}
+                    />
+                ) : (
+                    <>
                         {/* Direct Notes List Grid */}
                         {displayNotes.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-16">
                                 {displayNotes.map((note) => {
                                     const rId = resolveSubjectId(note);
                                     const sub = allKnownSubjects.find(s => s.id === rId);
-                                    const fileExt = (note.fileUrl?.split('.').pop() || 'PDF').toUpperCase();
+                                                                        const badgeLabel = getNoteBadge(note);
+                                    const displayTitle = getCleanTitle(note.title);
                                     const categoryLabel = note.category || 'Notes';
 
                                     return (
                                         <div
                                             key={note.id}
                                             onClick={() => handleOpenNote(note)}
-                                            className="bg-white border rounded-xl p-4.5 transition-all duration-200 cursor-pointer flex flex-col justify-between group shadow-xs hover:shadow-md border-slate-200/90 hover:border-blue-400 hover:bg-blue-50/10"
+                                            className="bg-[linear-gradient(180deg,#FFFFFF_0px,#F2F7FC_120px)] border border-[#E2E2E2] hover:border-[#0073E6]/40 rounded-xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-xs"
                                         >
                                             <div className="space-y-3">
                                                 {/* Top Row: Icon, File Type, Category, Unit */}
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white shrink-0">
+                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-[#DEEDFC] text-[#0073E6] group-hover:bg-[#0073E6] group-hover:text-white shrink-0">
                                                             <FileText className="w-4 h-4" />
                                                         </div>
-                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-tight">
-                                                            {fileExt}
+                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF] uppercase tracking-wider">
+                                                            {badgeLabel}
                                                         </span>
-                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-tight">
+                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-[#727272] border border-[#E2E2E2]">
                                                             {categoryLabel}
                                                         </span>
                                                     </div>
 
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#D9ECFF]/50 text-[#0073E6] border border-[#0073E6]/20">
                                                             {note.unit || "Unit 1"}
                                                         </span>
-                                                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 transition-colors" />
+                                                        <ArrowUpRight className="w-3.5 h-3.5 text-[#727272] group-hover:text-[#0073E6] transition-colors" />
                                                     </div>
                                                 </div>
 
                                                 {/* Title & Metadata */}
                                                 <div>
-                                                    <h3 className="font-semibold text-xs text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
-                                                        {note.title}
+                                                    <h3 className="font-semibold text-xs text-[#383838] line-clamp-2 leading-snug group-hover:text-[#0073E6] transition-colors">
+                                                        {displayTitle}
                                                     </h3>
-                                                    <p className="text-[11px] text-slate-400 mt-1 truncate">
+                                                    <p className="text-[11px] text-[#727272] mt-0.5 truncate">
                                                         {sub?.name || 'Study Material'}
                                                     </p>
+                                                    
                                                 </div>
                                             </div>
 
                                             {/* Bottom Row: Date & Status */}
-                                            <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                                            <div className="pt-3 mt-3 border-t border-[#E2E2E2] flex items-center justify-between text-[10px] text-[#727272]">
                                                 <span>
                                                     {note.createdAt
                                                         ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
@@ -550,7 +643,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                                 <div className="flex items-center gap-2">
                                                     <button
                                                         onClick={(e) => handleDownloadNote(e, note)}
-                                                        className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                                        className="p-1 rounded text-[#727272] hover:text-[#0073E6] hover:bg-[#DEEDFC] transition-colors cursor-pointer"
                                                         title="Download Note Document"
                                                         type="button"
                                                     >

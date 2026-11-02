@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import {
     Search,
+    ArrowUpRight,
     Plus,
     Archive,
     Zap,
@@ -38,7 +39,15 @@ const normalizeSem = (sem) => {
     return m ? `S0${m[1]}` : sem.toString().toUpperCase().trim();
 };
 
-const PYQsDatabase = ({ embedded = false }) => {
+const PYQsDatabase = ({ 
+    embedded = false,
+    searchQuery: extSearch,
+    setSearchQuery: setExtSearch,
+    filterSubject: extSubject,
+    setFilterSubject: setExtSubject,
+    filterExam: extExam,
+    setFilterExam: setExtExam
+}) => {
     const outletCtx = useOutletContext();
     const rawSubjects = outletCtx?.subjects || null;
     const catalogSubjects = outletCtx?.catalogSubjects || null;
@@ -324,48 +333,45 @@ const PYQsDatabase = ({ embedded = false }) => {
                 embedded ? "w-full flex flex-col gap-5" : "p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6 pb-24 md:pb-8"
             )} data-purpose="pyq-repository">
                 {/* BEGIN: PageHeader */}
-                <section className="flex items-center justify-between flex-wrap gap-4" data-purpose="header-section">
-                    <div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 tracking-wide mb-1">
-                            <Archive className="w-4 h-4 text-blue-600" />
-                            <span className="uppercase tracking-wider text-[11px]">Past Question Papers</span>
+                {!embedded && (
+                    <section className="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <span className="text-[10px] font-bold text-[#0073E6] uppercase tracking-wider block mb-0.5">
+                                Question Paper Vault
+                            </span>
+                            <h1 className="text-xl sm:text-2xl font-bold text-[#383838] tracking-tight">Previous Year Questions</h1>
+                            <p className="text-xs text-[#727272] mt-0.5">Official past university examination papers</p>
                         </div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Previous Year Questions</h1>
-                        <p className="text-xs font-normal text-slate-500 mt-1">Official past question papers and exam preparation material</p>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                        {/* Launch AI Predictor Button */}
-                        <button
-                            onClick={() => setIsPredictorVisible(prev => !prev)}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-sm active:scale-95 cursor-pointer"
-                            data-purpose="ai-predictor-trigger"
-                            type="button"
-                        >
-                            <Brain className="w-4 h-4 text-blue-600" />
-                            <span>{isPredictorVisible ? 'Close Exam Helper' : 'Predict Important Topics'}</span>
-                        </button>
+                        <div className="flex items-center gap-2.5">
+                            <button
+                                onClick={() => setIsPredictorVisible(prev => !prev)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#174073] bg-[#DEEDFC] hover:bg-[#D9ECFF] border border-[#D9ECFF] transition-all cursor-pointer"
+                                type="button"
+                            >
+                                <Brain className="w-3.5 h-3.5 text-[#0073E6]" />
+                                <span>{isPredictorVisible ? 'Close Helper' : 'Topic Helper'}</span>
+                            </button>
 
-                        {/* Ingest Record Primary Button */}
-                        <button
-                            onClick={() => setShowUpload(true)}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all shadow-sm active:scale-95 cursor-pointer"
-                            data-purpose="ingest-record-action"
-                            type="button"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Upload Question Paper</span>
-                        </button>
-                    </div>
-                </section>
+                            <button
+                                onClick={() => setShowUpload(true)}
+                                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] transition-all cursor-pointer shadow-2xs"
+                                type="button"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>Upload Paper</span>
+                            </button>
+                        </div>
+                    </section>
+                )}
                 {/* END: PageHeader */}
 
                 {/* BEGIN: SearchAndFiltersBar */}
-                <section className="bg-white border border-slate-200/90 rounded-xl p-3 shadow-sm flex flex-col md:flex-row items-center gap-3" data-purpose="search-filters">
-                    {/* Historical Sequence Search Input */}
+                {!embedded && (
+                <section className="bg-white border border-[#E2E2E2] rounded-xl p-3 shadow-2xs flex flex-col md:flex-row items-center gap-3">
                     <div className="relative flex-1 w-full">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                            <Search className="w-4 h-4 text-slate-400" />
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#727272]">
+                            <Search className="w-4 h-4 text-[#727272]" />
                         </div>
                         <input
                             value={searchQuery}
@@ -373,188 +379,141 @@ const PYQsDatabase = ({ embedded = false }) => {
                                 setSearchQuery(e.target.value);
                                 setCurrentPage(1);
                             }}
-                            className="w-full pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className="w-full pl-10 pr-4 py-2 text-xs text-[#383838] placeholder-[#727272] bg-white border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:border-[#0073E6] transition-all"
                             placeholder="Search past question papers, subjects, or years..."
                             type="text"
                         />
                     </div>
 
-                    {/* Filter Dropdown 1: Global Archive (Subject) */}
-                    <div className="relative w-full md:w-56">
-                        <select
-                            value={filterSubject}
-                            onChange={(e) => {
-                                setFilterSubject(e.target.value);
-                                setCurrentPage(1);
-                            }}
-                            className="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer"
-                        >
-                            <option value="">{isTeacher ? "ALL SUBJECTS" : "ALL MY SUBJECTS"}</option>
-                            {subjectsWithPyqs.length === 0 ? (
-                                <option value="" disabled>No subjects with PYQs available</option>
-                            ) : (
-                                subjectsWithPyqs.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name} {s.code ? `(${s.code})` : ''}</option>
-                                ))
-                            )}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                            <ChevronDown className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-2.5 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-52">
+                            <select
+                                value={filterSubject}
+                                onChange={(e) => {
+                                    setFilterSubject(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-[#383838] bg-white border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:border-[#0073E6] appearance-none cursor-pointer"
+                            >
+                                <option value="">{isTeacher ? "ALL SUBJECTS" : "ALL MY SUBJECTS"}</option>
+                                {subjectsWithPyqs.length === 0 ? (
+                                    <option value="" disabled>No subjects with PYQs available</option>
+                                ) : (
+                                    subjectsWithPyqs.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name} {s.code ? `(${s.code})` : ''}</option>
+                                    ))
+                                )}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#727272]">
+                                <ChevronDown className="w-3.5 h-3.5" />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Filter Dropdown 2: All Exams */}
-                    <div className="relative w-full md:w-48">
-                        <select
-                            value={filterExam}
-                            onChange={(e) => {
-                                setFilterExam(e.target.value);
-                                setCurrentPage(1);
-                            }}
-                            className="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer"
-                        >
-                            <option value="">ALL EXAMS</option>
-                            <option value="ESE">End Semester Exam (ESE)</option>
-                            <option value="MSE">Mid Semester Exam (MSE)</option>
-                            <option value="ISE">In-Sem Evaluation (ISE)</option>
-                            <option value="UT-1">Unit Test 1 (UT-1)</option>
-                            <option value="UT-2">Unit Test 2 (UT-2)</option>
-                            <option value="Backlog">Backlog Examination</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                            <ChevronDown className="w-3.5 h-3.5" />
+                        <div className="relative flex-1 md:w-44">
+                            <select
+                                value={filterExam}
+                                onChange={(e) => {
+                                    setFilterExam(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full py-2 pl-3.5 pr-8 text-xs font-medium text-[#383838] bg-white border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:border-[#0073E6] appearance-none cursor-pointer"
+                            >
+                                <option value="">ALL EXAMS</option>
+                                <option value="ESE">End Semester (ESE)</option>
+                                <option value="MSE">Mid Semester (MSE)</option>
+                                <option value="ISE">In-Sem (ISE)</option>
+                                <option value="UT-1">Unit Test 1 (UT-1)</option>
+                                <option value="UT-2">Unit Test 2 (UT-2)</option>
+                                <option value="Backlog">Backlog Examination</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#727272]">
+                                <ChevronDown className="w-3.5 h-3.5" />
+                            </div>
                         </div>
                     </div>
                 </section>
+                )}
                 {/* END: SearchAndFiltersBar */}
 
                 {/* BEGIN: QuestionRecordsTable */}
-                <section className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm" data-purpose="records-table-container">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse" id="vault-records-table">
-                            <thead>
-                                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 tracking-wider">
-                                    <th className="py-3 px-6 uppercase w-5/12" scope="col">Subject Name</th>
-                                    <th className="py-3 px-6 uppercase w-2/12" scope="col">Exam</th>
-                                    <th className="py-3 px-6 uppercase w-2/12" scope="col">Release</th>
-                                    <th className="py-3 px-6 uppercase w-2/12" scope="col">Labels</th>
-                                    <th className="py-3 px-6 uppercase w-1/12 text-center" scope="col">File</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-xs">
-                                {loading ? (
-                                    [1, 2, 3, 4, 5].map(i => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td colSpan={5} className="py-4 px-6 h-14 bg-slate-50/40"></td>
-                                        </tr>
-                                    ))
-                                ) : paginatedPyqs.length > 0 ? (
-                                    paginatedPyqs.map((q, i) => {
-                                        const sub = (subjects || []).find(s => s.id === q.subjectId);
-                                        const subjectName = sub?.name || q.subjectName || (q.subjectId ? `Subject #${q.subjectId}` : 'Examination Paper');
-                                        const subjectCode = sub?.code || (sub?.totalModules ? `${sub.totalModules} Modules` : '');
-
-                                        return (
-                                            <tr key={q.id || i} className="hover:bg-blue-50/30 transition-colors group">
-                                                <td className="py-3.5 px-6">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="w-1.5 h-5 bg-blue-600 rounded-full shrink-0"></span>
-                                                        <div>
-                                                            <span className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors block">
-                                                                {subjectName}
-                                                            </span>
-                                                            {subjectCode && (
-                                                                <span className="block text-[11px] text-slate-400 font-normal">
-                                                                    {subjectCode}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3.5 px-6">
-                                                    <span className={cn(
-                                                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border",
-                                                        getExamBadgeStyle(q.examType)
-                                                    )}>
-                                                        {q.examType || 'N/A'}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3.5 px-6 font-medium text-slate-600">
-                                                    {q.year || '—'}
-                                                </td>
-                                                <td className="py-3.5 px-6">
-                                                    <div className="flex gap-1.5 flex-wrap">
-                                                        {q.tags ? (
-                                                            q.tags.split(',').map((tag, tagIdx) => (
-                                                                <span
-                                                                    key={tagIdx}
-                                                                    className={cn(
-                                                                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border",
-                                                                        getTagBadgeStyle(tag)
-                                                                    )}
-                                                                >
-                                                                    {tag.trim()}
-                                                                </span>
-                                                            ))
-                                                        ) : (
-                                                            <span className="text-slate-400 italic font-normal text-[11px]">Unlabeled</span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="py-3.5 px-6 text-center">
-                                                    <button
-                                                        onClick={() => handleViewPyq(q)}
-                                                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                                                        title="View Question Paper"
-                                                        type="button"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5" className="py-20 px-6 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-3 text-slate-400">
-                                                <Inbox className="w-10 h-10 stroke-[1.5] text-slate-300" />
-                                                <p className="text-xs font-semibold text-slate-600">No question papers found</p>
-                                                <p className="text-[11px] text-slate-400">Upload past question papers to see them here.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Table Footer / Pagination */}
-                    <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-                        <span>
-                            Showing <strong className="font-semibold text-slate-700">{paginatedPyqs.length}</strong> of{' '}
-                            <strong className="font-semibold text-slate-700">{filteredPyqs.length}</strong> archived papers
-                        </span>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="px-2.5 py-1 text-xs border border-slate-200 rounded-md bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 font-medium cursor-pointer transition-all"
-                            >
-                                Previous
-                            </button>
-                            <span className="text-[11px] font-medium text-slate-500 px-1">
-                                {currentPage} / {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage >= totalPages}
-                                className="px-2.5 py-1 text-xs border border-slate-200 rounded-md bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 font-medium cursor-pointer transition-all"
-                            >
-                                Next
-                            </button>
+                <section>
+                    {loading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-44 rounded-xl bg-slate-100 animate-pulse border border-[#E2E2E2]" />
+                            ))}
                         </div>
-                    </div>
+                    ) : paginatedPyqs.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {paginatedPyqs.map((q, i) => {
+                                const sub = (subjects || []).find(s => s.id === q.subjectId);
+                                const subjectName = sub?.name || q.subjectName || (q.subjectId ? `Subject #${q.subjectId}` : 'Examination Paper');
+                                const subjectCode = sub?.code || '';
+
+                                return (
+                                    <div
+                                        key={q.id || i}
+                                        onClick={() => handleViewPyq(q)}
+                                        className="bg-[linear-gradient(180deg,#FFFFFF_0px,#F2F7FC_120px)] border border-[#E2E2E2] hover:border-[#0073E6]/40 rounded-xl p-4 transition-all duration-200 flex flex-col justify-between group cursor-pointer shadow-2xs hover:shadow-xs"
+                                    >
+                                        <div className="space-y-3">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]">
+                                                        {q.examType || 'Exam'}
+                                                    </span>
+                                                    <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-[#727272] border border-[#E2E2E2]">
+                                                        {q.year || 'Paper'}
+                                                    </span>
+                                                </div>
+                                                <div className="w-6 h-6 rounded-full bg-[#DEEDFC]/50 text-[#0073E6] flex items-center justify-center group-hover:bg-[#0073E6] group-hover:text-white transition-all">
+                                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-semibold text-xs text-[#383838] group-hover:text-[#0073E6] line-clamp-2 leading-snug transition-colors">
+                                                    {subjectName}
+                                                </h3>
+                                                {subjectCode && (
+                                                    <p className="text-[11px] text-[#727272] mt-0.5 font-normal truncate">
+                                                        {subjectCode}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {q.tags && (
+                                                <div className="flex gap-1 flex-wrap pt-0.5">
+                                                    {q.tags.split(',').slice(0, 3).map((tag, tagIdx) => (
+                                                        <span
+                                                            key={tagIdx}
+                                                            className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                        >
+                                                            {tag.trim()}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-3 mt-3 border-t border-[#E2E2E2] flex items-center justify-between text-[10px] text-[#727272]">
+                                            <span className="font-mono text-[10px]">PDF • University PYQ</span>
+                                            <span className="inline-flex items-center gap-1 text-[#0073E6] font-semibold group-hover:underline">
+                                                <Eye className="w-3 h-3" />
+                                                View
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="py-20 text-center bg-white rounded-xl border border-dashed border-[#E2E2E2] p-6">
+                            <Archive className="w-8 h-8 text-[#727272] mx-auto mb-2 opacity-50" />
+                            <h4 className="text-sm font-semibold text-[#383838]">No question papers found</h4>
+                            <p className="text-xs text-[#727272] mt-1">Try adjusting your search terms or exam filter.</p>
+                        </div>
+                    )}
                 </section>
                 {/* END: QuestionRecordsTable */}
             </main>

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
 import SovereignSidebar from './SovereignSidebar';
-import { Menu } from 'lucide-react';
+import { Menu, LayoutDashboard, BookOpen, Bell, Compass, CalendarCheck2, Sparkles, X, Upload } from 'lucide-react';
+import { DiscreteTabs } from '../watermelon/discrete-tabs';
 
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -170,17 +171,35 @@ const SovereignLayout = () => {
     };
 
     const navTabs = [
-        { name: 'Home', path: '/', icon: 'home' },
-        { name: 'Notes', path: '/notes', icon: 'menu_book' },
-        { name: 'Notices', path: '/announcements', icon: 'campaign' },
-        { name: 'Roadmaps', path: '/roadmaps', icon: 'alt_route' },
+        { name: 'Home', path: '/', icon: LayoutDashboard },
+        { name: 'Notes', path: '/notes', icon: BookOpen },
+        { name: 'Notices', path: '/announcements', icon: Bell },
+        { name: 'Roadmaps', path: '/roadmaps', icon: Compass },
         { 
             name: 'Attendance', 
             path: '/attendance', 
-            icon: 'how_to_reg', 
+            icon: CalendarCheck2, 
             badge: overallAttendance ? `${overallAttendance}%` : null 
         },
     ];
+
+    const activeDockTab = useMemo(() => {
+        if (location.pathname === '/') return '/';
+        const found = navTabs.find(t => t.path !== '/' && location.pathname.startsWith(t.path));
+        return found ? found.path : '/';
+    }, [location.pathname, navTabs]);
+
+    const discreteTabItems = useMemo(() => {
+        return navTabs.map(t => {
+            const Icon = t.icon;
+            return {
+                id: t.path,
+                label: t.name,
+                icon: <Icon className="w-5 h-5 shrink-0" strokeWidth={activeDockTab === t.path ? 2.2 : 1.8} />,
+                badge: t.badge
+            };
+        });
+    }, [navTabs, activeDockTab]);
 
     return (
         <div className="flex h-screen w-full max-w-full overflow-hidden bg-canvas-bg text-text-primary font-sans antialiased selection:bg-primary/20">
@@ -218,7 +237,7 @@ const SovereignLayout = () => {
                                 aria-label="Notifications"
                                 className="relative w-9 h-9 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary active:bg-slate-100 transition-colors"
                             >
-                                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                                <Bell className="w-5 h-5 text-text-secondary" strokeWidth={1.8} />
                                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white"></span>
                             </button>
                             <button
@@ -253,7 +272,7 @@ const SovereignLayout = () => {
                             <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                                        <Upload className="w-4 h-4 text-primary" />
                                     </div>
                                     <div>
                                         <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Upload Notes</h2>
@@ -264,7 +283,7 @@ const SovereignLayout = () => {
                                     onClick={() => setShowUpload(false)}
                                     className="w-8 h-8 rounded-lg hover:bg-slate-100  text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[20px]">close</span>
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
                             <div className="p-6 max-h-[80vh] overflow-y-auto">
@@ -293,54 +312,29 @@ const SovereignLayout = () => {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                         </span>
-                        <span className="material-symbols-outlined text-[18px]">smart_toy</span>
+                        <Sparkles className="w-4 h-4" />
                         <span className="hidden sm:inline">Ask AI</span>
                     </button>
                 )}
 
-                {/* Mobile Bottom Navigation Dock */}
-                <nav aria-label="Mobile Navigation" className="fixed bottom-0 inset-x-0 z-50 bg-white/95  backdrop-blur-md border-t border-border-subtle pb-safe md:hidden shadow-nav">
-                    <div className="flex items-center justify-around h-14 px-2">
-                        {navTabs.map((tab) => {
-                            const isActive = tab.path === '/' 
-                                ? location.pathname === '/' 
-                                : location.pathname.startsWith(tab.path);
-
-                            return (
-                                <button
-                                    key={tab.path}
-                                    onClick={() => navigate(tab.path)}
-                                    className={`flex-1 h-full flex flex-col items-center justify-center min-w-[54px] transition-colors relative cursor-pointer ${
-                                        isActive ? 'text-primary font-bold' : 'text-text-secondary hover:text-text-primary'
-                                    }`}
-                                >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="mobile-dock-active-pill"
-                                            transition={{
-                                                type: 'spring',
-                                                stiffness: 300,
-                                                damping: 28,
-                                                mass: 0.8,
-                                            }}
-                                            className="absolute inset-x-2 inset-y-1.5 rounded-2xl bg-blue-50/80 -z-0"
-                                        />
-                                    )}
-                                    <div className="relative z-10">
-                                        <span className="material-symbols-outlined text-[22px]">{tab.icon}</span>
-                                        {tab.badge && (
-                                            <span className="absolute -top-1 -right-3 px-1 rounded-full bg-emerald-100 text-emerald-700 text-[8px] font-bold border border-emerald-200">
-                                                {tab.badge}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span className="relative z-10 text-[10px] leading-tight mt-0.5">{tab.name}</span>
-                                </button>
-                            );
-                        })}
+                {/* Mobile Floating Bottom Navigation Dock (Rounded Discrete Tabs) */}
+                {!mobileMenuOpen && (
+                    <div className="fixed bottom-3 inset-x-3 z-30 md:hidden flex justify-center pointer-events-none">
+                        <nav 
+                            aria-label="Mobile Navigation" 
+                            className="pointer-events-auto bg-white/95 backdrop-blur-md border border-[#E2E2E2] rounded-full p-1.5 shadow-lg shadow-black/8 w-full max-w-sm mx-auto flex items-center"
+                        >
+                            <DiscreteTabs
+                                tabs={discreteTabItems}
+                                activeTab={activeDockTab}
+                                onTabChange={(path) => navigate(path)}
+                                className="h-11 py-0 px-1 w-full justify-between"
+                                itemClassName="h-9 px-3"
+                            />
+                        </nav>
                     </div>
-                </nav>
-            </main>
+                )}
+                </main>
         </div>
     );
 };

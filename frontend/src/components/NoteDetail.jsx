@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import mammoth from 'mammoth';
 import {
-    ArrowLeft, Download, ExternalLink, MessageSquare, Bot, X,
+    ArrowLeft, Download, MessageSquare, Bot, X,
     FileText, User, Calendar, CheckCircle2, Send, Inbox, Loader2
 } from 'lucide-react';
 import DocumentLoadingBar from './DocumentLoadingBar';
@@ -15,12 +15,12 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const NoteDetail = () => {
     const { id: noteId } = useParams();
-    const { profile, refreshData } = useOutletContext();
+    const { profile } = useOutletContext();
     const navigate = useNavigate();
     
     const [note, setNote] = useState(null);
     const [doubts, setDoubts] = useState([]);
-    const [activeTab, setActiveTab] = useState('doubts'); // 'doubts' or 'ai'
+    const [activeTab, setActiveTab] = useState('doubts');
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,7 +60,6 @@ const NoteDetail = () => {
         if (noteId) fetchNoteData();
     }, [noteId, navigate]);
 
-    // Fetch file and render preview (PDF/DOCX/Image)
     useEffect(() => {
         if (!presignedUrl && !note?.fileUrl) return;
         let cancelled = false;
@@ -69,7 +68,6 @@ const NoteDetail = () => {
             setDocLoading(true);
             let blob = null;
 
-            // 1. Try local backend endpoint first for reliable CORS and speed
             if (note?.fileUrl) {
                 try {
                     const fallbackUrl = `${API_BASE}/files/raw/${note.fileUrl}`;
@@ -82,7 +80,6 @@ const NoteDetail = () => {
                 }
             }
 
-            // 2. Try presigned URL if local fetch was not used/failed
             if (!blob && presignedUrl) {
                 try {
                     const res = await fetch(presignedUrl);
@@ -120,7 +117,6 @@ const NoteDetail = () => {
         return () => { cancelled = true; };
     }, [presignedUrl, note]);
 
-    // Cleanup blob URL on unmount
     useEffect(() => {
         return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
     }, [blobUrl]);
@@ -142,7 +138,7 @@ const NoteDetail = () => {
             setDoubts([...doubts, res.data]);
             setQuery('');
             toast.success('Doubt posted! Instructors will be notified.');
-        } catch (err) {
+        } catch {
             toast.error('Failed to post doubt.');
         } finally {
             setIsSubmitting(false);
@@ -180,7 +176,6 @@ const NoteDetail = () => {
                 }
             }
 
-            // Direct Gemini client fallback if backend didn't provide answer
             if (!answer && customApiKey && note?.extractedText) {
                 try {
                     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(customApiKey)}`;
@@ -267,12 +262,11 @@ const NoteDetail = () => {
 
     if (loading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-zinc-950 min-h-screen p-6">
+            <div className="flex-1 flex items-center justify-center bg-[#F2F7FC] min-h-screen p-6">
                 <DocumentLoadingBar 
                     inline 
-                    dark 
                     message="Loading document..." 
-                    submessage="Fetching document metadata, security tokens, and discussions..." 
+                    submessage="Fetching document metadata and study discussions..." 
                 />
             </div>
         );
@@ -286,32 +280,31 @@ const NoteDetail = () => {
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
 
     return (
-        <div className="relative flex-1 flex flex-col bg-zinc-950 overflow-hidden antialiased h-full w-full">
+        <div className="relative flex-1 flex flex-col bg-[#F2F7FC] overflow-hidden antialiased h-full w-full">
             {/* Global Overlay while downloading */}
             {downloading && (
                 <DocumentLoadingBar 
                     progress={downloadProgress} 
                     message="Downloading document..." 
                     submessage={note.title} 
-                    dark
                 />
             )}
 
-            {/* Header - Slim, Non-intrusive Top Bar */}
-            <div className="h-12 px-3 sm:px-5 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 flex items-center justify-between shrink-0 z-20">
-                <div className="flex items-center gap-2.5 min-w-0">
+            {/* Header - Slim, Unstop Theme Top Bar */}
+            <div className="h-14 px-4 sm:px-6 bg-white border-b border-[#E2E2E2] flex items-center justify-between shrink-0 z-20">
+                <div className="flex items-center gap-3 min-w-0">
                     <button 
                         onClick={() => navigate('/notes')} 
-                        className="p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                        className="p-2 bg-[#F2F7FC] hover:bg-[#DEEDFC] border border-[#E2E2E2] rounded-xl text-[#383838] transition-colors cursor-pointer shrink-0"
                         title="Back to Notes"
                     >
                         <ArrowLeft className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-4 h-4 text-blue-400 shrink-0" />
-                        <h2 className="text-xs sm:text-sm font-semibold text-zinc-100 truncate max-w-[200px] sm:max-w-[450px]">{note.title}</h2>
+                        <FileText className="w-4 h-4 text-[#0073E6] shrink-0" />
+                        <h2 className="text-xs sm:text-sm font-bold text-[#383838] truncate max-w-[200px] sm:max-w-[450px]">{note.title}</h2>
                         {note.unit && (
-                            <span className="hidden md:inline-block px-2 py-0.5 rounded bg-zinc-900 text-[10px] font-medium text-zinc-400 border border-zinc-800 shrink-0">
+                            <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full bg-[#DEEDFC] text-[10px] font-semibold text-[#174073] border border-[#D9ECFF] shrink-0">
                                 {note.unit}
                             </span>
                         )}
@@ -321,20 +314,20 @@ const NoteDetail = () => {
                 <div className="flex items-center gap-2 shrink-0">
                     <button 
                         onClick={() => setIsPanelOpen(true)}
-                        className="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+                        className="px-3 py-1.5 bg-[#F2F7FC] hover:bg-[#DEEDFC] border border-[#E2E2E2] rounded-xl text-[#383838] transition-colors flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
                         title="Open Doubts & Discussions"
                     >
-                        <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+                        <MessageSquare className="w-3.5 h-3.5 text-[#0073E6]" />
                         <span className="hidden sm:inline">Doubts</span>
                         {doubts.length > 0 && (
-                            <span className="px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold">
+                            <span className="px-1.5 py-0.2 rounded-full bg-[#0073E6] text-white text-[10px] font-bold">
                                 {doubts.length}
                             </span>
                         )}
                     </button>
                     <button 
                         onClick={handleDownload}
-                        className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors flex items-center gap-1.5 text-xs font-medium cursor-pointer" 
+                        className="px-3.5 py-1.5 bg-[#0073E6] hover:bg-[#0060c0] rounded-xl text-white transition-colors flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-xs" 
                         title="Download Document"
                     >
                         <Download className="w-3.5 h-3.5" />
@@ -343,14 +336,13 @@ const NoteDetail = () => {
                 </div>
             </div>
 
-            {/* Document Viewer Area - Full Viewport Coverage */}
-            <div className="flex-1 w-full h-[calc(100%-3rem)] min-h-0 bg-white relative flex flex-col overflow-hidden">
+            {/* Document Viewer Area */}
+            <div className="flex-1 w-full h-[calc(100%-3.5rem)] min-h-0 bg-[#F2F7FC] relative flex flex-col overflow-hidden">
                 {isPdf ? (
                     (docLoading || !blobUrl) ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
                             <DocumentLoadingBar 
                                 inline 
-                                dark 
                                 message="Loading document..." 
                                 submessage={note.title || "Preparing PDF viewer and caching streams..."} 
                             />
@@ -364,67 +356,76 @@ const NoteDetail = () => {
                     )
                 ) : isOfficeDoc ? (
                     docLoading ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
                             <DocumentLoadingBar 
                                 inline 
-                                dark 
                                 message="Loading document..." 
                                 submessage="Parsing document layout and generating inline preview..." 
                             />
                         </div>
                     ) : docxHtml ? (
-                        <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
-                            <div 
-                                className="max-w-4xl mx-auto prose prose-slate prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed prose-table:border prose-td:border prose-td:p-2 prose-th:border prose-th:p-2 prose-th:bg-slate-50 [&_p]:mb-4 [&_h1]:mb-4 [&_h2]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                                dangerouslySetInnerHTML={{ __html: docxHtml }} 
-                            />
+                        <div className="flex-1 w-full h-full overflow-y-auto bg-[#F2F7FC] p-4 sm:p-6 md:p-8 text-[#383838]">
+                            <div className="max-w-4xl mx-auto bg-white border border-[#E2E2E2] rounded-2xl p-6 sm:p-10 shadow-xs">
+                                <div 
+                                    className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#383838] prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed prose-table:border prose-td:border prose-td:p-2 prose-th:border prose-th:p-2 prose-th:bg-[#F2F7FC] [&_p]:mb-4 [&_h1]:mb-4 [&_h2]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                                    dangerouslySetInnerHTML={{ __html: docxHtml }} 
+                                />
+                            </div>
                         </div>
                     ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
-                        <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
-                            <div className="max-w-4xl mx-auto whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-800">
-                                {note.extractedText}
+                        <div className="flex-1 w-full h-full overflow-y-auto bg-[#F2F7FC] p-4 sm:p-6 md:p-8 text-[#383838]">
+                            <div className="max-w-4xl mx-auto bg-white border border-[#E2E2E2] rounded-2xl p-6 sm:p-10 shadow-xs">
+                                <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#383838]">
+                                    {note.extractedText}
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
-                            <FileText className="w-16 h-16 text-zinc-700 mb-6" />
-                            <h3 className="text-xl font-bold text-zinc-200 tracking-tight">Word Document</h3>
-                            <p className="text-xs text-zinc-400 mt-2 max-w-sm">No preview could be parsed automatically. Download original file below.</p>
-                            <button 
-                                onClick={handleDownload}
-                                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all text-xs font-bold text-white shadow-lg cursor-pointer flex items-center gap-2"
-                            >
-                                <Download className="w-4 h-4" />
-                                <span>Download Document</span>
-                            </button>
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
+                            <div className="bg-white border border-[#E2E2E2] rounded-2xl p-8 max-w-md mx-auto text-center shadow-xs">
+                                <FileText className="w-12 h-12 text-[#0073E6] mx-auto mb-4" />
+                                <h3 className="text-base font-bold text-[#383838] tracking-tight">Word Document</h3>
+                                <p className="text-xs text-[#727272] mt-2">No preview could be parsed automatically. Download original file below.</p>
+                                <button 
+                                    onClick={handleDownload}
+                                    className="mt-6 px-5 py-2.5 bg-[#0073E6] hover:bg-[#0060c0] rounded-xl transition-all text-xs font-semibold text-white cursor-pointer inline-flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    <span>Download Document</span>
+                                </button>
+                            </div>
                         </div>
                     )
                 ) : isImage ? (
-                    <div className="flex-1 flex items-center justify-center p-4 bg-zinc-950">
+                    <div className="flex-1 flex items-center justify-center p-4 bg-[#F2F7FC]">
                         <img 
                             src={blobUrl || 'about:blank'} 
                             alt={note.title}
-                            className="max-w-full max-h-full object-contain"
+                            className="max-w-full max-h-full object-contain rounded-xl border border-[#E2E2E2] bg-white shadow-xs"
                         />
                     </div>
                 ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
-                    <div className="flex-1 w-full h-full overflow-y-auto bg-white p-6 sm:p-10 md:p-12 text-slate-900 selection:bg-blue-100">
-                        <div className="max-w-4xl mx-auto whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-800">
-                            {note.extractedText}
+                    <div className="flex-1 w-full h-full overflow-y-auto bg-[#F2F7FC] p-4 sm:p-6 md:p-8 text-[#383838]">
+                        <div className="max-w-4xl mx-auto bg-white border border-[#E2E2E2] rounded-2xl p-6 sm:p-10 shadow-xs">
+                            <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#383838]">
+                                {note.extractedText}
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-zinc-950">
-                        <FileText className="w-16 h-16 text-zinc-800 mb-6" />
-                        <h3 className="text-xl font-bold text-zinc-300 tracking-tight">Preview Unavailable</h3>
-                        <p className="text-xs text-zinc-500 mt-2 max-w-sm">This file cannot be previewed in browser. Please download to view.</p>
-                        <button 
-                            onClick={handleDownload}
-                            className="mt-8 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded-xl transition-all text-xs font-bold text-white uppercase tracking-widest cursor-pointer flex items-center gap-2"
-                        >
-                            <Download className="w-4 h-4" />
-                            <span>Download File</span>
-                        </button>
+                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
+                        <div className="bg-white border border-[#E2E2E2] rounded-2xl p-8 max-w-md mx-auto text-center shadow-xs">
+                            <FileText className="w-12 h-12 text-[#727272] mx-auto mb-4" />
+                            <h3 className="text-base font-bold text-[#383838] tracking-tight">Preview Unavailable</h3>
+                            <p className="text-xs text-[#727272] mt-2">This file cannot be previewed in browser. Please download to view.</p>
+                            <button 
+                                onClick={handleDownload}
+                                className="mt-6 px-5 py-2.5 bg-[#0073E6] hover:bg-[#0060c0] rounded-xl transition-all text-xs font-semibold text-white cursor-pointer inline-flex items-center gap-2"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span>Download File</span>
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -432,53 +433,56 @@ const NoteDetail = () => {
             {/* Slide-out Overlay */}
             {isPanelOpen && (
                 <div 
-                    className="absolute inset-0 z-30 bg-black/40 backdrop-blur-sm transition-opacity duration-500"
+                    className="absolute inset-0 z-30 bg-black/25 backdrop-blur-2xs transition-opacity duration-300"
                     onClick={() => setIsPanelOpen(false)}
                 />
             )}
 
             {/* Slide-out Panel */}
-            <div className={`absolute top-0 right-0 h-full w-full sm:w-[450px] bg-zinc-950/95 backdrop-blur-2xl border-l border-zinc-800/80 shadow-2xl transition-transform duration-500 ease-out z-40 flex flex-col ${isPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`absolute top-0 right-0 h-full w-full sm:w-[450px] bg-white border-l border-[#E2E2E2] shadow-2xl transition-transform duration-300 ease-out z-40 flex flex-col ${isPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 {/* Panel Header */}
-                <div className="flex items-center justify-between p-6 border-b border-zinc-800/50">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E2E2]">
                     <div>
-                        <h3 className="text-xl font-bold text-zinc-100 tracking-tight">Questions &amp; Discussion</h3>
-                        <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1">AI Study Helper &amp; Discussion</p>
+                        <h3 className="text-base font-bold text-[#383838] tracking-tight">Questions &amp; Discussion</h3>
+                        <p className="text-[11px] font-semibold text-[#0073E6] mt-0.5">AI Study Helper &amp; Discussion</p>
                     </div>
-                    <button onClick={() => setIsPanelOpen(false)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all border border-transparent hover:border-zinc-700">
+                    <button 
+                        onClick={() => setIsPanelOpen(false)} 
+                        className="p-1.5 text-[#727272] hover:text-[#383838] hover:bg-[#F2F7FC] rounded-lg transition-all border border-transparent hover:border-[#E2E2E2]"
+                    >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Metadata Section (Compact) */}
-                <div className="px-6 py-5 border-b border-zinc-800/50 bg-zinc-900/30">
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="px-2 py-0.5 bg-zinc-800 text-zinc-300 text-[9px] font-black uppercase tracking-widest rounded border border-zinc-700">
+                {/* Metadata Section */}
+                <div className="px-6 py-4 border-b border-[#E2E2E2] bg-[#F2F7FC]">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-white text-[#174073] text-[10px] font-semibold rounded-md border border-[#E2E2E2]">
                             {note.unit || 'General'}
                         </span>
-                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded border border-emerald-500/20 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Verified Notes
+                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-md border border-emerald-200 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Notes
                         </span>
                     </div>
-                    <h4 className="text-[13px] font-bold text-zinc-200 mb-3 leading-tight">{note.title}</h4>
-                    <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
-                        <div className="flex items-center gap-1.5"><User className="w-3 h-3"/> {note.uploadedBy || 'System'}</div>
-                        <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3"/> {new Date(note.createdAt).toLocaleDateString()}</div>
+                    <h4 className="text-xs font-bold text-[#383838] mb-2 leading-snug">{note.title}</h4>
+                    <div className="flex items-center gap-4 text-[11px] text-[#727272]">
+                        <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5"/> {note.uploadedBy || 'System'}</div>
+                        <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5"/> {new Date(note.createdAt).toLocaleDateString()}</div>
                     </div>
                 </div>
 
                 {/* Panel Tabs */}
-                <div className="p-3 border-b border-zinc-800/50 bg-zinc-950/50 flex justify-center">
+                <div className="p-3 border-b border-[#E2E2E2] bg-white flex justify-center">
                     <FluidTabs
                         value={activeTab}
                         onChange={setActiveTab}
                         size="sm"
                         layoutId="note-detail-panel-tabs"
-                        className="w-full bg-zinc-900 border-zinc-800"
+                        className="w-full bg-[#F2F7FC] border-[#E2E2E2]"
                         tabClassName="flex-1"
-                        activeClassName="font-bold text-white"
-                        inactiveClassName="font-medium text-zinc-400 hover:text-zinc-200"
-                        indicatorClassName="absolute inset-0 rounded-full border border-zinc-700/80 bg-zinc-800 shadow-md"
+                        activeClassName="font-bold text-[#0073E6]"
+                        inactiveClassName="font-semibold text-[#727272] hover:text-[#383838]"
+                        indicatorClassName="absolute inset-0 rounded-full border border-[#D9ECFF] bg-white shadow-xs"
                         tabs={[
                             {
                                 id: 'doubts',
@@ -488,7 +492,7 @@ const NoteDetail = () => {
                             {
                                 id: 'ai',
                                 label: 'AI Note Helper',
-                                icon: <Bot className="w-3.5 h-3.5 mr-1 text-blue-400" />
+                                icon: <Bot className="w-3.5 h-3.5 mr-1 text-[#0073E6]" />
                             }
                         ]}
                     />
@@ -497,47 +501,44 @@ const NoteDetail = () => {
                 {/* Content Area */}
                 <div 
                     ref={scrollRef} 
-                    className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth"
-                    style={{ scrollbarWidth: 'thin', scrollbarColor: '#3f3f46 transparent' }}
+                    className="flex-1 overflow-y-auto p-5 space-y-4 bg-white scroll-smooth"
                 >
                     {activeTab === 'doubts' ? (
                         doubts.length > 0 ? (
                             doubts.map((doubt, i) => (
-                                <div key={i} className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div key={i} className="space-y-2.5 p-3.5 rounded-xl border border-[#E2E2E2] bg-[#F2F7FC]">
                                     <div className="flex gap-3">
-                                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-300 border border-zinc-700">
+                                        <div className="shrink-0 w-8 h-8 rounded-lg bg-white border border-[#E2E2E2] flex items-center justify-center text-[10px] font-bold text-[#174073]">
                                             {doubt.studentName?.substring(0, 2).toUpperCase() || 'AN'}
                                         </div>
-                                        <div className="space-y-1.5 flex-1">
+                                        <div className="space-y-1 flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[11px] font-bold text-zinc-200">{doubt.studentName}</span>
-                                                <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">{new Date(doubt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <span className="text-xs font-bold text-[#383838] truncate">{doubt.studentName}</span>
+                                                <span className="text-[10px] text-[#727272]">{new Date(doubt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                             </div>
-                                            <p className="text-xs text-zinc-400 leading-relaxed bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/50">{doubt.question}</p>
+                                            <p className="text-xs text-[#383838] leading-relaxed">{doubt.question}</p>
                                         </div>
                                     </div>
                                     {doubt.answer && (
-                                        <div className="ml-11 bg-emerald-500/5 border-l-2 border-emerald-500/40 pl-4 py-2">
-                                            <div className="flex items-center gap-1.5 mb-1.5">
-                                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Instructor Response</span>
-                                            </div>
-                                            <p className="text-xs text-emerald-100/80 leading-relaxed">{doubt.answer}</p>
+                                        <div className="ml-11 bg-emerald-50 border-l-2 border-emerald-500 pl-3 py-2 rounded-r-lg">
+                                            <span className="text-[10px] font-bold text-emerald-700 block mb-1">Instructor Response</span>
+                                            <p className="text-xs text-[#383838] leading-relaxed">{doubt.answer}</p>
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center opacity-40">
-                                <Inbox className="w-10 h-10 text-zinc-600 mb-4" />
-                                <p className="text-xs font-semibold text-zinc-400">No questions posted yet</p>
+                            <div className="h-full flex flex-col items-center justify-center py-12 text-center">
+                                <Inbox className="w-10 h-10 text-[#727272] mb-3" />
+                                <p className="text-xs font-medium text-[#727272]">No questions posted yet</p>
                             </div>
                         )
                     ) : (
                         chatMessages.map((msg, i) => (
-                            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
-                                <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] leading-relaxed shadow-lg ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-zinc-800 text-zinc-200 rounded-bl-sm border border-zinc-700'}`}>
+                            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${msg.role === 'user' ? 'bg-[#0073E6] text-white rounded-br-xs' : 'bg-[#F2F7FC] text-[#383838] border border-[#E2E2E2] rounded-bl-xs'}`}>
                                     {msg.role === 'assistant' ? (
-                                        <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-zinc-950 prose-pre:border prose-pre:border-zinc-800">
+                                        <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-[#383838]">
                                             <ReactMarkdown>{msg.text}</ReactMarkdown>
                                         </div>
                                     ) : (
@@ -550,9 +551,9 @@ const NoteDetail = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/80 backdrop-blur-md">
+                <div className="p-4 border-t border-[#E2E2E2] bg-[#F2F7FC]">
                     <form onSubmit={handleSubmit} className="flex gap-2 items-end">
-                        <div className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all">
+                        <div className="flex-1 bg-white border border-[#E2E2E2] rounded-xl overflow-hidden focus-within:border-[#0073E6] focus-within:ring-1 focus-within:ring-[#0073E6]/20 transition-all">
                             <textarea 
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
@@ -562,7 +563,7 @@ const NoteDetail = () => {
                                         handleSubmit(e);
                                     }
                                 }}
-                                className="w-full bg-transparent border-none focus:ring-0 text-xs text-zinc-200 resize-none py-3 px-4 placeholder:text-zinc-600 outline-none min-h-[44px] max-h-32 scrollbar-none" 
+                                className="w-full bg-transparent border-none focus:ring-0 text-xs text-[#383838] resize-none py-2.5 px-3.5 placeholder:text-[#727272] outline-none min-h-[42px] max-h-32" 
                                 placeholder={activeTab === 'doubts' ? "Ask a question to teachers or classmates..." : "Ask AI about this document..."} 
                                 rows={1}
                             />
@@ -570,17 +571,17 @@ const NoteDetail = () => {
                         <button 
                             type="submit"
                             disabled={!query.trim() || isSubmitting}
-                            className="w-11 h-11 flex items-center justify-center bg-blue-600 text-white rounded-xl hover:bg-blue-500 active:scale-95 transition-all flex-shrink-0 disabled:opacity-50 disabled:hover:bg-blue-600 shadow-lg shadow-blue-500/20"
+                            className="w-10 h-10 flex items-center justify-center bg-[#0073E6] text-white rounded-xl hover:bg-[#0060c0] active:scale-95 transition-all shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
                         >
                             {isSubmitting ? (
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                <Loader2 className="w-4 h-4 animate-spin text-white" />
                             ) : (
                                 activeTab === 'ai' ? <Bot className="w-4 h-4" /> : <Send className="w-4 h-4" />
                             )}
                         </button>
                     </form>
-                    <p className="text-[9px] text-zinc-600 mt-3 text-center uppercase font-bold tracking-[0.2em]">
-                        {activeTab === 'doubts' ? 'Questions are visible to your classmates and teacher' : 'AI answers based on this document'}
+                    <p className="text-[10px] text-[#727272] mt-2.5 text-center font-medium">
+                        {activeTab === 'doubts' ? 'Questions are visible to classmates and teachers' : 'AI answers based on this document'}
                     </p>
                 </div>
             </div>
@@ -589,4 +590,3 @@ const NoteDetail = () => {
 };
 
 export default NoteDetail;
-

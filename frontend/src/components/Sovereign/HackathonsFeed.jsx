@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FluidTabs } from '../fluid-tabs';
+import { Trophy, ArrowUpRight } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -52,7 +53,7 @@ const HackathonsFeed = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5 w-full min-w-0">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[18px]">emoji_events</span>
+                        <Trophy className="w-4 h-4 text-[#0073E6]" />
                     </div>
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold text-[#383838] leading-tight truncate">Hackathons</h2>
@@ -72,17 +73,20 @@ const HackathonsFeed = () => {
                 </div>
             </div>
 
-            {/* List: Unstop Clean Card-led layout */}
+            {/* List: Clean Horizontal Cards with Arrow */}
             <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
                 {loading ? (
                     Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="h-14 bg-[#DEEDFC]/30 border border-[#E2E2E2] rounded-xl animate-pulse w-full" />
+                        <div key={i} className="h-16 bg-[#DEEDFC]/30 border border-[#E2E2E2] rounded-xl animate-pulse w-full" />
                     ))
                 ) : listings.length > 0 ? (
                     listings.map((item) => (
-                        <div
+                        <a
                             key={item.id}
-                            className="flex items-center justify-between gap-3 p-3.5 bg-white hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:border-[#4A9AF0] rounded-xl transition-all min-w-0 w-full group"
+                            href={item.url || item.shareUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between gap-3 p-3.5 bg-white hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:border-[#4A9AF0] rounded-xl transition-all min-w-0 w-full group shadow-2xs"
                         >
                             <div className="min-w-0 flex-1">
                                 <h3
@@ -91,32 +95,29 @@ const HackathonsFeed = () => {
                                 >
                                     {item.title}
                                 </h3>
-                                <div className="flex items-center gap-1.5 text-[11px] font-normal text-[#727272] mt-1">
-                                    <span className="font-semibold text-[#174073]">{item.city || 'BLR'}</span>
-                                    <span>•</span>
-                                    <span className="text-emerald-600 font-medium">{item.fee || 'Free'}</span>
+                                <div className="flex items-center gap-1.5 text-[11px] font-normal text-[#727272] mt-1.5">
+                                    <span className="font-semibold text-[#174073] capitalize">{item.city || 'National'}</span>
+                                    <span className="text-[#E2E2E2]">•</span>
+                                    <span className="text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-full text-[10px] font-semibold">
+                                        {item.fee || 'Free'}
+                                    </span>
                                     {item.mode && (
                                         <>
-                                            <span className="text-slate-300">•</span>
-                                            <span className="uppercase text-[10px] font-medium tracking-wider text-[#727272]">
+                                            <span className="text-[#E2E2E2]">•</span>
+                                            <span className="uppercase text-[9px] font-semibold tracking-wider text-[#727272]">
                                                 {item.mode}
                                             </span>
                                         </>
                                     )}
                                 </div>
                             </div>
-                            <a
-                                href={item.url || item.shareUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-4 py-1.5 rounded-full text-xs font-medium text-white bg-[#0073E6] hover:bg-[#4A9AF0] active:scale-[0.96] shrink-0 transition-all shadow-xs text-center whitespace-nowrap"
-                            >
-                                Apply
-                            </a>
-                        </div>
+                            <div className="w-7 h-7 rounded-full bg-[#DEEDFC]/50 group-hover:bg-[#0073E6] text-[#0073E6] group-hover:text-white flex items-center justify-center shrink-0 transition-all border border-[#D9ECFF] group-hover:border-[#0073E6]">
+                                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                            </div>
+                        </a>
                     ))
                 ) : (
-                    <div className="col-span-full py-6 text-center text-xs text-[#727272] bg-slate-50 border border-dashed border-[#E2E2E2] rounded-xl">
+                    <div className="col-span-full py-6 text-center text-xs text-[#727272] bg-white border border-[#E2E2E2] rounded-xl">
                         No hackathons found in this region.
                     </div>
                 )}

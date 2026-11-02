@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
 import SovereignSidebar from './SovereignSidebar';
-import { Menu, LayoutDashboard, BookOpen, Bell, Compass, CalendarCheck2, Sparkles, X, Upload } from 'lucide-react';
+import { Menu, LayoutDashboard, BookOpen, Bell, Compass, CalendarCheck2, Sparkles, X, Upload, LogOut, User } from 'lucide-react';
 import { DiscreteTabs } from '../watermelon/discrete-tabs';
 
 import axios from 'axios';
@@ -22,6 +22,24 @@ const SovereignLayout = () => {
     const [loading, setLoading] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [showLogoutMenu, setShowLogoutMenu] = useState(false);
+    const userMenuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+                setShowLogoutMenu(false);
+            }
+        };
+        if (showLogoutMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('touchstart', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [showLogoutMenu]);
     const location = useLocation();
 
     // Context Detection: Identify if we are viewing a specific note
@@ -240,13 +258,34 @@ const SovereignLayout = () => {
                                 <Bell className="w-5 h-5 text-text-secondary" strokeWidth={1.8} />
                                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white"></span>
                             </button>
-                            <button
-                                onClick={() => setMobileMenuOpen(true)}
-                                className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs ml-0.5"
-                                aria-label="Open menu"
-                            >
-                                {profile?.name ? profile.name.split(' ').map(n=>n[0]).slice(0,2).join('') : <Menu className="w-4 h-4 text-text-secondary" />}
-                            </button>
+                            <div className="relative" ref={userMenuRef}>
+                                <button
+                                    onClick={() => setShowLogoutMenu(!showLogoutMenu)}
+                                    className="w-8 h-8 rounded-full bg-[#DEEDFC] border border-[#D9ECFF] flex items-center justify-center text-[#0073E6] font-bold text-xs ml-0.5 cursor-pointer shadow-2xs active:scale-95 transition-transform"
+                                    aria-label="Profile actions"
+                                >
+                                    {profile?.name ? profile.name.split(' ').map(n=>n[0]).slice(0,2).join('') : <User className="w-4 h-4 text-[#0073E6]" />}
+                                </button>
+
+                                {showLogoutMenu && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#E2E2E2] rounded-xl shadow-lg p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                                        <div className="px-2.5 py-1.5 border-b border-[#E2E2E2] mb-1">
+                                            <p className="text-xs font-bold text-[#383838] truncate">{profile?.name || 'Student'}</p>
+                                            <p className="text-[10px] text-[#727272] truncate">{profile?.prn || profile?.rollNo || 'Academic Vault'}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setShowLogoutMenu(false);
+                                                handleLogout();
+                                            }}
+                                            className="w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            <span>Logout</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </header>

@@ -223,7 +223,7 @@ const OptimizationPage = () => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-[60vh] w-full text-slate-400 gap-3">
+            <div className="flex flex-col items-center justify-center h-[60vh] w-full text-[#727272] gap-3">
                 <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                 <span className="text-xs font-medium uppercase tracking-wider">Loading Attendance Planner...</span>
             </div>
@@ -232,7 +232,7 @@ const OptimizationPage = () => {
 
     if (!engine) {
         return (
-            <div className="p-8 text-center text-slate-500">
+            <div className="p-8 text-center text-[#727272]">
                 No active subjects found.
             </div>
         );
@@ -244,38 +244,38 @@ const OptimizationPage = () => {
                 {/* Ultra-Clean Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pt-1">
                     <div>
-                        <h1 className="text-[24px] font-bold text-slate-900 tracking-tight">
+                        <h1 className="text-[24px] font-bold text-[#383838] tracking-tight">
                             Attendance Calculator & Planner
                         </h1>
-                        <p className="text-[13px] text-slate-500 mt-0.5">
+                        <p className="text-[13px] text-[#727272] mt-0.5">
                             Plan your classes, calculate safe leaves, and reach your target
                         </p>
                     </div>
                     <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
-                        <span className="text-[12px] text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/60 font-medium">
+                        <span className="text-[12px] text-[#383838] bg-slate-100 px-3 py-1.5 rounded-full border border-[#E2E2E2]/60 font-medium">
                             {engine.weeksRemaining} Weeks Remaining
                         </span>
 
                         {/* Target Stepper */}
-                        <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-xs">
-                            <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider">
+                        <div className="flex items-center gap-2 bg-white border border-[#E2E2E2] px-3 py-1.5 rounded-full shadow-xs">
+                            <span className="text-[12px] font-semibold text-[#727272] uppercase tracking-wider">
                                 Target
                             </span>
                             <div className="flex items-center gap-1.5 pl-1">
                                 <button
                                     onClick={() => setTarget(prev => Math.max(50, prev - 1))}
-                                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-blue-600 hover:text-white transition-colors text-xs font-bold"
+                                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[#383838] hover:bg-[#0073E6] hover:text-white transition-colors text-xs font-bold"
                                     type="button"
                                     title="Decrease target"
                                 >
                                     -
                                 </button>
-                                <span className="text-[14px] font-bold text-blue-600 min-w-[36px] text-center">
+                                <span className="text-[14px] font-bold text-[#0073E6] min-w-[36px] text-center">
                                     {target}%
                                 </span>
                                 <button
                                     onClick={() => setTarget(prev => Math.min(100, prev + 1))}
-                                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-blue-600 hover:text-white transition-colors text-xs font-bold"
+                                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[#383838] hover:bg-[#0073E6] hover:text-white transition-colors text-xs font-bold"
                                     type="button"
                                     title="Increase target"
                                 >
@@ -288,8 +288,8 @@ const OptimizationPage = () => {
                         <button
                             onClick={() => setShowSettings(!showSettings)}
                             className={`p-2 rounded-full border transition-all ${showSettings
-                                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                    ? 'bg-[#0073E6] text-white border-blue-600 shadow-xs'
+                                    : 'bg-white text-[#383838] border-[#E2E2E2] hover:bg-slate-50'
                                 }`}
                             title="Configure Semester Dates & Classes Per Week"
                         >
@@ -300,20 +300,20 @@ const OptimizationPage = () => {
 
                 {/* Collapsible Settings Panel */}
                 {showSettings && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
-                        <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                    <div className="bg-white border border-[#E2E2E2] rounded-xl p-5 mb-6 shadow-xs animate-in slide-in-from-top-2 duration-200">
+                        <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#E2E2E2]">
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900">Planner Settings</h3>
-                                <p className="text-xs text-slate-500">Adjust semester end date, tracked subjects, and weekly classes</p>
+                                <h3 className="text-sm font-bold text-[#383838]">Planner Settings</h3>
+                                <p className="text-xs text-[#727272]">Adjust semester end date, tracked subjects, and weekly classes</p>
                             </div>
-                            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
+                            <span className="text-xs font-semibold text-[#0073E6] bg-[#DEEDFC] px-2.5 py-1 rounded-full">
                                 Auto-saved
                             </span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1.5 uppercase tracking-wider">
                                     Semester End Date
                                 </label>
                                 <div className="relative">
@@ -321,14 +321,14 @@ const OptimizationPage = () => {
                                         type="date"
                                         value={semesterLockDate}
                                         onChange={e => setSemesterLockDate(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-semibold text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">
+                            <label className="block text-xs font-semibold text-[#383838] mb-2 uppercase tracking-wider">
                                 Tracked Subjects &amp; Classes Per Week
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -338,7 +338,7 @@ const OptimizationPage = () => {
                                     return (
                                         <div
                                             key={id}
-                                            className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${isIncluded ? 'bg-slate-50/80 border-slate-200' : 'bg-slate-100/40 border-dashed border-slate-200 opacity-60'
+                                            className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${isIncluded ? 'bg-slate-50/80 border-[#E2E2E2]' : 'bg-slate-100/40 border-dashed border-[#E2E2E2] opacity-60'
                                                 }`}
                                         >
                                             <label className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer">
@@ -348,14 +348,14 @@ const OptimizationPage = () => {
                                                     onChange={() => setLocalExcluded(prev =>
                                                         prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
                                                     )}
-                                                    className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500"
+                                                    className="w-4 h-4 rounded text-[#0073E6] border-slate-300 focus:ring-blue-500"
                                                 />
-                                                <span className="text-xs font-medium text-slate-800 truncate" title={s.name}>
+                                                <span className="text-xs font-medium text-[#383838] truncate" title={s.name}>
                                                     {s.name}
                                                 </span>
                                             </label>
                                             <div className="flex items-center gap-1 shrink-0 pl-2">
-                                                <span className="text-[10px] text-slate-400 font-medium">LPW</span>
+                                                <span className="text-[10px] text-[#727272] font-medium">LPW</span>
                                                 <input
                                                     type="number"
                                                     min="1"
@@ -365,7 +365,7 @@ const OptimizationPage = () => {
                                                         ...prev,
                                                         [id]: Math.max(1, Number(e.target.value))
                                                     }))}
-                                                    className="w-9 bg-white border border-slate-200 rounded text-center text-xs font-bold text-blue-600 py-0.5 outline-none focus:border-blue-500"
+                                                    className="w-9 bg-white border border-[#E2E2E2] rounded text-center text-xs font-bold text-[#0073E6] py-0.5 outline-none focus:border-blue-500"
                                                 />
                                             </div>
                                         </div>
@@ -377,29 +377,29 @@ const OptimizationPage = () => {
                 )}
 
                 {/* Metrics Ribbon */}
-                <div className="bg-white border border-slate-200 rounded-xl shadow-xs mb-6 grid grid-cols-2 md:grid-cols-4 overflow-hidden">
+                <div className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs mb-6 grid grid-cols-2 md:grid-cols-4 overflow-hidden">
                     {/* Metric 1 */}
-                    <div className="p-4 flex flex-col justify-center border-b md:border-b-0 border-r border-slate-100">
-                        <span className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+                    <div className="p-4 flex flex-col justify-center border-b md:border-b-0 border-r border-[#E2E2E2]">
+                        <span className="text-[11px] font-semibold text-[#727272] mb-1 uppercase tracking-wider">
                             Current Attendance
                         </span>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-[22px] font-bold text-slate-900">
+                            <span className="text-[22px] font-bold text-[#383838]">
                                 {engine.currentOverall.toFixed(1)}%
                             </span>
-                            <span className="text-[12px] text-slate-400 font-medium">
+                            <span className="text-[12px] text-[#727272] font-medium">
                                 ({engine.totalAttended} / {engine.totalConducted})
                             </span>
                         </div>
                     </div>
 
                     {/* Metric 2 */}
-                    <div className="p-4 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-100">
-                        <span className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+                    <div className="p-4 flex flex-col justify-center border-b md:border-b-0 md:border-r border-[#E2E2E2]">
+                        <span className="text-[11px] font-semibold text-[#727272] mb-1 uppercase tracking-wider">
                             Projected Attendance
                         </span>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-[22px] font-bold text-blue-600">
+                            <span className="text-[22px] font-bold text-[#0073E6]">
                                 {engine.projectedFinal.toFixed(1)}%
                             </span>
                             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${!engine.isImpossible
@@ -412,15 +412,15 @@ const OptimizationPage = () => {
                     </div>
 
                     {/* Metric 3 */}
-                    <div className="p-4 flex flex-col justify-center border-r border-slate-100">
-                        <span className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+                    <div className="p-4 flex flex-col justify-center border-r border-[#E2E2E2]">
+                        <span className="text-[11px] font-semibold text-[#727272] mb-1 uppercase tracking-wider">
                             Must Attend
                         </span>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-[22px] font-bold text-amber-600">
                                 {engine.mustAttendOverall}
                             </span>
-                            <span className="text-[13px] text-slate-500 font-normal">
+                            <span className="text-[13px] text-[#727272] font-normal">
                                 lectures
                             </span>
                         </div>
@@ -428,14 +428,14 @@ const OptimizationPage = () => {
 
                     {/* Metric 4 */}
                     <div className="p-4 flex flex-col justify-center">
-                        <span className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+                        <span className="text-[11px] font-semibold text-[#727272] mb-1 uppercase tracking-wider">
                             Skipable
                         </span>
                         <div className="flex items-baseline gap-1.5">
                             <span className="text-[22px] font-bold text-emerald-600">
                                 {engine.SkipableOverall}
                             </span>
-                            <span className="text-[13px] text-slate-500 font-normal">
+                            <span className="text-[13px] text-[#727272] font-normal">
                                 available sessions
                             </span>
                         </div>
@@ -455,12 +455,12 @@ const OptimizationPage = () => {
                             key={f.id}
                             onClick={() => setActiveFilter(f.id)}
                             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeFilter === f.id
-                                    ? 'bg-blue-600 text-white shadow-xs'
-                                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    ? 'bg-[#0073E6] text-white shadow-xs'
+                                    : 'bg-white border border-[#E2E2E2] text-[#383838] hover:bg-slate-50'
                                 }`}
                         >
                             <span>{f.label}</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeFilter === f.id ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500'
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${activeFilter === f.id ? 'bg-blue-700 text-white' : 'bg-slate-100 text-[#727272]'
                                 }`}>
                                 {f.count}
                             </span>
@@ -469,9 +469,9 @@ const OptimizationPage = () => {
                 </div>
 
                 {/* Clean Minimal Subjects Table */}
-                <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+                <div className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden">
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 px-5 py-3 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider items-center border-b border-slate-200">
+                    <div className="grid grid-cols-12 px-5 py-3 bg-slate-50/80 text-[11px] font-bold text-[#727272] uppercase tracking-wider items-center border-b border-[#E2E2E2]">
                         <div className="col-span-1 text-center">#</div>
                         <div className="col-span-4">SUBJECT</div>
                         <div className="col-span-2">ATTENDANCE</div>
@@ -495,8 +495,8 @@ const OptimizationPage = () => {
                             else if (sub.initialPct >= 70) statusText = 'Coverable';
                             else statusText = 'Needs Attention';
 
-                            let pctColor = 'text-blue-600';
-                            let barColor = 'bg-blue-600';
+                            let pctColor = 'text-[#0073E6]';
+                            let barColor = 'bg-[#0073E6]';
                             if (isFlawless || sub.initialPct >= 80) {
                                 pctColor = 'text-emerald-600';
                                 barColor = 'bg-emerald-600';
@@ -510,12 +510,12 @@ const OptimizationPage = () => {
                                     key={sub.id}
                                     className="grid grid-cols-12 items-center px-5 py-3.5 hover:bg-slate-50/80 transition-colors"
                                 >
-                                    <div className="col-span-1 text-center text-[13px] font-semibold text-slate-400">
+                                    <div className="col-span-1 text-center text-[13px] font-semibold text-[#727272]">
                                         {idx + 1}
                                     </div>
                                     <div className="col-span-4 flex items-center gap-2 min-w-0 pr-3">
                                         {isPriority ? (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 flex-none" title="Priority High Impact" />
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#0073E6] flex-none" title="Priority High Impact" />
                                         ) : isBelow ? (
                                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-none" title="Below Target" />
                                         ) : (
@@ -523,11 +523,11 @@ const OptimizationPage = () => {
                                         )}
                                         <div className="flex flex-col min-w-0">
                                             <div className="flex items-center gap-1.5 min-w-0">
-                                                <span className="text-[13px] font-semibold text-slate-900 truncate">
+                                                <span className="text-[13px] font-semibold text-[#383838] truncate">
                                                     {sub.name}
                                                 </span>
                                                 {isPriority && (
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200/60 px-1.5 py-0.2 rounded-xs shrink-0">
+                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#0073E6] bg-[#DEEDFC] border border-blue-200/60 px-1.5 py-0.2 rounded-xs shrink-0">
                                                         Priority
                                                     </span>
                                                 )}
@@ -539,7 +539,7 @@ const OptimizationPage = () => {
                                             <span className={`font-bold ${pctColor}`}>
                                                 {sub.initialPct.toFixed(1)}%
                                             </span>
-                                            <span className="text-[10px] text-slate-400">
+                                            <span className="text-[10px] text-[#727272]">
                                                 {statusText}
                                             </span>
                                         </div>
@@ -550,7 +550,7 @@ const OptimizationPage = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="col-span-1 text-center text-[13px] font-medium text-slate-700">
+                                    <div className="col-span-1 text-center text-[13px] font-medium text-[#383838]">
                                         {sub.att} / {sub.cond}
                                     </div>
                                     <div className="col-span-1 text-center">
@@ -558,12 +558,12 @@ const OptimizationPage = () => {
                                             +{sub.efficiencyDisplay.toFixed(2)}%
                                         </span>
                                     </div>
-                                    <div className="col-span-1 text-center text-[13px] text-slate-500">
+                                    <div className="col-span-1 text-center text-[13px] text-[#727272]">
                                         {sub.rem}
                                     </div>
                                     <div className="col-span-2 text-right pr-2">
                                         {sub.attend > 0 ? (
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-600 text-white text-[12px] font-semibold shadow-xs">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#0073E6] text-white text-[12px] font-semibold shadow-xs">
                                                 Attend {sub.attend}
                                             </span>
                                         ) : sub.rem === 0 && sub.currentPct < target ? (

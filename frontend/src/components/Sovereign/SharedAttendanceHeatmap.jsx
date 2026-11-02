@@ -143,7 +143,7 @@ const SharedAttendanceHeatmap = ({
 
   const getCellColor = (cell) => {
     if (!cell.entry || cell.entry.total === 0) {
-      return cell.isFuture ? 'bg-slate-100/50' : 'bg-slate-100';
+      return cell.isFuture ? 'bg-[#DEEDFC]/50/50' : 'bg-[#DEEDFC]/50';
     }
     const { present, absent, total } = cell.entry;
     if (total > 0 && present === 0 && absent > 0) {
@@ -167,7 +167,7 @@ const SharedAttendanceHeatmap = ({
       <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar touch-pan-x py-0.5">
         <div className="flex flex-col gap-1 min-w-max">
           {/* Month labels */}
-          <div className="flex pl-4 text-[9px] font-semibold text-slate-400 h-3.5 relative">
+          <div className="flex pl-4 text-[9px] font-semibold text-[#727272] h-3.5 relative">
             {monthHeaders.map(mh => (
               <span
                 key={mh.index}
@@ -182,7 +182,7 @@ const SharedAttendanceHeatmap = ({
           {/* Grid with Day of week labels */}
           <div className="flex gap-1 items-start">
             {/* Day labels column */}
-            <div className="flex flex-col gap-1 pr-1 text-[8px] font-bold text-slate-400 leading-none justify-around select-none">
+            <div className="flex flex-col gap-1 pr-1 text-[8px] font-bold text-[#727272] leading-none justify-around select-none">
               {DAY_LABELS.map((lbl, idx) => (
                 <div key={idx} className="h-2.5 sm:h-3 flex items-center justify-center w-2.5">
                   {lbl}
@@ -215,11 +215,11 @@ const SharedAttendanceHeatmap = ({
           </div>
 
           {/* Heat Calendar Legend */}
-          <div className="flex items-center justify-between text-[9px] text-slate-400 font-medium pt-1.5 pl-4 pr-1">
+          <div className="flex items-center justify-between text-[9px] text-[#727272] font-medium pt-1.5 pl-4 pr-1">
             <div className="flex items-center gap-1.5">
               <span>Less</span>
               <div className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-[2px] bg-slate-100" />
+                <span className="w-2 h-2 rounded-[2px] bg-[#DEEDFC]/50" />
                 <span className="w-2 h-2 rounded-[2px] bg-emerald-300/70" />
                 <span className="w-2 h-2 rounded-[2px] bg-emerald-400/80" />
                 <span className="w-2 h-2 rounded-[2px] bg-emerald-500" />
@@ -237,12 +237,12 @@ const SharedAttendanceHeatmap = ({
       </div>
 
       {/* Date & Lecture status panel (Preserved Sidebar) */}
-      <div className="w-full md:w-36 lg:w-40 xl:w-44 shrink-0 flex flex-col justify-center rounded-lg p-2 bg-slate-50 border border-slate-200/80 min-w-0">
+      <div className="w-full md:w-36 lg:w-40 xl:w-44 shrink-0 flex flex-col justify-center rounded-lg p-2 bg-[#DEEDFC]/30 border border-[#E2E2E2] min-w-0">
         {hoveredDay && hoveredDay.entry ? (
           <div className="flex flex-col gap-1 animate-in fade-in duration-100 min-w-0 text-[10px]">
             <div className="flex items-center justify-between gap-1">
-              <span className="font-bold text-slate-900 text-[11px] truncate">{hoveredDay.key}</span>
-              <span className="text-[9px] text-slate-400 font-medium shrink-0">
+              <span className="font-bold text-[#383838] text-[11px] truncate">{hoveredDay.key}</span>
+              <span className="text-[9px] text-[#727272] font-medium shrink-0">
                 {hoveredDay.entry.total} {hoveredDay.entry.total === 1 ? 'class' : 'classes'}
               </span>
             </div>
@@ -269,14 +269,14 @@ const SharedAttendanceHeatmap = ({
               )}
 
               {presentAbbrs.length === 0 && absentAbbrs.length === 0 && (
-                <span className="text-[9px] text-slate-400">No sessions recorded</span>
+                <span className="text-[9px] text-[#727272]">No sessions recorded</span>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center text-[10px] text-slate-400 py-0.5">
-            <span className="font-medium text-slate-600 truncate">{hoveredDay ? hoveredDay.key : 'Select Date'}</span>
-            <span className="text-[9px] text-slate-400">
+          <div className="flex flex-col justify-center text-[10px] text-[#727272] py-0.5">
+            <span className="font-medium text-[#383838] truncate">{hoveredDay ? hoveredDay.key : 'Select Date'}</span>
+            <span className="text-[9px] text-[#727272]">
               {hoveredDay
                 ? (hoveredDay.isFuture ? 'Upcoming date' : 'No sessions recorded')
                 : 'Hover square to inspect'}

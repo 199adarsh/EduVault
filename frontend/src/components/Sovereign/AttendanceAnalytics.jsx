@@ -616,24 +616,24 @@ const AttendanceAnalytics = () => {
     }, [optEngine, optFilter, optTarget, optPriorityIds]);
 
     const renderOptimizationPanel = () => (
-                        <section className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden transition-all">
+                        <section className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden transition-all">
                     {/* Header with Minimize / Expand toggle */}
                     <div 
                         onClick={() => setIsOptMinimized(!isOptMinimized)}
                         className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/70 transition-colors select-none"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
                                 <span className="material-symbols-outlined text-[18px]">tune</span>
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-sm font-bold text-slate-900 tracking-tight">Attendance Calculator &amp; Planner</h2>
-                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                                    <h2 className="text-sm font-bold text-[#383838] tracking-tight">Attendance Calculator &amp; Planner</h2>
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]">
                                         Attendance Calculator
                                     </span>
                                 </div>
-                                <p className="text-[11px] text-slate-500">
+                                <p className="text-[11px] text-[#727272]">
                                     Calculate required classes, safe leaves, and target attendance
                                 </p>
                             </div>
@@ -641,17 +641,17 @@ const AttendanceAnalytics = () => {
 
                         <div className="flex items-center gap-3">
                             {isOptMinimized && optEngine && (
-                                <div className="hidden sm:flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1 rounded-full">
-                                    <span>Target: <strong className="text-blue-600">{optTarget}%</strong></span>
-                                    <span className="text-slate-300">•</span>
+                                <div className="hidden sm:flex items-center gap-2 text-xs text-[#383838] bg-slate-50 border border-[#E2E2E2] px-3 py-1 rounded-full">
+                                    <span>Target: <strong className="text-[#0073E6]">{optTarget}%</strong></span>
+                                    <span className="text-[#E2E2E2]">•</span>
                                     <span>Safe Skips: <strong className="text-emerald-600">{optEngine.SkipableOverall}</strong></span>
-                                    <span className="text-slate-300">•</span>
+                                    <span className="text-[#E2E2E2]">•</span>
                                     <span>Must Attend: <strong className="text-amber-600">{optEngine.mustAttendOverall}</strong></span>
                                 </div>
                             )}
                             <button 
                                 type="button" 
-                                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
+                                className="w-7 h-7 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-100 flex items-center justify-center transition-colors"
                                 title={isOptMinimized ? "Expand Attendance Calculator" : "Minimize Attendance Calculator"}
                             >
                                 <span className="material-symbols-outlined text-[20px]">
@@ -663,34 +663,34 @@ const AttendanceAnalytics = () => {
 
                     {/* Expanded Content */}
                     {!isOptMinimized && optEngine && (
-                        <div className="border-t border-slate-100 p-5 space-y-5 animate-in slide-in-from-top-1 duration-200">
+                        <div className="border-t border-[#E2E2E2] p-5 space-y-5 animate-in slide-in-from-top-1 duration-200">
                             {/* Top Controls Row */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-[#E2E2E2]">
                                 <div className="flex items-center gap-3 flex-wrap">
-                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
                                         Timeline:
                                     </span>
-                                    <span className="text-xs font-medium text-slate-700 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-2xs">
+                                    <span className="text-xs font-medium text-[#383838] bg-white px-2.5 py-1 rounded-md border border-[#E2E2E2] shadow-2xs">
                                         {optEngine.weeksRemaining} Weeks Left
                                     </span>
 
-                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
+                                    <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider ml-1">
                                         Target:
                                     </span>
-                                    <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
+                                    <div className="flex items-center gap-1.5 bg-white border border-[#E2E2E2] px-2.5 py-0.5 rounded-lg shadow-2xs">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setOptTarget(prev => Math.max(50, prev - 1)); }}
-                                            className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-xs"
+                                            className="w-5 h-5 rounded flex items-center justify-center text-[#383838] hover:bg-slate-100 font-bold text-xs"
                                             type="button"
                                         >
                                             -
                                         </button>
-                                        <span className="text-xs font-bold text-blue-600 min-w-[32px] text-center">
+                                        <span className="text-xs font-bold text-[#0073E6] min-w-[32px] text-center">
                                             {optTarget}%
                                         </span>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setOptTarget(prev => Math.min(100, prev + 1)); }}
-                                            className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-xs"
+                                            className="w-5 h-5 rounded flex items-center justify-center text-[#383838] hover:bg-slate-100 font-bold text-xs"
                                             type="button"
                                         >
                                             +
@@ -702,8 +702,8 @@ const AttendanceAnalytics = () => {
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setShowOptSettings(!showOptSettings); }}
                                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${showOptSettings
-                                                ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                                ? 'bg-[#0073E6] text-white border-blue-600 shadow-xs'
+                                                : 'bg-white text-[#383838] border-[#E2E2E2] hover:bg-slate-50'
                                             }`}
                                     >
                                         <span className="material-symbols-outlined text-[15px]">settings</span>
@@ -714,45 +714,45 @@ const AttendanceAnalytics = () => {
 
                             {/* Parameter Settings (Date & LPW) */}
                             {showOptSettings && (
-                                <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 space-y-4">
-                                    <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                                <div className="bg-slate-50/60 border border-[#E2E2E2] rounded-xl p-4 space-y-4">
+                                    <div className="flex items-center justify-between border-b border-[#E2E2E2] pb-3">
                                         <div>
-                                            <h4 className="text-xs font-bold text-slate-800">Semester End Date &amp; Classes Per Week</h4>
-                                            <p className="text-[11px] text-slate-500">Set your semester end date and weekly class frequency per subject</p>
+                                            <h4 className="text-xs font-bold text-[#383838]">Semester End Date &amp; Classes Per Week</h4>
+                                            <p className="text-[11px] text-[#727272]">Set your semester end date and weekly class frequency per subject</p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
-                                            <label className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                                            <label className="block text-[11px] font-semibold text-[#383838] mb-1 uppercase tracking-wider">
                                                 Semester End Date
                                             </label>
                                             <input
                                                 type="date"
                                                 value={semesterLockDate}
                                                 onChange={e => setSemesterLockDate(e.target.value)}
-                                                className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:border-blue-500"
+                                                className="w-full bg-white border border-[#E2E2E2] rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#383838] outline-none focus:border-blue-500"
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 mb-3">
+                                        <div className="flex items-center justify-between pb-2 border-b border-[#E2E2E2] mb-3">
                                             <div>
-                                                <h5 className="text-xs font-bold text-slate-800 tracking-tight">Weekly Classes &amp; Tracked Subjects</h5>
-                                                <p className="text-[11px] text-slate-400">Select subjects and set how many classes happen per week</p>
+                                                <h5 className="text-xs font-bold text-[#383838] tracking-tight">Weekly Classes &amp; Tracked Subjects</h5>
+                                                <p className="text-[11px] text-[#727272]">Select subjects and set how many classes happen per week</p>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => setExcludedIds([])}
-                                                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                                    className="text-xs font-semibold text-[#0073E6] hover:text-[#174073] hover:underline cursor-pointer"
                                                 >
                                                     Select All
                                                 </button>
-                                                <span className="text-slate-300">•</span>
+                                                <span className="text-[#E2E2E2]">•</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => setExcludedIds((subjects || []).map(s => s.id || s.code))}
-                                                    className="text-xs font-semibold text-slate-500 hover:text-slate-700 hover:underline cursor-pointer"
+                                                    className="text-xs font-semibold text-[#727272] hover:text-[#383838] hover:underline cursor-pointer"
                                                 >
                                                     Deselect All
                                                 </button>
@@ -767,8 +767,8 @@ const AttendanceAnalytics = () => {
                                                         key={id}
                                                         className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
                                                             isIncluded
-                                                                ? 'bg-white border-slate-200 hover:border-slate-300 shadow-2xs'
-                                                                : 'bg-slate-50/70 border-slate-200/60 opacity-50'
+                                                                ? 'bg-white border-[#E2E2E2] hover:border-slate-300 shadow-2xs'
+                                                                : 'bg-slate-50/70 border-[#E2E2E2] opacity-50'
                                                         }`}
                                                     >
                                                         <label className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer pr-2 select-none">
@@ -782,14 +782,14 @@ const AttendanceAnalytics = () => {
                                                                             : prev.filter(x => x !== s.id && x !== s.code)
                                                                     );
                                                                 }}
-                                                                className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer shrink-0"
+                                                                className="w-4 h-4 rounded text-[#0073E6] border-slate-300 focus:ring-blue-500 cursor-pointer shrink-0"
                                                             />
-                                                            <span className={`text-xs font-medium truncate ${isIncluded ? 'text-slate-800' : 'text-slate-400 line-through'}`} title={s.name}>
+                                                            <span className={`text-xs font-medium truncate ${isIncluded ? 'text-[#383838]' : 'text-[#727272] line-through'}`} title={s.name}>
                                                                 {s.name}
                                                             </span>
                                                         </label>
-                                                        <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-slate-100">
-                                                            <span className="text-[10px] font-semibold text-slate-400 uppercase">Per Wk</span>
+                                                        <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-[#E2E2E2]">
+                                                            <span className="text-[10px] font-semibold text-[#727272] uppercase">Per Wk</span>
                                                             <input
                                                                 type="number"
                                                                 min="1"
@@ -801,7 +801,7 @@ const AttendanceAnalytics = () => {
                                                                     [id]: Math.max(1, Number(e.target.value))
                                                                 }))}
                                                                 className={`w-8 h-6 border rounded-md text-center text-xs font-bold outline-none transition ${
-                                                                    isIncluded ? 'text-blue-600 bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500' : 'text-slate-400 bg-slate-100 border-slate-200'
+                                                                    isIncluded ? 'text-[#0073E6] bg-slate-50 border-[#E2E2E2] focus:bg-white focus:border-blue-500' : 'text-[#727272] bg-slate-100 border-[#E2E2E2]'
                                                                 }`}
                                                             />
                                                         </div>
@@ -815,42 +815,42 @@ const AttendanceAnalytics = () => {
 
                             {/* 4-Stat Metric Strip */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
-                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Current Attendance</span>
+                                <div className="bg-slate-50/70 border border-[#E2E2E2]/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-[#727272] uppercase tracking-wider">Current Attendance</span>
                                     <div className="my-1 flex items-baseline gap-1.5">
-                                        <span className="text-xl font-extrabold text-slate-900">{optEngine.currentOverall.toFixed(1)}%</span>
-                                        <span className="text-[11px] text-slate-400 font-medium">({optEngine.totalAttended}/{optEngine.totalConducted})</span>
+                                        <span className="text-xl font-extrabold text-[#383838]">{optEngine.currentOverall.toFixed(1)}%</span>
+                                        <span className="text-[11px] text-[#727272] font-medium">({optEngine.totalAttended}/{optEngine.totalConducted})</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400">Overall college baseline</span>
+                                    <span className="text-[10px] text-[#727272]">Overall college baseline</span>
                                 </div>
 
-                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
-                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Projected Attendance</span>
+                                <div className="bg-slate-50/70 border border-[#E2E2E2]/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-[#727272] uppercase tracking-wider">Projected Attendance</span>
                                     <div className="my-1 flex items-baseline gap-1.5">
-                                        <span className="text-xl font-extrabold text-blue-600">{optEngine.projectedFinal.toFixed(1)}%</span>
+                                        <span className="text-xl font-extrabold text-[#0073E6]">{optEngine.projectedFinal.toFixed(1)}%</span>
                                         <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded-full border ${!optEngine.isImpossible ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-rose-700 bg-rose-50 border-rose-200'}`}>
                                             {!optEngine.isImpossible ? 'Achievable' : `Deficit: ${optEngine.deficit}`}
                                         </span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400">Target goal: {optTarget}%</span>
+                                    <span className="text-[10px] text-[#727272]">Target goal: {optTarget}%</span>
                                 </div>
 
-                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
-                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Must Attend</span>
+                                <div className="bg-slate-50/70 border border-[#E2E2E2]/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-[#727272] uppercase tracking-wider">Must Attend</span>
                                     <div className="my-1 flex items-baseline gap-1">
                                         <span className="text-xl font-extrabold text-amber-600">{optEngine.mustAttendOverall}</span>
-                                        <span className="text-xs text-slate-500 font-normal">lectures</span>
+                                        <span className="text-xs text-[#727272] font-normal">lectures</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400">Required future sessions</span>
+                                    <span className="text-[10px] text-[#727272]">Required future sessions</span>
                                 </div>
 
-                                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-3.5 flex flex-col justify-between">
-                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Safe Skips</span>
+                                <div className="bg-slate-50/70 border border-[#E2E2E2]/70 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <span className="text-[10px] font-semibold text-[#727272] uppercase tracking-wider">Safe Skips</span>
                                     <div className="my-1 flex items-baseline gap-1">
                                         <span className="text-xl font-extrabold text-emerald-600">{optEngine.SkipableOverall}</span>
-                                        <span className="text-xs text-slate-500 font-normal">sessions</span>
+                                        <span className="text-xs text-[#727272] font-normal">sessions</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400">Allowed without penalty</span>
+                                    <span className="text-[10px] text-[#727272]">Allowed without penalty</span>
                                 </div>
                             </div>
 
@@ -869,12 +869,12 @@ const AttendanceAnalytics = () => {
                                             key={f.id}
                                             onClick={() => setOptFilter(f.id)}
                                             className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${optFilter === f.id
-                                                    ? 'bg-blue-600 text-white shadow-2xs'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                                                    ? 'bg-[#0073E6] text-white shadow-2xs'
+                                                    : 'bg-slate-100 text-[#383838] hover:bg-slate-200/70'
                                                 }`}
                                         >
                                             <span>{f.label}</span>
-                                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${optFilter === f.id ? 'bg-blue-700 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+                                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${optFilter === f.id ? 'bg-[#174073] text-white' : 'bg-white text-[#727272] border border-[#E2E2E2]'}`}>
                                                 {f.count}
                                             </span>
                                         </button>
@@ -882,29 +882,29 @@ const AttendanceAnalytics = () => {
                                 </div>
 
                                 {/* Plan Rows */}
-                                <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
+                                <div className="border border-[#E2E2E2] rounded-xl overflow-hidden divide-y divide-[#E2E2E2]">
                                     {filteredOptPlan.map(sub => {
                                         const isSafe = sub.currentPct >= optTarget;
                                         const isLab = sub.isLab;
                                         return (
                                             <div key={sub.id} className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
                                                 <div className="flex items-center gap-2.5 min-w-0">
-                                                    <div className={`p-1.5 rounded-lg shrink-0 ${isSafe ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
+                                                    <div className={`p-1.5 rounded-lg shrink-0 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-50 text-amber-600'}`}>
                                                         <span className="material-symbols-outlined text-[16px]">
                                                             {isLab ? 'science' : 'menu_book'}
                                                         </span>
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <h4 className="text-xs font-semibold text-slate-800 truncate" title={sub.name}>
+                                                            <h4 className="text-xs font-semibold text-[#383838] truncate" title={sub.name}>
                                                                 {sub.name}
                                                             </h4>
-                                                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
+                                                            <span className="text-[10px] font-mono text-[#727272] bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
                                                                 {sub.code || 'COURSE'}
                                                             </span>
                                                         </div>
-                                                        <div className="text-[11px] text-slate-400 mt-0.5">
-                                                            Current: <strong className={isSafe ? 'text-slate-700' : 'text-amber-600'}>{sub.currentPct}%</strong> • Remaining: {sub.rem} lectures
+                                                        <div className="text-[11px] text-[#727272] mt-0.5">
+                                                            Current: <strong className={isSafe ? 'text-[#383838]' : 'text-amber-600'}>{sub.currentPct}%</strong> • Remaining: {sub.rem} lectures
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1042,8 +1042,8 @@ const AttendanceAnalytics = () => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 gap-3 animate-pulse">
-                <span className="material-symbols-outlined text-3xl animate-spin text-blue-600">sync</span>
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-[#727272] gap-3 animate-pulse">
+                <span className="material-symbols-outlined text-3xl animate-spin text-[#0073E6]">sync</span>
                 <p className="text-xs font-semibold tracking-wider uppercase">Loading Attendance Records...</p>
             </div>
         );
@@ -1051,7 +1051,7 @@ const AttendanceAnalytics = () => {
 
     if (isTeacher) {
         return (
-            <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
+            <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-[#383838] font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
                 <div className="max-w-7xl mx-auto w-full min-w-0">
                     <FacultyAttendance profile={profile} subjects={globalSubjects || subjects} onRefresh={refreshData} />
                 </div>
@@ -1060,20 +1060,20 @@ const AttendanceAnalytics = () => {
     }
 
     return (
-        <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-[#383838] font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full min-w-0">
 
                 {/* Top Academic Standing Header */}
                 <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full min-w-0">
                     <div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-[#0073E6] uppercase tracking-wider mb-1">
                             <span className="material-symbols-outlined text-[16px]">{isTeacher ? 'verified_user' : 'trending_up'}</span>
                             <span>{isTeacher ? 'Faculty Portal' : 'Attendance Overview'}</span>
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                        <h1 className="text-xl sm:text-2xl font-bold text-[#383838] tracking-tight">
                             {isTeacher ? 'Faculty Attendance & Leave Requests' : 'My Attendance'}
                         </h1>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-[#727272] mt-0.5">
                             {isTeacher
                                 ? 'Review student leave and absence requests, check submitted documents, and manage class records.'
                                 : 'Track your daily attendance, calculate safe leaves, and view subject-wise records.'}
@@ -1083,10 +1083,10 @@ const AttendanceAnalytics = () => {
                     <div className="flex items-center gap-2.5 shrink-0">
                         <button
                             onClick={() => openNcModal('requests')}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-full shadow-xs transition cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#383838] bg-white hover:bg-slate-50 border border-[#E2E2E2] rounded-full shadow-xs transition cursor-pointer"
                             title="View NC & Leave Requests"
                         >
-                            <Shield className="w-3.5 h-3.5 text-blue-600" />
+                            <Shield className="w-3.5 h-3.5 text-[#0073E6]" />
                             <span>NC Requests</span>
                             {(isTeacher ? allFacultyNc.filter(r => r.status === 'PENDING').length : myNcRequests.length) > 0 && (
                                 <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
@@ -1098,16 +1098,16 @@ const AttendanceAnalytics = () => {
                             onClick={isTeacher ? fetchAllFacultyNc : handleBackgroundSync}
                             disabled={isSyncing || allFacultyNcLoading}
                             title="Refresh Data"
-                            className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs transition cursor-pointer disabled:opacity-50"
+                            className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-[#E2E2E2] text-[#383838] hover:bg-slate-50 shadow-xs transition cursor-pointer disabled:opacity-50"
                         >
-                            <span className={`material-symbols-outlined text-[18px] text-slate-600 ${isSyncing || allFacultyNcLoading ? 'animate-spin' : ''}`}>
+                            <span className={`material-symbols-outlined text-[18px] text-[#383838] ${isSyncing || allFacultyNcLoading ? 'animate-spin' : ''}`}>
                                 sync
                             </span>
                         </button>
                         {!isTeacher && (
                             <button
                                 onClick={handleExportData}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-xs transition cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] active:bg-blue-800 rounded-full shadow-xs transition cursor-pointer"
                             >
                                 <span className="material-symbols-outlined text-[18px]">download</span>
                                 <span>Export</span>
@@ -1119,25 +1119,25 @@ const AttendanceAnalytics = () => {
                 {/* TopSummaryRibbon */}
                 {isTeacher ? (
                     <section className="grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="faculty-summary-ribbon">
-                        <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="md:col-span-4 bg-white border border-[#E2E2E2] rounded-xl p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Faculty Role</span>
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">Faculty Role</span>
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]">
                                     Active Faculty
                                 </span>
                             </div>
                             <div className="my-3">
-                                <h3 className="text-xl font-extrabold text-slate-900">{teacherName}</h3>
-                                <p className="text-xs text-slate-500 mt-0.5">{profile?.department || 'AI & Data Science'} Department</p>
+                                <h3 className="text-xl font-extrabold text-[#383838]">{teacherName}</h3>
+                                <p className="text-xs text-[#727272] mt-0.5">{profile?.department || 'AI & Data Science'} Department</p>
                             </div>
-                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                            <div className="pt-2 border-t border-[#E2E2E2] flex items-center justify-between text-xs text-[#383838]">
                                 <span>Assigned Courses: <strong>{subjects?.length || 0}</strong></span>
                             </div>
                         </div>
 
-                        <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="md:col-span-4 bg-white border border-[#E2E2E2] rounded-xl p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Leave Requests Queue</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">Leave Requests Queue</span>
                                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                                     {allFacultyNc.filter(r => r.status === 'PENDING').length} Pending
                                 </span>
@@ -1146,9 +1146,9 @@ const AttendanceAnalytics = () => {
                                 <span className="text-4xl font-extrabold text-amber-600 tracking-tight">
                                     {allFacultyNc.filter(r => r.status === 'PENDING').length}
                                 </span>
-                                <span className="text-xs text-slate-400 font-medium">pending student requests</span>
+                                <span className="text-xs text-[#727272] font-medium">pending student requests</span>
                             </div>
-                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                            <div className="pt-2 border-t border-[#E2E2E2] flex items-center justify-between text-xs text-[#383838]">
                                 <span>Approved: <strong className="text-emerald-600">{allFacultyNc.filter(r => r.status === 'APPROVED').length}</strong></span>
                                 <span>Rejected: <strong className="text-rose-600">{allFacultyNc.filter(r => r.status === 'REJECTED').length}</strong></span>
                                 <span>Total: <strong>{allFacultyNc.length}</strong></span>
@@ -1158,9 +1158,9 @@ const AttendanceAnalytics = () => {
                 ) : (
                     <section className="hidden lg:grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="summary-ribbon">
                         {/* Master Attendance Card (Compact Size) */}
-                        <div className="md:col-span-3 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                        <div className="md:col-span-3 bg-white border border-[#E2E2E2] rounded-2xl p-4 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                             <div className="flex items-center justify-between gap-1">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#727272]">
                                     Attendance
                                 </span>
                                 <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -1174,18 +1174,18 @@ const AttendanceAnalytics = () => {
                             </div>
 
                             <div className="my-2.5 flex items-baseline gap-1.5">
-                                <span className="text-3xl font-black text-slate-900 tracking-tight">
+                                <span className="text-3xl font-black text-[#383838] tracking-tight">
                                     {overallPercentage}%
                                 </span>
-                                <span className="text-[11px] text-slate-400 font-semibold">aggregate</span>
+                                <span className="text-[11px] text-[#727272] font-semibold">aggregate</span>
                             </div>
 
                             {/* Refined Breakdown: Theory & Labs */}
-                            <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-100 text-xs">
-                                <div className="bg-slate-50/80 p-2 rounded-xl border border-slate-200/60">
-                                    <div className="flex items-center justify-between text-slate-600 mb-1">
+                            <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-[#E2E2E2] text-xs">
+                                <div className="bg-slate-50/80 p-2 rounded-xl border border-[#E2E2E2]">
+                                    <div className="flex items-center justify-between text-[#383838] mb-1">
                                         <span className="font-semibold text-[10px]">Lectures</span>
-                                        <span className="font-extrabold text-slate-900 font-mono text-[11px]">{theoryPercentage}%</span>
+                                        <span className="font-extrabold text-[#383838] font-mono text-[11px]">{theoryPercentage}%</span>
                                     </div>
                                     <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
                                         <div
@@ -1194,10 +1194,10 @@ const AttendanceAnalytics = () => {
                                         />
                                     </div>
                                 </div>
-                                <div className="bg-slate-50/80 p-2 rounded-xl border border-slate-200/60">
-                                    <div className="flex items-center justify-between text-slate-600 mb-1">
+                                <div className="bg-slate-50/80 p-2 rounded-xl border border-[#E2E2E2]">
+                                    <div className="flex items-center justify-between text-[#383838] mb-1">
                                         <span className="font-semibold text-[10px]">Labs</span>
-                                        <span className="font-extrabold text-slate-900 font-mono text-[11px]">{labPercentage}%</span>
+                                        <span className="font-extrabold text-[#383838] font-mono text-[11px]">{labPercentage}%</span>
                                     </div>
                                     <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
                                         <div
@@ -1210,14 +1210,14 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Activity Overview Heatmap (Wider Layout: 6 Cols) */}
-                        <div className="md:col-span-6 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                        <div className="md:col-span-6 bg-white border border-[#E2E2E2] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
                                     Activity Overview
                                 </span>
-                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                                <div className="flex items-center gap-1.5 text-[10px] text-[#727272]">
                                     <span>Less</span>
-                                    <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 border border-slate-200 inline-block" />
+                                    <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 border border-[#E2E2E2] inline-block" />
                                     <span className="w-2.5 h-2.5 rounded-xs bg-emerald-300 inline-block" />
                                     <span className="w-2.5 h-2.5 rounded-xs bg-emerald-600 inline-block" />
                                     <span>More</span>
@@ -1231,20 +1231,20 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Risk Nodes Summary */}
-                        <div className="md:col-span-3 bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="md:col-span-3 bg-white border border-[#E2E2E2] rounded-xl p-5 shadow-xs flex flex-col justify-between">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
                                     <span className="h-2 w-2 rounded-full bg-rose-500" />
                                     {riskSubjects.length} Low Attendance Subjects
                                 </span>
-                                <span className="text-[11px] font-medium text-slate-400">&lt; 75% Cutoff</span>
+                                <span className="text-[11px] font-medium text-[#727272]">&lt; 75% Cutoff</span>
                             </div>
 
                             <div className="my-2 space-y-1.5 text-xs max-h-[110px] overflow-y-auto no-scrollbar">
                                 {riskSubjects.length > 0 ? (
                                     riskSubjects.slice(0, 4).map(sub => (
                                         <div key={sub.id} className="flex items-center justify-between py-1 border-b border-slate-50">
-                                            <span className="text-slate-700 truncate pr-2 font-medium" title={sub.name}>
+                                            <span className="text-[#383838] truncate pr-2 font-medium" title={sub.name}>
                                                 {sub.name}
                                             </span>
                                             <span className="font-semibold text-rose-600 font-mono">
@@ -1258,7 +1258,7 @@ const AttendanceAnalytics = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="text-[11px] text-slate-400">
+                            <div className="text-[11px] text-[#727272]">
                                 {riskSubjects.length > 0 ? 'Needs attention to reach 75%' : 'Good attendance maintained'}
                             </div>
                         </div>
@@ -1268,7 +1268,7 @@ const AttendanceAnalytics = () => {
                 {isTeacher ? (
                     <div className="space-y-6">
                         {/* Navigation Tabs for Faculty */}
-                        <div className="border-b border-slate-200 pb-2">
+                        <div className="border-b border-[#E2E2E2] pb-2">
                             <FluidTabs
                                 value={teacherActiveTab}
                                 onChange={setTeacherActiveTab}
@@ -1290,29 +1290,29 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {teacherActiveTab === 'nc' ? (
-                            <section className="bg-white border border-slate-200/90 rounded-2xl shadow-xs p-5 space-y-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                            <section className="bg-white border border-[#E2E2E2] rounded-2xl shadow-xs p-5 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E2E2]">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h2 className="text-base font-bold text-slate-900">Student Leave &amp; Absence Requests</h2>
-                                            <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+                                            <h2 className="text-base font-bold text-[#383838]">Student Leave &amp; Absence Requests</h2>
+                                            <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]/60">
                                                 Verified Documents
                                             </span>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-0.5">Review medical certificates and absence reasons submitted by students.</p>
+                                        <p className="text-xs text-[#727272] mt-0.5">Review medical certificates and absence reasons submitted by students.</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={fetchAllFacultyNc}
-                                            className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer transition"
+                                            className="px-3 py-1.5 rounded-xl border border-[#E2E2E2] text-xs font-semibold text-[#383838] hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer transition"
                                         >
-                                            <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                                            <RefreshCw className="w-3.5 h-3.5 text-[#727272]" />
                                             <span>Refresh</span>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 p-2.5 rounded-xl border border-slate-200/70">
+                                <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 p-2.5 rounded-xl border border-[#E2E2E2]/70">
                                     <div className="flex items-center gap-1">
                                         {[
                                             { id: 'ALL', label: 'All', count: allFacultyNc.length },
@@ -1326,13 +1326,13 @@ const AttendanceAnalytics = () => {
                                                 onClick={() => setGlobalNcFilterStatus(st.id)}
                                                 className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                                                     globalNcFilterStatus === st.id
-                                                        ? 'bg-blue-600 text-white shadow-xs'
-                                                        : 'text-slate-600 hover:bg-slate-200/60'
+                                                        ? 'bg-[#0073E6] text-white shadow-xs'
+                                                        : 'text-[#383838] hover:bg-slate-200/60'
                                                 }`}
                                             >
                                                 <span>{st.label}</span>
                                                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                                                    globalNcFilterStatus === st.id ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-700'
+                                                    globalNcFilterStatus === st.id ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-[#383838]'
                                                 }`}>
                                                     {st.count}
                                                 </span>
@@ -1344,7 +1344,7 @@ const AttendanceAnalytics = () => {
                                         <select
                                             value={globalNcFilterSubject}
                                             onChange={e => setGlobalNcFilterSubject(e.target.value)}
-                                            className="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 outline-none focus:ring-1 focus:ring-blue-500"
+                                            className="text-xs bg-white border border-[#E2E2E2] rounded-lg px-2.5 py-1.5 font-medium text-[#383838] outline-none focus:ring-1 focus:ring-blue-500"
                                         >
                                             <option value="ALL">All Assigned Courses</option>
                                             {subjects?.map(s => (
@@ -1352,13 +1352,13 @@ const AttendanceAnalytics = () => {
                                             ))}
                                         </select>
                                         <div className="relative">
-                                            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                                            <Search className="w-3.5 h-3.5 text-[#727272] absolute left-2.5 top-2.5" />
                                             <input
                                                 type="text"
                                                 value={globalNcSearch}
                                                 onChange={e => setGlobalNcSearch(e.target.value)}
                                                 placeholder="Search PRN or name..."
-                                                className="text-xs bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 outline-none w-44 focus:ring-1 focus:ring-blue-500"
+                                                className="text-xs bg-white border border-[#E2E2E2] rounded-lg pl-8 pr-3 py-1.5 outline-none w-44 focus:ring-1 focus:ring-blue-500"
                                             />
                                         </div>
                                     </div>
@@ -1366,7 +1366,7 @@ const AttendanceAnalytics = () => {
 
                                 <div className="space-y-3 pt-1">
                                     {allFacultyNcLoading ? (
-                                        <div className="py-14 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+                                        <div className="py-14 text-center text-xs text-[#727272] flex flex-col items-center justify-center gap-2">
                                             <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                             <span>Loading student leave requests...</span>
                                         </div>
@@ -1379,10 +1379,10 @@ const AttendanceAnalytics = () => {
                                         }
                                         return true;
                                     }).length === 0 ? (
-                                        <div className="py-14 text-center bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 p-6 space-y-2">
-                                            <FileCheck className="w-8 h-8 text-slate-400 mx-auto" />
-                                            <h4 className="font-bold text-sm text-slate-800">No Leave Requests Found</h4>
-                                            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                                        <div className="py-14 text-center bg-slate-50/60 rounded-2xl border border-dashed border-[#E2E2E2] p-6 space-y-2">
+                                            <FileCheck className="w-8 h-8 text-[#727272] mx-auto" />
+                                            <h4 className="font-bold text-sm text-[#383838]">No Leave Requests Found</h4>
+                                            <p className="text-xs text-[#727272] max-w-sm mx-auto">
                                                 There are no student leave requests matching the selected filter.
                                             </p>
                                         </div>
@@ -1407,42 +1407,42 @@ const AttendanceAnalytics = () => {
                                             return (
                                                 <div
                                                     key={req.id}
-                                                    className="p-4 rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+                                                    className="p-4 rounded-2xl border border-[#E2E2E2] bg-white hover:border-slate-300 hover:shadow-xs transition flex flex-col md:flex-row md:items-center justify-between gap-4"
                                                 >
                                                     <div className="flex items-start gap-3.5 min-w-0">
-                                                        <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200/60">
+                                                        <div className="w-10 h-10 rounded-xl bg-slate-100 text-[#383838] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E2E2E2]">
                                                             {initials}
                                                         </div>
                                                         <div className="space-y-1 min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="font-bold text-sm text-slate-900">{req.studentName}</span>
-                                                                <span className="text-[10px] font-mono font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/60">
+                                                                <span className="font-bold text-sm text-[#383838]">{req.studentName}</span>
+                                                                <span className="text-[10px] font-mono font-semibold bg-slate-100 text-[#383838] px-2 py-0.5 rounded-md border border-[#E2E2E2]">
                                                                     {req.studentPrn}
                                                                 </span>
                                                                 {req.missedSubjects && req.missedSubjects.length > 0 && (
-                                                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100/60">
+                                                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]/60">
                                                                         {req.missedSubjects[0].subjectName}
                                                                     </span>
                                                                 )}
                                                             </div>
 
-                                                            <div className="text-xs text-slate-600 flex items-center gap-2 flex-wrap pt-0.5">
-                                                                <span className="inline-flex items-center gap-1 font-mono text-[11px] bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-md text-slate-700">
-                                                                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                                                            <div className="text-xs text-[#383838] flex items-center gap-2 flex-wrap pt-0.5">
+                                                                <span className="inline-flex items-center gap-1 font-mono text-[11px] bg-slate-50 border border-[#E2E2E2] px-2 py-0.5 rounded-md text-[#383838]">
+                                                                    <Calendar className="w-3.5 h-3.5 text-[#0073E6]" />
                                                                     <span>{(req.absentDates || []).join(', ')}</span>
                                                                 </span>
                                                                 <span className="text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/60 px-2 py-0.5 rounded-md">
                                                                     {req.reason}
                                                                 </span>
                                                                 {req.description && (
-                                                                    <span className="text-slate-500 italic max-w-sm truncate" title={req.description}>
+                                                                    <span className="text-[#727272] italic max-w-sm truncate" title={req.description}>
                                                                         "{req.description}"
                                                                     </span>
                                                                 )}
                                                             </div>
 
                                                             {req.reviewComment && (
-                                                                <div className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200/60 p-2 rounded-xl mt-1.5 flex items-start gap-1.5">
+                                                                <div className="text-[11px] text-[#383838] bg-slate-50 border border-[#E2E2E2] p-2 rounded-xl mt-1.5 flex items-start gap-1.5">
                                                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                                                                     <span><strong>Faculty Note ({req.reviewedBy}):</strong> "{req.reviewComment}"</span>
                                                                 </div>
@@ -1469,9 +1469,9 @@ const AttendanceAnalytics = () => {
                                                                     setDocPreviewUrl(getNcProofUrl(req));
                                                                     setDocPreviewName(req.proofFileName);
                                                                 }}
-                                                                className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
+                                                                className="px-3 py-1.5 rounded-xl border border-[#E2E2E2] text-[#383838] hover:text-[#0073E6] hover:border-[#D9ECFF] hover:bg-[#DEEDFC]/50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
                                                             >
-                                                                <Eye className="w-3.5 h-3.5 text-blue-600" />
+                                                                <Eye className="w-3.5 h-3.5 text-[#0073E6]" />
                                                                 <span>Document</span>
                                                             </button>
                                                         )}
@@ -1483,7 +1483,7 @@ const AttendanceAnalytics = () => {
                                                                 setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
                                                                 setReviewComment(req.reviewComment || '');
                                                             }}
-                                                            className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs hover:shadow transition flex items-center gap-1.5 cursor-pointer"
+                                                            className="px-4 py-1.5 rounded-xl bg-[#0073E6] hover:bg-[#174073] text-white font-semibold text-xs shadow-xs hover:shadow transition flex items-center gap-1.5 cursor-pointer"
                                                         >
                                                             <FileCheck className="w-3.5 h-3.5" />
                                                             <span>Review</span>
@@ -1508,19 +1508,19 @@ const AttendanceAnalytics = () => {
                                                 setModalTab('presence');
                                                 fetchSubjectNcRequests(sub);
                                             }}
-                                            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-500 hover:shadow-md transition cursor-pointer space-y-3"
+                                            className="p-5 rounded-2xl bg-white border border-[#E2E2E2] hover:border-blue-500 hover:shadow-md transition cursor-pointer space-y-3"
                                         >
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-[#383838]">
                                                     {sub.code || 'COURSE'}
                                                 </span>
-                                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                                <span className="text-xs font-bold text-[#0073E6] bg-[#DEEDFC] px-2 py-0.5 rounded-full">
                                                     {conducted} Lectures Logged
                                                 </span>
                                             </div>
-                                            <h3 className="font-bold text-sm text-slate-900 leading-tight">{sub.name}</h3>
-                                            <p className="text-[11px] text-slate-500">{sub.department} • {sub.semester}</p>
-                                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-bold">
+                                            <h3 className="font-bold text-sm text-[#383838] leading-tight">{sub.name}</h3>
+                                            <p className="text-[11px] text-[#727272]">{sub.department} • {sub.semester}</p>
+                                            <div className="pt-2 border-t border-[#E2E2E2] flex items-center justify-between text-xs text-[#0073E6] font-bold">
                                                 <span>View Attendance &amp; Leave Requests</span>
                                                 <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                                             </div>
@@ -1539,9 +1539,9 @@ const AttendanceAnalytics = () => {
                 {/* Main Two-Column Area */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* Left Column: Primary Subject Attendance Table */}
-                    <section className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+                    <section className="lg:col-span-8 bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden">
                         {/* Filter Bar */}
-                        <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div className="px-6 py-4 border-b border-[#E2E2E2] flex flex-wrap items-center justify-between gap-3">
                             <FluidTabs
                                 value={filterTab}
                                 onChange={setFilterTab}
@@ -1555,11 +1555,11 @@ const AttendanceAnalytics = () => {
                             />
 
 
-                            <span className="text-xs text-slate-400 font-medium">Minimum Threshold: 75.0%</span>
+                            <span className="text-xs text-[#727272] font-medium">Minimum Threshold: 75.0%</span>
                         </div>
 
                         {/* Subject Rows List */}
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-[#E2E2E2]">
                             {displayedSubjects.map(sub => {
                                 const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
                                 const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
@@ -1586,7 +1586,7 @@ const AttendanceAnalytics = () => {
                                             }`}
                                     >
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
-                                            <div className={`p-2 rounded-lg mt-0.5 ${isSafe ? 'bg-blue-50 text-blue-600' : 'bg-amber-100/60 text-amber-700'
+                                            <div className={`p-2 rounded-lg mt-0.5 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
                                                 }`}>
                                                 <span className="material-symbols-outlined text-[18px]">
                                                     {isLab ? 'science' : 'menu_book'}
@@ -1594,17 +1594,17 @@ const AttendanceAnalytics = () => {
                                             </div>
 
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="text-sm font-semibold text-slate-900 truncate">
+                                                <h3 className="text-sm font-semibold text-[#383838] truncate">
                                                     {sub.name}
                                                 </h3>
-                                                <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
+                                                <div className="flex items-center gap-2 text-xs text-[#727272] mt-1 flex-wrap">
                                                     <span>{attended} / {conducted} sessions</span>
-                                                    <span className="text-slate-300">•</span>
+                                                    <span className="text-[#E2E2E2]">•</span>
                                                     <span>Target: 75%</span>
                                                     {sub.faculty && (
                                                         <>
-                                                            <span className="text-slate-300">•</span>
-                                                            <span className="text-slate-400 truncate">{sub.faculty}</span>
+                                                            <span className="text-[#E2E2E2]">•</span>
+                                                            <span className="text-[#727272] truncate">{sub.faculty}</span>
                                                         </>
                                                     )}
                                                 </div>
@@ -1620,7 +1620,7 @@ const AttendanceAnalytics = () => {
 
                                         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-1.5">
                                             <div className="text-right">
-                                                <span className={`text-base font-bold ${isSafe ? 'text-slate-900' : 'text-amber-600'}`}>
+                                                <span className={`text-base font-bold ${isSafe ? 'text-[#383838]' : 'text-amber-600'}`}>
                                                     {pct}%
                                                 </span>
                                             </div>
@@ -1644,13 +1644,13 @@ const AttendanceAnalytics = () => {
 
                     {/* Right Column: Session Audit Rail */}
                     <section className="lg:col-span-4 space-y-4">
-                        <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5">
-                            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                        <div className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs p-5">
+                            <div className="flex items-center justify-between pb-4 border-b border-[#E2E2E2]">
                                 <div>
-                                    <h2 className="text-sm font-bold text-slate-900">Recent Classes</h2>
-                                    <p className="text-[11px] text-slate-400">Recent attendance records</p>
+                                    <h2 className="text-sm font-bold text-[#383838]">Recent Classes</h2>
+                                    <p className="text-[11px] text-[#727272]">Recent attendance records</p>
                                 </div>
-                                <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                <span className="text-[11px] font-semibold text-[#0073E6] bg-[#DEEDFC] px-2 py-0.5 rounded-full">
                                     Recent
                                 </span>
                             </div>
@@ -1664,12 +1664,12 @@ const AttendanceAnalytics = () => {
                                             <div
                                                 key={idx}
                                                 className={`p-3 rounded-lg border transition ${isPresent
-                                                        ? 'border-slate-100 bg-slate-50/50 hover:bg-slate-50'
+                                                        ? 'border-[#E2E2E2] bg-slate-50/50 hover:bg-slate-50'
                                                         : 'border-rose-100 bg-rose-50/30 hover:bg-rose-50/50'
                                                     }`}
                                             >
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-[11px] font-mono text-slate-400">
+                                                    <span className="text-[11px] font-mono text-[#727272]">
                                                         {log.date} {log.time ? `• ${log.time}` : ''}
                                                     </span>
                                                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${isPresent
@@ -1679,23 +1679,23 @@ const AttendanceAnalytics = () => {
                                                         {log.status.toUpperCase()}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs font-semibold text-slate-800 truncate">
+                                                <p className="text-xs font-semibold text-[#383838] truncate">
                                                     {log.subjectName}
                                                 </p>
                                             </div>
                                         );
                                     })
                                 ) : (
-                                    <div className="py-8 text-center text-xs text-slate-400">
+                                    <div className="py-8 text-center text-xs text-[#727272]">
                                         No recent attendance records found
                                     </div>
                                 )}
                             </div>
 
                             {/* Regulatory Policy Notice Footer */}
-                            <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 leading-relaxed bg-slate-50/80 p-3 rounded-lg">
-                                <div className="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
-                                    <span className="material-symbols-outlined text-[15px] text-blue-600">info</span>
+                            <div className="mt-3 pt-3 border-t border-[#E2E2E2] text-[11px] text-[#727272] leading-relaxed bg-slate-50/80 p-3 rounded-lg">
+                                <div className="flex items-center gap-1.5 font-semibold text-[#383838] mb-1">
+                                    <span className="material-symbols-outlined text-[15px] text-[#0073E6]">info</span>
                                     <span>College Attendance Policy</span>
                                 </div>
                                 75% minimum physical presence is mandatory for End-Semester Examination eligibility. Medical condonation forms must be submitted within 7 calendar days of recovery.
@@ -1708,24 +1708,24 @@ const AttendanceAnalytics = () => {
                         {/* Mobile View (Clean Stitch Mobile-First Layout) */}
                         <div className="lg:hidden flex flex-col gap-4 w-full min-w-0">
                             {/* 1. Master Attendance Hero Card */}
-                            <section className="rounded-2xl bg-white border border-slate-200 p-4 shadow-xs flex flex-col gap-3.5 w-full min-w-0">
+                            <section className="rounded-2xl bg-white border border-[#E2E2E2] p-4 shadow-xs flex flex-col gap-3.5 w-full min-w-0">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                        <span className="text-[10px] font-bold text-[#727272] uppercase tracking-wider">
                                             Overall Attendance
                                         </span>
                                         <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
-                                            <span className="text-3xl font-extrabold text-blue-600 tracking-tight">
+                                            <span className="text-3xl font-extrabold text-[#0073E6] tracking-tight">
                                                 {overallPercentage}%
                                             </span>
-                                            <span className="text-xs font-semibold text-slate-400 font-mono">
+                                            <span className="text-xs font-semibold text-[#727272] font-mono">
                                                 ({totalAttended}/{totalConducted})
                                             </span>
                                         </div>
                                     </div>
                                     <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 border ${
                                         parseFloat(overallPercentage) >= 75
-                                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                            ? 'bg-[#DEEDFC] text-[#174073] border-[#D9ECFF]'
                                             : 'bg-rose-50 text-rose-700 border-rose-200'
                                     }`}>
                                         <span className="material-symbols-outlined text-[15px]">
@@ -1737,19 +1737,19 @@ const AttendanceAnalytics = () => {
 
                                 {/* Ratio Breakdown Pills */}
                                 <div className="grid grid-cols-2 gap-2">
-                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="material-symbols-outlined text-[17px] text-blue-600 shrink-0">school</span>
-                                            <span className="text-xs font-semibold text-slate-700 truncate">Lectures</span>
+                                            <span className="material-symbols-outlined text-[17px] text-[#0073E6] shrink-0">school</span>
+                                            <span className="text-xs font-semibold text-[#383838] truncate">Lectures</span>
                                         </div>
-                                        <span className="text-xs font-bold text-blue-600 shrink-0">{theoryPercentage}%</span>
+                                        <span className="text-xs font-bold text-[#0073E6] shrink-0">{theoryPercentage}%</span>
                                     </div>
-                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="material-symbols-outlined text-[17px] text-slate-600 shrink-0">science</span>
-                                            <span className="text-xs font-semibold text-slate-700 truncate">Labs</span>
+                                            <span className="material-symbols-outlined text-[17px] text-[#383838] shrink-0">science</span>
+                                            <span className="text-xs font-semibold text-[#383838] truncate">Labs</span>
                                         </div>
-                                        <span className="text-xs font-bold text-slate-700 shrink-0">{labPercentage}%</span>
+                                        <span className="text-xs font-bold text-[#383838] shrink-0">{labPercentage}%</span>
                                     </div>
                                 </div>
 
@@ -1780,12 +1780,12 @@ const AttendanceAnalytics = () => {
                             {renderOptimizationPanel()}
 
                             {/* 3. Mobile Attendance Heatmap */}
-                            <section className="rounded-2xl bg-white border border-slate-200 p-3.5 shadow-xs flex flex-col gap-2">
+                            <section className="rounded-2xl bg-white border border-[#E2E2E2] p-3.5 shadow-xs flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <span className="text-[10px] font-bold text-[#727272] uppercase tracking-wider">
                                         Attendance Heatmap
                                     </span>
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                    <div className="flex items-center gap-2 text-[10px] text-[#727272]">
                                         <div className="flex items-center gap-1">
                                             <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]" />
                                             <span>Present</span>
@@ -1800,10 +1800,10 @@ const AttendanceAnalytics = () => {
                             </section>
 
                             {/* 3. Mobile Subject Ledger */}
-                            <section className="rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3 p-3.5 w-full min-w-0">
+                            <section className="rounded-2xl bg-white border border-[#E2E2E2] shadow-xs flex flex-col gap-3 p-3.5 w-full min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                    <h3 className="text-xs font-bold text-slate-900 tracking-tight">Subject Attendance</h3>
-                                    <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                    <h3 className="text-xs font-bold text-[#383838] tracking-tight">Subject Attendance</h3>
+                                    <span className="text-[11px] font-semibold text-[#727272] bg-slate-100 px-2 py-0.5 rounded-full">
                                         {activeSubjects.length} Courses
                                     </span>
                                 </div>
@@ -1843,36 +1843,36 @@ const AttendanceAnalytics = () => {
                                                     setSelectedNcDates([]);
                                                     setReviewingReq(null);
                                                 }}
-                                                className="p-3 rounded-xl border border-slate-200/90 hover:border-blue-300 transition-all flex flex-col gap-2 cursor-pointer bg-white"
+                                                className="p-3 rounded-xl border border-[#E2E2E2] hover:border-blue-300 transition-all flex flex-col gap-2 cursor-pointer bg-white"
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex items-start gap-2 min-w-0">
-                                                        <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${isSafe ? 'bg-blue-600' : 'bg-rose-500'}`} />
+                                                        <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${isSafe ? 'bg-[#0073E6]' : 'bg-rose-500'}`} />
                                                         <div className="flex flex-col min-w-0">
-                                                            <h4 className="text-xs font-bold text-slate-900 truncate" title={sub.name}>
+                                                            <h4 className="text-xs font-bold text-[#383838] truncate" title={sub.name}>
                                                                 {sub.name}
                                                             </h4>
-                                                            <span className="text-[10px] text-slate-400 mt-0.5">
+                                                            <span className="text-[10px] text-[#727272] mt-0.5">
                                                                 {isLab ? 'Lab' : 'Theory'} • {attended}/{conducted} sessions
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <span className={`text-sm font-extrabold shrink-0 ${isSafe ? 'text-slate-900' : 'text-rose-600'}`}>
+                                                    <span className={`text-sm font-extrabold shrink-0 ${isSafe ? 'text-[#383838]' : 'text-rose-600'}`}>
                                                         {pct}%
                                                     </span>
                                                 </div>
 
                                                 <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                                                     <div 
-                                                        className={`h-1.5 rounded-full ${isSafe ? 'bg-blue-600' : 'bg-rose-500'}`}
+                                                        className={`h-1.5 rounded-full ${isSafe ? 'bg-[#0073E6]' : 'bg-rose-500'}`}
                                                         style={{ width: `${Math.min(100, pct)}%` }}
                                                     />
                                                 </div>
 
                                                 <div className="flex items-center justify-between text-[10px] pt-0.5">
-                                                    <span className="text-slate-400">Target: 75%</span>
+                                                    <span className="text-[#727272]">Target: 75%</span>
                                                     {isSafe ? (
-                                                        <span className="text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded">
+                                                        <span className="text-[#174073] font-semibold bg-[#DEEDFC] px-2 py-0.5 rounded">
                                                             {skipsAvailable} {skipsAvailable === 1 ? 'Skip' : 'Skips'} Safe
                                                         </span>
                                                     ) : (
@@ -1888,13 +1888,13 @@ const AttendanceAnalytics = () => {
                             </section>
 
                             {/* 4. Minimal & Clean Present/Absent Log on Mobile */}
-                            <section className="rounded-2xl bg-white border border-slate-200 p-3.5 shadow-xs flex flex-col gap-2.5">
+                            <section className="rounded-2xl bg-white border border-[#E2E2E2] p-3.5 shadow-xs flex flex-col gap-2.5">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-blue-600 text-[17px]">history</span>
-                                        <h3 className="text-xs font-bold text-slate-900">Recent Classes</h3>
+                                        <span className="material-symbols-outlined text-[#0073E6] text-[17px]">history</span>
+                                        <h3 className="text-xs font-bold text-[#383838]">Recent Classes</h3>
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-medium">{sessionLogs.length} records</span>
+                                    <span className="text-[10px] text-[#727272] font-medium">{sessionLogs.length} records</span>
                                 </div>
 
                                 <div className="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto no-scrollbar">
@@ -1903,19 +1903,19 @@ const AttendanceAnalytics = () => {
                                         return (
                                             <div 
                                                 key={idx}
-                                                className="p-2 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between gap-2 text-xs"
+                                                className="p-2 rounded-xl bg-slate-50/70 border border-[#E2E2E2] flex items-center justify-between gap-2 text-xs"
                                             >
                                                 <div className="flex items-center gap-2 min-w-0">
-                                                    <span className={`w-2 h-2 rounded-full shrink-0 ${isPresent ? 'bg-blue-600' : 'bg-rose-500'}`} />
-                                                    <span className="text-xs font-semibold text-slate-800 truncate" title={log.subjectName}>
+                                                    <span className={`w-2 h-2 rounded-full shrink-0 ${isPresent ? 'bg-[#0073E6]' : 'bg-rose-500'}`} />
+                                                    <span className="text-xs font-semibold text-[#383838] truncate" title={log.subjectName}>
                                                         {log.subjectName}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0">
-                                                    <span className="text-[10px] text-slate-400">{log.date}</span>
+                                                    <span className="text-[10px] text-[#727272]">{log.date}</span>
                                                     <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
                                                         isPresent
-                                                            ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                                                            ? 'bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]/60'
                                                             : 'bg-rose-50 text-rose-700 border border-rose-200/60'
                                                     }`}>
                                                         {log.status.toUpperCase()}
@@ -1925,7 +1925,7 @@ const AttendanceAnalytics = () => {
                                         );
                                     })}
                                     {sessionLogs.length === 0 && (
-                                        <div className="p-3 text-center text-xs text-slate-400">
+                                        <div className="p-3 text-center text-xs text-[#727272]">
                                             No recent attendance records
                                         </div>
                                     )}
@@ -1947,29 +1947,29 @@ const AttendanceAnalytics = () => {
                     }}
                 >
                     <div
-                        className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
+                        className="bg-white rounded-2xl border border-[#E2E2E2] shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="p-4 sm:p-5 border-b border-[#E2E2E2] bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                                    <h3 className="text-base sm:text-lg font-bold text-[#383838] leading-tight">
                                         {selectedSubject.name}
                                     </h3>
                                     <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
                                         {selectedSubject.code || 'Course'}
                                     </span>
-                                    <span className="text-xs font-bold text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                                    <span className="text-xs font-bold text-[#383838] bg-white px-2 py-0.5 rounded-md border border-[#E2E2E2]">
                                         Attendance: {getPrecisePct(selectedSubject)}%
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-slate-500">
-                                    <span className="inline-flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60 font-medium">
-                                        <Shield className="w-3 h-3 text-blue-600" />
+                                <div className="flex items-center gap-2 text-xs text-[#727272]">
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-[#174073] bg-[#DEEDFC] px-2 py-0.5 rounded border border-[#D9ECFF]/60 font-medium">
+                                        <Shield className="w-3 h-3 text-[#0073E6]" />
                                         Secure Document Storage
                                     </span>
-                                    <span className="text-slate-300">•</span>
+                                    <span className="text-[#E2E2E2]">•</span>
                                     <span>{isTeacher ? `Faculty: ${teacherName}` : `PRN: ${profile?.prn || 'Student'}`}</span>
                                 </div>
                             </div>
@@ -1980,14 +1980,14 @@ const AttendanceAnalytics = () => {
                                     setReviewingReq(null);
                                     setDocPreviewUrl(null);
                                 }}
-                                className="self-end sm:self-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 cursor-pointer transition"
+                                className="self-end sm:self-auto p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-200/70 cursor-pointer transition"
                             >
                                 <span className="material-symbols-outlined text-[20px]">close</span>
                             </button>
                         </div>
 
                         {/* Modal Navigation Tabs */}
-                        <div className="px-4 sm:px-5 py-2.5 border-b border-slate-200 bg-white flex items-center justify-between gap-2">
+                        <div className="px-4 sm:px-5 py-2.5 border-b border-[#E2E2E2] bg-white flex items-center justify-between gap-2">
                             <FluidTabs
                                 value={modalTab}
                                 onChange={setModalTab}
@@ -2002,7 +2002,7 @@ const AttendanceAnalytics = () => {
                                     {
                                         id: 'nc',
                                         label: 'Absence Consideration (NC)',
-                                        icon: <Shield className="w-3.5 h-3.5 text-blue-600 mr-1" />,
+                                        icon: <Shield className="w-3.5 h-3.5 text-[#0073E6] mr-1" />,
                                         badge: subjectNcRequests.length > 0 ? subjectNcRequests.length : undefined
                                     }
                                 ]}
@@ -2010,7 +2010,7 @@ const AttendanceAnalytics = () => {
 
                             <button
                                 onClick={() => fetchSubjectNcRequests(selectedSubject)}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition"
+                                className="p-1.5 text-[#727272] hover:text-[#383838] rounded-lg hover:bg-slate-100 transition"
                                 title="Refresh NC data"
                             >
                                 <RefreshCw className="w-3.5 h-3.5" />
@@ -2023,13 +2023,13 @@ const AttendanceAnalytics = () => {
                             {modalTab === 'presence' && (
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                                        <span className="text-[11px] font-bold text-[#727272] uppercase tracking-wider block">
                                             Date-Wise Lecture Sessions & Absence Status
                                         </span>
                                         {!isTeacher && (
                                             <button
                                                 onClick={() => setModalTab('nc')}
-                                                className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+                                                className="text-[11px] font-bold text-[#0073E6] hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                                             >
                                                 <UploadCloud className="w-3.5 h-3.5" />
                                                 <span>Apply for Leave (NC)</span>
@@ -2049,15 +2049,15 @@ const AttendanceAnalytics = () => {
                                                     <div
                                                         key={i}
                                                         className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border text-xs gap-2 transition ${
-                                                            isAbsent ? 'bg-rose-50/40 border-rose-100' : 'bg-slate-50/70 border-slate-100'
+                                                            isAbsent ? 'bg-rose-50/40 border-rose-100' : 'bg-slate-50/70 border-[#E2E2E2]'
                                                         }`}
                                                     >
                                                         <div className="flex items-center gap-2.5">
-                                                            <Calendar className={`w-4 h-4 ${isAbsent ? 'text-rose-500' : 'text-slate-400'}`} />
+                                                            <Calendar className={`w-4 h-4 ${isAbsent ? 'text-rose-500' : 'text-[#727272]'}`} />
                                                             <div>
-                                                                <span className="font-mono font-semibold text-slate-700">{rec.date}</span>
+                                                                <span className="font-mono font-semibold text-[#383838]">{rec.date}</span>
                                                                 {(rec.slot || rec.time) && (
-                                                                    <span className="text-[11px] text-slate-500 ml-2 font-mono">
+                                                                    <span className="text-[11px] text-[#727272] ml-2 font-mono">
                                                                         ({rec.slot || rec.time})
                                                                     </span>
                                                                 )}
@@ -2098,7 +2098,7 @@ const AttendanceAnalytics = () => {
                                                                                     setSelectedNcDates([rec.date]);
                                                                                     setModalTab('nc');
                                                                                 }}
-                                                                                className="px-2 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition"
+                                                                                className="px-2 py-0.5 rounded-md bg-[#DEEDFC] hover:bg-blue-100 text-[#174073] border border-[#D9ECFF] text-[10px] font-bold flex items-center gap-1 cursor-pointer transition"
                                                                             >
                                                                                 <UploadCloud className="w-3 h-3" /> Request Leave
                                                                             </button>
@@ -2112,7 +2112,7 @@ const AttendanceAnalytics = () => {
                                             })}
                                         </div>
                                     ) : (
-                                        <p className="text-xs text-slate-400 py-8 text-center">No detailed logs stored for this subject.</p>
+                                        <p className="text-xs text-[#727272] py-8 text-center">No detailed logs stored for this subject.</p>
                                     )}
                                 </div>
                             )}
@@ -2124,24 +2124,24 @@ const AttendanceAnalytics = () => {
                                     {!isTeacher ? (
                                         <div className="space-y-6">
                                             {/* Submit NC Form */}
-                                            <form onSubmit={handleSubmitSubjectNc} className="bg-slate-50/70 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4">
-                                                <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                                            <form onSubmit={handleSubmitSubjectNc} className="bg-slate-50/70 p-4 sm:p-5 rounded-2xl border border-[#E2E2E2] space-y-4">
+                                                <div className="flex items-center justify-between border-b border-[#E2E2E2] pb-2">
                                                     <div className="flex items-center gap-2">
-                                                        <Shield className="w-4 h-4 text-blue-600" />
-                                                        <span className="font-bold text-xs sm:text-sm text-slate-900">
+                                                        <Shield className="w-4 h-4 text-[#0073E6]" />
+                                                        <span className="font-bold text-xs sm:text-sm text-[#383838]">
                                                             Submit Leave / Absence Request
                                                         </span>
                                                     </div>
-                                                    <span className="text-[11px] text-slate-500 font-mono">
+                                                    <span className="text-[11px] text-[#727272] font-mono">
                                                         Course: {selectedSubject.code || selectedSubject.name}
                                                     </span>
                                                 </div>
 
                                                 {/* 1. Pick Absent Date(s) */}
                                                 <div className="space-y-1.5">
-                                                    <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                                    <label className="text-xs font-bold text-[#383838] flex items-center justify-between">
                                                         <span>1. Select Absent Date(s)</span>
-                                                        <span className="text-[11px] font-normal text-slate-500 font-mono">
+                                                        <span className="text-[11px] font-normal text-[#727272] font-mono">
                                                             {selectedNcDates.length} selected
                                                         </span>
                                                     </label>
@@ -2156,7 +2156,7 @@ const AttendanceAnalytics = () => {
 
                                                         if (absentRecords.length === 0) {
                                                             return (
-                                                                <p className="text-xs text-slate-400 italic py-2">
+                                                                <p className="text-xs text-[#727272] italic py-2">
                                                                     No absence records registered for this subject.
                                                                 </p>
                                                             );
@@ -2184,15 +2184,15 @@ const AttendanceAnalytics = () => {
                                                                             }}
                                                                             className={`p-2 rounded-xl border text-xs cursor-pointer transition ${
                                                                                 isAlreadyFiled
-                                                                                    ? 'opacity-50 bg-slate-100 border-slate-200 cursor-not-allowed'
+                                                                                    ? 'opacity-50 bg-slate-100 border-[#E2E2E2] cursor-not-allowed'
                                                                                     : isSelected
-                                                                                    ? 'bg-blue-50 border-blue-400 text-blue-900 shadow-xs'
-                                                                                    : 'bg-white border-slate-200 hover:border-slate-300'
+                                                                                    ? 'bg-[#DEEDFC] border-blue-400 text-blue-900 shadow-xs'
+                                                                                    : 'bg-white border-[#E2E2E2] hover:border-slate-300'
                                                                             }`}
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="font-bold flex items-center gap-1.5 font-mono">
-                                                                                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                                                                                    <Calendar className="w-3.5 h-3.5 text-[#0073E6]" />
                                                                                     {rec.date}
                                                                                 </span>
                                                                                 {isAlreadyFiled ? (
@@ -2204,12 +2204,12 @@ const AttendanceAnalytics = () => {
                                                                                         type="checkbox"
                                                                                         checked={isSelected}
                                                                                         onChange={() => {}}
-                                                                                        className="rounded text-blue-600"
+                                                                                        className="rounded text-[#0073E6]"
                                                                                     />
                                                                                 )}
                                                                             </div>
                                                                             {(rec.slot || rec.time) && (
-                                                                                <span className="text-[10px] text-slate-500 font-mono block mt-1">
+                                                                                <span className="text-[10px] text-[#727272] font-mono block mt-1">
                                                                                     Slot: {rec.slot || rec.time}
                                                                                 </span>
                                                                             )}
@@ -2223,11 +2223,11 @@ const AttendanceAnalytics = () => {
 
                                                 {/* 2. Select Reason */}
                                                 <div className="space-y-1.5">
-                                                    <label className="text-xs font-bold text-slate-700">2. Reason for Absence</label>
+                                                    <label className="text-xs font-bold text-[#383838]">2. Reason for Absence</label>
                                                     <select
                                                         value={ncReason}
                                                         onChange={(e) => setNcReason(e.target.value)}
-                                                        className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
+                                                        className="w-full text-xs bg-white border border-[#E2E2E2] rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
                                                     >
                                                         {NC_REASONS.map(r => (
                                                             <option key={r} value={r}>{r}</option>
@@ -2237,19 +2237,19 @@ const AttendanceAnalytics = () => {
 
                                                 {/* 3. Description */}
                                                 <div className="space-y-1.5">
-                                                    <label className="text-xs font-bold text-slate-700">3. Description / Explanation (Optional)</label>
+                                                    <label className="text-xs font-bold text-[#383838]">3. Description / Explanation (Optional)</label>
                                                     <textarea
                                                         value={ncDescription}
                                                         onChange={(e) => setNcDescription(e.target.value)}
                                                         placeholder="Provide brief context or doctor / hospital / event reference..."
                                                         rows={2}
-                                                        className="w-full text-xs bg-white border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500"
+                                                        className="w-full text-xs bg-white border border-[#E2E2E2] rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500"
                                                     />
                                                 </div>
 
                                                 {/* 4. Upload Proof File to Backblaze B2 */}
                                                 <div className="space-y-1.5">
-                                                    <label className="text-xs font-bold text-slate-700">
+                                                    <label className="text-xs font-bold text-[#383838]">
                                                         4. Supporting Document (PDF, PNG, JPG)
                                                     </label>
                                                     <div className="border border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-3 text-center bg-white transition cursor-pointer relative">
@@ -2264,11 +2264,11 @@ const AttendanceAnalytics = () => {
                                                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                                         />
                                                         <div className="space-y-0.5">
-                                                            <UploadCloud className="w-5 h-5 text-blue-600 mx-auto" />
-                                                            <p className="text-xs font-semibold text-slate-800">
+                                                            <UploadCloud className="w-5 h-5 text-[#0073E6] mx-auto" />
+                                                            <p className="text-xs font-semibold text-[#383838]">
                                                                 {ncProofFile ? ncProofFile.name : 'Upload Medical / Event Certificate'}
                                                             </p>
-                                                            <p className="text-[10px] text-slate-400">
+                                                            <p className="text-[10px] text-[#727272]">
                                                                 Files are securely stored and viewable by your faculty
                                                             </p>
                                                         </div>
@@ -2280,7 +2280,7 @@ const AttendanceAnalytics = () => {
                                                     <button
                                                         type="submit"
                                                         disabled={isSubmittingNc || selectedNcDates.length === 0 || !ncProofFile}
-                                                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
+                                                        className="px-4 py-2 rounded-xl bg-[#0073E6] hover:bg-[#174073] disabled:opacity-50 text-white font-semibold text-xs shadow-xs transition flex items-center gap-2 cursor-pointer"
                                                     >
                                                         {isSubmittingNc ? (
                                                             <>
@@ -2296,16 +2296,16 @@ const AttendanceAnalytics = () => {
 
                                             {/* Student's Existing NC Requests for this Subject */}
                                             <div className="space-y-2">
-                                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                                                <span className="text-[11px] font-bold text-[#727272] uppercase tracking-wider block">
                                                     Your Leave Requests for this Course ({subjectNcRequests.length})
                                                 </span>
                                                 {subjectNcRequests.length === 0 ? (
-                                                    <p className="text-xs text-slate-400 py-3 text-center">No leave requests submitted yet for this course.</p>
+                                                    <p className="text-xs text-[#727272] py-3 text-center">No leave requests submitted yet for this course.</p>
                                                 ) : (
                                                     subjectNcRequests.map((req) => (
-                                                        <div key={req.id} className="p-3 rounded-xl border border-slate-200 bg-white text-xs space-y-1.5 shadow-xs">
+                                                        <div key={req.id} className="p-3 rounded-xl border border-[#E2E2E2] bg-white text-xs space-y-1.5 shadow-xs">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="font-bold text-slate-900 font-mono">
+                                                                <span className="font-bold text-[#383838] font-mono">
                                                                     Dates: {(req.absentDates || []).join(', ')}
                                                                 </span>
                                                                 {req.status === 'APPROVED' ? (
@@ -2322,7 +2322,7 @@ const AttendanceAnalytics = () => {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div className="text-slate-600 flex items-center justify-between">
+                                                            <div className="text-[#383838] flex items-center justify-between">
                                                                 <span>Reason: <strong>{req.reason}</strong></span>
                                                                 {req.proofFileName && (
                                                                     <button
@@ -2330,14 +2330,14 @@ const AttendanceAnalytics = () => {
                                                                             setDocPreviewUrl(getNcProofUrl(req));
                                                                             setDocPreviewName(req.proofFileName);
                                                                         }}
-                                                                        className="text-blue-600 hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
+                                                                        className="text-[#0073E6] hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
                                                                     >
                                                                         <Eye className="w-3.5 h-3.5" /> View Document
                                                                     </button>
                                                                 )}
                                                             </div>
                                                             {req.reviewComment && (
-                                                                <p className="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg italic">
+                                                                <p className="text-[11px] text-[#727272] bg-slate-50 p-2 rounded-lg italic">
                                                                     Faculty Comment ({req.reviewedBy}): "{req.reviewComment}"
                                                                 </p>
                                                             )}
@@ -2350,23 +2350,23 @@ const AttendanceAnalytics = () => {
                                         /* TEACHER VIEW INSIDE MODAL */
                                         <div className="space-y-4">
                                             {/* Teacher Filter Controls */}
-                                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+                                            <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2] flex flex-wrap items-center justify-between gap-3 text-xs">
                                                 <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-                                                    <Search className="w-3.5 h-3.5 text-slate-400" />
+                                                    <Search className="w-3.5 h-3.5 text-[#727272]" />
                                                     <input
                                                         type="text"
                                                         placeholder="Search student PRN or name..."
                                                         value={teacherNcSearchStudent}
                                                         onChange={(e) => setTeacherNcSearchStudent(e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                                                        className="w-full bg-white border border-[#E2E2E2] rounded-lg px-2.5 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500"
                                                     />
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-slate-500 font-semibold text-[11px]">Status:</span>
+                                                    <span className="text-[#727272] font-semibold text-[11px]">Status:</span>
                                                     <select
                                                         value={teacherNcFilterStatus}
                                                         onChange={(e) => setTeacherNcFilterStatus(e.target.value)}
-                                                        className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                                                        className="bg-white border border-[#E2E2E2] rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500"
                                                     >
                                                         <option value="ALL">All Statuses</option>
                                                         <option value="PENDING">Pending Only</option>
@@ -2379,18 +2379,18 @@ const AttendanceAnalytics = () => {
                                             {/* Requests List for Teacher */}
                                             <div className="space-y-2">
                                                 {subjectNcRequests.length === 0 ? (
-                                                    <p className="text-xs text-slate-400 py-6 text-center">
+                                                    <p className="text-xs text-[#727272] py-6 text-center">
                                                         No leave requests found for this course.
                                                     </p>
                                                 ) : (
                                                     subjectNcRequests.map((req) => (
-                                                        <div key={req.id} className="p-3.5 rounded-xl border border-slate-200 bg-white text-xs space-y-2 shadow-xs">
+                                                        <div key={req.id} className="p-3.5 rounded-xl border border-[#E2E2E2] bg-white text-xs space-y-2 shadow-xs">
                                                             <div className="flex items-center justify-between">
                                                                 <div>
-                                                                    <span className="font-bold text-slate-900 text-sm">
+                                                                    <span className="font-bold text-[#383838] text-sm">
                                                                         {req.studentName}
                                                                     </span>
-                                                                    <span className="text-slate-500 text-[11px] ml-2 font-mono">
+                                                                    <span className="text-[#727272] text-[11px] ml-2 font-mono">
                                                                         PRN: {req.studentPrn} {req.rollNo ? `(Roll: ${req.rollNo})` : ''}
                                                                     </span>
                                                                 </div>
@@ -2403,30 +2403,30 @@ const AttendanceAnalytics = () => {
                                                                 </span>
                                                             </div>
 
-                                                            <div className="text-slate-600 text-[11px] space-y-1">
+                                                            <div className="text-[#383838] text-[11px] space-y-1">
                                                                 <div>
                                                                     Absent Dates: <strong className="font-mono">{(req.absentDates || []).join(', ')}</strong>
                                                                 </div>
                                                                 <div>
                                                                     Reason: <strong>{req.reason}</strong>
-                                                                    {req.description && <span className="italic text-slate-500 ml-1">("{req.description}")</span>}
+                                                                    {req.description && <span className="italic text-[#727272] ml-1">("{req.description}")</span>}
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                                                            <div className="flex items-center justify-between pt-1 border-t border-[#E2E2E2]">
                                                                 {req.proofFileName ? (
                                                                     <button
                                                                         onClick={() => {
                                                                             setDocPreviewUrl(getNcProofUrl(req));
                                                                             setDocPreviewName(req.proofFileName);
                                                                         }}
-                                                                        className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer text-[11px]"
+                                                                        className="text-[#0073E6] hover:underline font-semibold flex items-center gap-1 cursor-pointer text-[11px]"
                                                                     >
                                                                         <Eye className="w-3.5 h-3.5" />
                                                                         <span>View Document ({req.proofFileName})</span>
                                                                     </button>
                                                                 ) : (
-                                                                    <span className="text-slate-400 italic">No document attached</span>
+                                                                    <span className="text-[#727272] italic">No document attached</span>
                                                                 )}
 
                                                                 <button
@@ -2435,7 +2435,7 @@ const AttendanceAnalytics = () => {
                                                                         setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
                                                                         setReviewComment(req.reviewComment || '');
                                                                     }}
-                                                                    className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                                                                    className="px-3 py-1 rounded-lg bg-[#0073E6] hover:bg-[#174073] text-white font-bold text-xs shadow-xs transition cursor-pointer"
                                                                 >
                                                                     Review Request
                                                                 </button>
@@ -2447,14 +2447,14 @@ const AttendanceAnalytics = () => {
 
                                             {/* Teacher Review Form Sub-section */}
                                             {reviewingReq && (
-                                                <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3 animate-in fade-in duration-150">
+                                                <div className="p-4 rounded-xl bg-[#DEEDFC]/50 border border-[#D9ECFF] space-y-3 animate-in fade-in duration-150">
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-bold text-xs text-blue-900">
                                                             Reviewing Student: {reviewingReq.studentName} ({reviewingReq.studentPrn})
                                                         </span>
                                                         <button
                                                             onClick={() => setReviewingReq(null)}
-                                                            className="text-slate-400 hover:text-slate-600"
+                                                            className="text-[#727272] hover:text-[#383838]"
                                                         >
                                                             <X className="w-4 h-4" />
                                                         </button>
@@ -2467,7 +2467,7 @@ const AttendanceAnalytics = () => {
                                                             className={`p-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                                                                 reviewDecision === 'APPROVED'
                                                                     ? 'bg-emerald-600 text-white shadow-xs'
-                                                                    : 'bg-white border border-slate-200 text-slate-700'
+                                                                    : 'bg-white border border-[#E2E2E2] text-[#383838]'
                                                             }`}
                                                         >
                                                             <CheckCircle2 className="w-3.5 h-3.5" /> Approve Leave
@@ -2478,7 +2478,7 @@ const AttendanceAnalytics = () => {
                                                             className={`p-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                                                                 reviewDecision === 'REJECTED'
                                                                     ? 'bg-rose-600 text-white shadow-xs'
-                                                                    : 'bg-white border border-slate-200 text-slate-700'
+                                                                    : 'bg-white border border-[#E2E2E2] text-[#383838]'
                                                             }`}
                                                         >
                                                             <XCircle className="w-3.5 h-3.5" /> Reject Request
@@ -2490,20 +2490,20 @@ const AttendanceAnalytics = () => {
                                                         onChange={(e) => setReviewComment(e.target.value)}
                                                         placeholder="Enter teacher remarks or feedback..."
                                                         rows={2}
-                                                        className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 outline-none focus:ring-1 focus:ring-blue-500"
+                                                        className="w-full text-xs bg-white border border-[#E2E2E2] rounded-lg p-2 outline-none focus:ring-1 focus:ring-blue-500"
                                                     />
 
                                                     <div className="flex justify-end gap-2">
                                                         <button
                                                             onClick={() => setReviewingReq(null)}
-                                                            className="px-3 py-1 text-xs text-slate-600 hover:bg-slate-200 rounded-lg"
+                                                            className="px-3 py-1 text-xs text-[#383838] hover:bg-slate-200 rounded-lg"
                                                         >
                                                             Cancel
                                                         </button>
                                                         <button
                                                             onClick={handleTeacherReviewNc}
                                                             disabled={isSubmittingReview}
-                                                            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                                                            className="px-4 py-1.5 rounded-lg bg-[#0073E6] hover:bg-[#174073] text-white text-xs font-bold shadow-xs cursor-pointer"
                                                         >
                                                             {isSubmittingReview ? 'Saving...' : 'Save Decision'}
                                                         </button>
@@ -2525,20 +2525,20 @@ const AttendanceAnalytics = () => {
                     onClick={() => setShowNcModal(false)}
                 >
                     <div
-                        className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+                        className="bg-white rounded-2xl border border-[#E2E2E2] shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3">
+                        <div className="p-4 sm:p-5 border-b border-[#E2E2E2] bg-slate-50/80 flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-                                    <Shield className="w-5 h-5 text-blue-600" />
+                                <div className="w-9 h-9 rounded-xl bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF] flex items-center justify-center shrink-0">
+                                    <Shield className="w-5 h-5 text-[#0073E6]" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                                    <h3 className="text-sm sm:text-base font-bold text-[#383838] leading-tight">
                                         Attendance Excuse Requests (NC)
                                     </h3>
-                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                    <p className="text-[11px] text-[#727272] mt-0.5">
                                         {isTeacher
                                             ? 'Review and decide on student leave and duty submissions'
                                             : 'Medical, duty leave & event excuse requests'}
@@ -2547,7 +2547,7 @@ const AttendanceAnalytics = () => {
                             </div>
                             <button
                                 onClick={() => setShowNcModal(false)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 cursor-pointer transition"
+                                className="p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-200/70 cursor-pointer transition"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -2557,15 +2557,15 @@ const AttendanceAnalytics = () => {
                         {!isTeacher ? (
                             <>
                                 {/* Tab Navigation */}
-                                <div className="px-5 pt-3 border-b border-slate-200 bg-white flex items-center justify-between gap-2">
+                                <div className="px-5 pt-3 border-b border-[#E2E2E2] bg-white flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
                                         <button
                                             type="button"
                                             onClick={() => setNcModalTab('requests')}
                                             className={`px-3.5 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
                                                 ncModalTab === 'requests'
-                                                    ? 'border-blue-600 text-blue-600'
-                                                    : 'border-transparent text-slate-500 hover:text-slate-900'
+                                                    ? 'border-blue-600 text-[#0073E6]'
+                                                    : 'border-transparent text-[#727272] hover:text-[#383838]'
                                             }`}
                                         >
                                             <FileText className="w-3.5 h-3.5" />
@@ -2576,8 +2576,8 @@ const AttendanceAnalytics = () => {
                                             onClick={() => setNcModalTab('apply')}
                                             className={`px-3.5 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
                                                 ncModalTab === 'apply'
-                                                    ? 'border-blue-600 text-blue-600'
-                                                    : 'border-transparent text-slate-500 hover:text-slate-900'
+                                                    ? 'border-blue-600 text-[#0073E6]'
+                                                    : 'border-transparent text-[#727272] hover:text-[#383838]'
                                             }`}
                                         >
                                             <UploadCloud className="w-3.5 h-3.5" />
@@ -2588,10 +2588,10 @@ const AttendanceAnalytics = () => {
                                         type="button"
                                         onClick={fetchMyNcRequests}
                                         disabled={myNcLoading}
-                                        className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                        className="p-1.5 text-[#727272] hover:text-[#383838] rounded-lg hover:bg-slate-100 transition cursor-pointer"
                                         title="Refresh requests"
                                     >
-                                        <RefreshCw className={`w-3.5 h-3.5 ${myNcLoading ? 'animate-spin text-blue-600' : ''}`} />
+                                        <RefreshCw className={`w-3.5 h-3.5 ${myNcLoading ? 'animate-spin text-[#0073E6]' : ''}`} />
                                     </button>
                                 </div>
 
@@ -2599,21 +2599,21 @@ const AttendanceAnalytics = () => {
                                 <div className="p-5 overflow-y-auto flex-1 space-y-4">
                                     {ncModalTab === 'requests' ? (
                                         myNcLoading ? (
-                                            <div className="py-12 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
-                                                <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+                                            <div className="py-12 text-center text-xs text-[#727272] flex flex-col items-center gap-2">
+                                                <RefreshCw className="w-5 h-5 animate-spin text-[#0073E6]" />
                                                 <span>Loading your leave requests...</span>
                                             </div>
                                         ) : myNcRequests.length === 0 ? (
-                                            <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200 p-6 space-y-2">
-                                                <Shield className="w-10 h-10 text-slate-300 mx-auto" />
-                                                <h4 className="text-xs font-bold text-slate-800">No Leave Requests Found</h4>
-                                                <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                                            <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-[#E2E2E2] p-6 space-y-2">
+                                                <Shield className="w-10 h-10 text-[#E2E2E2] mx-auto" />
+                                                <h4 className="text-xs font-bold text-[#383838]">No Leave Requests Found</h4>
+                                                <p className="text-[11px] text-[#727272] max-w-xs mx-auto">
                                                     You haven't submitted any absence excuse or medical leave requests yet.
                                                 </p>
                                                 <button
                                                     type="button"
                                                     onClick={() => setNcModalTab('apply')}
-                                                    className="mt-2 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-2xs cursor-pointer inline-flex items-center gap-1"
+                                                    className="mt-2 px-3.5 py-1.5 rounded-lg bg-[#0073E6] hover:bg-[#174073] text-white text-xs font-bold transition shadow-2xs cursor-pointer inline-flex items-center gap-1"
                                                 >
                                                     <UploadCloud className="w-3.5 h-3.5" />
                                                     <span>Apply for Leave Now</span>
@@ -2622,12 +2622,12 @@ const AttendanceAnalytics = () => {
                                         ) : (
                                             <div className="space-y-3">
                                                 {myNcRequests.map((req) => (
-                                                    <div key={req.id} className="p-4 rounded-xl border border-slate-200 bg-white text-xs space-y-2.5 shadow-2xs hover:border-slate-300 transition">
+                                                    <div key={req.id} className="p-4 rounded-xl border border-[#E2E2E2] bg-white text-xs space-y-2.5 shadow-2xs hover:border-slate-300 transition">
                                                         <div className="flex items-center justify-between gap-2">
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="font-bold text-slate-900">{req.reason}</span>
+                                                                <span className="font-bold text-[#383838]">{req.reason}</span>
                                                                 {req.missedSubjects && req.missedSubjects.length > 0 && (
-                                                                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold">
+                                                                    <span className="px-2 py-0.5 rounded-full bg-[#DEEDFC] text-[#174073] text-[10px] font-semibold">
                                                                         {req.missedSubjects[0].subjectName}
                                                                     </span>
                                                                 )}
@@ -2643,35 +2643,35 @@ const AttendanceAnalytics = () => {
                                                             </span>
                                                         </div>
 
-                                                        <div className="text-[11px] text-slate-600 space-y-1">
+                                                        <div className="text-[11px] text-[#383838] space-y-1">
                                                             <div className="flex items-center gap-1.5 font-mono">
-                                                                <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                                                <span>Absent: <strong className="text-slate-800">{(req.absentDates || []).join(', ')}</strong></span>
+                                                                <Calendar className="w-3.5 h-3.5 text-[#727272]" />
+                                                                <span>Absent: <strong className="text-[#383838]">{(req.absentDates || []).join(', ')}</strong></span>
                                                             </div>
                                                             {req.description && (
-                                                                <p className="text-slate-600 italic">"{req.description}"</p>
+                                                                <p className="text-[#383838] italic">"{req.description}"</p>
                                                             )}
                                                             {req.reviewComment && (
-                                                                <div className="mt-1 p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700">
-                                                                    <strong className="text-slate-900 font-semibold">Faculty Remarks:</strong> {req.reviewComment}
+                                                                <div className="mt-1 p-2 rounded-lg bg-slate-50 border border-[#E2E2E2] text-[#383838]">
+                                                                    <strong className="text-[#383838] font-semibold">Faculty Remarks:</strong> {req.reviewComment}
                                                                 </div>
                                                             )}
                                                         </div>
 
                                                         {req.proofFileName && (
-                                                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                                            <div className="pt-2 border-t border-[#E2E2E2] flex items-center justify-between">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => {
                                                                         setDocPreviewUrl(getNcProofUrl(req));
                                                                         setDocPreviewName(req.proofFileName);
                                                                     }}
-                                                                    className="text-blue-600 hover:underline font-semibold flex items-center gap-1.5 text-[11px] cursor-pointer"
+                                                                    className="text-[#0073E6] hover:underline font-semibold flex items-center gap-1.5 text-[11px] cursor-pointer"
                                                                 >
                                                                     <Eye className="w-3.5 h-3.5" />
                                                                     <span>View Proof ({req.proofFileName})</span>
                                                                 </button>
-                                                                <span className="text-[10px] text-slate-400">
+                                                                <span className="text-[10px] text-[#727272]">
                                                                     {req.createdAt ? new Date(req.createdAt).toLocaleDateString() : ''}
                                                                 </span>
                                                             </div>
@@ -2685,7 +2685,7 @@ const AttendanceAnalytics = () => {
                                         <form onSubmit={handleSubmitSubjectNc} className="space-y-4">
                                             {/* Course Selector */}
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-slate-700">Select Subject</label>
+                                                <label className="text-xs font-bold text-[#383838]">Select Subject</label>
                                                 <select
                                                     value={ncModalSubject?.id || ''}
                                                     onChange={(e) => {
@@ -2693,7 +2693,7 @@ const AttendanceAnalytics = () => {
                                                         setNcModalSubject(match || null);
                                                         setSelectedNcDates([]);
                                                     }}
-                                                    className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
+                                                    className="w-full text-xs bg-white border border-[#E2E2E2] rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
                                                 >
                                                     <option value="" disabled>-- Choose Enrolled Course --</option>
                                                     {(subjects || []).map(s => (
@@ -2706,16 +2706,16 @@ const AttendanceAnalytics = () => {
 
                                             {/* Absent Dates */}
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                                <label className="text-xs font-bold text-[#383838] flex items-center justify-between">
                                                     <span>Absent Date(s)</span>
-                                                    <span className="text-[11px] font-normal text-slate-500 font-mono">
+                                                    <span className="text-[11px] font-normal text-[#727272] font-mono">
                                                         {selectedNcDates.length} selected
                                                     </span>
                                                 </label>
 
                                                 {/* Absent records from detailedAttendance if available */}
                                                 {ncModalSubject?.detailedAttendance && ncModalSubject.detailedAttendance.filter(r => r.status === 'Absent').length > 0 && (
-                                                    <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto p-1 border border-slate-100 rounded-lg bg-slate-50/50">
+                                                    <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto p-1 border border-[#E2E2E2] rounded-lg bg-slate-50/50">
                                                         {ncModalSubject.detailedAttendance.filter(r => r.status === 'Absent').map((rec, idx) => {
                                                             const isSel = selectedNcDates.includes(rec.date);
                                                             return (
@@ -2728,7 +2728,7 @@ const AttendanceAnalytics = () => {
                                                                         );
                                                                     }}
                                                                     className={`p-1.5 rounded-lg border text-[11px] font-mono text-left transition cursor-pointer ${
-                                                                        isSel ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                                                                        isSel ? 'bg-[#DEEDFC] border-blue-400 text-blue-900 font-bold' : 'bg-white border-[#E2E2E2] text-[#383838] hover:border-slate-300'
                                                                     }`}
                                                                 >
                                                                     {rec.date}
@@ -2749,15 +2749,15 @@ const AttendanceAnalytics = () => {
                                                                 e.target.value = '';
                                                             }
                                                         }}
-                                                        className="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:ring-1 focus:ring-blue-500"
+                                                        className="text-xs bg-white border border-[#E2E2E2] rounded-lg px-2.5 py-1.5 outline-none focus:ring-1 focus:ring-blue-500"
                                                     />
-                                                    <span className="text-[11px] text-slate-400">Pick date to add to list</span>
+                                                    <span className="text-[11px] text-[#727272]">Pick date to add to list</span>
                                                 </div>
 
                                                 {selectedNcDates.length > 0 && (
                                                     <div className="flex flex-wrap gap-1.5 pt-1">
                                                         {selectedNcDates.map(d => (
-                                                            <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-mono font-semibold">
+                                                            <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF] text-[11px] font-mono font-semibold">
                                                                 {d}
                                                                 <button
                                                                     type="button"
@@ -2774,11 +2774,11 @@ const AttendanceAnalytics = () => {
 
                                             {/* Reason dropdown */}
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-slate-700">Reason for Absence</label>
+                                                <label className="text-xs font-bold text-[#383838]">Reason for Absence</label>
                                                 <select
                                                     value={ncReason}
                                                     onChange={(e) => setNcReason(e.target.value)}
-                                                    className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
+                                                    className="w-full text-xs bg-white border border-[#E2E2E2] rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500"
                                                 >
                                                     {NC_REASONS.map(r => (
                                                         <option key={r} value={r}>{r}</option>
@@ -2788,21 +2788,21 @@ const AttendanceAnalytics = () => {
 
                                             {/* Explanation textarea */}
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-slate-700">Detailed Explanation (Optional)</label>
+                                                <label className="text-xs font-bold text-[#383838]">Detailed Explanation (Optional)</label>
                                                 <textarea
                                                     value={ncDescription}
                                                     onChange={(e) => setNcDescription(e.target.value)}
                                                     placeholder="Specify medical hospital, competition event details, etc."
                                                     rows={2}
-                                                    className="w-full text-xs bg-white border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500"
+                                                    className="w-full text-xs bg-white border border-[#E2E2E2] rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500"
                                                 />
                                             </div>
 
                                             {/* Supporting Document Proof */}
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                                                <label className="text-xs font-bold text-[#383838] flex items-center justify-between">
                                                     <span>Supporting Proof Document</span>
-                                                    <span className="text-[10px] text-slate-400 font-normal">PDF, JPG, PNG (Max 15MB)</span>
+                                                    <span className="text-[10px] text-[#727272] font-normal">PDF, JPG, PNG (Max 15MB)</span>
                                                 </label>
                                                 <input
                                                     type="file"
@@ -2812,22 +2812,22 @@ const AttendanceAnalytics = () => {
                                                             setNcProofFile(e.target.files[0]);
                                                         }
                                                     }}
-                                                    className="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-xl p-1.5 bg-slate-50/50"
+                                                    className="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#DEEDFC] file:text-[#174073] hover:file:bg-blue-100 cursor-pointer border border-[#E2E2E2] rounded-xl p-1.5 bg-slate-50/50"
                                                 />
                                             </div>
 
-                                            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                                            <div className="pt-2 flex justify-end gap-2 border-t border-[#E2E2E2]">
                                                 <button
                                                     type="button"
                                                     onClick={() => setNcModalTab('requests')}
-                                                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                                    className="px-4 py-2 rounded-xl text-xs font-semibold text-[#383838] hover:bg-slate-100 transition cursor-pointer"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     type="submit"
                                                     disabled={isSubmittingNc}
-                                                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition disabled:opacity-50"
+                                                    className="px-5 py-2 rounded-xl bg-[#0073E6] hover:bg-[#174073] text-white text-xs font-bold shadow-xs cursor-pointer transition disabled:opacity-50"
                                                 >
                                                     {isSubmittingNc ? 'Submitting...' : 'Submit Request'}
                                                 </button>
@@ -2848,8 +2848,8 @@ const AttendanceAnalytics = () => {
                                                 onClick={() => setTeacherNcFilterStatus(st)}
                                                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
                                                     teacherNcFilterStatus === st
-                                                        ? 'bg-blue-600 text-white shadow-xs'
-                                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                                                        ? 'bg-[#0073E6] text-white shadow-xs'
+                                                        : 'bg-slate-100 text-[#383838] hover:bg-slate-200/70'
                                                 }`}
                                             >
                                                 {st === 'ALL'
@@ -2866,16 +2866,16 @@ const AttendanceAnalytics = () => {
                                         type="button"
                                         onClick={fetchAllFacultyNc}
                                         disabled={allFacultyNcLoading}
-                                        className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                        className="p-1.5 text-[#727272] hover:text-[#383838] rounded-lg hover:bg-slate-100 transition cursor-pointer"
                                         title="Refresh requests"
                                     >
-                                        <RefreshCw className={`w-3.5 h-3.5 ${allFacultyNcLoading ? 'animate-spin text-blue-600' : ''}`} />
+                                        <RefreshCw className={`w-3.5 h-3.5 ${allFacultyNcLoading ? 'animate-spin text-[#0073E6]' : ''}`} />
                                     </button>
                                 </div>
 
                                 {allFacultyNcLoading ? (
-                                    <div className="py-12 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
-                                        <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+                                    <div className="py-12 text-center text-xs text-[#727272] flex flex-col items-center gap-2">
+                                        <RefreshCw className="w-5 h-5 animate-spin text-[#0073E6]" />
                                         <span>Loading student leave requests...</span>
                                     </div>
                                 ) : (
@@ -2883,25 +2883,25 @@ const AttendanceAnalytics = () => {
                                         const list = allFacultyNc.filter(r => teacherNcFilterStatus === 'ALL' || r.status === teacherNcFilterStatus);
                                         if (list.length === 0) {
                                             return (
-                                                <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200 p-6">
-                                                    <Shield className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                                                    <h4 className="text-xs font-bold text-slate-800">No Leave Requests Found</h4>
-                                                    <p className="text-[11px] text-slate-500">No student submissions match this filter.</p>
+                                                <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-[#E2E2E2] p-6">
+                                                    <Shield className="w-10 h-10 text-[#E2E2E2] mx-auto mb-2" />
+                                                    <h4 className="text-xs font-bold text-[#383838]">No Leave Requests Found</h4>
+                                                    <p className="text-[11px] text-[#727272]">No student submissions match this filter.</p>
                                                 </div>
                                             );
                                         }
                                         return (
                                             <div className="space-y-2.5">
                                                 {list.map(req => (
-                                                    <div key={req.id} className="p-3.5 rounded-xl border border-slate-200 bg-white text-xs space-y-2 shadow-2xs hover:border-blue-200 transition">
+                                                    <div key={req.id} className="p-3.5 rounded-xl border border-[#E2E2E2] bg-white text-xs space-y-2 shadow-2xs hover:border-[#D9ECFF] transition">
                                                         <div className="flex items-center justify-between gap-2">
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="font-bold text-slate-900">{req.studentName}</span>
-                                                                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">
+                                                                <span className="font-bold text-[#383838]">{req.studentName}</span>
+                                                                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-[#383838] font-semibold border border-[#E2E2E2]">
                                                                     {req.studentPrn}
                                                                 </span>
                                                                 {req.missedSubjects && req.missedSubjects.length > 0 && (
-                                                                    <span className="px-2 py-0.2 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold">
+                                                                    <span className="px-2 py-0.2 rounded-full bg-[#DEEDFC] text-[#174073] text-[10px] font-semibold">
                                                                         {req.missedSubjects[0].subjectName}
                                                                     </span>
                                                                 )}
@@ -2915,12 +2915,12 @@ const AttendanceAnalytics = () => {
                                                             </span>
                                                         </div>
 
-                                                        <div className="text-[11px] text-slate-600 space-y-0.5">
-                                                            <div>Absent: <strong className="font-mono text-slate-800">{(req.absentDates || []).join(', ')}</strong></div>
-                                                            <div>Reason: <strong className="text-slate-800">{req.reason}</strong>{req.description ? ` - "${req.description}"` : ''}</div>
+                                                        <div className="text-[11px] text-[#383838] space-y-0.5">
+                                                            <div>Absent: <strong className="font-mono text-[#383838]">{(req.absentDates || []).join(', ')}</strong></div>
+                                                            <div>Reason: <strong className="text-[#383838]">{req.reason}</strong>{req.description ? ` - "${req.description}"` : ''}</div>
                                                         </div>
 
-                                                        <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                                                        <div className="flex items-center justify-between pt-1 border-t border-[#E2E2E2]">
                                                             {req.proofFileName ? (
                                                                 <button
                                                                     type="button"
@@ -2928,13 +2928,13 @@ const AttendanceAnalytics = () => {
                                                                         setDocPreviewUrl(getNcProofUrl(req));
                                                                         setDocPreviewName(req.proofFileName);
                                                                     }}
-                                                                    className="text-blue-600 hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
+                                                                    className="text-[#0073E6] hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
                                                                 >
                                                                     <Eye className="w-3.5 h-3.5" />
                                                                     <span>View Document</span>
                                                                 </button>
                                                             ) : (
-                                                                <span className="text-slate-400 italic text-[11px]">No file attached</span>
+                                                                <span className="text-[#727272] italic text-[11px]">No file attached</span>
                                                             )}
 
                                                             <button
@@ -2944,7 +2944,7 @@ const AttendanceAnalytics = () => {
                                                                     setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
                                                                     setReviewComment(req.reviewComment || '');
                                                                 }}
-                                                                className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] cursor-pointer shadow-2xs"
+                                                                className="px-3 py-1 rounded-lg bg-[#0073E6] hover:bg-[#174073] text-white font-bold text-[11px] cursor-pointer shadow-2xs"
                                                             >
                                                                 Review
                                                             </button>
@@ -2965,11 +2965,11 @@ const AttendanceAnalytics = () => {
             {/* Document Preview Modal */}
             {docPreviewUrl && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
-                    <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50">
+                    <div className="bg-white rounded-2xl border border-[#E2E2E2] max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
+                        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E2E2E2] bg-slate-50">
                             <div className="flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-blue-600" />
-                                <span className="font-bold text-xs sm:text-sm text-slate-900">{docPreviewName}</span>
+                                <FileText className="w-4 h-4 text-[#0073E6]" />
+                                <span className="font-bold text-xs sm:text-sm text-[#383838]">{docPreviewName}</span>
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold font-mono">
                                     Document Cloud
                                 </span>
@@ -2980,14 +2980,14 @@ const AttendanceAnalytics = () => {
                                     target="_blank"
                                     rel="noreferrer"
                                     download={docPreviewName}
-                                    className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200"
+                                    className="p-1 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-200"
                                     title="Download Document"
                                 >
                                     <Download className="w-4 h-4" />
                                 </a>
                                 <button
                                     onClick={() => setDocPreviewUrl(null)}
-                                    className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200"
+                                    className="p-1 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-200"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -2999,27 +2999,27 @@ const AttendanceAnalytics = () => {
                                 <iframe
                                     src={docPreviewUrl}
                                     title="NC Proof Preview"
-                                    className="w-full h-[60vh] rounded-xl border border-slate-200 bg-white"
+                                    className="w-full h-[60vh] rounded-xl border border-[#E2E2E2] bg-white"
                                 />
                             ) : (
                                 <img
                                     src={docPreviewUrl}
                                     alt={docPreviewName}
-                                    className="max-h-[60vh] object-contain rounded-xl border border-slate-200 shadow-xs"
+                                    className="max-h-[60vh] object-contain rounded-xl border border-[#E2E2E2] shadow-xs"
                                     onError={(e) => {
                                         e.target.style.display = 'none';
                                         if (e.target.nextSibling) e.target.nextSibling.style.display = 'block';
                                     }}
                                 />
                             )}
-                            <div className="hidden text-center p-6 text-slate-500">
+                            <div className="hidden text-center p-6 text-[#727272]">
                                 <AlertCircle className="w-6 h-6 text-amber-500 mx-auto mb-1" />
                                 <p className="text-xs font-semibold">Document cannot be previewed directly in frame.</p>
                                 <a
                                     href={docPreviewUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="mt-2 inline-block px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold"
+                                    className="mt-2 inline-block px-3 py-1.5 rounded-lg bg-[#0073E6] text-white text-xs font-semibold"
                                 >
                                     Download & View File
                                 </a>
@@ -3036,53 +3036,53 @@ const AttendanceAnalytics = () => {
                     onClick={() => setReviewingReq(null)}
                 >
                     <div
-                        className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+                        className="bg-white rounded-2xl border border-[#E2E2E2] max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <div className="px-5 py-4 border-b border-[#E2E2E2] bg-slate-50 flex items-center justify-between">
                             <div>
-                                <h3 className="font-bold text-sm text-slate-900">Review Student Leave Request</h3>
-                                <p className="text-[11px] text-slate-500">
-                                    Student: <strong className="text-slate-800">{reviewingReq.studentName}</strong> (PRN: {reviewingReq.studentPrn})
+                                <h3 className="font-bold text-sm text-[#383838]">Review Student Leave Request</h3>
+                                <p className="text-[11px] text-[#727272]">
+                                    Student: <strong className="text-[#383838]">{reviewingReq.studentName}</strong> (PRN: {reviewingReq.studentPrn})
                                 </p>
                             </div>
                             <button
                                 onClick={() => setReviewingReq(null)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 cursor-pointer"
+                                className="p-1 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-200 cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         <div className="p-5 space-y-4 text-xs">
-                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2] space-y-1.5">
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Dates of Absence:</span>
-                                    <span className="font-bold font-mono text-slate-800">{(reviewingReq.absentDates || []).join(', ')}</span>
+                                    <span className="text-[#727272]">Dates of Absence:</span>
+                                    <span className="font-bold font-mono text-[#383838]">{(reviewingReq.absentDates || []).join(', ')}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Reason Category:</span>
-                                    <span className="font-semibold text-slate-800">{reviewingReq.reason}</span>
+                                    <span className="text-[#727272]">Reason Category:</span>
+                                    <span className="font-semibold text-[#383838]">{reviewingReq.reason}</span>
                                 </div>
                                 {reviewingReq.description && (
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500">Student Explanation:</span>
-                                        <span className="italic text-slate-700 max-w-[240px] text-right truncate" title={reviewingReq.description}>"{reviewingReq.description}"</span>
+                                        <span className="text-[#727272]">Student Explanation:</span>
+                                        <span className="italic text-[#383838] max-w-[240px] text-right truncate" title={reviewingReq.description}>"{reviewingReq.description}"</span>
                                     </div>
                                 )}
                                 {reviewingReq.missedSubjects && reviewingReq.missedSubjects.length > 0 && (
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500">Affected Course:</span>
-                                        <span className="font-semibold text-blue-700">{reviewingReq.missedSubjects.map(m => m.subjectName).filter(Boolean).join(', ') || 'General'}</span>
+                                        <span className="text-[#727272]">Affected Course:</span>
+                                        <span className="font-semibold text-[#174073]">{reviewingReq.missedSubjects.map(m => m.subjectName).filter(Boolean).join(', ') || 'General'}</span>
                                     </div>
                                 )}
                             </div>
 
                             {reviewingReq.proofFileName && (
-                                <div className="flex items-center justify-between p-2.5 rounded-xl border border-blue-100 bg-blue-50/60">
+                                <div className="flex items-center justify-between p-2.5 rounded-xl border border-[#D9ECFF] bg-[#DEEDFC]/60">
                                     <div className="flex items-center gap-2">
-                                        <FileText className="w-4 h-4 text-blue-600" />
-                                        <span className="font-semibold text-slate-800 truncate max-w-[200px]">{reviewingReq.proofFileName}</span>
+                                        <FileText className="w-4 h-4 text-[#0073E6]" />
+                                        <span className="font-semibold text-[#383838] truncate max-w-[200px]">{reviewingReq.proofFileName}</span>
                                     </div>
                                     <button
                                         type="button"
@@ -3090,7 +3090,7 @@ const AttendanceAnalytics = () => {
                                             setDocPreviewUrl(getNcProofUrl(reviewingReq));
                                             setDocPreviewName(reviewingReq.proofFileName);
                                         }}
-                                        className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
+                                        className="px-2.5 py-1 rounded-lg bg-[#0073E6] hover:bg-[#174073] text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
                                     >
                                         <Eye className="w-3.5 h-3.5" />
                                         <span>Preview Document</span>
@@ -3099,7 +3099,7 @@ const AttendanceAnalytics = () => {
                             )}
 
                             <div className="space-y-1.5">
-                                <label className="font-bold text-slate-700">Review Decision</label>
+                                <label className="font-bold text-[#383838]">Review Decision</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         type="button"
@@ -3107,7 +3107,7 @@ const AttendanceAnalytics = () => {
                                         className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                                             reviewDecision === 'APPROVED'
                                                 ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30'
-                                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                                                : 'bg-white border border-[#E2E2E2] text-[#383838] hover:bg-slate-50'
                                         }`}
                                     >
                                         <CheckCircle2 className="w-4 h-4" /> Approve Leave
@@ -3118,7 +3118,7 @@ const AttendanceAnalytics = () => {
                                         className={`p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                                             reviewDecision === 'REJECTED'
                                                 ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-600/30'
-                                                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                                                : 'bg-white border border-[#E2E2E2] text-[#383838] hover:bg-slate-50'
                                         }`}
                                     >
                                         <XCircle className="w-4 h-4" /> Reject Request
@@ -3128,8 +3128,8 @@ const AttendanceAnalytics = () => {
 
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <label className="font-bold text-slate-700">Faculty Remarks / Justification</label>
-                                    <span className="text-[10px] text-slate-400">Optional notes</span>
+                                    <label className="font-bold text-[#383838]">Faculty Remarks / Justification</label>
+                                    <span className="text-[10px] text-[#727272]">Optional notes</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5 pb-1">
                                     {[
@@ -3142,7 +3142,7 @@ const AttendanceAnalytics = () => {
                                             key={idx}
                                             type="button"
                                             onClick={() => setReviewComment(preset)}
-                                            className="text-[10px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60 transition cursor-pointer"
+                                            className="text-[10px] font-medium bg-slate-100 hover:bg-slate-200 text-[#383838] px-2 py-0.5 rounded-md border border-[#E2E2E2] transition cursor-pointer"
                                         >
                                             {preset}
                                         </button>
@@ -3153,15 +3153,15 @@ const AttendanceAnalytics = () => {
                                     onChange={(e) => setReviewComment(e.target.value)}
                                     placeholder="Add approval note, conditional remarks, or rejection reason..."
                                     rows={2}
-                                    className="w-full text-xs bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500 transition"
+                                    className="w-full text-xs bg-slate-50/50 hover:bg-white focus:bg-white border border-[#E2E2E2] rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500 transition"
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                            <div className="flex justify-end gap-2 pt-2 border-t border-[#E2E2E2]">
                                 <button
                                     type="button"
                                     onClick={() => setReviewingReq(null)}
-                                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                    className="px-4 py-2 rounded-xl text-xs font-semibold text-[#383838] hover:bg-slate-100 transition cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -3169,7 +3169,7 @@ const AttendanceAnalytics = () => {
                                     type="button"
                                     onClick={handleTeacherReviewNc}
                                     disabled={isSubmittingReview}
-                                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition disabled:opacity-50"
+                                    className="px-5 py-2 rounded-xl bg-[#0073E6] hover:bg-[#174073] text-white text-xs font-bold shadow-xs cursor-pointer transition disabled:opacity-50"
                                 >
                                     {isSubmittingReview ? 'Submitting...' : 'Confirm Decision'}
                                 </button>

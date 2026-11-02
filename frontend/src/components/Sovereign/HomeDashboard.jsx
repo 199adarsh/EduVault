@@ -646,8 +646,8 @@ const HomeDashboard = () => {
             <div className="w-12 h-12 rounded-xl bg-surface-subtle-blue flex items-center justify-center mb-2">
               <span className="material-symbols-outlined text-[24px] text-primary">shield</span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-text-primary">CampusAxis Student Portal</h2>
-            <p className="text-xs text-text-secondary max-w-xs leading-normal">
+            <h2 className="text-xl font-bold tracking-tight text-text-primary text-balance">CampusAxis Student Portal</h2>
+            <p className="text-xs text-text-secondary max-w-xs leading-normal text-pretty">
               Enter your college PRN and Date of Birth to view your attendance, marks, and notes.
             </p>
           </div>
@@ -780,7 +780,7 @@ const HomeDashboard = () => {
               <button
                 type="submit"
                 disabled={syncing}
-                className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50 cursor-pointer"
               >
                 <span>Login as Teacher</span>
               </button>
@@ -818,7 +818,7 @@ const HomeDashboard = () => {
               <button
                 type="submit"
                 disabled={syncing}
-                className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="w-full mt-2 inline-flex items-center justify-center rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white py-2.5 shadow-sm transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50 cursor-pointer"
               >
                 <span>Sign In &amp; Sync</span>
               </button>
@@ -833,47 +833,45 @@ const HomeDashboard = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-canvas-bg text-text-primary w-full max-w-full overflow-x-hidden min-w-0">
-      {/* Top Header */}
-      <header className="hidden md:flex sticky top-0 z-40 h-16 bg-surface-card/95 backdrop-blur-md px-6 lg:px-8 items-center justify-between border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4 flex-1 max-w-lg">
+      {/* Top Header - Unstop Pill Style */}
+      <header className="hidden md:flex sticky top-0 z-40 h-16 bg-[#FFFFFF] px-6 lg:px-8 items-center justify-between border-b border-[#E2E2E2] shrink-0">
+        <div className="flex items-center gap-4 flex-1 max-w-md">
           <div className="relative w-full">
-            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272] text-[18px]">search</span>
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              className="w-full h-9 pl-10 pr-4 rounded-xl bg-slate-50 border border-border-subtle text-text-primary placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              className="w-full h-10 pl-10 pr-4 rounded-full bg-[#FFFFFF] border border-[#E2E2E2] text-[#383838] placeholder:text-[#727272] text-sm focus:outline-none focus:border-[#0073E6] focus:ring-1 focus:ring-[#0073E6] transition-all font-normal"
               placeholder="Search courses, roadmaps, notices..."
               type="text"
             />
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle-blue text-primary text-xs font-semibold">
-            <span className="material-symbols-outlined text-[16px]">school</span>
-            {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? 'Faculty Portal' : 'For Students'}
-          </span>
+        <div className="flex items-center gap-3">
+
           {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (
-            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-status-success-bg text-status-success-text text-xs font-semibold">
-              <span className="material-symbols-outlined text-[15px]">task_alt</span>Attendance {stats.overall}%
+            <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D9ECFF] text-[#174073] text-xs font-semibold tabular-nums border border-[#D9ECFF]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0073E6]"></span>
+              Attendance {stats.overall}%
             </span>
           )}
           <div className="relative" ref={topHeaderCalendarRef}>
             <button
               type="button"
               onClick={() => setShowHeaderCalendar(prev => !prev)}
-              className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
+              className={`relative w-9 h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
                 showHeaderCalendar
-                  ? 'bg-blue-50 border-blue-300 text-primary'
-                  : 'bg-slate-50 hover:bg-slate-100 border-border-subtle text-text-secondary hover:text-text-primary'
+                  ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
+                  : 'bg-[#FFFFFF] hover:bg-[#DEEDFC]/40 border-[#E2E2E2] text-[#383838]'
               }`}
               title="Deadlines Calendar"
               aria-label="Upcoming Deadlines Calendar"
               aria-expanded={showHeaderCalendar}
             >
-              <CalendarIcon className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4 text-[#174073]" />
               {annoDeadlinesList.length > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#E11D48] text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
                   {annoDeadlinesList.length}
                 </span>
               )}
@@ -890,19 +888,19 @@ const HomeDashboard = () => {
 
           <button
             onClick={() => navigate('/announcements')}
-            className="relative w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 border border-border-subtle flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            className="relative w-9 h-9 rounded-full bg-[#FFFFFF] hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] flex items-center justify-center text-[#383838] transition-colors cursor-pointer"
             title="Notifications"
           >
-            <span className="material-symbols-outlined text-[20px]">notifications</span>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white"></span>
+            <span className="material-symbols-outlined text-[19px] text-[#174073]">notifications</span>
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#0073E6]"></span>
           </button>
-          <div className="flex items-center gap-3 pl-2 border-l border-border-subtle">
+          <div className="flex items-center gap-2.5 pl-3 border-l border-[#E2E2E2]">
             {profile?.image ? (
               <img
                 src={profile.image}
                 alt={formatName(profile?.name)}
                 referrerPolicy="no-referrer"
-                className="w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-border-subtle"
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-[#D9ECFF]"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   if (e.currentTarget.nextElementSibling) {
@@ -911,12 +909,12 @@ const HomeDashboard = () => {
                 }}
               />
             ) : null}
-            <div className={`w-9 h-9 rounded-full bg-primary text-white items-center justify-center font-semibold text-sm shadow-sm ${profile?.image ? 'hidden' : 'flex'}`}>
+            <div className={`w-9 h-9 rounded-full bg-[#0073E6] text-white items-center justify-center font-bold text-xs ring-2 ring-[#D9ECFF] ${profile?.image ? 'hidden' : 'flex'}`}>
               {getInitials(profile?.name)}
             </div>
             <div className="hidden lg:flex flex-col text-left">
-              <span className="text-xs font-bold text-text-primary leading-tight">{formatName(profile?.name)}</span>
-              <span className="text-[11px] text-text-secondary leading-tight mt-0.5">
+              <span className="text-xs font-semibold text-[#383838] leading-tight">{formatName(profile?.name)}</span>
+              <span className="text-[11px] text-[#727272] leading-tight mt-0.5 font-medium">
                 {[profile?.rollNo || profile?.prn, getDepartmentName(profile?.department), profile?.semester ? `Sem ${profile.semester}` : null].filter(Boolean).join(' • ')}
               </span>
             </div>
@@ -930,20 +928,18 @@ const HomeDashboard = () => {
 
 
         <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0">
-          {/* Student Profile & Hero Area */}
-          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-surface-card via-surface-card to-blue-50/40 p-4 sm:p-6 border border-border-subtle shadow-2xs w-full min-w-0">
-            <div className="absolute top-0 right-0 w-80 h-full bg-radial from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-            <div className="relative flex flex-wrap lg:flex-nowrap items-center justify-between gap-6">
-              <div className="flex items-center gap-4.5 min-w-0">
-                <div className="relative flex-shrink-0 group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-300" />
+          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop-UI Minimal) */}
+          <section className="bg-gradient-to-b from-white to-[#EDF5FD] rounded-[12px] border border-[#E2E2E2] p-4 sm:p-5 w-full min-w-0">
+            <div className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-4">
+              {/* Left Identity: Clear hierarchy, honest data, zero decorative slop */}
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="relative shrink-0">
                   {profile?.image ? (
                     <img
                       src={profile.image}
                       alt={formatName(profile?.name)}
                       referrerPolicy="no-referrer"
-                      className="relative w-14 h-14 rounded-xl object-cover ring-2 ring-white"
+                      className="w-12 h-12 rounded-full object-cover ring-1 ring-[#E2E2E2]"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         if (e.currentTarget.nextElementSibling) {
@@ -952,193 +948,150 @@ const HomeDashboard = () => {
                       }}
                     />
                   ) : null}
-                  <div className={`relative w-14 h-14 rounded-xl bg-gradient-to-tr from-primary to-blue-600 text-white items-center justify-center font-bold text-lg ring-2 ring-white ${profile?.image ? 'hidden' : 'flex'}`}>
+                  <div className={`w-12 h-12 rounded-full bg-[#0073E6] text-white items-center justify-center font-bold text-sm ring-1 ring-[#E2E2E2] ${profile?.image ? 'hidden' : 'flex'}`}>
                     {getInitials(profile?.name)}
                   </div>
-                  <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" title="Online & Synced" />
                 </div>
 
-                <div className="flex flex-col gap-1 min-w-0">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-base sm:text-xl md:text-2xl font-bold text-text-primary tracking-tight leading-snug break-words">
-                      Welcome, <span className="font-bold text-text-primary">{formatName(profile?.name)}</span>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-base sm:text-lg font-semibold text-[#383838] tracking-normal leading-tight truncate">
+                      Welcome, <span className="text-[#0073E6] font-bold">{formatName(profile?.name)}</span>
                     </h1>
-                    {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? (
-                      <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
-                        <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Teacher
-                      </span>
-                    ) : (
-                      <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80">
-                        <span className="material-symbols-outlined text-[13px] fill-1">verified</span>Verified Student
-                      </span>
-                    )}
                   </div>
 
-                  <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-text-secondary flex-wrap">
+                  {/* Clean unstop metadata chips */}
+                  <div className="flex items-center gap-2 text-xs text-[#727272] mt-1 flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
-                      <span className="inline-flex items-center gap-1 font-mono font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/60 text-[10px]">
-                        <span className="material-symbols-outlined text-[11px] text-text-secondary">badge</span>
+                      <span className="font-mono text-[#174073] font-medium">
                         {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? `ID: ${profile?.prn}` : (profile?.rollNo || profile?.prn)}
                       </span>
                     )}
                     {getDepartmentName(profile?.department) && (
-                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/70 px-2 py-0.5 rounded-full border border-slate-200/40 text-[10px]">
-                        <span className="material-symbols-outlined text-[11px]">school</span>
-                        {getDepartmentName(profile?.department)}
-                      </span>
+                      <>
+                        <span className="text-[#E2E2E2]">•</span>
+                        <span>{getDepartmentName(profile?.department)}</span>
+                      </>
                     )}
                     {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (profile?.semester || profile?.section) && (
-                      <span className="inline-flex items-center gap-1 font-medium text-text-secondary bg-slate-100/70 px-2 py-0.5 rounded-full border border-slate-200/40 text-[10px]">
-                        <span className="material-symbols-outlined text-[11px]">calendar_today</span>
-                        {[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' · ')}
-                      </span>
+                      <>
+                        <span className="text-[#E2E2E2]">•</span>
+                        <span>{[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' ')}</span>
+                      </>
                     )}
                   </div>
                 </div>
               </div>
 
+              {/* Right Key Metrics: Minimal, honest, flat unstop style */}
               {isTeacher ? (
-                <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap mt-3 lg:mt-0">
+                <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-amber-400 transition-colors duration-200 cursor-pointer group shadow-2xs"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
-                    <div className="w-7 h-7 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <span className="material-symbols-outlined text-[16px]">pending_actions</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 leading-none">
-                        <span className="text-sm font-bold text-amber-600 tracking-tight">{ncStats.pending}</span>
-                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200/60 leading-none">
-                          Action Needed
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Leave Requests Pending</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-amber-600">pending_actions</span>
+                    <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.pending}</span>
+                    <span className="text-[11px] text-[#727272]">Leave Requests</span>
                   </div>
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-emerald-400 transition-colors duration-200 cursor-pointer group shadow-2xs"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
-                    <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <span className="material-symbols-outlined text-[16px]">verified</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 leading-none">
-                        <span className="text-sm font-bold text-emerald-600 tracking-tight">{ncStats.approved}</span>
-                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60 leading-none">
-                          Approved
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Approved Leaves</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
+                    <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.approved}</span>
+                    <span className="text-[11px] text-[#727272]">Approved</span>
                   </div>
                 </div>
               ) : (
                 <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-primary/40 transition-colors duration-200 cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
-                    <div className="w-7 h-7 rounded-md bg-blue-50 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <span className="material-symbols-outlined text-[16px]">fact_check</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 leading-none">
-                        <span className="text-sm font-bold text-text-primary tracking-tight">{stats.overall}%</span>
-                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60 leading-none">
-                          {stats.overall >= 75 ? 'Optimal' : 'Review'}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Overall Attendance</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
+                    <span className="text-xs font-bold text-[#383838] tabular-nums">{stats.overall}%</span>
+                    <span className="text-[11px] text-[#727272]">Attendance</span>
                   </div>
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white border border-border-subtle hover:border-red-300 transition-colors duration-200 cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-rose-50/40 border border-[#E2E2E2] hover:border-[#E11D48]/30 transition-colors cursor-pointer"
                   >
-                    <div className="w-7 h-7 rounded-md bg-red-50 text-red-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <span className="material-symbols-outlined text-[16px]">warning</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 leading-none">
-                        <span className="text-sm font-bold text-red-600 tracking-tight">{stats.riskCount}</span>
-                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-red-50 text-red-600 border border-red-200/60 leading-none">Below 75%</span>
-                      </div>
-                      <span className="text-[10px] font-medium text-text-secondary mt-0.5 whitespace-nowrap">Low Attendance Alerts</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#E11D48]">warning</span>
+                    <span className="text-xs font-bold text-[#E11D48] tabular-nums">{stats.riskCount}</span>
+                    <span className="text-[11px] text-[#727272]">At-Risk</span>
                   </div>
                 </div>
               )}
             </div>
 
-          {/* Native Mobile Metric Cards Grid (Stitch / Unstop Style) */}
+            {/* Native Mobile Metric Cards Grid (Minimal Unstop Style) */}
             {!isTeacher && (
-              <div className="w-full grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-border-subtle lg:hidden">
+              <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden">
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-slate-50 /40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-text-secondary">Attendance</span>
-                    <span className="material-symbols-outlined text-primary text-[15px]">verified</span>
+                    <span className="text-[11px] font-normal text-[#727272]">Attendance</span>
+                    <span className="material-symbols-outlined text-[#0073E6] text-[15px]">event_available</span>
                   </div>
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-[18px] font-extrabold text-primary leading-none">{stats.overall}%</span>
+                  <div className="mt-1 flex items-baseline">
+                    <span className="text-base font-bold text-[#0073E6] leading-none tabular-nums">{stats.overall}%</span>
                   </div>
                 </div>
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-red-50  rounded-xl p-2.5 border border-red-200 dark:border-red-900/50 cursor-pointer active:scale-95 transition-transform"
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-red-600 ">Below 75%</span>
-                    <span className="material-symbols-outlined text-red-600 text-[15px]">warning</span>
+                    <span className="text-[11px] font-normal text-[#727272]">Below 75%</span>
+                    <span className="material-symbols-outlined text-[#E11D48] text-[15px]">error_outline</span>
                   </div>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-[18px] font-extrabold text-red-600 leading-none">{stats.riskCount}</span>
-                    <span className="text-[10px] text-red-500 font-medium">Subs</span>
+                    <span className="text-base font-bold text-[#E11D48] leading-none tabular-nums">{stats.riskCount}</span>
+                    <span className="text-[10px] text-[#727272]">Subs</span>
                   </div>
                 </div>
                 <div
                   onClick={() => setCiePopupOpen(true)}
-                  className="flex flex-col bg-slate-50 /40 rounded-xl p-2.5 border border-border-subtle cursor-pointer active:scale-95 transition-transform"
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-text-secondary">CIE Avg</span>
-                    <span className="material-symbols-outlined text-secondary text-[15px]">auto_graph</span>
+                    <span className="text-[11px] font-normal text-[#727272]">CIE Avg</span>
+                    <span className="material-symbols-outlined text-[#174073] text-[15px]">bar_chart</span>
                   </div>
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-[18px] font-extrabold text-text-primary leading-none">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
+                  <div className="mt-1 flex items-baseline">
+                    <span className="text-base font-bold text-[#383838] leading-none tabular-nums">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
                   </div>
                 </div>
               </div>
             )}
           </section>
 
-          {/* Urgent Broadcast Notification Banner (Stitch / Unstop Mobile Style) */}
+          {/* Urgent Broadcast Notification Banner (Unstop Mobile Style) */}
           {latestAnnouncement && (
-            <div className="lg:hidden bg-surface-card rounded-2xl p-3.5 border border-border-subtle shadow-card flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-primary flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[20px]">campaign</span>
+            <div className="lg:hidden bg-white rounded-xl p-3 border border-[#E2E2E2] flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-full bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[17px]">campaign</span>
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-wide">Announcement</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0073E6]" />
+                    <span className="text-[9px] font-bold text-[#0073E6] uppercase tracking-wide">Notice</span>
                   </div>
-                  <span className="text-xs font-bold text-text-primary leading-snug line-clamp-2 break-words mt-0.5">{latestAnnouncement.title}</span>
-                  <span className="text-[10px] text-text-secondary truncate">
+                  <span className="text-xs font-semibold text-[#383838] leading-snug line-clamp-1 truncate mt-0.5">{latestAnnouncement.title}</span>
+                  <span className="text-[10px] text-[#727272] truncate">
                     {latestAnnouncement.type || 'Notice'} • {latestAnnouncement.createdAt ? new Date(latestAnnouncement.createdAt).toLocaleDateString() : 'Recent'}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => navigate('/announcements')}
-                className="px-3.5 py-1.5 rounded-full bg-primary hover:bg-primary-hover text-white font-semibold text-xs shrink-0 shadow-xs active:opacity-90 flex items-center gap-1 cursor-pointer"
+                className="px-3.5 py-1 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white font-medium text-xs shrink-0 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <span>View</span>
                 <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
@@ -1152,24 +1105,24 @@ const HomeDashboard = () => {
             <div className="lg:col-span-7 space-y-4">
               {/* Section 1: Attendance Activity Heatmap OR Faculty NC Management */}
               {isTeacher ? (
-                <section className="bg-surface-card rounded-xl p-4 sm:p-5 border border-border-subtle space-y-3 shadow-2xs" id="faculty-nc-hub">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border-subtle gap-2">
+                <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
                         <span className="material-symbols-outlined text-[18px]">verified_user</span>
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Attendance Excuse Requests (NC)</h2>
-                        <span className="text-[11px] font-medium text-text-secondary">Review student medical and event leave submissions</span>
+                        <h2 className="text-base font-semibold text-[#383838] leading-tight">Attendance Excuse Requests (NC)</h2>
+                        <span className="text-xs font-normal text-[#727272]">Review student submissions</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                         {ncStats.pending} Pending
                       </span>
                       <button
                         onClick={fetchFacultyNc}
-                        className="p-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-slate-100 transition cursor-pointer"
+                        className="p-1 rounded-full text-[#727272] hover:text-[#383838] hover:bg-[#DEEDFC]/40 transition cursor-pointer"
                         title="Refresh NC Requests"
                       >
                         <span className="material-symbols-outlined text-[16px]">refresh</span>
@@ -1335,37 +1288,37 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               ) : (
-                <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden" id="attendance-radar">
-                  <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden" id="attendance-radar">
+                  <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2]">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[17px]">calendar_month</span>
+                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Attendance Activity</h2>
-                        <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Records</span>
+                        <h2 className="text-base font-semibold text-[#383838] leading-tight">Attendance Activity</h2>
+                        <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Records</span>
                       </div>
                     </div>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                      {totalSessionsRecorded} Sessions
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#DEEDFC]/60 text-[#174073] border border-[#D9ECFF]">
+                      <span className="tabular-nums font-bold text-[#0073E6] mr-1">{totalSessionsRecorded}</span> Sessions
                     </span>
                   </div>
 
-                  <div className="mt-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <span className="text-[11px] font-bold text-text-primary">Attendance Heatmap</span>
-                      <div className="flex items-center gap-2.5 text-[10px] text-text-secondary">
-                        <div className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]"></span>
-                          <span className="font-medium">Present</span>
+                  <div className="mt-3.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                      <span className="text-xs font-semibold text-[#383838]">Attendance Distribution</span>
+                      <div className="flex items-center gap-3 text-[11px] text-[#727272] font-normal">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#30a14e]"></span>
+                          <span>Present</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-[2px] bg-[#f85149]"></span>
-                          <span className="font-medium">Absent</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48]"></span>
+                          <span>Absent</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-[2px] bg-slate-100 border border-border-subtle"></span>
-                          <span className="font-medium">Holiday</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#E2E2E2]"></span>
+                          <span>Off Day</span>
                         </div>
                       </div>
                     </div>
@@ -1379,15 +1332,15 @@ const HomeDashboard = () => {
               <HackathonsFeed />
 
               {/* Section 3: Milestones & Events */}
-              <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
+              <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[17px]">flag</span>
+                    <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
                     </div>
                     <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Deadlines &amp; Events</h2>
-                      <span className="text-[11px] font-medium text-text-secondary">Academic Schedule</span>
+                      <h2 className="text-base font-semibold text-[#383838] leading-tight">Deadlines &amp; Events</h2>
+                      <span className="text-xs font-normal text-[#727272]">Academic Schedule</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1395,18 +1348,18 @@ const HomeDashboard = () => {
                       <button
                         type="button"
                         onClick={() => setShowHomeCalendar(prev => !prev)}
-                        className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shadow-2xs ${
+                        className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                           showHomeCalendar
-                            ? 'bg-blue-50 border-blue-300 text-primary'
-                            : 'bg-white border-border-subtle hover:bg-slate-50 text-text-primary'
+                            ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
+                            : 'bg-white border-[#E2E2E2] hover:bg-[#DEEDFC]/40 text-[#383838]'
                         }`}
                         title="View Announcements Deadlines Calendar"
                         aria-expanded={showHomeCalendar}
                       >
-                        <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                        <CalendarIcon className="w-3.5 h-3.5 text-[#0073E6]" />
                         <span className="hidden sm:inline">Calendar</span>
                         {annoDeadlinesList.length > 0 && (
-                          <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-bold">
+                          <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-[#E11D48] text-white text-[10px] font-bold">
                             {annoDeadlinesList.length}
                           </span>
                         )}
@@ -1424,7 +1377,7 @@ const HomeDashboard = () => {
 
                     <button
                       onClick={() => setShowAddForm(!showAddForm)}
-                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shadow-xs"
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-medium whitespace-nowrap transition-all shadow-xs cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[14px]">{showAddForm ? 'close' : 'add'}</span>
                       <span>{showAddForm ? 'Cancel' : 'Add Event'}</span>
@@ -1467,7 +1420,7 @@ const HomeDashboard = () => {
                         onClick={handleAddMilestone}
                         className="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg transition-colors border border-primary cursor-pointer"
                       >
-                        SAVE
+                        Save
                       </button>
                     </div>
                   </div>
@@ -1489,15 +1442,14 @@ const HomeDashboard = () => {
                               <p className="text-xs font-bold text-text-primary truncate">{item.title}</p>
                               {item.isAnnouncement ? (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 mt-0.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                                   Announcement Deadline
                                 </span>
                               ) : item.description ? (
                                 <p className="text-[11px] text-text-secondary truncate mt-0.5">{item.description}</p>
                               ) : (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 mt-0.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  Scheduled
+                                  Academic
                                 </span>
                               )}
                             </div>
@@ -1516,10 +1468,17 @@ const HomeDashboard = () => {
                     })}
                   </div>
                 ) : (
-                  <div className="mt-3 p-5 rounded-lg bg-slate-50 border border-border-subtle flex flex-col items-center justify-center text-center">
+                  <div className="mt-3 p-5 rounded-xl bg-slate-50/70 border border-dashed border-border-subtle flex flex-col items-center justify-center text-center">
                     <span className="material-symbols-outlined text-[22px] text-text-secondary/70 mb-1.5">event_upcoming</span>
                     <p className="text-xs font-bold text-text-primary">No Upcoming Deadlines</p>
-                    <p className="text-[11px] text-text-secondary mt-0.5 max-w-xs">Track key academic deadlines, lab submissions, and tests.</p>
+                    <p className="text-[11px] text-text-secondary mt-0.5 max-w-xs text-pretty">Track key academic deadlines, lab submissions, and tests.</p>
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-border-subtle text-xs font-semibold text-text-primary transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] shadow-2xs cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[14px] text-primary">add</span>
+                      <span>Add Milestone</span>
+                    </button>
                   </div>
                 )}
               </section>
@@ -1527,106 +1486,129 @@ const HomeDashboard = () => {
 
             {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
             <div className="lg:col-span-5 space-y-4">
-              {/* Section 4: Broadcasts */}
-              <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 min-w-0 w-full">
+              {/* Section 4: Campus Announcements Feed (Desktop Only) */}
+              <section className="hidden lg:block bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[17px]">campaign</span>
+                    <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[18px]">campaign</span>
                     </div>
                     <div>
-                      <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Campus Announcements</h2>
-                      <span className="text-[11px] font-medium text-text-secondary">Latest Updates</span>
+                      <h2 className="text-base font-semibold text-[#383838] leading-tight">Campus Announcements</h2>
+                      <span className="text-xs font-normal text-[#727272]">Latest Updates</span>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Live
-                  </span>
+                  <button
+                    onClick={() => navigate('/announcements')}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-[#0073E6] hover:bg-[#D9ECFF]/50 border border-transparent hover:border-[#D9ECFF] transition-all cursor-pointer"
+                  >
+                    <span>View All</span>
+                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  </button>
                 </div>
 
-                {/* Single Row Compact Notice Banner */}
-                {latestAnnouncement ? (
-                  <div className="mt-2.5 p-2 px-3 rounded-lg bg-white hover:bg-slate-50 border border-border-subtle transition-all flex items-center justify-between gap-3 shadow-2xs">
-                    <div className="flex items-center gap-2 min-w-0">
-                      {/* Priority Circle: Red / Green / Yellow */}
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${latestAnnouncement.colorTag === 'red'
-                          ? 'bg-rose-500 ring-2 ring-rose-200'
-                          : latestAnnouncement.colorTag === 'green'
-                            ? 'bg-emerald-500 ring-2 ring-emerald-200'
-                            : latestAnnouncement.colorTag === 'yellow' || latestAnnouncement.colorTag === 'amber'
-                              ? 'bg-amber-500 ring-2 ring-amber-200'
-                              : 'bg-blue-500 ring-2 ring-blue-200'
-                          }`}
-                        title={latestAnnouncement.colorTag || 'Notice'}
-                      />
-                      <h3 className="text-xs font-semibold text-text-primary leading-snug line-clamp-2 break-words flex-1 min-w-0">
-                        {latestAnnouncement.title}
-                      </h3>
-                    </div>
+                {/* Announcement Items List */}
+                <div className="mt-2 divide-y divide-[#E2E2E2]">
+                  {announcements && announcements.length > 0 ? (
+                    announcements.slice(0, 3).map((item, idx) => (
+                      <div
+                        key={item.id || idx}
+                        onClick={() => navigate('/announcements')}
+                        className="py-3 first:pt-2 last:pb-1 flex items-center justify-between gap-3 group cursor-pointer"
+                      >
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <span
+                            className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                              item.colorTag === 'red'
+                                ? 'bg-[#E11D48]'
+                                : item.colorTag === 'green'
+                                  ? 'bg-emerald-500'
+                                  : item.colorTag === 'yellow' || item.colorTag === 'amber'
+                                    ? 'bg-amber-500'
+                                    : 'bg-[#0073E6]'
+                            }`}
+                            title={item.colorTag || 'Notice'}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <h3 className="text-xs font-semibold text-[#383838] group-hover:text-[#0073E6] transition-colors truncate">
+                              {item.title}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-[#727272]">
+                              <span className="px-1.5 py-0.2 rounded bg-[#DEEDFC] text-[#174073] font-medium">
+                                {item.type || 'Notice'}
+                              </span>
+                              {item.createdAt && (
+                                <span>{new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                              )}
+                              {item.deadline && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-amber-600 font-medium">Due {new Date(item.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
 
-                    <button
-                      onClick={() => navigate('/announcements')}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-primary hover:text-white hover:bg-primary bg-blue-50 border border-blue-200/80 transition-all cursor-pointer shrink-0"
-                    >
-                      <span>View</span>
-                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-2.5 py-2 px-3 rounded-lg bg-slate-50 border border-border-subtle text-center text-xs text-text-secondary">
-                    No active campus announcements.
-                  </div>
-                )}
+                        <span className="material-symbols-outlined text-[15px] text-[#727272] group-hover:text-[#0073E6] group-hover:translate-x-0.5 transition-all shrink-0">
+                          chevron_right
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-4 text-center text-xs text-[#727272]">
+                      No active campus announcements.
+                    </div>
+                  )}
+                </div>
               </section>
 
               {/* Section 5: CIE Scores */}
               {!isTeacher && (
-                <section className="bg-surface-card rounded-2xl p-4 sm:p-5 border border-border-subtle shadow-2xs w-full min-w-0 overflow-hidden">
-                  <div className="flex items-center justify-between pb-3 border-b border-border-subtle gap-2 min-w-0 w-full">
+                <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary border border-blue-100 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[17px]">analytics</span>
+                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[18px]">bar_chart</span>
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Internal Marks (CIE)</h2>
-                        <span className="text-[11px] font-medium text-text-secondary">Semester {profile?.semester || 5} Internal Assessment</span>
+                        <h2 className="text-base font-semibold text-[#383838] leading-tight">Internal Marks (CIE)</h2>
+                        <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Assessment</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Compact Subject Scores Progress List */}
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-3.5 space-y-2.5">
                     {displayCieList.length > 0 ? (
                       displayCieList.slice(0, 4).map((sub, i) => {
                         const cie = parseFloat(sub.cie) || 0;
                         const maxCie = 50;
                         const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
-                        const barColor = i === 0 ? "bg-primary" : i === 1 ? "bg-teal-600" : "bg-badge-purple-text";
-                        const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-primary bg-blue-50 border-blue-200" : "text-amber-700 bg-amber-50 border-amber-200";
-                        const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Needs Attention";
+                        const barColor = i === 0 ? "bg-[#0073E6]" : i === 1 ? "bg-[#6A5AF9]" : "bg-[#174073]";
+                        const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-[#0073E6] bg-[#D9ECFF] border-[#0073E6]/20" : "text-amber-700 bg-amber-50 border-amber-200";
+                        const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Needs Review";
 
                         return (
-                          <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-border-subtle hover:border-slate-300 transition-all">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-bold text-text-primary tracking-tight truncate flex-1 min-w-0">
+                          <div key={sub.id || i} className="p-3.5 rounded-xl bg-white border border-[#E2E2E2] hover:border-[#4A9AF0] transition-all duration-150">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-semibold text-[#383838] tracking-tight truncate flex-1 min-w-0">
                                 {sub.name}
                               </span>
-                              <span className="text-xs font-extrabold text-text-primary">
-                                {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] font-semibold text-text-secondary">/ 50</span>
+                              <span className="text-xs font-bold text-[#383838] tabular-nums">
+                                {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] font-normal text-[#727272]">/ 50</span>
                               </span>
                             </div>
-                            <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div className="w-full h-2 rounded-full bg-[#DEEDFC] overflow-hidden">
                               <div
                                 className={cn("h-full rounded-full transition-all duration-500", barColor)}
                                 style={{ width: cie > 0 ? `${pct}%` : '0%' }}
                               />
                             </div>
-                            <div className="flex justify-between items-center mt-1.5 text-[10px]">
-                              <span className="font-medium text-text-secondary">{cie > 0 ? `${pct}% Score` : 'Pending evaluation'}</span>
+                            <div className="flex justify-between items-center mt-2 text-[11px]">
+                              <span className="font-normal text-[#727272]">{cie > 0 ? `${pct}% Score` : 'Pending evaluation'}</span>
                               {cie > 0 && (
-                                <span className={cn("px-1.5 py-0.2 rounded text-[9px] font-bold border", tagColor)}>
+                                <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium border", tagColor)}>
                                   {statusLabel}
                                 </span>
                               )}
@@ -1635,17 +1617,17 @@ const HomeDashboard = () => {
                         );
                       })
                     ) : (
-                      <div className="py-5 text-center text-xs text-text-secondary bg-slate-50 border border-border-subtle rounded-lg">
+                      <div className="py-5 text-center text-xs text-[#727272] bg-slate-50 border border-[#E2E2E2] rounded-lg">
                         No internal marks available yet.
                       </div>
                     )}
                   </div>
 
                   {/* All Subjects CTA */}
-                  <div className="mt-2.5 pt-0.5">
+                  <div className="mt-3.5 pt-0.5">
                     <button
                       onClick={() => setCiePopupOpen(true)}
-                      className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50  dark:hover:bg-slate-700/80 text-primary border border-border-subtle text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                      className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-[#DEEDFC]/40 text-[#0073E6] border border-[#0073E6] text-xs font-medium transition-colors flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>View All Internal Marks</span>
                       <span className="material-symbols-outlined text-[14px]">chevron_right</span>
@@ -1665,38 +1647,38 @@ const HomeDashboard = () => {
           onClick={() => setCiePopupOpen(false)}
         >
           <div
-            className="relative w-full max-w-4xl max-h-[90vh] bg-surface-card border border-border-subtle rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+            className="relative w-full max-w-4xl max-h-[90vh] bg-white border border-[#E2E2E2] rounded-2xl overflow-hidden flex flex-col shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Exportable Canvas Container */}
-            <div ref={cieCardRef} className="bg-white text-slate-900 flex flex-col overflow-hidden">
+            <div ref={cieCardRef} className="bg-white text-[#383838] flex flex-col overflow-hidden">
               {/* Modal Header with Student Identity Badge */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-slate-200 gap-3 bg-white">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 border-b border-[#E2E2E2] gap-3 bg-white">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
-                    <span className="material-symbols-outlined text-[22px]">analytics</span>
+                  <div className="w-10 h-10 rounded-xl bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0 border border-[#D9ECFF]">
+                    <span className="material-symbols-outlined text-[20px]">bar_chart</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-base font-bold text-slate-900 leading-tight">Internal Assessment Scores</h3>
-                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                      <h3 className="text-base font-semibold text-[#383838] leading-tight">Internal Assessment Scores</h3>
+                      <span className="px-2.5 py-0.5 text-[10px] font-medium rounded-full bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]">
                         {profile?.semester || 'Semester'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">Continuous Internal Evaluation • Student Records</p>
+                    <p className="text-[11px] text-[#727272] font-normal mt-0.5">Continuous Internal Evaluation • Student Records</p>
                   </div>
                 </div>
 
                 {/* Verified Student Badge on Exported Image */}
-                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold uppercase shrink-0 shadow-xs">
+                <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-[#DEEDFC]/30 border border-[#E2E2E2] shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#0073E6] text-white flex items-center justify-center text-xs font-semibold uppercase shrink-0">
                     {profile?.name ? profile.name.charAt(0) : 'S'}
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-slate-900 truncate">
+                    <span className="text-xs font-semibold text-[#383838] truncate">
                       {formatName(profile?.name)}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-medium truncate">
+                    <span className="text-[10px] text-[#727272] truncate">
                       PRN: {profile?.prn || profile?.rollNo || '-'} • {getDepartmentName(profile?.department) || profile?.department || 'Engineering'}
                     </span>
                   </div>
@@ -1704,7 +1686,7 @@ const HomeDashboard = () => {
               </div>
 
               {/* Modal Stats */}
-              <div className="grid grid-cols-3 gap-3 p-5 border-b border-slate-200 bg-slate-50/70">
+              <div className="grid grid-cols-3 gap-2 p-3 sm:p-4 border-b border-[#E2E2E2] bg-white">
                 {(() => {
                   const subjectsWithCie = subjectRegistry.filter(sub => sub.cie && parseFloat(sub.cie) > 0);
                   const avgCie = subjectsWithCie.length > 0
@@ -1716,18 +1698,18 @@ const HomeDashboard = () => {
                     { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
                     { value: highScorers, label: 'Scored ≥40' }
                   ].map((stat, i) => (
-                    <div key={i} className="text-center p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                      <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{stat.label}</p>
+                    <div key={i} className="text-center p-2.5 bg-white rounded-lg border border-[#E2E2E2]">
+                      <p className="text-lg sm:text-2xl font-bold text-[#383838] tracking-tight">{stat.value}</p>
+                      <p className="text-[9px] sm:text-[10px] text-[#727272] uppercase tracking-wider font-medium mt-0.5">{stat.label}</p>
                     </div>
                   ));
                 })()}
               </div>
 
               {/* Modal Chart */}
-              <div className="p-6 overflow-y-auto max-h-[46vh] bg-white">
+              <div className="p-3 sm:p-5 overflow-y-auto max-h-[46vh] bg-white">
                 <div className="w-full overflow-x-auto pb-2">
-                  <div className="flex items-end justify-between gap-2 min-w-[620px] md:min-w-full min-h-[240px] p-4 sm:p-6 bg-slate-50/80 rounded-xl border border-slate-200">
+                  <div className="flex items-end justify-between gap-2 min-w-[620px] md:min-w-full min-h-[200px] p-3 sm:p-5 bg-white rounded-lg border border-[#E2E2E2]">
                     {subjectRegistry.length > 0 ? (
                       subjectRegistry.map((sub, i) => {
                         const cie = parseFloat(sub.cie) || 0;
@@ -1738,25 +1720,18 @@ const HomeDashboard = () => {
                         return (
                           <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-1.5">
                             <span className={cn(
-                              "text-[11px] sm:text-xs font-bold whitespace-nowrap",
-                              cie === 0 ? "text-slate-400" : isHigh ? "text-emerald-600" : isGood ? "text-primary" : "text-amber-600"
+                              "text-[11px] font-semibold whitespace-nowrap",
+                              cie === 0 ? "text-[#727272]" : isHigh ? "text-emerald-600" : isGood ? "text-[#0073E6]" : "text-amber-600"
                             )}>
-                              {cie > 0 ? `${cie}` : '-'} <span className="text-[9px] sm:text-[10px] text-slate-400 font-normal">/50</span>
+                              {cie > 0 ? `${cie}` : '-'} <span className="text-[9px] text-[#727272] font-normal">/50</span>
                             </span>
 
-                            {/* Bar container with striped background */}
-                            <div
-                              className="relative flex h-36 w-full items-end overflow-hidden rounded-lg bg-slate-100 border border-slate-200/50"
-                              style={{
-                                backgroundImage:
-                                  'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(226, 232, 240, 0.6) 4px, rgba(226, 232, 240, 0.6) 8px)',
-                                backgroundSize: '16px 16px',
-                              }}
-                            >
+                            {/* Bar container */}
+                            <div className="relative flex h-30 w-full items-end overflow-hidden rounded-t-xl rounded-b-xs bg-[#DEEDFC]">
                               <motion.div
                                 className={cn(
-                                  'relative w-full rounded-t-md transition-colors',
-                                  cie === 0 ? 'bg-slate-300' : isHigh ? 'bg-emerald-500 shadow-xs' : isGood ? 'bg-primary shadow-xs' : 'bg-amber-500 shadow-xs'
+                                  'relative w-full rounded-t-xl rounded-b-xs transition-colors',
+                                  cie === 0 ? 'bg-slate-300' : isHigh ? 'bg-emerald-500' : isGood ? 'bg-[#0073E6]' : 'bg-amber-500'
                                 )}
                                 initial={{ height: '0%' }}
                                 animate={{ height: `${cie > 0 ? Math.max(heightPct, 14) : 6}%` }}
@@ -1766,18 +1741,17 @@ const HomeDashboard = () => {
                                   ease: [0.22, 1, 0.36, 1],
                                 }}
                               >
-                                <div className="absolute left-1/2 top-1 h-1 w-1/3 -translate-x-1/2 rounded-full bg-white/60" />
-                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-bold text-white tabular-nums drop-shadow-xs">
+                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-bold text-white tabular-nums">
                                   {heightPct}%
                                 </span>
                               </motion.div>
                             </div>
 
                             <div className="text-center flex flex-col items-center mt-1 w-full">
-                              <p className="text-[10px] sm:text-[11px] font-bold text-slate-900 truncate w-full text-center" title={sub.code || sub.name}>
+                              <p className="text-[10px] font-semibold text-[#383838] truncate w-full text-center" title={sub.code || sub.name}>
                                 {getSubjectAbbreviation(sub.name) || sub.code || sub.name.slice(0, 8)}
                               </p>
-                              <p className="text-[9px] text-slate-500 truncate w-full text-center" title={sub.name}>
+                              <p className="text-[9px] text-[#727272] truncate w-full text-center" title={sub.name}>
                                 {sub.name}
                               </p>
                             </div>
@@ -1785,29 +1759,29 @@ const HomeDashboard = () => {
                         );
                       })
                     ) : (
-                      <p className="text-xs text-slate-500 font-medium">No internal marks recorded yet.</p>
+                      <p className="text-xs text-[#727272] font-normal">No internal marks recorded yet.</p>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Modal Legend & Verification Stamp inside Card */}
-              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-3 border-t border-slate-200 bg-slate-50 text-[10px] text-slate-500 gap-2">
-                <div className="flex items-center gap-4 uppercase tracking-wider font-bold">
+              <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-2.5 border-t border-[#E2E2E2] bg-white text-[10px] text-[#727272] gap-2">
+                <div className="flex items-center gap-3 uppercase tracking-wider font-medium flex-wrap">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     ≥40 Excellent
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
+                    <span className="w-2 h-2 rounded-full bg-[#0073E6]" />
                     ≥30 Good
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-amber-600" />
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
                     &lt;30 Needs Improvement
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[10px] text-[#727272] font-mono">
                   Internal Assessment Report • CampusAxis
                 </span>
               </div>
@@ -1907,11 +1881,7 @@ const HomeDashboard = () => {
                             {/* Bar container with striped background */}
                             <div
                               className="relative flex h-36 w-full items-end overflow-hidden rounded-lg bg-slate-100 border border-slate-200/50"
-                              style={{
-                                backgroundImage:
-                                  'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(226, 232, 240, 0.6) 4px, rgba(226, 232, 240, 0.6) 8px)',
-                                backgroundSize: '16px 16px',
-                              }}
+
                             >
                               <div
                                 className={cn(
@@ -1968,25 +1938,25 @@ const HomeDashboard = () => {
             </div>
 
             {/* Modal Controls / Action Bar */}
-            <div className="flex items-center justify-between p-4 border-t border-border-subtle bg-surface-card">
-              <span className="text-xs text-text-secondary font-medium hidden sm:inline">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-t border-[#E2E2E2] bg-white">
+              <span className="text-xs text-[#727272] font-normal hidden sm:inline">
                 Download your marks card with student details
               </span>
-              <div className="flex items-center gap-2.5 ml-auto">
+              <div className="flex items-center gap-2.5 ml-auto w-full sm:w-auto justify-end">
                 <button
                   onClick={handleExportCie}
                   disabled={exportingCie}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-medium rounded-full transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
                   title="Download or share marks card as image"
                 >
-                  <span className="material-symbols-outlined text-[17px]">
-                    {exportingCie ? 'hourglass_top' : 'share'}
+                  <span className="material-symbols-outlined text-[16px]">
+                    {exportingCie ? 'hourglass_top' : 'download'}
                   </span>
                   <span>{exportingCie ? 'Generating...' : 'Download Marks Card'}</span>
                 </button>
                 <button
                   onClick={() => setCiePopupOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer border border-border-subtle"
+                  className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[#383838] text-xs font-medium rounded-full transition-colors cursor-pointer border border-[#E2E2E2]"
                 >
                   Close
                 </button>

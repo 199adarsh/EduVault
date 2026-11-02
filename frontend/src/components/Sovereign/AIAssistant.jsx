@@ -157,13 +157,13 @@ const AIAssistant = () => {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-canvas-bg font-sans text-text-primary antialiased overflow-hidden">
+        <div className="flex-1 flex flex-col h-full bg-canvas-bg font-sans text-text-[#0073E6] antialiased overflow-hidden">
             <main className="w-full px-3.5 sm:px-8 py-2.5 max-w-4xl mx-auto flex flex-col h-full overflow-hidden">
                 {/* Section Top Bar */}
-                <div className="w-full pb-3 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle shrink-0">
+                <div className="w-full pb-3 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E2E2E2] shrink-0">
                     <div>
                         <div className="flex items-center gap-2.5">
-                            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">
+                            <h1 className="text-xl sm:text-2xl font-bold text-text-[#0073E6] tracking-tight">
                                 AI Assistant
                             </h1>
                             {localStorage.getItem('eduvault_custom_gemini_key') && (
@@ -173,7 +173,7 @@ const AIAssistant = () => {
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-text-secondary mt-0.5">
+                        <p className="text-xs text-[#727272] mt-0.5">
                             Your academic AI assistant
                         </p>
                     </div>
@@ -181,7 +181,7 @@ const AIAssistant = () => {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleClearChat}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-card hover:bg-surface-subtle-blue text-text-secondary hover:text-primary transition-colors text-xs font-semibold border border-border-subtle cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-[#DEEDFC] text-[#727272] hover:text-[#0073E6] transition-colors text-xs font-semibold border border-[#E2E2E2] cursor-pointer"
                             id="clearChatBtn"
                         >
                             <span className="material-symbols-outlined text-[16px]">restart_alt</span>
@@ -189,7 +189,7 @@ const AIAssistant = () => {
                         </button>
                         <button
                             onClick={handleNewChat}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary hover:bg-primary-hover text-white font-semibold text-xs transition-all cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white font-semibold text-xs transition-all cursor-pointer"
                             id="newChatBtn"
                         >
                             <span className="material-symbols-outlined text-[16px]">add</span>
@@ -207,8 +207,8 @@ const AIAssistant = () => {
                                 <div className="flex items-start justify-end gap-3.5 max-w-2xl self-end animate-in fade-in duration-200">
                                     <div className="flex flex-col items-end gap-1.5 min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-text-secondary">{msg.time}</span>
-                                            <span className="text-xs font-semibold text-text-primary">
+                                            <span className="text-xs text-[#727272]">{msg.time}</span>
+                                            <span className="text-xs font-semibold text-text-[#0073E6]">
                                                 {formatName(profile?.name)}
                                             </span>
                                         </div>
@@ -223,43 +223,43 @@ const AIAssistant = () => {
                             ) : (
                                 /* AI Synthesis Response Bubble */
                                 <div className="flex items-start gap-3.5 max-w-3xl animate-in fade-in duration-200">
-                                    <div className="w-9 h-9 rounded-xl bg-surface-subtle-blue flex items-center justify-center text-primary shrink-0">
+                                    <div className="w-9 h-9 rounded-xl bg-[#DEEDFC] flex items-center justify-center text-[#0073E6] shrink-0">
                                         <span className="material-symbols-outlined text-[20px]">smart_toy</span>
                                     </div>
                                     <div className="flex flex-col gap-2 min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-text-primary">
+                                            <span className="text-xs font-bold text-text-[#0073E6]">
                                                 AI Study Assistant
                                             </span>
-                                            <span className="text-xs text-text-secondary">{msg.time}</span>
+                                            <span className="text-xs text-[#727272]">{msg.time}</span>
                                         </div>
                                         <div className={`rounded-2xl rounded-tl-sm p-5 space-y-3 border ${msg.isError
                                                 ? 'bg-status-danger-bg text-status-danger-text border-red-200'
-                                                : 'bg-surface-card text-text-primary border-border-subtle'
+                                                : 'bg-white text-text-[#0073E6] border-[#E2E2E2]'
                                             }`}>
                                             <div className="text-sm leading-relaxed">
                                                 <ReactMarkdown
                                                     components={{
                                                         p: ({ node, ...props }) => <p className="mb-2.5 last:mb-0 leading-relaxed" {...props} />,
-                                                        ul: ({ node, ...props }) => <ul className="list-disc list-outside ml-4 mb-2.5 space-y-1 text-text-primary" {...props} />,
-                                                        ol: ({ node, ...props }) => <ol className="list-decimal list-outside ml-4 mb-2.5 space-y-1 text-text-primary" {...props} />,
+                                                        ul: ({ node, ...props }) => <ul className="list-disc list-outside ml-4 mb-2.5 space-y-1 text-text-[#0073E6]" {...props} />,
+                                                        ol: ({ node, ...props }) => <ol className="list-decimal list-outside ml-4 mb-2.5 space-y-1 text-text-[#0073E6]" {...props} />,
                                                         li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
-                                                        h1: ({ node, ...props }) => <h1 className="text-lg font-bold text-text-primary mt-3 mb-2" {...props} />,
-                                                        h2: ({ node, ...props }) => <h2 className="text-base font-bold text-text-primary mt-3 mb-1.5" {...props} />,
-                                                        h3: ({ node, ...props }) => <h3 className="text-sm font-bold text-text-primary mt-2 mb-1" {...props} />,
-                                                        strong: ({ node, ...props }) => <strong className="font-bold text-text-primary" {...props} />,
+                                                        h1: ({ node, ...props }) => <h1 className="text-lg font-bold text-text-[#0073E6] mt-3 mb-2" {...props} />,
+                                                        h2: ({ node, ...props }) => <h2 className="text-base font-bold text-text-[#0073E6] mt-3 mb-1.5" {...props} />,
+                                                        h3: ({ node, ...props }) => <h3 className="text-sm font-bold text-text-[#0073E6] mt-2 mb-1" {...props} />,
+                                                        strong: ({ node, ...props }) => <strong className="font-bold text-text-[#0073E6]" {...props} />,
                                                         pre: ({ node, ...props }) => <pre className="bg-slate-900 text-slate-100 p-3.5 rounded-xl overflow-x-auto text-xs font-mono my-2.5 border border-slate-800" {...props} />,
                                                         code: ({ node, className, children, ...props }) => {
                                                             const isMultiLine = String(children).includes('\n');
                                                             if (!className && !isMultiLine) {
-                                                                return <code className="bg-slate-100 text-primary px-1.5 py-0.5 rounded text-xs font-mono border border-slate-200/80 font-semibold" {...props}>{children}</code>;
+                                                                return <code className="bg-slate-100 text-[#0073E6] px-1.5 py-0.5 rounded text-xs font-mono border border-[#E2E2E2]/80 font-semibold" {...props}>{children}</code>;
                                                             }
                                                             return <code className={className} {...props}>{children}</code>;
                                                         },
-                                                        blockquote: ({ node, ...props }) => <blockquote className="border-l-3 border-primary pl-3 italic text-text-secondary my-2" {...props} />,
-                                                        table: ({ node, ...props }) => <div className="overflow-x-auto my-3"><table className="min-w-full divide-y divide-border-subtle border border-border-subtle text-xs" {...props} /></div>,
-                                                        th: ({ node, ...props }) => <th className="bg-slate-50 px-3 py-2 text-left font-bold text-text-primary border-b border-border-subtle" {...props} />,
-                                                        td: ({ node, ...props }) => <td className="px-3 py-2 border-b border-border-subtle text-text-secondary" {...props} />
+                                                        blockquote: ({ node, ...props }) => <blockquote className="border-l-3 border-primary pl-3 italic text-[#727272] my-2" {...props} />,
+                                                        table: ({ node, ...props }) => <div className="overflow-x-auto my-3"><table className="min-w-full divide-y divide-border-subtle border border-[#E2E2E2] text-xs" {...props} /></div>,
+                                                        th: ({ node, ...props }) => <th className="bg-slate-50 px-3 py-2 text-left font-bold text-text-[#0073E6] border-b border-[#E2E2E2]" {...props} />,
+                                                        td: ({ node, ...props }) => <td className="px-3 py-2 border-b border-[#E2E2E2] text-[#727272]" {...props} />
                                                     }}
                                                 >
                                                     {msg.content}
@@ -267,8 +267,8 @@ const AIAssistant = () => {
                                             </div>
 
                                             {msg.confidence && (
-                                                <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-border-subtle/40">
-                                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-subtle-blue text-primary text-xs font-semibold">
+                                                <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-[#E2E2E2]/40">
+                                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#DEEDFC] text-[#0073E6] text-xs font-semibold">
                                                         <span className="material-symbols-outlined text-[15px]">verified_user</span>
                                                         <span>{Math.round(msg.confidence * 100)}% Confidence</span>
                                                     </div>
@@ -284,15 +284,15 @@ const AIAssistant = () => {
                     {/* Typing Loader */}
                     {isTyping && (
                         <div className="flex items-start gap-3.5 max-w-3xl animate-in fade-in duration-200">
-                            <div className="w-9 h-9 rounded-xl bg-surface-subtle-blue flex items-center justify-center text-primary shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-[#DEEDFC] flex items-center justify-center text-[#0073E6] shrink-0">
                                 <span className="material-symbols-outlined text-[20px] animate-pulse">smart_toy</span>
                             </div>
                             <div className="flex flex-col gap-2 min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-text-primary">AI Study Assistant</span>
-                                    <span className="text-[11px] text-text-secondary">Thinking...</span>
+                                    <span className="text-xs font-bold text-text-[#0073E6]">AI Study Assistant</span>
+                                    <span className="text-[11px] text-[#727272]">Thinking...</span>
                                 </div>
-                                <div className="bg-surface-card rounded-2xl rounded-tl-sm p-4 text-text-secondary border border-border-subtle inline-flex items-center gap-2 w-fit">
+                                <div className="bg-white rounded-2xl rounded-tl-sm p-4 text-[#727272] border border-[#E2E2E2] inline-flex items-center gap-2 w-fit">
                                     <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
                                     <span className="text-xs font-medium">Checking your course materials...</span>
                                 </div>
@@ -303,7 +303,7 @@ const AIAssistant = () => {
 
                 {/* Anchored Input Box Area */}
                 <div className="shrink-0 pt-2 pb-16 md:pb-2 bg-canvas-bg">
-                    <div className="rounded-xl bg-surface-card border border-border-subtle p-2.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                    <div className="rounded-xl bg-white border border-[#E2E2E2] p-2.5 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
                         {/* Context Header Strip */}
                         <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2">
 
@@ -312,7 +312,7 @@ const AIAssistant = () => {
                         {/* Text Input & Send Trigger */}
                         <div className="flex items-center gap-2">
                             <textarea
-                                className="w-full resize-none bg-slate-50 rounded-lg px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:bg-white border border-transparent focus:border-border-subtle transition-all"
+                                className="w-full resize-none bg-slate-50 rounded-lg px-2.5 py-1.5 text-xs text-text-[#0073E6] placeholder:text-[#727272] focus:outline-none focus:bg-white border border-transparent focus:border-[#E2E2E2] transition-all"
                                 id="aiPromptInput"
                                 placeholder="Ask a question about your subjects, notes, or exams..."
                                 rows="1"
@@ -328,7 +328,7 @@ const AIAssistant = () => {
                             <button
                                 onClick={handleSend}
                                 disabled={isTyping || !input.trim()}
-                                className="w-8 h-8 rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 shrink-0 cursor-pointer"
+                                className="w-8 h-8 rounded-lg bg-[#0073E6] hover:bg-[#4A9AF0] text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 shrink-0 cursor-pointer"
                                 id="sendPromptBtn"
                                 title="Send message"
                             >
@@ -337,13 +337,13 @@ const AIAssistant = () => {
                         </div>
 
                         {/* Micro Helper Footer */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1.5 pt-1.5 text-[10px] text-text-secondary border-t border-border-subtle/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1.5 pt-1.5 text-[10px] text-[#727272] border-t border-[#E2E2E2]/50">
                             <span className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-[12px]">keyboard</span>
                                 Enter to send • Shift + Enter for new line
                             </span>
                             <span className="flex items-center gap-1 text-[10px]">
-                                <span className="material-symbols-outlined text-[12px] text-primary">verified_user</span>
+                                <span className="material-symbols-outlined text-[12px] text-[#0073E6]">verified_user</span>
                                 AI Assistant
                             </span>
                         </div>

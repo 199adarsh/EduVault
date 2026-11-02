@@ -69,7 +69,7 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
-        <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all border border-outline-variant/20 shadow-sm">
+        <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all border border-border-subtle shadow-sm">
           {currentProfile?.image ? (
             <img src={currentProfile.image} alt="Student" className="object-cover rounded-full w-full h-full" />
           ) : (
@@ -79,16 +79,16 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
           )}
         </Avatar>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-surface-container border-outline-variant/20">
+      <DialogContent className="sm:max-w-md bg-white border-border-subtle">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">Portal Integration</DialogTitle>
-          <p className="text-xs text-on-surface-variant/60 uppercase tracking-widest font-bold">Configure Access Portal</p>
+          <p className="text-xs text-text-secondary font-medium">Configure Access Portal</p>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 py-6 border-y border-outline-variant/10 my-2">
+        <div className="flex flex-col gap-6 py-6 border-y border-border-subtle my-2">
           {/* Read-only synced info */}
           {currentProfile?.name && (
-            <div className="flex items-center gap-4 p-4 bg-surface-container-highest/20 rounded border border-outline-variant/10">
+            <div className="flex items-center gap-4 p-4 bg-white-highest/20 rounded border border-border-subtle">
               <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                 {currentProfile.image ? (
                    <img src={currentProfile.image} alt="Student" className="w-full h-full object-cover rounded-full" />
@@ -107,7 +107,7 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
 
           <div className="grid grid-cols-1 gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-1 flex items-center gap-2">
+              <label className="text-xs font-semibold text-text-primary mb-1 flex items-center gap-2">
                 <span className="material-symbols-outlined text-xs">pin</span>
                 College PRN
               </label>
@@ -115,12 +115,12 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
                 value={credentials.prn} 
                 onChange={e => setCredentials({...credentials, prn: e.target.value})} 
                 placeholder="Enter your PRN"
-                className="bg-surface-container-lowest border-outline-variant/15 focus:ring-primary/20"
+                className="bg-white-lowest border-border-subtle focus:ring-primary/20"
               />
             </div>
             
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-1 flex items-center gap-2">
+              <label className="text-xs font-semibold text-text-primary mb-1 flex items-center gap-2">
                 <span className="material-symbols-outlined text-xs">calendar_today</span>
                 Date of Birth
               </label>
@@ -128,7 +128,7 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
                 value={credentials.dob} 
                 onChange={e => setCredentials({...credentials, dob: e.target.value})} 
                 placeholder="DD-MM-YYYY"
-                className="bg-surface-container-lowest border-outline-variant/15 focus:ring-primary/20"
+                className="bg-white-lowest border-border-subtle focus:ring-primary/20"
               />
               <p className="text-[10px] text-on-surface-variant/40 selection:italic">Format: Day-Month-Year (e.g. 15-08-2004)</p>
             </div>
@@ -141,11 +141,11 @@ const ProfilePanel = ({ refreshData, currentProfile }) => {
              <span>Stored Locally</span>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="text-xs font-bold uppercase tracking-widest px-6" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="outline" className="text-xs font-semibold px-4" onClick={() => setOpen(false)}>Cancel</Button>
             <Button 
                 onClick={handleSaveAndSync} 
                 disabled={loading}
-                className="bg-primary hover:bg-primary-container text-on-primary text-xs font-bold uppercase tracking-widest px-6 shadow-lg shadow-primary/20"
+                className="bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold px-4 shadow-lg shadow-primary/20"
             >
               {loading ? 'Syncing...' : 'Save & Sync'}
             </Button>

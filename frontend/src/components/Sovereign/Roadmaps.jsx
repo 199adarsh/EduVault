@@ -88,7 +88,7 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
         </div>
         <button
           onClick={onClose}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#727272] hover:text-[#383838] hover:bg-slate-100 transition-colors cursor-pointer"
           aria-label="Close details"
         >
           <X size={16} />
@@ -101,16 +101,16 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
         <span><Clock3 size={12} /> {topic.duration}</span>
         <span><Layers3 size={12} /> {topic.level}</span>
         {matchedSubject && (
-          <span className="bg-blue-50 text-blue-700 border-blue-200">
+          <span className="bg-[#DEEDFC] text-[#174073] border-blue-200">
             <GraduationCap size={12} /> College: {matchedSubject.name || topic.collegeSubjectMatch}
           </span>
         )}
       </div>
 
       {matchedSubject && (
-        <div className="mx-5 my-2 p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-xs">
+        <div className="mx-5 my-2 p-3 rounded-xl bg-[#DEEDFC]/70 border border-blue-200 text-xs">
           <div className="flex items-center gap-1.5 font-bold text-blue-900 mb-1">
-            <Sparkles size={13} className="text-blue-600" />
+            <Sparkles size={13} className="text-[#0073E6]" />
             <span>Placement Skill Match</span>
           </div>
           <p className="text-blue-800 text-[11px] leading-relaxed">
@@ -120,7 +120,7 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
       )}
 
       <section className="detail-section">
-        <h3><GitBranch size={14} className="text-blue-600" /> Prerequisites</h3>
+        <h3><GitBranch size={14} className="text-[#0073E6]" /> Prerequisites</h3>
         {prerequisites.length > 0 ? (
           <div className="prereq-list">
             {prerequisites.map(p => {
@@ -134,20 +134,20 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
                   <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${pStatus === 'completed' ? 'bg-emerald-500' : pStatus === 'in-progress' ? 'bg-amber-500' : 'bg-slate-300'
                       }`} />
-                    <span className="font-semibold text-slate-800">{p.title}</span>
+                    <span className="font-semibold text-[#383838]">{p.title}</span>
                   </div>
-                  <span className="text-[10px] text-slate-500">{statusLabel[pStatus]}</span>
+                  <span className="text-[10px] text-[#727272]">{statusLabel[pStatus]}</span>
                 </div>
               );
             })}
           </div>
         ) : (
-          <p className="text-[11px] text-slate-400 m-0">No prerequisites — safe to start here!</p>
+          <p className="text-[11px] text-[#727272] m-0">No prerequisites — safe to start here!</p>
         )}
       </section>
 
       <section className="detail-section">
-        <h3><Target size={14} className="text-blue-600" /> What You'll Master</h3>
+        <h3><Target size={14} className="text-[#0073E6]" /> What You'll Master</h3>
         <ul className="outcome-list">
           {topic.outcomes?.map((outcome, idx) => (
             <li key={idx}>
@@ -159,7 +159,7 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
       </section>
 
       <section className="detail-section">
-        <h3><BookOpen size={14} className="text-blue-600" /> Learning Resources</h3>
+        <h3><BookOpen size={14} className="text-[#0073E6]" /> Learning Resources</h3>
         <div className="space-y-2">
           {topic.resources?.map((res, idx) => (
             <a
@@ -169,18 +169,18 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
               rel="noreferrer"
               className="resource-card group"
             >
-              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <div className="w-7 h-7 rounded-lg bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0 group-hover:bg-[#0073E6] group-hover:text-white transition-colors">
                 <FileText size={14} />
               </div>
               <div className="flex-1 min-w-0">
-                <strong className="block text-[11px] text-slate-800 truncate group-hover:text-blue-600 transition-colors">
+                <strong className="block text-[11px] text-[#383838] truncate group-hover:text-[#0073E6] transition-colors">
                   {res.title}
                 </strong>
-                <span className="text-[9px] text-slate-400">
+                <span className="text-[9px] text-[#727272]">
                   {res.kind} {res.free ? ' · Free' : ''}
                 </span>
               </div>
-              <ExternalLink size={12} className="text-slate-400 group-hover:text-blue-600 shrink-0" />
+              <ExternalLink size={12} className="text-[#727272] group-hover:text-[#0073E6] shrink-0" />
             </a>
           ))}
         </div>
@@ -193,13 +193,13 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
             <span>Complete previous milestones to mark unlocked.</span>
           </div>
         )}
-        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-[#727272]">
           Your Mastery Progress
         </label>
         <select
           value={status}
           onChange={(e) => onStatus(topic.id, e.target.value)}
-          className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 font-semibold text-slate-800 outline-none focus:border-blue-500 cursor-pointer"
+          className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-[#E2E2E2] font-semibold text-[#383838] outline-none focus:border-blue-500 cursor-pointer"
         >
           <option value="not-started">Not started</option>
           <option value="in-progress">In progress</option>
@@ -291,7 +291,7 @@ function FlowCanvas({
 
   return (
     <div className="roadmap-graph-frame">
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-3 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-semibold text-slate-600 shadow-xs">
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-3 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-[#E2E2E2] text-[10px] font-semibold text-[#383838] shadow-xs">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500" /> Completed
         </span>
@@ -301,17 +301,17 @@ function FlowCanvas({
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-slate-300" /> Not Started
         </span>
-        <span className="flex items-center gap-1.5 text-blue-600">
+        <span className="flex items-center gap-1.5 text-[#0073E6]">
           <Sparkles size={11} /> College Syllabus Match
         </span>
       </div>
 
       {/* Quick Zoom Toolbar */}
-      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-xs p-1 rounded-xl border border-slate-200 shadow-xs">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-xs p-1 rounded-xl border border-[#E2E2E2] shadow-xs">
         <button
           type="button"
           onClick={() => zoomIn({ duration: 250 })}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-700 hover:text-blue-600 hover:bg-slate-100 font-bold text-sm cursor-pointer transition-colors"
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#383838] hover:text-[#0073E6] hover:bg-slate-100 font-bold text-sm cursor-pointer transition-colors"
           title="Zoom In"
         >
           +
@@ -319,7 +319,7 @@ function FlowCanvas({
         <button
           type="button"
           onClick={() => zoomOut({ duration: 250 })}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-700 hover:text-blue-600 hover:bg-slate-100 font-bold text-sm cursor-pointer transition-colors"
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#383838] hover:text-[#0073E6] hover:bg-slate-100 font-bold text-sm cursor-pointer transition-colors"
           title="Zoom Out"
         >
           −
@@ -327,7 +327,7 @@ function FlowCanvas({
         <button
           type="button"
           onClick={() => fitView({ padding: 0.15, minZoom: 0.9, maxZoom: 1.3, duration: 350 })}
-          className="px-2 h-7 flex items-center justify-center rounded-lg text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-100 cursor-pointer transition-colors"
+          className="px-2 h-7 flex items-center justify-center rounded-lg text-xs font-semibold text-[#383838] hover:text-[#0073E6] hover:bg-slate-100 cursor-pointer transition-colors"
           title="Reset Zoom"
         >
           Fit
@@ -344,14 +344,14 @@ function FlowCanvas({
         defaultViewport={{ x: 0, y: 0, zoom: 1.15 }}
       >
         <Background color="#cbd5e1" gap={18} size={1} />
-        <Controls showInteractive={false} className="!bg-white !border-slate-200 !shadow-sm !rounded-xl" />
+        <Controls showInteractive={false} className="!bg-white !border-[#E2E2E2] !shadow-sm !rounded-xl" />
         <MiniMap
           nodeColor={n => {
             if (n.data?.status === 'completed') return '#10b981';
             if (n.data?.status === 'in-progress') return '#f59e0b';
             return '#e2e8f0';
           }}
-          className="!border-slate-200 !rounded-xl !bg-slate-50/80"
+          className="!border-[#E2E2E2] !rounded-xl !bg-slate-50/80"
         />
       </ReactFlow>
     </div>
@@ -504,7 +504,7 @@ const Roadmaps = () => {
   return (
     <div className="roadmap-container">
       {/* Top Header & Track Selector */}
-      <header className="px-3.5 sm:px-6 py-4 sm:py-5 bg-white border-b border-slate-200">
+      <header className="px-3.5 sm:px-6 py-4 sm:py-5 bg-white border-b border-[#E2E2E2]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
@@ -512,11 +512,11 @@ const Roadmaps = () => {
                 <Award size={12} /> Campus Placement Verified
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#383838] flex items-center gap-2">
               {currentRoadmap.title}
             </h1>
             {currentRoadmap.description && (
-              <p className="text-xs text-slate-500 mt-0.5 max-w-2xl leading-relaxed">
+              <p className="text-xs text-[#727272] mt-0.5 max-w-2xl leading-relaxed">
                 {currentRoadmap.description}
               </p>
             )}
@@ -539,7 +539,7 @@ const Roadmaps = () => {
 
             <button
               onClick={handleResetProgress}
-              className="p-2 rounded-xl text-slate-500 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+              className="p-2 rounded-xl text-[#727272] hover:text-[#383838] bg-slate-50 hover:bg-slate-100 border border-[#E2E2E2] transition-colors"
               title="Reset progress for this track"
             >
               <RotateCcw size={15} />
@@ -548,16 +548,16 @@ const Roadmaps = () => {
         </div>
 
         {/* Single Selected Roadmap Selector */}
-        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-[#E2E2E2] flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
+            <span className="text-xs font-bold text-[#727272] uppercase tracking-wider shrink-0">
               Active Roadmap:
             </span>
             <div className="relative">
               <select
                 value={selectedDomain}
                 onChange={(e) => setSelectedDomain(e.target.value)}
-                className="bg-blue-50 border border-blue-200 text-blue-900 font-bold text-xs py-1.5 pl-3 pr-8 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="bg-[#DEEDFC] border border-blue-200 text-blue-900 font-bold text-xs py-1.5 pl-3 pr-8 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 {ROADMAP_CATEGORIES.map(cat => (
                   <option key={cat.id} value={cat.id}>
@@ -565,22 +565,22 @@ const Roadmaps = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none w-3.5 h-3.5" />
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0073E6] pointer-events-none w-3.5 h-3.5" />
             </div>
           </div>
         </div>
       </header>
 
       {/* Progress & Filtering Toolbar */}
-      <section className="px-3.5 sm:px-6 py-3 bg-white/80 border-b border-slate-200">
+      <section className="px-3.5 sm:px-6 py-3 bg-white/80 border-b border-[#E2E2E2]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
 
           {/* Progress stats */}
           <div className="flex items-center gap-4 flex-1 max-w-md">
             <div className="w-full">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-700">Track Completion</span>
-                <span className="font-bold text-blue-600">
+                <span className="font-semibold text-[#383838]">Track Completion</span>
+                <span className="font-bold text-[#0073E6]">
                   {completedCount}/{totalTopics} ({progressPercent}%)
                 </span>
               </div>
@@ -592,7 +592,7 @@ const Roadmaps = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-slate-500 shrink-0">
+            <div className="flex items-center gap-2 text-[11px] text-[#727272] shrink-0">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" /> {completedCount} Done
               </span>
@@ -605,20 +605,20 @@ const Roadmaps = () => {
           {/* Search, Filter & View Toggle */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#727272]" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search topics..."
-                className="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 w-44"
+                className="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-[#E2E2E2] text-[#383838] placeholder:text-[#727272] outline-none focus:border-blue-500 w-44"
               />
             </div>
 
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-700 outline-none focus:border-blue-500 cursor-pointer"
+              className="px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-[#E2E2E2] text-[#383838] outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="all">All Topics</option>
               <option value="not-started">Not Started</option>
@@ -626,17 +626,17 @@ const Roadmaps = () => {
               <option value="completed">Completed</option>
             </select>
 
-            <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200">
+            <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-[#E2E2E2]">
               <button
                 onClick={() => setViewMode('graph')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'graph' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'graph' ? 'bg-white text-[#383838] shadow-xs' : 'text-[#727272] hover:text-[#383838]'
                   }`}
               >
                 Graph Flow
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white text-[#383838] shadow-xs' : 'text-[#727272] hover:text-[#383838]'
                   }`}
               >
                 Curriculum List
@@ -651,16 +651,16 @@ const Roadmaps = () => {
         <div className="w-full flex flex-col gap-4">
 
           {/* Continuo Placement Highlights Notification */}
-          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-white border border-[#E2E2E2] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
                 <Briefcase size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-900">
+                <h4 className="text-xs font-bold text-[#383838]">
                   College Syllabus & Career Placement Matching
                 </h4>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-[#727272]">
                   {subjects.length} active college subjects mapped to this roadmap. Gemini highlights core interview topics.
                 </p>
               </div>
@@ -668,9 +668,9 @@ const Roadmaps = () => {
 
             <button
               onClick={() => runGeminiSubjectAnalysis(false)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#DEEDFC] text-[#174073] hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
             >
-              <Sparkles size={13} className="text-blue-600" />
+              <Sparkles size={13} className="text-[#0073E6]" />
               <span>View Analysis</span>
               <ArrowRight size={13} />
             </button>
@@ -690,7 +690,7 @@ const Roadmaps = () => {
               />
             </ReactFlowProvider>
           ) : (
-            <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs">
+            <div className="bg-white rounded-2xl border border-[#E2E2E2] divide-y divide-slate-100 overflow-hidden shadow-xs">
               {visibleTopics.map((topic, index) => {
                 const status = getStatus(topic.id);
                 const isSelected = selectedId === topic.id;
@@ -699,7 +699,7 @@ const Roadmaps = () => {
                   <div
                     key={topic.id}
                     onClick={() => setSelectedId(topic.id)}
-                    className={`p-4 flex items-center justify-between gap-4 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50/50' : 'hover:bg-slate-50'
+                    className={`p-4 flex items-center justify-between gap-4 transition-colors cursor-pointer ${isSelected ? 'bg-[#DEEDFC]/50' : 'hover:bg-[#DEEDFC]/40'
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -707,21 +707,21 @@ const Roadmaps = () => {
                         ? 'bg-emerald-100 text-emerald-800'
                         : status === 'in-progress'
                           ? 'bg-amber-100 text-amber-800'
-                          : 'bg-slate-100 text-slate-600'
+                          : 'bg-slate-100 text-[#383838]'
                         }`}>
                         {index + 1}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <strong className="text-xs font-bold text-slate-900 truncate">
+                          <strong className="text-xs font-bold text-[#383838] truncate">
                             {topic.title}
                           </strong>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-[#383838]">
                             {topic.level}
                           </span>
                         </div>
                         {topic.description && (
-                          <p className="text-[11px] text-slate-500 truncate max-w-md">
+                          <p className="text-[11px] text-[#727272] truncate max-w-md">
                             {topic.description}
                           </p>
                         )}
@@ -729,18 +729,18 @@ const Roadmaps = () => {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] text-slate-400 font-medium">
+                      <span className="text-[11px] text-[#727272] font-medium">
                         {topic.duration}
                       </span>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${status === 'completed'
                         ? 'bg-emerald-50 text-emerald-700'
                         : status === 'in-progress'
                           ? 'bg-amber-50 text-amber-700'
-                          : 'bg-slate-100 text-slate-600'
+                          : 'bg-slate-100 text-[#383838]'
                         }`}>
                         {locked ? 'Locked' : statusLabel[status]}
                       </span>
-                      <ArrowRight size={14} className="text-slate-400" />
+                      <ArrowRight size={14} className="text-[#727272]" />
                     </div>
                   </div>
                 );
@@ -771,25 +771,25 @@ const Roadmaps = () => {
           onClick={() => setShowAnalysisModal(false)}
         >
           <div
-            className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+            className="bg-white rounded-2xl border border-[#E2E2E2] shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
+            <div className="px-6 py-5 border-b border-[#E2E2E2] flex items-center justify-between bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-[#0073E6] text-white flex items-center justify-center shadow-sm">
                   <Sparkles size={20} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-extrabold tracking-wider uppercase text-blue-700 bg-blue-100/60 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-extrabold tracking-wider uppercase text-[#174073] bg-blue-100/60 px-2 py-0.5 rounded">
                       Gemini Web2API
                     </span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-[#727272]">
                       Placement Readiness & Career Alignment
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 mt-0.5">
+                  <h3 className="text-base font-bold text-[#383838] mt-0.5">
                     {currentRoadmap.title} · Syllabus Placement Analysis
                   </h3>
                 </div>
@@ -797,7 +797,7 @@ const Roadmaps = () => {
 
               <button
                 onClick={() => setShowAnalysisModal(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[#727272] hover:text-[#383838] hover:bg-slate-200/50 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -808,10 +808,10 @@ const Roadmaps = () => {
               {isAnalyzing ? (
                 <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
                   <div className="w-10 h-10 border-3 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-                  <p className="text-xs font-bold text-slate-800">
+                  <p className="text-xs font-bold text-[#383838]">
                     Analyzing college syllabus for placement preparation...
                   </p>
-                  <p className="text-[11px] text-slate-400 max-w-sm">
+                  <p className="text-[11px] text-[#727272] max-w-sm">
                     Comparing your college coursework with industry skill requirements for {currentRoadmap.title}.
                   </p>
                 </div>
@@ -831,7 +831,7 @@ const Roadmaps = () => {
                       </p>
                     </div>
 
-                    <div className="w-16 h-16 rounded-full bg-blue-600/30 border-2 border-blue-400 flex items-center justify-center text-xl font-extrabold text-blue-200 shrink-0">
+                    <div className="w-16 h-16 rounded-full bg-[#0073E6]/30 border-2 border-blue-400 flex items-center justify-center text-xl font-extrabold text-blue-200 shrink-0">
                       {analysisData?.readinessScore || 85}%
                     </div>
                   </div>
@@ -839,11 +839,11 @@ const Roadmaps = () => {
                   {/* High Yield Placement Subjects */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <Award size={14} className="text-blue-600" />
+                      <h4 className="text-xs font-bold text-[#383838] uppercase tracking-wider flex items-center gap-1.5">
+                        <Award size={14} className="text-[#0073E6]" />
                         Crucial Subjects for Technical Interviews
                       </h4>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-[#727272]">
                         From College Coursework
                       </span>
                     </div>
@@ -852,7 +852,7 @@ const Roadmaps = () => {
                       {analysisData?.placementSubjects?.map((sub, idx) => (
                         <div
                           key={idx}
-                          className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-all flex flex-col justify-between"
+                          className="p-3.5 rounded-xl border border-[#E2E2E2] bg-slate-50/50 hover:bg-[#DEEDFC]/40 transition-all flex flex-col justify-between"
                         >
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -860,32 +860,32 @@ const Roadmaps = () => {
                                 ? 'bg-rose-100 text-rose-800 border border-rose-200'
                                 : sub.importance === 'IMPORTANT'
                                   ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                                  : 'bg-slate-200 text-slate-700'
+                                  : 'bg-slate-200 text-[#383838]'
                                 }`}>
                                 {sub.importance}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-medium">
+                              <span className="text-[10px] text-[#727272] font-medium">
                                 {sub.code || 'Course'}
                               </span>
                             </div>
 
-                            <h5 className="text-xs font-bold text-slate-900 mb-1">
+                            <h5 className="text-xs font-bold text-[#383838] mb-1">
                               {sub.name}
                             </h5>
-                            <p className="text-[11px] text-slate-600 leading-relaxed mb-2">
+                            <p className="text-[11px] text-[#383838] leading-relaxed mb-2">
                               {sub.whyItMatters}
                             </p>
                           </div>
 
-                          <div className="pt-2 border-t border-slate-200/60 mt-1">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                          <div className="pt-2 border-t border-[#E2E2E2]/60 mt-1">
+                            <span className="text-[9px] font-bold text-[#727272] uppercase tracking-wider block mb-1">
                               Interview Focus Areas:
                             </span>
                             <div className="flex flex-wrap gap-1">
                               {sub.interviewTopics?.map((t, tIdx) => (
                                 <span
                                   key={tIdx}
-                                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white border border-slate-200 text-slate-700"
+                                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white border border-[#E2E2E2] text-[#383838]"
                                 >
                                   {t}
                                 </span>
@@ -919,14 +919,14 @@ const Roadmaps = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500">
+            <div className="px-6 py-3.5 border-t border-[#E2E2E2] bg-slate-50 flex items-center justify-between">
+              <span className="text-[11px] text-[#727272]">
                 Powered by CampusAxis Career Intelligence
               </span>
               <button
                 onClick={() => runGeminiSubjectAnalysis(true)}
                 disabled={isAnalyzing}
-                className="px-4 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-1.5 rounded-xl text-xs font-bold bg-[#0073E6] text-white hover:bg-[#4A9AF0] transition-colors cursor-pointer disabled:opacity-50"
               >
                 Re-Analyze
               </button>

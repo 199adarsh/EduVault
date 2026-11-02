@@ -271,29 +271,29 @@ const Settings = () => {
     };
 
     return (
-        <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-12 antialiased text-slate-800 font-sans min-h-screen">
+        <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-12 antialiased text-[#383838] font-sans min-h-screen">
             <div className="max-w-5xl mx-auto space-y-6">
                 {/* Header */}
-                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-white border border-[#E2E2E2]/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="material-symbols-outlined text-primary text-[18px]">settings</span>
-                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">System Settings</span>
+                            <span className="text-[11px] font-bold text-[#727272] uppercase tracking-wider">System Settings</span>
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                        <h1 className="text-xl sm:text-2xl font-bold text-[#383838] tracking-tight">
                             Platform Settings &amp; Preferences
                         </h1>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-[#727272] mt-0.5">
                             Manage your personal AI credentials, taught subjects, and account parameters.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-slate-500">Current Role:</span>
+                        <span className="text-xs font-semibold text-[#727272]">Current Role:</span>
                         <span className={cn(
                             "px-2.5 py-1 rounded-full text-xs font-bold border",
                             isTeacher 
-                                ? "bg-blue-50 text-blue-700 border-blue-200" 
+                                ? "bg-[#DEEDFC] text-[#174073] border-blue-200" 
                                 : "bg-emerald-50 text-emerald-700 border-emerald-200"
                         )}>
                             {isTeacher ? 'Teacher / Faculty' : 'Student'}
@@ -302,20 +302,20 @@ const Settings = () => {
                 </div>
 
                 {/* Section 1: Gemini AI Key Configuration */}
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-                    <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-white border border-[#E2E2E2] rounded-2xl shadow-xs overflow-hidden">
+                    <div className="p-5 sm:p-6 border-b border-[#E2E2E2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 border border-purple-100 flex items-center justify-center shrink-0">
                                 <Sparkles className="w-5 h-5 text-purple-600" />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-base font-bold text-slate-900">Custom Google Gemini API Key</h2>
+                                    <h2 className="text-base font-bold text-[#383838]">Custom Google Gemini API Key</h2>
                                     <span className="text-[10px] font-semibold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
                                         BYOK Support
                                     </span>
                                 </div>
-                                <p className="text-xs text-slate-500 mt-0.5">
+                                <p className="text-xs text-[#727272] mt-0.5">
                                     Bring your own Gemini API key for unlimited AI chat, Note Doubts, and Chapter RAG queries.
                                 </p>
                             </div>
@@ -330,7 +330,7 @@ const Settings = () => {
                                 </span>
                             )}
                             {keyStatus === 'testing' && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 animate-pulse">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#DEEDFC] text-[#174073] border border-blue-200 animate-pulse">
                                     <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                                     <span>Verifying...</span>
                                 </span>
@@ -342,13 +342,13 @@ const Settings = () => {
                                 </span>
                             )}
                             {keyStatus === 'saved' && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
-                                    <Check className="w-3.5 h-3.5 text-blue-600" />
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#DEEDFC] text-[#174073] border border-blue-200 shadow-2xs">
+                                    <Check className="w-3.5 h-3.5 text-[#0073E6]" />
                                     <span>Key Configured</span>
                                 </span>
                             )}
                             {keyStatus === 'empty' && (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-[#383838] border border-[#E2E2E2] shadow-2xs">
                                     <span>System Default Active</span>
                                 </span>
                             )}
@@ -357,11 +357,11 @@ const Settings = () => {
 
                     <div className="p-5 sm:p-6 space-y-4">
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            <label className="block text-xs font-bold text-[#383838] uppercase tracking-wider">
                                 Gemini API Key
                             </label>
                             <div className="relative">
-                                <Key className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <Key className="w-4 h-4 text-[#727272] absolute left-3 top-1/2 -translate-y-1/2" />
                                 <input
                                     type={showKey ? 'text' : 'password'}
                                     value={geminiKey}
@@ -370,20 +370,20 @@ const Settings = () => {
                                         setKeyStatus('idle');
                                     }}
                                     placeholder="Enter your Gemini API key (e.g. AIzaSy...)"
-                                    className="w-full text-xs sm:text-sm pl-9 pr-24 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition font-mono"
+                                    className="w-full text-xs sm:text-sm pl-9 pr-24 py-2.5 bg-slate-50 hover:bg-white focus:bg-white border border-[#E2E2E2] rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition font-mono"
                                 />
                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                     <button
                                         type="button"
                                         onClick={() => setShowKey(!showKey)}
-                                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                        className="p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-100 transition cursor-pointer"
                                         title={showKey ? 'Hide key' : 'Show key'}
                                     >
                                         {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                            <div className="flex items-center justify-between text-[11px] text-[#727272] pt-1">
                                 <span>{keyStatusMsg || 'Your key is stored securely in your browser session.'}</span>
                                 <a
                                     href="https://aistudio.google.com/app/apikey"
@@ -412,7 +412,7 @@ const Settings = () => {
                                 type="button"
                                 onClick={handleTestGeminiKey}
                                 disabled={!geminiKey.trim() || keyStatus === 'testing'}
-                                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-semibold text-xs border border-slate-200 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-[#383838] font-semibold text-xs border border-[#E2E2E2] transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                                 <Sparkles className="w-3.5 h-3.5 text-purple-600" />
                                 <span>Test Connection</span>
@@ -422,7 +422,7 @@ const Settings = () => {
                                 <button
                                     type="button"
                                     onClick={handleClearGeminiKey}
-                                    className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                                    className="px-3.5 py-2 rounded-xl text-[#383838] hover:text-rose-600 hover:bg-rose-50 border border-[#E2E2E2] transition text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                                 >
                                     <RotateCcw className="w-3.5 h-3.5" />
                                     <span>Clear Custom Key</span>
@@ -433,20 +433,20 @@ const Settings = () => {
                 </div>
 
                 {/* Section 2: Teacher Subject Selection */}
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-                    <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-white border border-[#E2E2E2] rounded-2xl shadow-xs overflow-hidden">
+                    <div className="p-5 sm:p-6 border-b border-[#E2E2E2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 flex items-center justify-center shrink-0">
-                                <BookOpen className="w-5 h-5 text-blue-600" />
+                            <div className="w-10 h-10 rounded-xl bg-[#DEEDFC] text-[#174073] border border-blue-100 flex items-center justify-center shrink-0">
+                                <BookOpen className="w-5 h-5 text-[#0073E6]" />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-base font-bold text-slate-900">Faculty Subject Assignments</h2>
-                                    <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                                    <h2 className="text-base font-bold text-[#383838]">Faculty Subject Assignments</h2>
+                                    <span className="text-[10px] font-semibold bg-[#DEEDFC] text-[#174073] px-2 py-0.5 rounded-full border border-blue-200">
                                         {selectedSubjects.length} Assigned
                                     </span>
                                 </div>
-                                <p className="text-xs text-slate-500 mt-0.5">
+                                <p className="text-xs text-[#727272] mt-0.5">
                                     Select the courses you teach. This filters your attendance requests and class registers.
                                 </p>
                             </div>
@@ -456,7 +456,7 @@ const Settings = () => {
                             <button
                                 type="button"
                                 onClick={handleSaveTeacherSubjects}
-                                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                                className="px-4 py-2 rounded-xl bg-[#0073E6] hover:bg-[#4A9AF0] active:bg-blue-800 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                             >
                                 <Save className="w-3.5 h-3.5" />
                                 <span>Save Subjects</span>
@@ -483,23 +483,23 @@ const Settings = () => {
                         )}
 
                         {/* Search and filters toolbar */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-[#E2E2E2]/80">
                             <div className="flex items-center gap-2 flex-1">
                                 <div className="relative flex-1">
-                                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <Search className="w-3.5 h-3.5 text-[#727272] absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
                                         type="text"
                                         value={subjectSearch}
                                         onChange={(e) => setSubjectSearch(e.target.value)}
                                         placeholder="Search by subject name, code, or department..."
-                                        className="w-full text-xs pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="w-full text-xs pl-8 pr-3 py-1.5 bg-white border border-[#E2E2E2] rounded-lg outline-none focus:ring-1 focus:ring-blue-500"
                                     />
                                 </div>
                                 {availableSemesters.length > 0 && (
                                     <select
                                         value={semFilter}
                                         onChange={(e) => setSemFilter(e.target.value)}
-                                        className="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 outline-none cursor-pointer"
+                                        className="text-xs bg-white border border-[#E2E2E2] rounded-lg px-2.5 py-1.5 font-medium text-[#383838] outline-none cursor-pointer"
                                     >
                                         <option value="ALL">All Semesters</option>
                                         {availableSemesters.map(sem => (
@@ -513,14 +513,14 @@ const Settings = () => {
                                 <button
                                     type="button"
                                     onClick={handleSelectAllFiltered}
-                                    className="px-2.5 py-1 rounded-lg text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 font-semibold cursor-pointer transition"
+                                    className="px-2.5 py-1 rounded-lg text-[#383838] bg-white border border-[#E2E2E2] hover:bg-slate-100 font-semibold cursor-pointer transition"
                                 >
                                     Select All Filtered
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleClearSelection}
-                                    className="px-2.5 py-1 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-white font-semibold cursor-pointer transition"
+                                    className="px-2.5 py-1 rounded-lg text-[#383838] hover:text-rose-600 hover:bg-white font-semibold cursor-pointer transition"
                                 >
                                     Clear Selection
                                 </button>
@@ -529,18 +529,18 @@ const Settings = () => {
 
                         {/* Subject Checkbox Grid */}
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+                            <div className="flex items-center justify-between text-xs text-[#727272] px-1">
                                 <span>Showing {filteredSubjects.length} available courses</span>
                                 <span>{selectedSubjects.length} selected</span>
                             </div>
 
                             {subjectsLoading ? (
-                                <div className="py-12 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+                                <div className="py-12 text-center text-xs text-[#727272] flex flex-col items-center justify-center gap-2">
                                     <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                                     <span>Loading academic course catalog...</span>
                                 </div>
                             ) : filteredSubjects.length === 0 ? (
-                                <div className="py-12 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4">
+                                <div className="py-12 text-center text-xs text-[#727272] bg-slate-50 rounded-xl border border-dashed border-[#E2E2E2] p-4">
                                     No subjects match the search query "{subjectSearch}".
                                 </div>
                             ) : (
@@ -555,27 +555,27 @@ const Settings = () => {
                                                 className={cn(
                                                     "p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-xs select-none",
                                                     isChecked
-                                                        ? "bg-blue-50/50 border-blue-300 shadow-2xs"
-                                                        : "bg-white hover:bg-slate-50 border-slate-200"
+                                                        ? "bg-[#DEEDFC]/50 border-blue-300 shadow-2xs"
+                                                        : "bg-white hover:bg-slate-50 border-[#E2E2E2]"
                                                 )}
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     <div className={cn(
                                                         "w-4 h-4 rounded flex items-center justify-center border transition shrink-0",
                                                         isChecked
-                                                            ? "bg-blue-600 border-blue-600 text-white"
+                                                            ? "bg-[#0073E6] border-blue-600 text-white"
                                                             : "border-slate-300 bg-white"
                                                     )}>
                                                         {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                                                     </div>
 
                                                     <div className="min-w-0">
-                                                        <div className="font-bold text-slate-900 truncate">
+                                                        <div className="font-bold text-[#383838] truncate">
                                                             {sub.name}
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                                                        <div className="flex items-center gap-1.5 text-[10px] text-[#727272] mt-0.5">
                                                             {sub.code && (
-                                                                <span className="font-mono font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200/60">
+                                                                <span className="font-mono font-semibold bg-slate-100 text-[#383838] px-1.5 py-0.2 rounded border border-[#E2E2E2]/60">
                                                                     {sub.code}
                                                                 </span>
                                                             )}
@@ -586,7 +586,7 @@ const Settings = () => {
                                                 </div>
 
                                                 {isChecked && (
-                                                    <span className="text-[10px] font-bold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full shrink-0">
+                                                    <span className="text-[10px] font-bold text-[#174073] bg-blue-100/70 px-2 py-0.5 rounded-full shrink-0">
                                                         Assigned
                                                     </span>
                                                 )}
@@ -598,14 +598,14 @@ const Settings = () => {
                         </div>
 
                         {/* Save Confirmation Button */}
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                            <span className="text-xs text-slate-500">
+                        <div className="flex items-center justify-between pt-3 border-t border-[#E2E2E2]">
+                            <span className="text-xs text-[#727272]">
                                 Selected: <strong>{selectedSubjects.length}</strong> subjects
                             </span>
                             <button
                                 type="button"
                                 onClick={handleSaveTeacherSubjects}
-                                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                                className="px-5 py-2 rounded-xl bg-[#0073E6] hover:bg-[#4A9AF0] active:bg-blue-800 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                             >
                                 <Save className="w-3.5 h-3.5" />
                                 <span>Save Changes</span>
@@ -615,42 +615,42 @@ const Settings = () => {
                 </div>
 
                 {/* Section 3: User Profile & Role Overview */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs">
-                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0">
-                            <User className="w-5 h-5 text-slate-600" />
+                <div className="bg-white border border-[#E2E2E2] rounded-2xl p-5 sm:p-6 shadow-xs">
+                    <div className="flex items-center gap-3 pb-4 border-b border-[#E2E2E2]">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 text-[#383838] border border-[#E2E2E2] flex items-center justify-center shrink-0">
+                            <User className="w-5 h-5 text-[#383838]" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-slate-900">User Identity &amp; Role Management</h2>
-                            <p className="text-xs text-slate-500">Session details and testing controls</p>
+                            <h2 className="text-base font-bold text-[#383838]">User Identity &amp; Role Management</h2>
+                            <p className="text-xs text-[#727272]">Session details and testing controls</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 text-xs">
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">User Name</span>
-                            <div className="font-bold text-slate-800 mt-0.5 truncate">{profile?.name || 'Academic User'}</div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2]/80">
+                            <span className="text-[10px] font-bold text-[#727272] uppercase">User Name</span>
+                            <div className="font-bold text-[#383838] mt-0.5 truncate">{profile?.name || 'Academic User'}</div>
                         </div>
 
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">PRN / Faculty ID</span>
-                            <div className="font-mono font-bold text-slate-800 mt-0.5">{profile?.prn || 'N/A'}</div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2]/80">
+                            <span className="text-[10px] font-bold text-[#727272] uppercase">PRN / Faculty ID</span>
+                            <div className="font-mono font-bold text-[#383838] mt-0.5">{profile?.prn || 'N/A'}</div>
                         </div>
 
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Department</span>
-                            <div className="font-semibold text-slate-800 mt-0.5">{profile?.department || 'AI & Data Science'}</div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2]/80">
+                            <span className="text-[10px] font-bold text-[#727272] uppercase">Department</span>
+                            <div className="font-semibold text-[#383838] mt-0.5">{profile?.department || 'AI & Data Science'}</div>
                         </div>
 
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Active Role</span>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2]/80">
+                            <span className="text-[10px] font-bold text-[#727272] uppercase">Active Role</span>
                             <div className="flex items-center gap-2 mt-1">
                                 <button
                                     type="button"
                                     onClick={() => handleSwitchRole('student')}
                                     className={cn(
                                         "px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer",
-                                        !isTeacher ? "bg-emerald-600 text-white" : "bg-white text-slate-700 border border-slate-200"
+                                        !isTeacher ? "bg-emerald-600 text-white" : "bg-white text-[#383838] border border-[#E2E2E2]"
                                     )}
                                 >
                                     Student
@@ -660,7 +660,7 @@ const Settings = () => {
                                     onClick={() => handleSwitchRole('teacher')}
                                     className={cn(
                                         "px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer",
-                                        isTeacher ? "bg-blue-600 text-white" : "bg-white text-slate-700 border border-slate-200"
+                                        isTeacher ? "bg-[#0073E6] text-white" : "bg-white text-[#383838] border border-[#E2E2E2]"
                                     )}
                                 >
                                     Teacher

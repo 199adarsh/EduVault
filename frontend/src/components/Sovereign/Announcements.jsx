@@ -192,20 +192,20 @@ const Announcements = () => {
     }, [announcements]);
 
     return (
-        <main className="w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-20 md:pb-8 bg-background text-slate-900 min-w-0 max-w-full overflow-x-hidden">
+        <main className="w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-20 md:pb-8 bg-background text-[#383838] min-w-0 max-w-full overflow-x-hidden">
             <div className="flex flex-col w-full max-w-[1360px] mx-auto space-y-4 sm:space-y-6 min-w-0">
                 {/* Interactive Top Action & Heading Row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h1 className="text-[26px] font-bold text-slate-900 tracking-tight">
+                            <h1 className="text-[26px] font-bold text-[#383838] tracking-tight">
                                 Announcements
                             </h1>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200/50">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]/50">
                                 AI &amp; DS Dept
                             </span>
                         </div>
-                        <p className="text-[13px] text-slate-500">
+                        <p className="text-[13px] text-[#727272]">
                             Important academic and college updates
                         </p>
                     </div>
@@ -220,8 +220,8 @@ const Announcements = () => {
                                 }}
                                 className={`relative w-9 h-9 rounded-full border transition-all flex items-center justify-center shadow-xs cursor-pointer ${
                                     showCalendarPopup && calendarAnchor === 'top'
-                                        ? 'bg-blue-50 border-blue-300 text-blue-600'
-                                        : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-blue-600'
+                                        ? 'bg-[#DEEDFC] border-blue-300 text-[#0073E6]'
+                                        : 'bg-white border-[#E2E2E2] hover:bg-[#DEEDFC]/40 text-[#727272] hover:text-[#0073E6]'
                                 }`}
                                 title="Upcoming Deadlines Calendar"
                                 aria-label="Upcoming Deadlines Calendar"
@@ -246,16 +246,16 @@ const Announcements = () => {
                         </div>
 
                         <button
-                            className="relative w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center text-slate-500 hover:text-blue-600 shadow-xs"
+                            className="relative w-9 h-9 rounded-full bg-white border border-[#E2E2E2] hover:bg-[#DEEDFC]/40 transition-all flex items-center justify-center text-[#727272] hover:text-[#0073E6] shadow-xs"
                             title="Bulletin Subscriptions"
                         >
                             <Radio className="w-4 h-4" />
-                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white" />
+                            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#0073E6] ring-2 ring-white" />
                         </button>
                         {isManager && (
                             <button
                                 onClick={() => setShowCreate(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
                             >
                                 <Plus className="w-4 h-4" />
                                 <span>Create Announcement</span>
@@ -265,16 +265,16 @@ const Announcements = () => {
                 </div>
 
                 {/* Filter & Search Toolbar */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full min-w-0 max-w-full overflow-hidden">
+                <div className="bg-white border border-[#E2E2E2] rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 w-full min-w-0 max-w-full overflow-hidden">
                     {/* Search Input: Stays within screen width */}
                     <div className="relative w-full md:max-w-md min-w-0">
-                        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 shrink-0" />
+                        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272] shrink-0" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Search announcements, keywords..."
-                            className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all min-w-0"
+                            className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-50 border border-[#E2E2E2] text-xs font-medium text-[#383838] placeholder:text-[#727272] focus:outline-none focus:bg-white focus:border-blue-500 transition-all min-w-0"
                         />
                     </div>
 
@@ -291,8 +291,8 @@ const Announcements = () => {
                                 onClick={() => setActiveFilter(chip.id)}
                                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                                     activeFilter === chip.id
-                                        ? 'bg-blue-600 text-white shadow-xs'
-                                        : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
+                                        ? 'bg-[#0073E6] text-white shadow-xs'
+                                        : 'bg-slate-50 border border-[#E2E2E2] text-[#383838] hover:bg-slate-100'
                                 }`}
                             >
                                 {chip.label}
@@ -302,11 +302,11 @@ const Announcements = () => {
                 </div>
 
                 {/* Mobile Upcoming Deadlines (Responsive vertical stack on mobile, 2 cols on sm) */}
-                <section className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-xs space-y-2.5 lg:hidden w-full min-w-0 overflow-hidden">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <section className="bg-white rounded-2xl p-3.5 sm:p-4 border border-[#E2E2E2] shadow-xs space-y-2.5 lg:hidden w-full min-w-0 overflow-hidden">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#E2E2E2]">
                         <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-                            <h3 className="font-bold text-slate-900 text-xs tracking-tight">Upcoming Deadlines</h3>
+                            <h3 className="font-bold text-[#383838] text-xs tracking-tight">Upcoming Deadlines</h3>
                         </div>
                         <button
                             type="button"
@@ -314,7 +314,7 @@ const Announcements = () => {
                                 setCalendarAnchor('top');
                                 setShowCalendarPopup(true);
                             }}
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0073E6] hover:text-[#174073] cursor-pointer"
                             title="Open Deadlines Calendar"
                         >
                             <CalendarIcon className="w-3 h-3" />
@@ -327,13 +327,13 @@ const Announcements = () => {
                             const month = !isNaN(deadlineDate.getTime()) ? deadlineDate.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
                             const day = !isNaN(deadlineDate.getTime()) ? deadlineDate.getDate() : '--';
                             return (
-                                <div key={ann.id || i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 w-full min-w-0">
+                                <div key={ann.id || i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] w-full min-w-0">
                                     <div className="w-9 h-9 rounded-lg bg-white border border-rose-200 text-rose-600 flex flex-col items-center justify-center shrink-0 shadow-xs font-bold">
                                         <span className="text-[8px] font-bold tracking-wider text-rose-400 uppercase leading-none">{month}</span>
                                         <span className="text-xs font-extrabold text-rose-700 leading-none mt-0.5">{day}</span>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="text-xs font-bold text-slate-900 truncate leading-snug">{ann.title}</h4>
+                                        <h4 className="text-xs font-bold text-[#383838] truncate leading-snug">{ann.title}</h4>
                                         <p className="text-[10px] text-rose-600 font-semibold truncate leading-none mt-0.5">
                                             {ann.deadline ? `Due: ${new Date(ann.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : (ann.type || 'Notice')}
                                         </p>
@@ -351,7 +351,7 @@ const Announcements = () => {
                         {loading ? (
                             <div className="space-y-4">
                                 {[1, 2].map(i => (
-                                    <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs animate-pulse space-y-4">
+                                    <div key={i} className="bg-white border border-[#E2E2E2] rounded-2xl p-6 shadow-xs animate-pulse space-y-4">
                                         <div className="h-4 bg-slate-100 rounded w-1/4" />
                                         <div className="h-6 bg-slate-100 rounded w-3/4" />
                                         <div className="h-16 bg-slate-50 rounded" />
@@ -359,7 +359,7 @@ const Announcements = () => {
                                 ))}
                             </div>
                         ) : filteredAnnouncements.length === 0 ? (
-                            <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400">
+                            <div className="bg-white border border-[#E2E2E2] rounded-2xl p-12 text-center text-[#727272]">
                                 <p className="text-sm font-semibold">No announcements match your search criteria.</p>
                             </div>
                         ) : (
@@ -376,7 +376,7 @@ const Announcements = () => {
                                 return (
                                     <article
                                         key={ann.id || idx}
-                                        className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group w-full min-w-0 max-w-full overflow-hidden"
+                                        className="bg-white border border-[#E2E2E2] rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group w-full min-w-0 max-w-full overflow-hidden"
                                     >
                                         <div className="w-full min-w-0">
                                             {/* Header / Metadata */}
@@ -384,13 +384,13 @@ const Announcements = () => {
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                                                         isOfficial
-                                                            ? 'bg-blue-50 text-blue-600 border border-blue-200/50'
+                                                            ? 'bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]/50'
                                                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
                                                     }`}>
-                                                        {isOfficial && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping" />}
+                                                        {isOfficial && <span className="w-1.5 h-1.5 rounded-full bg-[#0073E6] animate-ping" />}
                                                         {ann.type || 'Official Notice'}
                                                     </span>
-                                                    <span className="inline-flex items-center gap-1 text-slate-400 text-xs font-medium">
+                                                    <span className="inline-flex items-center gap-1 text-[#727272] text-xs font-medium">
                                                         <CalendarIcon className="w-3.5 h-3.5" />
                                                         {dateFormatted}
                                                     </span>
@@ -407,14 +407,14 @@ const Announcements = () => {
                                                         <>
                                                             <button
                                                                 onClick={() => setEditingAnn({ ...ann })}
-                                                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                                                className="w-8 h-8 rounded-full flex items-center justify-center text-[#727272] hover:text-[#0073E6] hover:bg-[#DEEDFC] transition-colors cursor-pointer"
                                                                 title="Edit Notice"
                                                             >
                                                                 <Edit2 className="w-3.5 h-3.5" />
                                                             </button>
                                                             <button
                                                                 onClick={() => handleDelete(ann.id)}
-                                                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                                                className="w-8 h-8 rounded-full flex items-center justify-center text-[#727272] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                                                                 title="Delete Notice"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -425,8 +425,8 @@ const Announcements = () => {
                                                         onClick={() => toggleBookmark(ann.id)}
                                                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                                                             isBookmarked
-                                                                ? 'text-blue-600 bg-blue-50'
-                                                                : 'text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                                                                ? 'text-[#0073E6] bg-[#DEEDFC]'
+                                                                : 'text-[#727272] hover:text-[#383838] hover:bg-[#DEEDFC]/40'
                                                         }`}
                                                         title="Bookmark"
                                                     >
@@ -436,34 +436,34 @@ const Announcements = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h2 className="text-base sm:text-[17px] font-bold text-slate-900 mt-1.5 group-hover:text-blue-600 transition-colors leading-snug break-words w-full min-w-0">
+                                            <h2 className="text-base sm:text-[17px] font-bold text-[#383838] mt-1.5 group-hover:text-[#0073E6] transition-colors leading-snug break-words w-full min-w-0">
                                                 {ann.title}
                                             </h2>
 
                                             {/* Message Body */}
-                                            <p className="text-xs sm:text-[13px] text-slate-600 mt-2.5 leading-relaxed break-words w-full min-w-0">
+                                            <p className="text-xs sm:text-[13px] text-[#383838] mt-2.5 leading-relaxed break-words w-full min-w-0">
                                                 {ann.description}
                                             </p>
 
                                             {/* Details Meta Box */}
                                             {ann.meta && (
-                                                <div className="mt-3.5 p-3 sm:p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-500 w-full min-w-0">
+                                                <div className="mt-3.5 p-3 sm:p-3.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-[#727272] w-full min-w-0">
                                                     {ann.meta.duration && (
                                                         <div className="flex items-center gap-1.5">
-                                                            <Timer className="w-4 h-4 text-blue-600" />
-                                                            <span>Duration: <strong className="text-slate-900">{ann.meta.duration}</strong></span>
+                                                            <Timer className="w-4 h-4 text-[#0073E6]" />
+                                                            <span>Duration: <strong className="text-[#383838]">{ann.meta.duration}</strong></span>
                                                         </div>
                                                     )}
                                                     {ann.meta.portion && (
                                                         <div className="flex items-center gap-1.5">
-                                                            <BookOpen className="w-4 h-4 text-blue-600" />
-                                                            <span>Portion: <strong className="text-slate-900">{ann.meta.portion}</strong></span>
+                                                            <BookOpen className="w-4 h-4 text-[#0073E6]" />
+                                                            <span>Portion: <strong className="text-[#383838]">{ann.meta.portion}</strong></span>
                                                         </div>
                                                     )}
                                                     {ann.meta.hall && (
                                                         <div className="flex items-center gap-1.5">
-                                                            <MapPin className="w-4 h-4 text-blue-600" />
-                                                            <span>Hall: <strong className="text-slate-900">{ann.meta.hall}</strong></span>
+                                                            <MapPin className="w-4 h-4 text-[#0073E6]" />
+                                                            <span>Hall: <strong className="text-[#383838]">{ann.meta.hall}</strong></span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -475,9 +475,9 @@ const Announcements = () => {
                                                     {ann.attachments.map((att, aIdx) => (
                                                         <span
                                                             key={aIdx}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-[#E2E2E2] text-[#383838] text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
                                                         >
-                                                            <FileText className="w-3.5 h-3.5 text-blue-600" />
+                                                            <FileText className="w-3.5 h-3.5 text-[#0073E6]" />
                                                             {att.name}
                                                         </span>
                                                     ))}
@@ -486,16 +486,16 @@ const Announcements = () => {
                                         </div>
 
                                         {/* Footer Row */}
-                                        <div className="pt-4 mt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full min-w-0">
+                                        <div className="pt-4 mt-4 border-t border-[#E2E2E2] flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full min-w-0">
                                             <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+                                                <div className="w-8 h-8 rounded-full bg-[#0073E6] text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
                                                     {ann.authorInitials || 'SC'}
                                                 </div>
                                                 <div className="flex flex-col min-w-0 flex-1">
-                                                    <span className="text-xs font-bold text-slate-800 leading-tight truncate">
+                                                    <span className="text-xs font-bold text-[#383838] leading-tight truncate">
                                                         {ann.author || 'College Administration'}
                                                     </span>
-                                                    <span className="text-[11px] text-slate-400 truncate">
+                                                    <span className="text-[11px] text-[#727272] truncate">
                                                         {ann.authorRole || 'Department of AI & Data Science'}
                                                     </span>
                                                 </div>
@@ -512,7 +512,7 @@ const Announcements = () => {
                                             ) : (
                                                 <button
                                                     onClick={() => handleAcknowledge(ann.id)}
-                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 hover:bg-blue-600 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-xs shrink-0 self-start sm:self-auto"
+                                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]/60 hover:bg-[#0073E6] hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-xs shrink-0 self-start sm:self-auto"
                                                 >
                                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                                     <span>Acknowledge</span>
@@ -528,9 +528,9 @@ const Announcements = () => {
                     {/* Right Column: Deadlines & Channels */}
                     <div className="lg:col-span-4 flex flex-col space-y-6">
                         {/* Upcoming Deadlines Card */}
-                        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-                            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                                <h3 className="text-sm font-bold text-slate-900">Upcoming Deadlines</h3>
+                        <div className="bg-white border border-[#E2E2E2] rounded-2xl p-5 shadow-xs">
+                            <div className="flex items-center justify-between pb-3 border-b border-[#E2E2E2]">
+                                <h3 className="text-sm font-bold text-[#383838]">Upcoming Deadlines</h3>
                                 <div className="relative" ref={cardCalendarRef}>
                                     <button
                                         type="button"
@@ -538,7 +538,7 @@ const Announcements = () => {
                                             setCalendarAnchor('card');
                                             setShowCalendarPopup(prev => (calendarAnchor === 'card' ? !prev : true));
                                         }}
-                                        className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#0073E6] hover:text-[#174073] hover:underline cursor-pointer"
                                         title="View All Deadlines"
                                     >
                                         <CalendarIcon className="w-3.5 h-3.5" />
@@ -562,13 +562,13 @@ const Announcements = () => {
                                     const month = !isNaN(deadlineDate.getTime()) ? deadlineDate.toLocaleDateString(undefined, { month: 'short' }) : 'Now';
                                     const day = !isNaN(deadlineDate.getTime()) ? deadlineDate.getDate() : '--';
                                     return (
-                                        <div key={ann.id || i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                        <div key={ann.id || i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-[#E2E2E2]">
                                             <div className="w-10 h-10 rounded-lg bg-white border border-rose-200 text-rose-600 flex flex-col items-center justify-center font-bold shadow-xs shrink-0">
                                                 <span className="text-[9px] uppercase text-rose-400 leading-none">{month}</span>
                                                 <span className="text-sm font-bold leading-tight text-rose-700">{day}</span>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-bold text-slate-800 truncate">
+                                                <p className="text-xs font-bold text-[#383838] truncate">
                                                     {ann.title}
                                                 </p>
                                                 <p className="text-[11px] text-rose-600 font-semibold truncate">
@@ -579,7 +579,7 @@ const Announcements = () => {
                                     );
                                 })}
                                 {upcomingDeadlines.length === 0 && (
-                                    <p className="text-xs text-slate-400 py-6 text-center">No upcoming deadlines logged</p>
+                                    <p className="text-xs text-[#727272] py-6 text-center">No upcoming deadlines logged</p>
                                 )}
                             </div>
                         </div>
@@ -590,15 +590,15 @@ const Announcements = () => {
             {/* Create Announcement Modal */}
             {showCreate && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                    <div className="bg-white border border-[#E2E2E2] rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-[#E2E2E2] flex justify-between items-center">
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900">Create Academic Notice</h3>
-                                <p className="text-xs text-slate-500">Post an official announcement for students</p>
+                                <h3 className="text-sm font-bold text-[#383838]">Create Academic Notice</h3>
+                                <p className="text-xs text-[#727272]">Post an official announcement for students</p>
                             </div>
                             <button
                                 onClick={() => setShowCreate(false)}
-                                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
+                                className="p-1.5 text-[#727272] hover:text-[#383838] hover:bg-slate-100 rounded-lg transition-all"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -606,7 +606,7 @@ const Announcements = () => {
 
                         <form onSubmit={handleCreate} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1">
                                     Notice Title
                                 </label>
                                 <input
@@ -615,31 +615,31 @@ const Announcements = () => {
                                     value={newAnn.title}
                                     onChange={e => setNewAnn({ ...newAnn, title: e.target.value })}
                                     placeholder="e.g. Unit Test II Syllabus & Schedule..."
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                    className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
                                         Category / Type
                                     </label>
                                     <input
                                         type="text"
                                         value={newAnn.type}
                                         onChange={e => setNewAnn({ ...newAnn, type: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
                                         Priority Tag
                                     </label>
                                     <select
                                         value={newAnn.colorTag}
                                         onChange={e => setNewAnn({ ...newAnn, colorTag: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                     >
                                         <option value="blue">Blue (Official)</option>
                                         <option value="green">Green (Academic)</option>
@@ -650,19 +650,19 @@ const Announcements = () => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1">
                                     Deadline / Submission Due Date (Optional)
                                 </label>
                                 <input
                                     type="date"
                                     value={newAnn.deadline || ''}
                                     onChange={e => setNewAnn({ ...newAnn, deadline: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                    className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1">
                                     Bulletin Details
                                 </label>
                                 <textarea
@@ -671,13 +671,13 @@ const Announcements = () => {
                                     value={newAnn.description}
                                     onChange={e => setNewAnn({ ...newAnn, description: e.target.value })}
                                     placeholder="Enter full announcement body..."
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-medium text-slate-800 resize-none outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                    className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg p-3 text-xs font-medium text-[#383838] resize-none outline-none focus:border-blue-500 focus:bg-white transition-all"
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                className="w-full py-2.5 bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 <Send className="w-3.5 h-3.5" />
                                 <span>Publish Notice</span>
@@ -690,15 +690,15 @@ const Announcements = () => {
             {/* Edit Announcement Modal */}
             {editingAnn && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
-                    <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                    <div className="bg-white border border-[#E2E2E2] rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-[#E2E2E2] flex justify-between items-center">
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900">Edit Notice</h3>
-                                <p className="text-xs text-slate-500">Update academic bulletin details and priority</p>
+                                <h3 className="text-sm font-bold text-[#383838]">Edit Notice</h3>
+                                <p className="text-xs text-[#727272]">Update academic bulletin details and priority</p>
                             </div>
                             <button
                                 onClick={() => setEditingAnn(null)}
-                                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
+                                className="p-1.5 text-[#727272] hover:text-[#383838] hover:bg-slate-100 rounded-lg transition-all"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -706,7 +706,7 @@ const Announcements = () => {
 
                         <form onSubmit={handleUpdate} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1">
                                     Notice Title
                                 </label>
                                 <input
@@ -714,31 +714,31 @@ const Announcements = () => {
                                     type="text"
                                     value={editingAnn.title || ''}
                                     onChange={e => setEditingAnn({ ...editingAnn, title: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                    className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
                                         Category / Type
                                     </label>
                                     <input
                                         type="text"
                                         value={editingAnn.type || ''}
                                         onChange={e => setEditingAnn({ ...editingAnn, type: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
                                         Priority Tag
                                     </label>
                                     <select
                                         value={editingAnn.colorTag || 'blue'}
                                         onChange={e => setEditingAnn({ ...editingAnn, colorTag: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                     >
                                         <option value="blue">Blue (Official)</option>
                                         <option value="green">Green (Academic)</option>
@@ -749,19 +749,19 @@ const Announcements = () => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1">
                                     Deadline / Submission Due Date (Optional)
                                 </label>
                                 <input
                                     type="date"
                                     value={editingAnn.deadline || ''}
                                     onChange={e => setEditingAnn({ ...editingAnn, deadline: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                    className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs font-medium text-[#383838] outline-none focus:border-blue-500 focus:bg-white transition-all"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                <label className="block text-xs font-semibold text-[#383838] mb-1">
                                     Bulletin Details
                                 </label>
                                 <textarea
@@ -769,13 +769,13 @@ const Announcements = () => {
                                     rows={4}
                                     value={editingAnn.description || ''}
                                     onChange={e => setEditingAnn({ ...editingAnn, description: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-medium text-slate-800 resize-none outline-none focus:border-blue-500 focus:bg-white transition-all"
+                                    className="w-full bg-slate-50 border border-[#E2E2E2] rounded-lg p-3 text-xs font-medium text-[#383838] resize-none outline-none focus:border-blue-500 focus:bg-white transition-all"
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                className="w-full py-2.5 bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 <Send className="w-3.5 h-3.5" />
                                 <span>Save Changes</span>

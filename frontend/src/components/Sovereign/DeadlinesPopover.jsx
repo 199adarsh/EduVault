@@ -76,30 +76,30 @@ const DeadlinesPopover = ({
         className={cn(
           "fixed inset-x-3 top-20 max-w-sm mx-auto z-[210]",
           "sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[370px] sm:z-50",
-          "bg-white rounded-2xl shadow-xl border border-slate-200/90 text-slate-900 overflow-hidden",
+          "bg-white rounded-2xl shadow-xl border border-[#E2E2E2] text-[#383838] overflow-hidden",
           "animate-in fade-in zoom-in-95 duration-150 origin-top-right",
           className
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50/80 border-b border-slate-100">
+        <div className="flex items-center justify-between px-4 py-3 bg-[#DEEDFC]/40 border-b border-[#E2E2E2]">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-blue-100/80 text-blue-700 flex items-center justify-center shadow-2xs">
+            <div className="w-7 h-7 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shadow-2xs">
               <CalendarIcon className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-900 leading-tight">{title}</h3>
-              <p className="text-[10px] text-slate-500 font-medium">Currently active schedule dates</p>
+              <h3 className="text-xs font-bold text-[#383838] leading-tight">{title}</h3>
+              <p className="text-[10px] text-[#727272] font-medium">Currently active schedule dates</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-2xs">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF] shadow-2xs">
               {sortedDeadlines.length} {sortedDeadlines.length === 1 ? 'due' : 'due'}
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-[#727272] hover:text-[#383838] hover:bg-slate-200/60 transition-colors cursor-pointer"
               title="Close"
               aria-label="Close deadlines popup"
             >
@@ -115,8 +115,8 @@ const DeadlinesPopover = ({
               <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center mb-2.5 border border-emerald-200/60 shadow-2xs">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
-              <p className="text-xs font-bold text-slate-800">All Caught Up</p>
-              <p className="text-[11px] text-slate-500 mt-1 max-w-[220px] mx-auto leading-relaxed">
+              <p className="text-xs font-bold text-[#383838]">All Caught Up</p>
+              <p className="text-[11px] text-[#727272] mt-1 max-w-[220px] mx-auto leading-relaxed">
                 No upcoming deadlines scheduled in announcements right now.
               </p>
             </div>
@@ -131,14 +131,14 @@ const DeadlinesPopover = ({
               return (
                 <div
                   key={item.id || idx}
-                  className="p-2.5 rounded-xl bg-white hover:bg-slate-50/90 border border-slate-100 hover:border-slate-200 transition-all flex items-start gap-3 group"
+                  className="p-2.5 rounded-xl bg-white hover:bg-slate-50/90 border border-[#E2E2E2] hover:border-[#E2E2E2] transition-all flex items-start gap-3 group"
                 >
                   {/* Calendar Date Block */}
-                  <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 flex flex-col items-center justify-center shrink-0 group-hover:border-blue-300 transition-colors shadow-2xs">
+                  <div className="w-10 h-10 rounded-lg bg-slate-50 border border-[#E2E2E2] text-[#383838] flex flex-col items-center justify-center shrink-0 group-hover:border-blue-300 transition-colors shadow-2xs">
                     <span className="text-[8px] font-bold uppercase text-rose-600 leading-none">
                       {month}
                     </span>
-                    <span className="text-xs font-extrabold text-slate-800 leading-tight mt-0.5">
+                    <span className="text-xs font-extrabold text-[#383838] leading-tight mt-0.5">
                       {day}
                     </span>
                   </div>
@@ -159,12 +159,12 @@ const DeadlinesPopover = ({
                       )}
                     </div>
 
-                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1 leading-snug">
+                    <h4 className="text-xs font-bold text-[#383838] group-hover:text-blue-600 transition-colors line-clamp-1 leading-snug">
                       {item.title}
                     </h4>
 
-                    <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500">
-                      <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[#727272]">
+                      <Clock className="w-3 h-3 text-[#727272] shrink-0" />
                       <span className="truncate">{formatDeadlineDate(item._rawDate)}</span>
                     </div>
                   </div>
@@ -176,7 +176,7 @@ const DeadlinesPopover = ({
 
         {/* Footer */}
         {sortedDeadlines.length > 0 && (
-          <div className="px-3.5 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="px-3.5 py-2.5 bg-slate-50/90 border-t border-[#E2E2E2] flex items-center justify-between text-[11px] text-[#727272]">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Synced with Academic Announcements

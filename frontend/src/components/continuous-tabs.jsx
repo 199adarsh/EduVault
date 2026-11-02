@@ -68,7 +68,7 @@ export const ContinuousTabs = ({
                                     }}
                                     className="
                       absolute inset-0 rounded-full
-                      bg-[#252528] dark:bg-zinc-100
+                      bg-background dark:bg-background
                       shadow-xs
                     "
                                 />

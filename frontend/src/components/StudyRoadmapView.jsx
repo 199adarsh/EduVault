@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger, FluidTabs } from '@/components/ui/tabs';
 import { Map, BookOpen, FileText, CalendarDays, Loader2, Target, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
@@ -107,11 +107,19 @@ const StudyRoadmapView = () => {
           <p className="text-muted-foreground max-w-2xl">Paste your syllabus, previous year questions (PYQs), or raw question banks below. Our AI planner will cross-reference the data to instantly synthesize what topics are actually important and build a prioritized schedule for you.</p>
       </div>
 
+      <div className="mb-8">
+          <FluidTabs
+              value={activeTab}
+              onChange={setActiveTab}
+              layoutId="study-roadmap-tabs"
+              tabs={[
+                  { id: 'guide', label: 'Study Guide', icon: <Target className="w-4 h-4 mr-1.5" /> },
+                  { id: 'roadmap', label: 'Daily Roadmap', icon: <CalendarDays className="w-4 h-4 mr-1.5" /> }
+              ]}
+          />
+      </div>
+
       <Tabs defaultValue="guide" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
-              <TabsTrigger value="guide" className="flex items-center gap-2"><Target className="w-4 h-4" /> Study Guide</TabsTrigger>
-              <TabsTrigger value="roadmap" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Daily Roadmap</TabsTrigger>
-          </TabsList>
 
           <TabsContent value="guide" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

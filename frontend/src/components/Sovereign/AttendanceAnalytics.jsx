@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useOutletContext } from 'react-router-dom';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import FacultyAttendance from './FacultyAttendance';
+import { FluidTabs } from '../fluid-tabs';
 import { computeEngine, calculateLPW } from '../../lib/optimizationEngine';
 import {
     Calendar,
@@ -1050,7 +1051,7 @@ const AttendanceAnalytics = () => {
 
     if (isTeacher) {
         return (
-            <div className="flex-1 overflow-y-auto bg-[#F7F9FC] p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
+            <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
                 <div className="max-w-7xl mx-auto w-full min-w-0">
                     <FacultyAttendance profile={profile} subjects={globalSubjects || subjects} onRefresh={refreshData} />
                 </div>
@@ -1059,7 +1060,7 @@ const AttendanceAnalytics = () => {
     }
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#F7F9FC] p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-slate-800 font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full min-w-0">
 
                 {/* Top Academic Standing Header */}
@@ -1267,31 +1268,25 @@ const AttendanceAnalytics = () => {
                 {isTeacher ? (
                     <div className="space-y-6">
                         {/* Navigation Tabs for Faculty */}
-                        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                            <button
-                                type="button"
-                                onClick={() => setTeacherActiveTab('nc')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                                    teacherActiveTab === 'nc'
-                                        ? 'bg-blue-600 text-white shadow-xs'
-                                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                                }`}
-                            >
-                                <span className="material-symbols-outlined text-[16px]">fact_check</span>
-                                <span>Leave Requests Queue ({allFacultyNc.length})</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setTeacherActiveTab('courses')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                                    teacherActiveTab === 'courses'
-                                        ? 'bg-blue-600 text-white shadow-xs'
-                                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                                }`}
-                            >
-                                <span className="material-symbols-outlined text-[16px]">list_alt</span>
-                                <span>Class Attendance Registers ({subjects?.length || 0})</span>
-                            </button>
+                        <div className="border-b border-slate-200 pb-2">
+                            <FluidTabs
+                                value={teacherActiveTab}
+                                onChange={setTeacherActiveTab}
+                                size="sm"
+                                layoutId="faculty-nav-tabs"
+                                tabs={[
+                                    {
+                                        id: 'nc',
+                                        label: `Leave Requests Queue (${allFacultyNc.length})`,
+                                        icon: <span className="material-symbols-outlined text-[16px] mr-1">fact_check</span>
+                                    },
+                                    {
+                                        id: 'courses',
+                                        label: `Class Attendance Registers (${subjects?.length || 0})`,
+                                        icon: <span className="material-symbols-outlined text-[16px] mr-1">list_alt</span>
+                                    }
+                                ]}
+                            />
                         </div>
 
                         {teacherActiveTab === 'nc' ? (
@@ -1547,29 +1542,17 @@ const AttendanceAnalytics = () => {
                     <section className="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
                         {/* Filter Bar */}
                         <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
-                                <button
-                                    onClick={() => setFilterTab('all')}
-                                    className={`px-3 py-1.5 rounded-md transition cursor-pointer ${filterTab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                >
-                                    All Subjects ({activeSubjects.length})
-                                </button>
-                                <button
-                                    onClick={() => setFilterTab('attention')}
-                                    className={`px-3 py-1.5 rounded-md transition cursor-pointer ${filterTab === 'attention' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                >
-                                    Needs Attention ({riskSubjects.length})
-                                </button>
-                                <button
-                                    onClick={() => setFilterTab('safe')}
-                                    className={`px-3 py-1.5 rounded-md transition cursor-pointer ${filterTab === 'safe' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                >
-                                    Safe ({safeSubjects.length})
-                                </button>
-                            </div>
+                            <FluidTabs
+                                value={filterTab}
+                                onChange={setFilterTab}
+                                size="xs"
+                                layoutId="attendance-filter-tabs-desktop"
+                                tabs={[
+                                    { id: 'all', label: `All Subjects (${activeSubjects.length})` },
+                                    { id: 'attention', label: `Needs Attention (${riskSubjects.length})` },
+                                    { id: 'safe', label: `Safe (${safeSubjects.length})` }
+                                ]}
+                            />
 
 
                             <span className="text-xs text-slate-400 font-medium">Minimum Threshold: 75.0%</span>
@@ -1825,31 +1808,18 @@ const AttendanceAnalytics = () => {
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-1 bg-slate-100/80 p-0.5 rounded-lg text-xs font-semibold overflow-x-auto no-scrollbar">
-                                    <button
-                                        onClick={() => setFilterTab('all')}
-                                        className={`px-2.5 py-1 rounded-md transition whitespace-nowrap cursor-pointer text-xs ${
-                                            filterTab === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                    >
-                                        All ({activeSubjects.length})
-                                    </button>
-                                    <button
-                                        onClick={() => setFilterTab('attention')}
-                                        className={`px-2.5 py-1 rounded-md transition whitespace-nowrap cursor-pointer text-xs ${
-                                            filterTab === 'attention' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                    >
-                                        Attention ({riskSubjects.length})
-                                    </button>
-                                    <button
-                                        onClick={() => setFilterTab('safe')}
-                                        className={`px-2.5 py-1 rounded-md transition whitespace-nowrap cursor-pointer text-xs ${
-                                            filterTab === 'safe' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                        }`}
-                                    >
-                                        Safe ({safeSubjects.length})
-                                    </button>
+                                <div className="overflow-x-auto no-scrollbar">
+                                    <FluidTabs
+                                        value={filterTab}
+                                        onChange={setFilterTab}
+                                        size="xs"
+                                        layoutId="attendance-filter-tabs-mobile"
+                                        tabs={[
+                                            { id: 'all', label: `All (${activeSubjects.length})` },
+                                            { id: 'attention', label: `Attention (${riskSubjects.length})` },
+                                            { id: 'safe', label: `Safe (${safeSubjects.length})` }
+                                        ]}
+                                    />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
@@ -2017,36 +1987,26 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Modal Navigation Tabs */}
-                        <div className="px-4 sm:px-5 pt-3 border-b border-slate-200 bg-white flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setModalTab('presence')}
-                                    className={`px-3.5 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
-                                        modalTab === 'presence'
-                                            ? 'border-blue-600 text-blue-600'
-                                            : 'border-transparent text-slate-500 hover:text-slate-900'
-                                    }`}
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">list_alt</span>
-                                    <span>Presence Log (P / Absent)</span>
-                                </button>
-                                <button
-                                    onClick={() => setModalTab('nc')}
-                                    className={`px-3.5 py-2 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
-                                        modalTab === 'nc'
-                                            ? 'border-blue-600 text-blue-600'
-                                            : 'border-transparent text-slate-500 hover:text-slate-900'
-                                    }`}
-                                >
-                                    <Shield className="w-3.5 h-3.5 text-blue-600" />
-                                    <span>Absence Consideration (NC)</span>
-                                    {subjectNcRequests.length > 0 && (
-                                        <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
-                                            {subjectNcRequests.length}
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
+                        <div className="px-4 sm:px-5 py-2.5 border-b border-slate-200 bg-white flex items-center justify-between gap-2">
+                            <FluidTabs
+                                value={modalTab}
+                                onChange={setModalTab}
+                                size="xs"
+                                layoutId="attendance-modal-tabs"
+                                tabs={[
+                                    {
+                                        id: 'presence',
+                                        label: 'Presence Log (P / Absent)',
+                                        icon: <span className="material-symbols-outlined text-[15px] mr-1">list_alt</span>
+                                    },
+                                    {
+                                        id: 'nc',
+                                        label: 'Absence Consideration (NC)',
+                                        icon: <Shield className="w-3.5 h-3.5 text-blue-600 mr-1" />,
+                                        badge: subjectNcRequests.length > 0 ? subjectNcRequests.length : undefined
+                                    }
+                                ]}
+                            />
 
                             <button
                                 onClick={() => fetchSubjectNcRequests(selectedSubject)}

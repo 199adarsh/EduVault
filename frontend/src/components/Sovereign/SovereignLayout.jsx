@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
+import { motion } from 'motion/react';
 import SovereignSidebar from './SovereignSidebar';
 import { Menu } from 'lucide-react';
 
@@ -313,7 +314,19 @@ const SovereignLayout = () => {
                                         isActive ? 'text-primary font-bold' : 'text-text-secondary hover:text-text-primary'
                                     }`}
                                 >
-                                    <div className="relative">
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="mobile-dock-active-pill"
+                                            transition={{
+                                                type: 'spring',
+                                                stiffness: 300,
+                                                damping: 28,
+                                                mass: 0.8,
+                                            }}
+                                            className="absolute inset-x-2 inset-y-1.5 rounded-2xl bg-blue-50/80 -z-0"
+                                        />
+                                    )}
+                                    <div className="relative z-10">
                                         <span className="material-symbols-outlined text-[22px]">{tab.icon}</span>
                                         {tab.badge && (
                                             <span className="absolute -top-1 -right-3 px-1 rounded-full bg-emerald-100 text-emerald-700 text-[8px] font-bold border border-emerald-200">
@@ -321,7 +334,7 @@ const SovereignLayout = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <span className="text-[10px] leading-tight mt-0.5">{tab.name}</span>
+                                    <span className="relative z-10 text-[10px] leading-tight mt-0.5">{tab.name}</span>
                                 </button>
                             );
                         })}

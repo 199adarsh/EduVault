@@ -16,6 +16,7 @@ import { cn } from '../../lib/utils';
 import DocumentLoadingBar from '../DocumentLoadingBar';
 import LmsSyncModal from './LmsSyncModal';
 import PYQsDatabase from './PYQsDatabase';
+import { FluidTabs } from '../fluid-tabs';
 
 const normalizeDept = (dept) => {
     if (!dept) return 'AIDS';
@@ -232,7 +233,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
     const handleDownloadNote = (e, note) => {
         e.stopPropagation();
-        const downloadUrl = note?.fileUrl 
+        const downloadUrl = note?.fileUrl
             ? (note.fileUrl.startsWith('http') ? note.fileUrl : `${import.meta.env.VITE_API_BASE || '/api'}/files/raw/${note.fileUrl}`)
             : null;
 
@@ -324,20 +325,20 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
     const units = ['UNIT 01', 'UNIT 02', 'UNIT 03', 'UNIT 04', 'UNIT 05', 'UNIT 06'];
 
     return (
-        <div className="flex-1 flex flex-col min-h-screen bg-[#f8fafc] text-slate-900 antialiased overflow-y-auto">
+        <div className="flex-1 flex flex-col min-h-screen bg-background text-slate-900 antialiased overflow-y-auto">
             {/* Animated Dummy Loading Bars for Opening & Downloading Notes */}
             {openingNote && (
-                <DocumentLoadingBar 
-                    progress={openProgress} 
-                    message="Loading document..." 
-                    submessage={openingNote.title} 
+                <DocumentLoadingBar
+                    progress={openProgress}
+                    message="Loading document..."
+                    submessage={openingNote.title}
                 />
             )}
             {downloadingNote && (
-                <DocumentLoadingBar 
-                    progress={downloadProgress} 
-                    message="Downloading document..." 
-                    submessage={downloadingNote.title} 
+                <DocumentLoadingBar
+                    progress={downloadProgress}
+                    message="Downloading document..."
+                    submessage={downloadingNote.title}
                 />
             )}
             <main className="p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-5 pb-24 md:pb-12">
@@ -377,31 +378,25 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                 </header>
 
                 {/* Sub-navigation tabs: Notes & PYQs */}
-                <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3 overflow-x-auto no-scrollbar">
-                    <button
-                        onClick={() => handleTabChange('notes')}
-                        className={cn(
-                            "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer",
-                            activeTab === 'notes'
-                                ? "bg-blue-600 text-white shadow-xs"
-                                : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
-                        )}
-                    >
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>Subject Notes ({notes?.length || 0})</span>
-                    </button>
-                    <button
-                        onClick={() => handleTabChange('pyqs')}
-                        className={cn(
-                            "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer",
-                            activeTab === 'pyqs'
-                                ? "bg-blue-600 text-white shadow-xs"
-                                : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
-                        )}
-                    >
-                        <GraduationCap className="w-3.5 h-3.5" />
-                        <span>Previous Year Questions (PYQs)</span>
-                    </button>
+                <div className="border-b border-slate-200/80 pb-3 overflow-x-auto no-scrollbar">
+                    <FluidTabs
+                        value={activeTab}
+                        onChange={handleTabChange}
+                        size="sm"
+                        layoutId="notes-library-tabs"
+                        tabs={[
+                            {
+                                id: 'notes',
+                                label: `Subject Notes (${notes?.length || 0})`,
+                                icon: <BookOpen className="w-3.5 h-3.5 mr-1" />
+                            },
+                            {
+                                id: 'pyqs',
+                                label: 'Previous Year Questions (PYQs)',
+                                icon: <GraduationCap className="w-3.5 h-3.5 mr-1" />
+                            }
+                        ]}
+                    />
                 </div>
 
                 {activeTab === 'pyqs' ? (
@@ -490,47 +485,10 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                         </div>
 
                         {/* Category Filter Pills (Core 5 Categories) */}
-                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0">
-                                Category:
-                            </span>
-                            {CORE_CATEGORIES.map(cat => {
-                                const isSelected = selectedCategory === cat.id;
-                                return (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => setSelectedCategory(cat.id)}
-                                        className={cn(
-                                            "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
-                                            isSelected
-                                                ? "bg-slate-900 text-white shadow-xs"
-                                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                        )}
-                                    >
-                                        {cat.label}
-                                    </button>
-                                );
-                            })}
-                        </div>
+
 
                         {/* Active Filter State Header */}
-                        <div className="flex items-center justify-between px-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-bold text-slate-500">Selected Subject:</span>
-                                <span className="text-xs font-black text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200">
-                                    {activeSubjectObj?.name || 'Selected Subject'} {activeSubjectObj?.code ? `(${activeSubjectObj.code})` : ''}
-                                </span>
-                                <span className="text-xs text-slate-400">•</span>
-                                <span className="text-xs text-slate-600 font-medium">
-                                    {displayNotes.length} {displayNotes.length === 1 ? 'Note' : 'Notes'} Available
-                                </span>
-                                {selectedCategory !== 'All' && (
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                                        {selectedCategory}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
+
 
                         {/* Direct Notes List Grid */}
                         {displayNotes.length > 0 ? (

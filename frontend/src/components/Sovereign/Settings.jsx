@@ -271,7 +271,7 @@ const Settings = () => {
     };
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#F7F9FC] p-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-12 antialiased text-slate-800 font-sans min-h-screen">
+        <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-12 antialiased text-slate-800 font-sans min-h-screen">
             <div className="max-w-5xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">

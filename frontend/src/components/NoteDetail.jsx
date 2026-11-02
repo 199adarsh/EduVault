@@ -9,6 +9,7 @@ import {
     FileText, User, Calendar, CheckCircle2, Send, Inbox, Loader2
 } from 'lucide-react';
 import DocumentLoadingBar from './DocumentLoadingBar';
+import { FluidTabs } from './fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -467,21 +468,30 @@ const NoteDetail = () => {
                 </div>
 
                 {/* Panel Tabs */}
-                <div className="flex p-4 gap-2 border-b border-zinc-800/50 bg-zinc-950/50">
-                    <button 
-                        onClick={() => setActiveTab('doubts')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${activeTab === 'doubts' ? 'bg-zinc-800 text-white border border-zinc-700 shadow-lg' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border border-transparent'}`}
-                    >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        Doubts ({doubts.length})
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab('ai')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 ${activeTab === 'ai' ? 'bg-blue-600 text-white border border-blue-500 shadow-lg shadow-blue-500/20' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border border-transparent'}`}
-                    >
-                        <Bot className="w-3.5 h-3.5" />
-                        AI Note Helper
-                    </button>
+                <div className="p-3 border-b border-zinc-800/50 bg-zinc-950/50 flex justify-center">
+                    <FluidTabs
+                        value={activeTab}
+                        onChange={setActiveTab}
+                        size="sm"
+                        layoutId="note-detail-panel-tabs"
+                        className="w-full bg-zinc-900 border-zinc-800"
+                        tabClassName="flex-1"
+                        activeClassName="font-bold text-white"
+                        inactiveClassName="font-medium text-zinc-400 hover:text-zinc-200"
+                        indicatorClassName="absolute inset-0 rounded-full border border-zinc-700/80 bg-zinc-800 shadow-md"
+                        tabs={[
+                            {
+                                id: 'doubts',
+                                label: `Doubts (${doubts.length})`,
+                                icon: <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                            },
+                            {
+                                id: 'ai',
+                                label: 'AI Note Helper',
+                                icon: <Bot className="w-3.5 h-3.5 mr-1 text-blue-400" />
+                            }
+                        ]}
+                    />
                 </div>
 
                 {/* Content Area */}

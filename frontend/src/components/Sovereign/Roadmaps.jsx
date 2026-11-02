@@ -35,7 +35,7 @@ function TopicNode({ data }) {
       onClick={() => onSelect(topic.id)}
     >
       <Handle type="target" position={Position.Left} />
-      
+
       <div className="node-topline">
         <div className={`node-icon-box ${status}`}>
           {status === 'completed' ? (
@@ -95,7 +95,7 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
         </button>
       </div>
 
-      <p className="detail-desc">{topic.description}</p>
+      {topic.description && <p className="detail-desc">{topic.description}</p>}
 
       <div className="detail-tags">
         <span><Clock3 size={12} /> {topic.duration}</span>
@@ -132,9 +132,8 @@ function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, mat
                   className="prereq-item hover:border-blue-300 border border-transparent transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${
-                      pStatus === 'completed' ? 'bg-emerald-500' : pStatus === 'in-progress' ? 'bg-amber-500' : 'bg-slate-300'
-                    }`} />
+                    <span className={`w-2 h-2 rounded-full ${pStatus === 'completed' ? 'bg-emerald-500' : pStatus === 'in-progress' ? 'bg-amber-500' : 'bg-slate-300'
+                      }`} />
                     <span className="font-semibold text-slate-800">{p.title}</span>
                   </div>
                   <span className="text-[10px] text-slate-500">{statusLabel[pStatus]}</span>
@@ -488,7 +487,7 @@ const Roadmaps = () => {
   // Filtered topics
   const visibleTopics = useMemo(() => {
     return currentRoadmap.topics.filter(t => {
-      const matchesQuery = !query || `${t.title} ${t.description} ${t.level}`.toLowerCase().includes(query.toLowerCase());
+      const matchesQuery = !query || `${t.title} ${t.description || ''} ${t.level}`.toLowerCase().includes(query.toLowerCase());
       const matchesFilter = filter === 'all' || getStatus(t.id) === filter;
       return matchesQuery && matchesFilter;
     });
@@ -509,9 +508,6 @@ const Roadmaps = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100 flex items-center gap-1">
-                <GraduationCap size={12} /> College Coursework Matched
-              </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
                 <Award size={12} /> Campus Placement Verified
               </span>
@@ -519,9 +515,11 @@ const Roadmaps = () => {
             <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
               {currentRoadmap.title}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5 max-w-2xl leading-relaxed">
-              {currentRoadmap.description}
-            </p>
+            {currentRoadmap.description && (
+              <p className="text-xs text-slate-500 mt-0.5 max-w-2xl leading-relaxed">
+                {currentRoadmap.description}
+              </p>
+            )}
           </div>
 
           {/* Action CTAs */}
@@ -550,7 +548,7 @@ const Roadmaps = () => {
         </div>
 
         {/* Single Selected Roadmap Selector */}
-        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">
               Active Roadmap:
@@ -570,32 +568,13 @@ const Roadmaps = () => {
               <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none w-3.5 h-3.5" />
             </div>
           </div>
-
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {ROADMAP_CATEGORIES.map(cat => {
-              const isSelected = selectedDomain === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedDomain(cat.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
-                  }`}
-                >
-                  <span>{cat.name}</span>
-                </button>
-              );
-            })}
-          </div>
         </div>
       </header>
 
       {/* Progress & Filtering Toolbar */}
       <section className="px-3.5 sm:px-6 py-3 bg-white/80 border-b border-slate-200">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          
+
           {/* Progress stats */}
           <div className="flex items-center gap-4 flex-1 max-w-md">
             <div className="w-full">
@@ -650,17 +629,15 @@ const Roadmaps = () => {
             <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200">
               <button
                 onClick={() => setViewMode('graph')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'graph' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'graph' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
                 Graph Flow
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'list' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
                 Curriculum List
               </button>
@@ -672,7 +649,7 @@ const Roadmaps = () => {
       {/* Main Workspace */}
       <main className="roadmap-workspace">
         <div className="w-full flex flex-col gap-4">
-          
+
           {/* Continuo Placement Highlights Notification */}
           <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -722,18 +699,16 @@ const Roadmaps = () => {
                   <div
                     key={topic.id}
                     onClick={() => setSelectedId(topic.id)}
-                    className={`p-4 flex items-center justify-between gap-4 transition-colors cursor-pointer ${
-                      isSelected ? 'bg-blue-50/50' : 'hover:bg-slate-50'
-                    }`}
+                    className={`p-4 flex items-center justify-between gap-4 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50/50' : 'hover:bg-slate-50'
+                      }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
-                        status === 'completed'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : status === 'in-progress'
+                      <span className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${status === 'completed'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : status === 'in-progress'
                           ? 'bg-amber-100 text-amber-800'
                           : 'bg-slate-100 text-slate-600'
-                      }`}>
+                        }`}>
                         {index + 1}
                       </span>
                       <div className="min-w-0">
@@ -745,9 +720,11 @@ const Roadmaps = () => {
                             {topic.level}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate max-w-md">
-                          {topic.description}
-                        </p>
+                        {topic.description && (
+                          <p className="text-[11px] text-slate-500 truncate max-w-md">
+                            {topic.description}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -755,13 +732,12 @@ const Roadmaps = () => {
                       <span className="text-[11px] text-slate-400 font-medium">
                         {topic.duration}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        status === 'completed'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : status === 'in-progress'
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${status === 'completed'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : status === 'in-progress'
                           ? 'bg-amber-50 text-amber-700'
                           : 'bg-slate-100 text-slate-600'
-                      }`}>
+                        }`}>
                         {locked ? 'Locked' : statusLabel[status]}
                       </span>
                       <ArrowRight size={14} className="text-slate-400" />
@@ -880,13 +856,12 @@ const Roadmaps = () => {
                         >
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                                sub.importance === 'CRITICAL'
-                                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                                  : sub.importance === 'IMPORTANT'
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${sub.importance === 'CRITICAL'
+                                ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                : sub.importance === 'IMPORTANT'
                                   ? 'bg-blue-100 text-blue-800 border border-blue-200'
                                   : 'bg-slate-200 text-slate-700'
-                              }`}>
+                                }`}>
                                 {sub.importance}
                               </span>
                               <span className="text-[10px] text-slate-400 font-medium">

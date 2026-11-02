@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -59,21 +60,15 @@ const HackathonsFeed = () => {
                     </div>
                 </div>
 
-                {/* City Selector: Horizontally scrollable without page overflow */}
-                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar max-w-full touch-pan-x w-full sm:w-auto shrink-0">
-                    {CITIES.map(c => (
-                        <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => setCity(c.id)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${city === c.id
-                                    ? 'bg-white text-indigo-600 shadow-xs'
-                                    : 'text-text-secondary hover:text-text-primary'
-                                }`}
-                        >
-                            {c.label}
-                        </button>
-                    ))}
+                {/* City Selector */}
+                <div className="overflow-x-auto no-scrollbar max-w-full touch-pan-x w-full sm:w-auto shrink-0">
+                    <FluidTabs
+                        value={city}
+                        onChange={setCity}
+                        size="xs"
+                        layoutId="hackathons-city-tabs"
+                        tabs={CITIES}
+                    />
                 </div>
             </div>
 

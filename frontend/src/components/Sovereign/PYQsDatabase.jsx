@@ -310,7 +310,7 @@ const PYQsDatabase = ({ embedded = false }) => {
 
     return (
         <div className={cn(
-            embedded ? "flex flex-col gap-6" : "flex-1 flex flex-col min-h-screen bg-[#f8fafc] text-slate-900 antialiased overflow-y-auto"
+            embedded ? "flex flex-col gap-6" : "flex-1 flex flex-col min-h-screen bg-background text-slate-900 antialiased overflow-y-auto"
         )}>
             {/* Smooth animated dummy loading progress bar for opening question papers */}
             {openingPyq && (

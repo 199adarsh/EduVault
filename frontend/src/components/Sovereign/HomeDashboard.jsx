@@ -10,6 +10,7 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import HackathonsFeed from './HackathonsFeed';
 import DeadlinesPopover from './DeadlinesPopover';
+import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -652,27 +653,19 @@ const HomeDashboard = () => {
           </div>
 
           {/* Role Toggle Tabs */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-xl mb-5">
-            <button
-              type="button"
-              onClick={() => setLoginRole('student')}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${loginRole === 'student'
-                ? 'bg-white text-primary shadow-xs'
-                : 'text-text-secondary hover:text-text-primary'
-                }`}
-            >
-              Student Login
-            </button>
-            <button
-              type="button"
-              onClick={() => setLoginRole('teacher')}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${loginRole === 'teacher'
-                ? 'bg-white text-primary shadow-xs'
-                : 'text-text-secondary hover:text-text-primary'
-                }`}
-            >
-              Teacher / Faculty
-            </button>
+          <div className="flex justify-center mb-5">
+            <FluidTabs
+              value={loginRole}
+              onChange={setLoginRole}
+              size="sm"
+              layoutId="login-role-tabs"
+              tabs={[
+                { id: 'student', label: 'Student Login' },
+                { id: 'teacher', label: 'Teacher / Faculty' }
+              ]}
+              className="w-full justify-between"
+              tabClassName="flex-1"
+            />
           </div>
 
           {syncing ? (

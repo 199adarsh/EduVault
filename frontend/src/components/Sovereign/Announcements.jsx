@@ -192,7 +192,7 @@ const Announcements = () => {
     }, [announcements]);
 
     return (
-        <main className="w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-20 md:pb-8 bg-[#F7F9FC] text-slate-900 min-w-0 max-w-full overflow-x-hidden">
+        <main className="w-full px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-20 md:pb-8 bg-background text-slate-900 min-w-0 max-w-full overflow-x-hidden">
             <div className="flex flex-col w-full max-w-[1360px] mx-auto space-y-4 sm:space-y-6 min-w-0">
                 {/* Interactive Top Action & Heading Row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full min-w-0">

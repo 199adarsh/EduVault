@@ -83,3 +83,5 @@ function TabsContent({
 }
 
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { FluidTabs } from "@/components/fluid-tabs"
+

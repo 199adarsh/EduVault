@@ -16,6 +16,7 @@ import {
     Sparkles,
     Check
 } from 'lucide-react';
+import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -165,33 +166,31 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-zinc-800/80 px-6 bg-zinc-900/20">
-                    <button
-                        onClick={() => setActiveTab('sync')}
-                        className={`py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${activeTab === 'sync'
-                                ? 'border-blue-500 text-blue-400'
-                                : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                            }`}
-                    >
-                        Sync Options
-                    </button>
-                    <button
-                        onClick={() => {
-                            if (!discoveredCourses) handleDiscover();
-                            else setActiveTab('preview');
+                <div className="border-b border-zinc-800/80 px-6 py-3 bg-zinc-900/20">
+                    <FluidTabs
+                        value={activeTab}
+                        onChange={(tabId) => {
+                            if (tabId === 'preview' && !discoveredCourses) {
+                                handleDiscover();
+                            } else {
+                                setActiveTab(tabId);
+                            }
                         }}
-                        className={`py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 ${activeTab === 'preview'
-                                ? 'border-blue-500 text-blue-400'
-                                : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                            }`}
-                    >
-                        <span>Course Discovery</span>
-                        {discoveredCourses && (
-                            <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.2 rounded-full">
-                                {discoveredCourses.length}
-                            </span>
-                        )}
-                    </button>
+                        size="xs"
+                        layoutId="lms-sync-modal-tabs"
+                        className="bg-zinc-900 border-zinc-800"
+                        activeClassName="font-bold text-white"
+                        inactiveClassName="font-medium text-zinc-400 hover:text-zinc-200"
+                        indicatorClassName="absolute inset-0 rounded-full border border-zinc-700/80 bg-zinc-800 shadow-md"
+                        tabs={[
+                            { id: 'sync', label: 'Sync Options' },
+                            {
+                                id: 'preview',
+                                label: 'Course Discovery',
+                                badge: discoveredCourses ? discoveredCourses.length : undefined
+                            }
+                        ]}
+                    />
                 </div>
 
                 {/* Body */}

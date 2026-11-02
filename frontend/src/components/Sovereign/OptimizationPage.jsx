@@ -239,7 +239,7 @@ const OptimizationPage = () => {
     }
 
     return (
-        <main className="w-full px-6 lg:px-10 py-8 bg-[#F7F9FC] min-h-screen">
+        <main className="w-full px-6 lg:px-10 py-8 bg-background min-h-screen">
             <div className="flex flex-col w-full max-w-[1400px] mx-auto pb-16">
                 {/* Ultra-Clean Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pt-1">

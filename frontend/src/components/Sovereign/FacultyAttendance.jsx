@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { FluidTabs } from '@/components/fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -312,35 +313,19 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
             {/* Filter and Search Bar */}
             <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
                 {/* Status Tabs */}
-                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-                    {[
-                        { id: 'ALL', label: 'All', count: stats.total },
-                        { id: 'PENDING', label: 'Pending', count: stats.pending, highlight: 'text-amber-700 bg-amber-50' },
-                        { id: 'APPROVED', label: 'Approved', count: stats.approved, highlight: 'text-emerald-700 bg-emerald-50' },
-                        { id: 'REJECTED', label: 'Rejected', count: stats.rejected, highlight: 'text-rose-700 bg-rose-50' }
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setStatusFilter(tab.id)}
-                            className={cn(
-                                "px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
-                                statusFilter === tab.id
-                                    ? "bg-slate-900 text-white shadow-xs"
-                                    : "text-slate-600 hover:bg-slate-100"
-                            )}
-                        >
-                            <span>{tab.label}</span>
-                            <span className={cn(
-                                "text-[10px] px-1.5 py-0.2 rounded-full font-bold",
-                                statusFilter === tab.id
-                                    ? "bg-white/20 text-white"
-                                    : tab.highlight || "bg-slate-100 text-slate-600"
-                            )}>
-                                {tab.count}
-                            </span>
-                        </button>
-                    ))}
+                <div className="overflow-x-auto no-scrollbar">
+                    <FluidTabs
+                        value={statusFilter}
+                        onChange={setStatusFilter}
+                        size="xs"
+                        layoutId="faculty-status-filter-tabs"
+                        tabs={[
+                            { id: 'ALL', label: 'All', badge: stats.total },
+                            { id: 'PENDING', label: 'Pending', badge: stats.pending },
+                            { id: 'APPROVED', label: 'Approved', badge: stats.approved },
+                            { id: 'REJECTED', label: 'Rejected', badge: stats.rejected }
+                        ]}
+                    />
                 </div>
 
                 {/* Secondary Filters: Subject & Search */}

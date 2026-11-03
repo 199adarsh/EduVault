@@ -1,7 +1,4 @@
-# run-backend.ps1
-# Loads environment variables from the root .env file, then starts the Spring Boot backend.
-# Usage (from repo root):  .\run-backend.ps1
-# Or from backend folder:  ..\run-backend.ps1
+
 
 $envFile = Join-Path $PSScriptRoot ".env"
 
@@ -16,7 +13,7 @@ Get-Content $envFile | ForEach-Object {
     if ($line -and -not $line.StartsWith("#")) {
         $idx = $line.IndexOf("=")
         if ($idx -gt 0) {
-            $key   = $line.Substring(0, $idx).Trim()
+            $key = $line.Substring(0, $idx).Trim()
             $value = $line.Substring($idx + 1).Trim()
             Set-Item -Path "Env:$key" -Value $value
             Write-Host "  SET $key"
@@ -31,7 +28,8 @@ if (-not $proxyConn) {
     $proxyDir = Join-Path $PSScriptRoot "gemini-web2api"
     Start-Process -FilePath "python" -ArgumentList "gemini_web2api.py --port 8000" -WorkingDirectory $proxyDir -WindowStyle Hidden
     Start-Sleep -Seconds 2
-} else {
+}
+else {
     Write-Host "Gemini Web2API proxy is already running on port 8000."
 }
 

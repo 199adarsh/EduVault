@@ -16,6 +16,7 @@ public class DashboardSubject {
     private String name;
     private int attendance;
     private int cie;
+    private int maxCie;
     private int totalConducted;
     private int totalAttended;
     private int totalScheduled;

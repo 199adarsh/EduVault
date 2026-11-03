@@ -632,6 +632,38 @@ const HomeDashboard = () => {
     return [];
   }, [subjects]);
 
+  // CIE Evaluation Helpers (Supports /50 and /75 schemes)
+  const isCiePending = (cie) => {
+    if (cie === null || cie === undefined) return true;
+    const s = String(cie).trim();
+    return s === '' || s === '-' || s === 'NA' || s === 'N/A' || isNaN(parseFloat(s));
+  };
+
+  const getSubjectMaxCie = (sub, registry = []) => {
+    if (sub?.maxCie) return sub.maxCie;
+    const score = parseFloat(sub?.cie);
+    if (!isNaN(score) && score > 50) return 75;
+
+    const code = (sub?.code || '').toLowerCase();
+    const name = (sub?.name || '').toLowerCase();
+    const isPractical = code.endsWith('-p') ||
+                        code.includes('-p') ||
+                        name.includes(' lab') ||
+                        name.includes('practical') ||
+                        name.includes('mini-project') ||
+                        name.includes('mini project') ||
+                        name.includes('project');
+
+    if (isPractical) return 50;
+
+    const hasAnyAbove50 = registry.some(s => {
+      const v = parseFloat(s?.cie);
+      return !isNaN(v) && v > 50;
+    });
+
+    return hasAnyAbove50 ? 75 : 50;
+  };
+
   const displayCieList = useMemo(() => {
     if (subjectRegistry && subjectRegistry.length > 0) {
       return [...subjectRegistry].sort((a, b) => {
@@ -645,13 +677,46 @@ const HomeDashboard = () => {
     return [];
   }, [subjectRegistry]);
 
-  const cieAverage = useMemo(() => {
-    if (!subjectRegistry || subjectRegistry.length === 0) return null;
-    const withCie = subjectRegistry.filter(s => parseFloat(s.cie) > 0);
-    if (withCie.length === 0) return null;
-    const total = withCie.reduce((acc, s) => acc + (parseFloat(s.cie) || 0), 0);
-    return ((total / (withCie.length * 50)) * 100).toFixed(1);
+  const cieStats = useMemo(() => {
+    if (!subjectRegistry || subjectRegistry.length === 0) {
+      return { evaluatedCount: 0, pendingCount: 0, totalMarks: 0, totalMax: 0, percentage: null, highScorers: 0, avgMarks: 0 };
+    }
+
+    let totalMarks = 0;
+    let totalMax = 0;
+    let evaluatedCount = 0;
+    let pendingCount = 0;
+    let highScorers = 0;
+
+    subjectRegistry.forEach(sub => {
+      if (isCiePending(sub.cie)) {
+        pendingCount++;
+        return;
+      }
+      const score = parseFloat(sub.cie);
+      const max = getSubjectMaxCie(sub, subjectRegistry);
+      totalMarks += score;
+      totalMax += max;
+      evaluatedCount++;
+      const pct = (score / max) * 100;
+      if (pct >= 80) highScorers++;
+    });
+
+    const percentage = totalMax > 0 ? ((totalMarks / totalMax) * 100).toFixed(1) : null;
+    const avgMarks = evaluatedCount > 0 ? (totalMarks / evaluatedCount).toFixed(1) : 0;
+
+    return {
+      evaluatedCount,
+      pendingCount,
+      totalMarks,
+      totalMax,
+      avgMarks,
+      percentage,
+      highScorers
+    };
   }, [subjectRegistry]);
+
+  const cieAverage = cieStats.percentage;
 
   if (loading) {
     return (
@@ -816,7 +881,7 @@ const HomeDashboard = () => {
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">College PRN</label>
                 <input
                   type="text"
-                  placeholder="e.g. 24UAD022"
+                  placeholder="e.g. 2XUAD0XX"
                   value={loginPrn}
                   onChange={(e) => setLoginPrn(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -829,7 +894,7 @@ const HomeDashboard = () => {
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">Date of Birth</label>
                 <input
                   type="text"
-                  placeholder="DD-MM-YYYY (e.g. 22-11-2006)"
+                  placeholder="DD-MM-YYYY (e.g. 01-10-2001)"
                   value={loginDob}
                   onChange={(e) => setLoginDob(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -1611,11 +1676,18 @@ const HomeDashboard = () => {
                   <div className="space-y-2">
                     {displayCieList.length > 0 ? (
                       displayCieList.slice(0, 4).map((sub, i) => {
-                        const cie = parseFloat(sub.cie) || 0;
-                        const maxCie = 50;
-                        const pct = Math.min(Math.round((cie / maxCie) * 100), 100);
-                        const tagColor = cie >= 40 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : cie >= 30 ? "text-[#0073E6] bg-[#D9ECFF] border-[#0073E6]/20" : "text-amber-700 bg-amber-50 border-amber-200";
-                        const statusLabel = cie >= 40 ? "Excellent" : cie >= 30 ? "Good" : "Review";
+                        const pending = isCiePending(sub.cie);
+                        const cie = pending ? null : parseFloat(sub.cie);
+                        const maxCie = getSubjectMaxCie(sub, subjectRegistry);
+                        const pct = pending ? 0 : Math.min(Math.round((cie / maxCie) * 100), 100);
+                        const tagColor = pending
+                          ? "text-slate-600 bg-slate-100 border-slate-200"
+                          : pct >= 80
+                          ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                          : pct >= 60
+                          ? "text-[#0073E6] bg-[#D9ECFF] border-[#0073E6]/20"
+                          : "text-amber-700 bg-amber-50 border-amber-200";
+                        const statusLabel = pending ? "Pending" : pct >= 80 ? "Excellent" : pct >= 60 ? "Good" : "Needs Imp.";
 
                         return (
                           <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-[#E2E2E2] hover:border-[#0073E6]/40 transition-colors flex items-center justify-between gap-3">
@@ -1623,21 +1695,25 @@ const HomeDashboard = () => {
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-xs font-semibold text-[#383838] font-sans truncate">{sub.name}</span>
                                 <span className="text-xs font-bold text-[#383838] tabular-nums ml-2 shrink-0">
-                                  {cie > 0 ? cie : '-'} <span className="text-[10px] font-normal text-[#727272]">/ 50</span>
+                                  {pending ? (
+                                    <span className="text-[#727272] font-normal italic text-[11px]">Pending</span>
+                                  ) : (
+                                    <>
+                                      {cie} <span className="text-[10px] font-normal text-[#727272]">/ {maxCie}</span>
+                                    </>
+                                  )}
                                 </span>
                               </div>
                               <div className="w-full h-1.5 rounded-full bg-[#DEEDFC] overflow-hidden">
                                 <div
                                   className="h-full rounded-full bg-[#0073E6] transition-all duration-300"
-                                  style={{ width: cie > 0 ? `${pct}%` : '0%' }}
+                                  style={{ width: pending ? '0%' : `${pct}%` }}
                                 />
                               </div>
                             </div>
-                            {cie > 0 && (
-                              <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0", tagColor)}>
-                                {statusLabel}
-                              </span>
-                            )}
+                            <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0", tagColor)}>
+                              {statusLabel}
+                            </span>
                           </div>
                         );
                       })
@@ -1701,23 +1777,19 @@ const HomeDashboard = () => {
 
               {/* Modal Stats */}
               <div className="grid grid-cols-3 gap-2 p-3 sm:p-4 border-b border-[#E2E2E2] bg-white">
-                {(() => {
-                  const subjectsWithCie = subjectRegistry.filter(sub => sub.cie && parseFloat(sub.cie) > 0);
-                  const avgCie = subjectsWithCie.length > 0
-                    ? Math.round(subjectsWithCie.reduce((acc, sub) => acc + parseFloat(sub.cie), 0) / subjectsWithCie.length)
-                    : 0;
-                  const highScorers = subjectsWithCie.filter(sub => parseFloat(sub.cie) >= 40).length;
-                  return [
-                    { value: subjectRegistry.length, label: 'Enrolled Subjects' },
-                    { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
-                    { value: highScorers, label: 'Scored ≥40' }
-                  ].map((stat, i) => (
-                    <div key={i} className="text-center p-2.5 bg-white rounded-lg border border-[#E2E2E2]">
-                      <p className="text-lg sm:text-2xl font-bold text-[#383838] tracking-tight">{stat.value}</p>
-                      <p className="text-[9px] sm:text-[10px] text-[#727272] uppercase tracking-wider font-medium mt-0.5">{stat.label}</p>
-                    </div>
-                  ));
-                })()}
+                {[
+                  { value: subjectRegistry.length, label: 'Enrolled Subjects' },
+                  {
+                    value: cieStats.percentage ? `${cieStats.percentage}%` : 'Pending',
+                    label: `Avg (${cieStats.totalMarks}/${cieStats.totalMax || 0})`
+                  },
+                  { value: cieStats.highScorers, label: 'Scored ≥80%' }
+                ].map((stat, i) => (
+                  <div key={i} className="text-center p-2.5 bg-white rounded-lg border border-[#E2E2E2]">
+                    <p className="text-lg sm:text-2xl font-bold text-[#383838] tracking-tight">{stat.value}</p>
+                    <p className="text-[9px] sm:text-[10px] text-[#727272] uppercase tracking-wider font-medium mt-0.5">{stat.label}</p>
+                  </div>
+                ))}
               </div>
 
               {/* Modal Chart */}
@@ -1726,48 +1798,64 @@ const HomeDashboard = () => {
                   <div className="flex items-end justify-between gap-2 min-w-[620px] md:min-w-full min-h-[200px] p-3 sm:p-5 bg-white rounded-lg border border-[#E2E2E2]">
                     {subjectRegistry.length > 0 ? (
                       subjectRegistry.map((sub, i) => {
-                        const cie = parseFloat(sub.cie) || 0;
-                        const maxCie = 50;
-                        const heightPct = Math.min((cie / maxCie) * 100, 100);
-                        const isHigh = cie >= 40;
-                        const isGood = cie >= 30;
+                        const pending = isCiePending(sub.cie);
+                        const cie = pending ? null : parseFloat(sub.cie);
+                        const maxCie = getSubjectMaxCie(sub, subjectRegistry);
+                        const heightPct = pending ? 0 : Math.min(Math.round((cie / maxCie) * 100), 100);
+                        const isHigh = !pending && heightPct >= 80;
+                        const isGood = !pending && heightPct >= 60;
                         return (
                           <div key={sub.id || i} className="flex-1 min-w-[48px] max-w-[72px] flex flex-col items-center gap-1.5">
                             <span className={cn(
                               "text-[11px] font-semibold whitespace-nowrap",
-                              cie === 0 ? "text-[#727272]" : isHigh ? "text-emerald-600" : isGood ? "text-[#0073E6]" : "text-amber-600"
+                              pending ? "text-[#727272]" : isHigh ? "text-emerald-600" : isGood ? "text-[#0073E6]" : "text-amber-600"
                             )}>
-                              {cie > 0 ? `${cie}` : '-'} <span className="text-[9px] text-[#727272] font-normal">/50</span>
+                              {pending ? (
+                                <span className="text-[10px] text-slate-400 font-medium">-</span>
+                              ) : (
+                                <>
+                                  {cie} <span className="text-[9px] text-[#727272] font-normal">/{maxCie}</span>
+                                </>
+                              )}
                             </span>
 
                             {/* Bar container */}
-                            <div className="relative flex h-30 w-full items-end overflow-hidden rounded-t-xl rounded-b-xs bg-[#DEEDFC]">
-                              <motion.div
-                                className={cn(
-                                  'relative w-full rounded-t-xl rounded-b-xs transition-colors',
-                                  cie === 0 ? 'bg-slate-300' : isHigh ? 'bg-emerald-500' : isGood ? 'bg-[#0073E6]' : 'bg-amber-500'
-                                )}
-                                initial={{ height: '0%' }}
-                                animate={{ height: `${cie > 0 ? Math.max(heightPct, 14) : 6}%` }}
-                                transition={{
-                                  duration: 0.8,
-                                  delay: i * 0.08,
-                                  ease: [0.22, 1, 0.36, 1],
-                                }}
-                              >
-                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-bold text-white tabular-nums">
-                                  {heightPct}%
-                                </span>
-                              </motion.div>
+                            <div className={cn(
+                              "relative flex h-30 w-full items-end overflow-hidden rounded-t-xl rounded-b-xs",
+                              pending ? "bg-slate-100 border border-dashed border-slate-300" : "bg-[#DEEDFC]"
+                            )}>
+                              {pending ? (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-[8px] font-semibold text-slate-400 rotate-90 sm:rotate-0">N/A</span>
+                                </div>
+                              ) : (
+                                <motion.div
+                                  className={cn(
+                                    'relative w-full rounded-t-xl rounded-b-xs transition-colors',
+                                    isHigh ? 'bg-emerald-500' : isGood ? 'bg-[#0073E6]' : 'bg-amber-500'
+                                  )}
+                                  initial={{ height: '0%' }}
+                                  animate={{ height: `${Math.max(heightPct, 14)}%` }}
+                                  transition={{
+                                    duration: 0.8,
+                                    delay: i * 0.08,
+                                    ease: [0.22, 1, 0.36, 1],
+                                  }}
+                                >
+                                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-bold text-white tabular-nums">
+                                    {heightPct}%
+                                  </span>
+                                </motion.div>
+                              )}
                             </div>
 
                             <div className="text-center flex flex-col items-center mt-1 w-full">
                               <p className="text-[10px] font-semibold text-[#383838] truncate w-full text-center" title={sub.code || sub.name}>
-                                {getSubjectAbbreviation(sub.name) || sub.code || sub.name.slice(0, 8)}
+                                {sub.code || sub.name.substring(0, 4)}
                               </p>
-                              <p className="text-[9px] text-[#727272] truncate w-full text-center" title={sub.name}>
+                              <span className="text-[8px] text-[#727272] truncate max-w-full block" title={sub.name}>
                                 {sub.name}
-                              </p>
+                              </span>
                             </div>
                           </div>
                         );
@@ -1784,15 +1872,15 @@ const HomeDashboard = () => {
                 <div className="flex items-center gap-3 uppercase tracking-wider font-medium flex-wrap">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    ≥40 Excellent
+                    ≥80% Excellent
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#0073E6]" />
-                    ≥30 Good
+                    ≥60% Good
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    &lt;30 Needs Improvement
+                    &lt;60% Needs Improvement
                   </span>
                 </div>
                 <span className="text-[10px] text-[#727272] font-mono">
@@ -1854,23 +1942,19 @@ const HomeDashboard = () => {
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-3 gap-4 my-5 p-4 rounded-xl border border-slate-200 bg-slate-50/70">
-                  {(() => {
-                    const subjectsWithCie = (subjectRegistry || []).filter(sub => sub.cie && parseFloat(sub.cie) > 0);
-                    const avgCie = subjectsWithCie.length > 0
-                      ? Math.round(subjectsWithCie.reduce((acc, sub) => acc + parseFloat(sub.cie), 0) / subjectsWithCie.length)
-                      : 0;
-                    const highScorers = subjectsWithCie.filter(sub => parseFloat(sub.cie) >= 40).length;
-                    return [
-                      { value: subjectRegistry?.length || 0, label: 'Enrolled Subjects' },
-                      { value: avgCie > 0 ? `${avgCie} / 50` : 'Pending', label: 'Average Score' },
-                      { value: highScorers, label: 'Scored ≥40' }
-                    ].map((stat, i) => (
-                      <div key={i} className="text-center p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
-                        <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
-                        <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{stat.label}</p>
-                      </div>
-                    ));
-                  })()}
+                  {[
+                    { value: subjectRegistry?.length || 0, label: 'Enrolled Subjects' },
+                    {
+                      value: cieStats.percentage ? `${cieStats.percentage}%` : 'Pending',
+                      label: `Average (${cieStats.totalMarks}/${cieStats.totalMax || 0})`
+                    },
+                    { value: cieStats.highScorers, label: 'Scored ≥80%' }
+                  ].map((stat, i) => (
+                    <div key={i} className="text-center p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
+                      <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
+                      <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">{stat.label}</p>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Full unclipped chart for all subjects */}

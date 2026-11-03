@@ -97,6 +97,7 @@ public class PortalScraperService {
                 .name(data.getName())
                 .attendance(data.getAttendance())
                 .cie(data.getCie())
+                .maxCie(data.getMaxCie())
                 .totalConducted(data.getTotalConducted())
                 .totalAttended(data.getTotalAttended())
                 .totalScheduled(data.getTotalScheduled())
@@ -312,7 +313,7 @@ public class PortalScraperService {
             if (attendanceMap.isEmpty())
                 log.warn("Attendance (gauge) data not found - check script block content.");
 
-            List<SubjectData> subjects = mergeDataWithDetails(subjectLinks, cieMap, attendanceMap);
+            List<SubjectData> subjects = mergeDataWithDetails(subjectLinks, cieMap, attendanceMap, doc);
             return new ScrapeResult(profile, subjects);
         }
 
@@ -626,13 +627,38 @@ public class PortalScraperService {
             return dataMap;
         }
 
+        private Map<String, Integer> extractExplicitMaxCie(Document doc) {
+            Map<String, Integer> map = new HashMap<>();
+            if (doc == null) return map;
+
+            Pattern slashPattern = Pattern.compile("(?i)\\b(\\d+)\\s*/\\s*(50|75)\\b");
+            for (Element row : doc.select("tr")) {
+                String rowText = row.text();
+                Matcher m = slashPattern.matcher(rowText);
+                if (m.find()) {
+                    int max = Integer.parseInt(m.group(2));
+                    for (Element cell : row.select("td, th")) {
+                        String t = cell.text().trim();
+                        if (t.matches("^[A-Za-z0-9\\-]+$")) {
+                            map.put(t, max);
+                        }
+                    }
+                }
+            }
+            return map;
+        }
+
         private List<SubjectData> mergeDataWithDetails(Map<String, SubjectLink> subjectLinks,
                                                     Map<String, Integer> cieMap,
-                                                    Map<String, Integer> attendanceMap) {
+                                                    Map<String, Integer> attendanceMap,
+                                                    Document doc) {
             Set<String> allCodes = new LinkedHashSet<>();
             allCodes.addAll(subjectLinks.keySet());
             allCodes.addAll(cieMap.keySet());
             allCodes.addAll(attendanceMap.keySet());
+
+            Map<String, Integer> explicitMaxMap = extractExplicitMaxCie(doc);
+            boolean hasAnyAbove50 = cieMap.values().stream().anyMatch(val -> val != null && val > 50);
 
             // 1. Pre-fetch all bundles to find global start date
             Map<String, AttendanceDetailsBundle> bundles = new HashMap<>();
@@ -671,7 +697,29 @@ public class PortalScraperService {
                 int lpw = (int) Math.ceil((double) bundle.conducted / weeksElapsed);
                 if (lpw == 0 && bundle.conducted > 0) lpw = 1;
 
-                result.add(new SubjectData(code, name, attendance, cie, bundle.conducted, bundle.attended, bundle.total, bundle.stillToGo, credit, lpw, bundle.records));
+                // Dynamic CIE Max: Checks explicit scraped tokens (e.g. 25/50), >50 values, and practical vs theory
+                int maxCie = 50;
+                if (explicitMaxMap.containsKey(code)) {
+                    maxCie = explicitMaxMap.get(code);
+                } else if (cie > 50) {
+                    maxCie = 75;
+                } else {
+                    String lowerCode = (code != null ? code : "").toLowerCase();
+                    String lowerName = (name != null ? name : "").toLowerCase();
+                    boolean isPractical = lowerCode.endsWith("-p") || lowerCode.contains("-p") ||
+                                          lowerName.contains(" lab") || lowerName.contains("practical") ||
+                                          lowerName.contains("mini-project") || lowerName.contains("mini project") ||
+                                          lowerName.contains("project");
+                    if (isPractical) {
+                        maxCie = 50;
+                    } else if (hasAnyAbove50) {
+                        maxCie = 75;
+                    } else {
+                        maxCie = 50;
+                    }
+                }
+
+                result.add(new SubjectData(code, name, attendance, cie, maxCie, bundle.conducted, bundle.attended, bundle.total, bundle.stillToGo, credit, lpw, bundle.records));
                 log.debug("Merged subject: {} | LPW={}", code, lpw);
             }
             return result;
@@ -753,6 +801,7 @@ public class PortalScraperService {
         private final String name;
         private final int attendance;
         private final int cie;
+        private final int maxCie;
         private final int totalConducted;
         private final int totalAttended;
         private final int totalScheduled;
@@ -761,11 +810,12 @@ public class PortalScraperService {
         private final int lecturesPerWeek;
         private final List<DashboardSubject.AttendanceRecord> detailedAttendance;
 
-        public SubjectData(String code, String name, int attendance, int cie, int totalConducted, int totalAttended, int totalScheduled, int stillToGo, int credit, int lecturesPerWeek, List<DashboardSubject.AttendanceRecord> detailedAttendance) {
+        public SubjectData(String code, String name, int attendance, int cie, int maxCie, int totalConducted, int totalAttended, int totalScheduled, int stillToGo, int credit, int lecturesPerWeek, List<DashboardSubject.AttendanceRecord> detailedAttendance) {
             this.code = code;
             this.name = name;
             this.attendance = attendance;
             this.cie = cie;
+            this.maxCie = maxCie;
             this.totalConducted = totalConducted;
             this.totalAttended = totalAttended;
             this.totalScheduled = totalScheduled;
@@ -779,6 +829,7 @@ public class PortalScraperService {
         public String getName() { return name; }
         public int getAttendance() { return attendance; }
         public int getCie() { return cie; }
+        public int getMaxCie() { return maxCie; }
         public int getTotalConducted() { return totalConducted; }
         public int getTotalAttended() { return totalAttended; }
         public int getTotalScheduled() { return totalScheduled; }

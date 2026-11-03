@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { cn } from '../../lib/utils';
 import { getSubjectAbbreviation, normalizeDateKey } from '../../lib/attendanceUtils';
-import { Tick01Icon as Check, Cancel01Icon as X } from 'hugeicons-react';
+import { PresentBadgeIcon, AbsentBadgeIcon } from './AttendanceAnalytics';
 
 export function buildSharedHeatmapData(subjects) {
   const dayMap = new Map();
@@ -280,13 +280,13 @@ const SharedAttendanceHeatmap = ({
             <div className="flex flex-wrap gap-1.5 py-1">
               {presentAbbrs.map(sub => (
                 <span key={sub} className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-1.5 py-0.5 rounded">
-                  <Check className="w-2.5 h-2.5 text-emerald-600" />
+                  <PresentBadgeIcon size={12} className="text-emerald-600" />
                   {sub}
                 </span>
               ))}
               {absentAbbrs.map(sub => (
                 <span key={sub} className="inline-flex items-center gap-1 text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-200/60 px-1.5 py-0.5 rounded">
-                  <X className="w-2.5 h-2.5 text-rose-600" />
+                  <AbsentBadgeIcon size={12} className="text-rose-600" />
                   {sub}
                 </span>
               ))}

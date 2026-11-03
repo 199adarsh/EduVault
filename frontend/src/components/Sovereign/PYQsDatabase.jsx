@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import DocumentLoadingBar from '../DocumentLoadingBar';
+import { isSubjectNameMatch } from './NotesLibrary';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -66,7 +67,7 @@ const PYQsDatabase = ({
     const studentDept = normalizeDept(profile?.department);
     const studentSem = normalizeSem(profile?.semester);
 
-    // Show only the subjects that the student has (matching profile dept & semester, or teacher assigned subjects)
+    // Show strictly the current semester attendance subjects for students
     const subjects = useMemo(() => {
         const currentRaw = rawSubjects || [];
         const currentCatalog = catalogSubjects || [];
@@ -90,21 +91,9 @@ const PYQsDatabase = ({
             return currentCatalog.length > 0 ? currentCatalog : currentRaw;
         }
 
-        if (currentRaw && currentRaw.length > 0) {
-            return currentRaw;
-        }
-
-        if (currentCatalog.length > 0) {
-            const matchedCatalog = currentCatalog.filter(cs => {
-                const catDept = normalizeDept(cs.department);
-                const deptOk = catDept === studentDept || (studentDept === 'AIDS' && catDept === 'CSE') || (studentDept === 'CSE' && catDept === 'AIDS');
-                return deptOk && normalizeSem(cs.semester) === studentSem;
-            });
-            if (matchedCatalog.length > 0) return matchedCatalog;
-        }
-
-        return [];
-    }, [rawSubjects, catalogSubjects, isTeacher, studentDept, studentSem]);
+        // Student: strictly enrolled attendance subjects
+        return currentRaw;
+    }, [rawSubjects, catalogSubjects, isTeacher]);
 
     const [pyqs, setPyqs] = useState([]);
     const [allPyqs, setAllPyqs] = useState([]);
@@ -262,10 +251,16 @@ const PYQsDatabase = ({
         return pyqs.filter(q => {
             // Students only see question papers matching their enrolled subjects
             if (!isTeacher && subjects.length > 0) {
-                const belongsToStudent = subjects.some(s => s.id === q.subjectId || (q.subjectName && s.name && s.name.toLowerCase() === q.subjectName.toLowerCase()));
+                const belongsToStudent = subjects.some(s =>
+                    s.id === q.subjectId ||
+                    isSubjectNameMatch(q.subjectName, s.name) ||
+                    isSubjectNameMatch(q.fileUrl, s.name) ||
+                    isSubjectNameMatch(q.tags, s.name) ||
+                    (s.code && q.fileUrl && q.fileUrl.toUpperCase().includes(s.code.toUpperCase()))
+                );
                 if (!belongsToStudent) return false;
             }
-            const subject = subjects.find(s => s.id === q.subjectId);
+            const subject = subjects.find(s => s.id === q.subjectId || isSubjectNameMatch(q.subjectName, s.name));
             const subjectName = (subject?.name || q.subjectName || '').toLowerCase();
             const term = searchQuery.toLowerCase().trim();
             if (!term) return true;

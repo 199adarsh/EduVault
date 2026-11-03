@@ -72,6 +72,33 @@ export const getNoteBadge = (note) => {
     return 'PDF';
 };
 
+export const cleanSubjectName = (str) => {
+    if (!str) return '';
+    return str.toLowerCase()
+        .replace(/\([a-z0-9\s_-]+\)/gi, '')
+        .replace(/[0-9]{2}[a-z]{2,6}[0-9]{3,4}[a-z]?/gi, '')
+        .replace(/[^a-z0-9]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+export const isSubjectNameMatch = (nameA, nameB) => {
+    if (!nameA || !nameB) return false;
+    const ca = cleanSubjectName(nameA);
+    const cb = cleanSubjectName(nameB);
+    if (!ca || !cb) return false;
+    const isLabA = ca.includes('lab') || ca.includes('practical');
+    const isLabB = cb.includes('lab') || cb.includes('practical');
+    if (isLabA !== isLabB) return false;
+    if (ca === cb || ca.includes(cb) || cb.includes(ca)) return true;
+
+    const wa = ca.split(' ').filter(w => w.length > 2);
+    const wb = cb.split(' ').filter(w => w.length > 2);
+    const common = wa.filter(w => wb.some(x => x.includes(w) || w.includes(x))).length;
+    const minWords = Math.min(wa.length, wb.length);
+    return minWords > 0 && common >= (minWords >= 3 ? minWords - 1 : minWords);
+};
+
 export const getCleanTitle = (title) => {
     if (!title) return 'Study Material';
     if (title.includes('/') && !title.includes(' ')) {
@@ -197,11 +224,14 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             if (resolvedId && resolvedId === s.id) return true;
             if (note.subjectId && (note.subjectId === s.id || (s.code && note.subjectId.toLowerCase() === s.code.toLowerCase()))) return true;
             if (note.subjectName && s.name && note.subjectName.toLowerCase().trim() === s.name.toLowerCase().trim()) return true;
-            if (note.title && s.name && note.title.toLowerCase().includes(s.name.toLowerCase())) return true;
-            if (note.title && s.code && note.title.toLowerCase().includes(s.code.toLowerCase())) return true;
-            if (note.fileUrl && s.name && note.fileUrl.toLowerCase().includes(s.name.toLowerCase())) return true;
-            if (note.b2ObjectKey && s.name && note.b2ObjectKey.toLowerCase().includes(s.name.toLowerCase())) return true;
-            if (note.b2ObjectKey && s.code && note.b2ObjectKey.toLowerCase().includes(s.code.toLowerCase())) return true;
+            if (note.subjectName && isSubjectNameMatch(note.subjectName, s.name)) return true;
+            if (note.title && isSubjectNameMatch(note.title, s.name)) return true;
+            if (note.fileUrl && isSubjectNameMatch(note.fileUrl, s.name)) return true;
+            if (note.b2ObjectKey && isSubjectNameMatch(note.b2ObjectKey, s.name)) return true;
+            if (s.code && (
+                (note.title && note.title.toUpperCase().includes(s.code.toUpperCase())) ||
+                (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(s.code.toUpperCase()))
+            )) return true;
             return false;
         });
     }, [notes, resolveSubjectId]);
@@ -239,8 +269,9 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             }
         }
 
-        if (!isTeacher && subjects && subjects.length > 0) {
-            return subjects;
+        // Strictly show only current sem subjects that match student attendance
+        if (!isTeacher) {
+            return subjects || [];
         }
         return baseList.filter(s => subjectHasNotes(s));
     }, [isTeacher, subjects, allKnownSubjects, profile, studentDept, studentSem, subjectHasNotes]);
@@ -337,8 +368,19 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         return (notes || []).filter(note => {
             const resolvedId = resolveSubjectId(note);
 
-            // 1. Strictly match the selected subject. Other notes are NOT visible!
-            const isMatch = resolvedId === activeSubjectId || note.subjectId === activeSubjectId;
+            // 1. Match selected subject: by ID, code, or fuzzy subject name (case/spelling/code resilient)
+            const isMatch = resolvedId === activeSubjectId || note.subjectId === activeSubjectId ||
+                (activeSubjectObj && (
+                    (note.subjectName && isSubjectNameMatch(note.subjectName, activeSubjectObj.name)) ||
+                    (note.title && isSubjectNameMatch(note.title, activeSubjectObj.name)) ||
+                    (note.fileUrl && isSubjectNameMatch(note.fileUrl, activeSubjectObj.name)) ||
+                    (note.b2ObjectKey && isSubjectNameMatch(note.b2ObjectKey, activeSubjectObj.name)) ||
+                    (activeSubjectObj.code && (
+                        (note.title && note.title.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
+                        (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
+                        (note.subjectId && note.subjectId.toUpperCase().includes(activeSubjectObj.code.toUpperCase()))
+                    ))
+                ));
             if (!isMatch) return false;
 
             // 2. Unit & Category match

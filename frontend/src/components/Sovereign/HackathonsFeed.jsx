@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FluidTabs } from '../fluid-tabs';
-import { ChampionIcon, ArrowUpRight01Icon } from 'hugeicons-react';
+import { ArrowUpRight01Icon } from 'hugeicons-react';
+
+export function Award03Icon({ size = 24, className, ...props }) {
+  return (
+    <svg width={size} height={size} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} {...props}>
+      <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7.68 12.987c-.663-3.36-.994-5.04-.277-6.406c.717-1.367 2.258-1.993 5.34-3.244l.627-.255c2.328-.946 3.492-1.419 4.195-.808c.702.61.455 1.88-.04 4.42L15.32 18H8.669zM6 21c0-1.414 0-2.121.44-2.56C6.878 18 7.585 18 9 18h6c1.414 0 2.121 0 2.56.44c.44.439.44 1.146.44 2.56v1H6zm-2 1h16" />
+    </svg>
+  );
+}
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -53,7 +61,7 @@ const HackathonsFeed = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5 w-full min-w-0">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                        <ChampionIcon size={16} className="w-4 h-4 text-[#0073E6]" />
+                        <Award03Icon size={18} className="text-[#0073E6]" />
                     </div>
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold text-[#383838] leading-tight truncate">Hackathons</h2>

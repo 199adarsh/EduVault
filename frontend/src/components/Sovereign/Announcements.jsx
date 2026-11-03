@@ -382,15 +382,11 @@ const Announcements = () => {
                             return (
                                 <article
                                     key={ann.id || idx}
-                                    className={cn(
-                                        "bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] hover:border-[#4A9AF0] transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] group flex flex-col justify-between",
-                                        isUrgent && "border-l-4 border-l-[#E11D48] bg-white",
-                                        isOfficial && "border-l-4 border-l-[#0073E6]"
-                                    )}
+                                    className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] hover:border-[#0073E6]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] group flex flex-col justify-between"
                                 >
                                     <div>
                                         {/* Top Meta Line */}
-                                        <div className="flex items-center justify-between gap-2 pb-3 border-b border-[#F0F0F0]">
+                                        <div className="flex items-center justify-between gap-2">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <span className={cn(
                                                     "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
@@ -455,20 +451,20 @@ const Announcements = () => {
                                         </div>
 
                                         {/* Notice Headline */}
-                                        <h2 className="text-base sm:text-[17px] font-bold text-[#383838] leading-snug group-hover:text-[#0073E6] transition-colors mt-3">
+                                        <h2 className="text-base sm:text-[17px] font-bold text-[#383838] leading-snug group-hover:text-[#0073E6] transition-colors mt-2.5">
                                             {ann.title}
                                         </h2>
 
                                         {/* Notice Text Body */}
-                                        <p className="text-xs sm:text-[13px] text-[#4A4A4A] font-normal mt-2 leading-relaxed whitespace-pre-line">
+                                        <p className="text-xs sm:text-[13px] text-[#555555] font-normal mt-1.5 leading-relaxed whitespace-pre-line">
                                             {ann.description}
                                         </p>
                                     </div>
 
                                     {/* Card Footer: Source Authority + Acknowledge Button */}
-                                    <div className="pt-3.5 mt-4 border-t border-[#F0F0F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="mt-4 pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div className="flex items-center gap-2 min-w-0">
-                                            <div className="w-7 h-7 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-xs shrink-0">
+                                            <div className="w-6 h-6 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-[11px] shrink-0">
                                                 {(ann.postedBy || ann.author || 'A').charAt(0).toUpperCase()}
                                             </div>
                                             <div className="flex items-center gap-1.5 text-xs text-[#727272] truncate">

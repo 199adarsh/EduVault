@@ -2212,7 +2212,7 @@ const AttendanceAnalytics = () => {
                                                                                 }}
                                                                                 className="px-2 py-0.5 rounded-full bg-[#DEEDFC] hover:bg-[#0073E6] hover:text-white text-[#0073E6] border border-[#D9ECFF] text-[10px] font-semibold transition font-sans cursor-pointer"
                                                                             >
-                                                                                Leave
+                                                                                Request NC
                                                                             </button>
                                                                         )
                                                                     )}

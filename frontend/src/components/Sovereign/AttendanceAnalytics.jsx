@@ -31,6 +31,25 @@ import {
     InformationCircleIcon,
     Settings02Icon
 } from 'hugeicons-react';
+import {
+    Calendar,
+    Clock,
+    FileText,
+    UploadCloud,
+    CheckCircle2,
+    XCircle,
+    AlertCircle,
+    Filter,
+    Search,
+    Eye,
+    Download,
+    Shield,
+    Check,
+    X,
+    FileCheck,
+    RefreshCw,
+    TrendingUp
+} from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 

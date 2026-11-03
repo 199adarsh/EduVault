@@ -1962,37 +1962,52 @@ const HomeDashboard = () => {
                   <div className="flex items-end justify-between gap-3 min-h-[250px] p-6 bg-slate-50/80 rounded-xl border border-slate-200">
                     {(subjectRegistry || []).length > 0 ? (
                       subjectRegistry.map((sub, i) => {
-                        const cie = parseFloat(sub.cie) || 0;
-                        const maxCie = 50;
-                        const heightPct = Math.min((cie / maxCie) * 100, 100);
-                        const isHigh = cie >= 40;
-                        const isGood = cie >= 30;
+                        const pending = isCiePending(sub.cie);
+                        const cie = pending ? null : parseFloat(sub.cie);
+                        const maxCie = getSubjectMaxCie(sub, subjectRegistry);
+                        const heightPct = pending ? 0 : Math.min(Math.round((cie / maxCie) * 100), 100);
+                        const isHigh = !pending && heightPct >= 80;
+                        const isGood = !pending && heightPct >= 60;
                         return (
                           <div key={sub.id || i} className="flex-1 min-w-[56px] max-w-[76px] flex flex-col items-center gap-1.5">
                             <span className={cn(
                               "text-xs font-bold whitespace-nowrap",
-                              cie === 0 ? "text-slate-400" : isHigh ? "text-emerald-600" : isGood ? "text-primary" : "text-amber-600"
+                              pending ? "text-slate-400" : isHigh ? "text-emerald-600" : isGood ? "text-primary" : "text-amber-600"
                             )}>
-                              {cie > 0 ? `${cie}` : '-'} <span className="text-[10px] text-slate-400 font-normal">/50</span>
+                              {pending ? (
+                                <span className="text-[11px] text-slate-400 font-medium">-</span>
+                              ) : (
+                                <>
+                                  {cie} <span className="text-[10px] text-slate-400 font-normal">/{maxCie}</span>
+                                </>
+                              )}
                             </span>
 
                             {/* Bar container with striped background */}
                             <div
-                              className="relative flex h-36 w-full items-end overflow-hidden rounded-lg bg-slate-100 border border-slate-200/50"
-
+                              className={cn(
+                                "relative flex h-36 w-full items-end overflow-hidden rounded-lg",
+                                pending ? "bg-slate-100 border border-dashed border-slate-300" : "bg-slate-100 border border-slate-200/50"
+                              )}
                             >
-                              <div
-                                className={cn(
-                                  'relative w-full rounded-t-md transition-colors',
-                                  cie === 0 ? 'bg-slate-300' : isHigh ? 'bg-emerald-500 shadow-xs' : isGood ? 'bg-primary shadow-xs' : 'bg-amber-500 shadow-xs'
-                                )}
-                                style={{ height: `${cie > 0 ? Math.max(heightPct, 14) : 6}%` }}
-                              >
-                                <div className="absolute left-1/2 top-1 h-1 w-1/3 -translate-x-1/2 rounded-full bg-white/60" />
-                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white tabular-nums drop-shadow-xs">
-                                  {heightPct}%
-                                </span>
-                              </div>
+                              {pending ? (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-[9px] font-semibold text-slate-400">N/A</span>
+                                </div>
+                              ) : (
+                                <div
+                                  className={cn(
+                                    'relative w-full rounded-t-md transition-colors',
+                                    isHigh ? 'bg-emerald-500 shadow-xs' : isGood ? 'bg-primary shadow-xs' : 'bg-amber-500 shadow-xs'
+                                  )}
+                                  style={{ height: `${Math.max(heightPct, 14)}%` }}
+                                >
+                                  <div className="absolute left-1/2 top-1 h-1 w-1/3 -translate-x-1/2 rounded-full bg-white/60" />
+                                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white tabular-nums drop-shadow-xs">
+                                    {heightPct}%
+                                  </span>
+                                </div>
+                              )}
                             </div>
 
                             <div className="text-center flex flex-col items-center mt-1 w-full">
@@ -2017,15 +2032,15 @@ const HomeDashboard = () => {
                   <div className="flex items-center gap-5 uppercase tracking-wider font-bold">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600" />
-                      ≥40 Excellent
+                      ≥80% Excellent
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-blue-600" />
-                      ≥30 Good
+                      ≥60% Good
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-amber-600" />
-                      &lt;30 Needs Improvement
+                      &lt;60% Needs Improvement
                     </span>
                   </div>
                   <span className="text-xs text-slate-400 font-mono">

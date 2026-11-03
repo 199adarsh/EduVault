@@ -1,6 +1,7 @@
 package com.eduvault.repository;
 
 import com.eduvault.model.*;
+import com.eduvault.util.AcademicNormalizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,13 +160,12 @@ public class LocalJsonDatabase {
                 }
 
                 boolean validSubject = note.getSubjectId() != null && subjects.stream().anyMatch(s -> s.getId().equals(note.getSubjectId()));
-                if (validSubject) {
-                    if ("PENDING_MAPPING".equalsIgnoreCase(note.getStatus())) {
-                        note.setStatus("ready");
-                        repaired++;
+                if (!validSubject || "PENDING_MAPPING".equalsIgnoreCase(note.getStatus())) {
+                    FolderInfo info = extractFolderInfoFromKey(note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl());
+                    Subject matched = findSubjectFromFolderOrKey(info.subject, note.getB2ObjectKey(), subjects);
+                    if (matched == null) {
+                        matched = findSubjectFromContent(note.getExtractedText(), subjects);
                     }
-                } else {
-                    Subject matched = findSubjectFromContent(note.getExtractedText(), subjects);
                     if (matched == null && note.getTitle() != null) {
                         matched = findSubjectFromContent(note.getTitle(), subjects);
                     }
@@ -174,6 +174,9 @@ public class LocalJsonDatabase {
                         note.setDepartment(matched.getDepartment());
                         note.setSemester(matched.getSemester());
                         note.setStatus("ready");
+                        if (info.unit != null && !info.unit.isBlank()) {
+                            note.setUnit(extractUnitFromContent(info.unit));
+                        }
                         repaired++;
                     }
                 }
@@ -268,24 +271,9 @@ public class LocalJsonDatabase {
                     extractedText = "";
                 }
 
-                // Parse folder hierarchy if present: <YEAR-BRANCH>/<SUBJECT>/<UNIT>/<FILENAME>
-                String[] parts = key.split("/");
-                String folderSubject = null;
-                String folderUnit = null;
-                if (parts.length >= 3) {
-                    folderSubject = parts[1].replace("_", " ").trim();
-                    folderUnit = parts[2].replace("_", " ").trim();
-                }
-
-                Subject matched = null;
-                if (folderSubject != null) {
-                    for (Subject s : subjects) {
-                        if (s.getName() != null && s.getName().equalsIgnoreCase(folderSubject)) {
-                            matched = s;
-                            break;
-                        }
-                    }
-                }
+                // Robust hierarchy extraction: <DEPT>/<SUBJECT>/<UNIT>/<FILE> or <SUBJECT>/<UNIT>/<FILE> or <SUBJECT>/<FILE>
+                FolderInfo folderInfo = extractFolderInfoFromKey(key);
+                Subject matched = findSubjectFromFolderOrKey(folderInfo.subject, key, subjects);
                 if (matched == null) {
                     matched = findSubjectFromContent(extractedText, subjects);
                 }
@@ -293,11 +281,28 @@ public class LocalJsonDatabase {
                 if (matched == null && title != null) {
                     matched = findSubjectFromContent(title, subjects);
                 }
-                String unit = (folderUnit != null && !folderUnit.equalsIgnoreCase("General")) 
-                        ? folderUnit 
+
+                String unit = (folderInfo.unit != null && !folderInfo.unit.equalsIgnoreCase("General")) 
+                        ? extractUnitFromContent(folderInfo.unit)
                         : extractUnitFromContent(extractedText);
 
                 String filenameOnly = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
+                String lowerKey = key.toLowerCase();
+                String lowerText = extractedText != null ? extractedText.toLowerCase() : "";
+                String category = "Notes";
+                String examType = "mid-sem";
+
+                if (lowerKey.contains("pyq") || lowerKey.contains("question paper") || lowerKey.contains("ese") || lowerKey.contains("see")
+                        || lowerText.contains("previous year question") || lowerText.contains("question paper")) {
+                    category = "PYQ";
+                    examType = "end-sem";
+                } else if (lowerKey.contains("syllabus") || lowerText.contains("course outcomes and syllabus")) {
+                    category = "Syllabus";
+                } else if (lowerKey.contains("lab") || lowerKey.contains("manual") || lowerKey.contains("experiment")) {
+                    category = "Lab Manual";
+                } else if (lowerKey.contains("lecture") || lowerKey.contains("plan")) {
+                    category = "Lecture Plan";
+                }
 
                 Note note = Note.builder()
                         .id(java.util.UUID.randomUUID().toString())
@@ -305,7 +310,8 @@ public class LocalJsonDatabase {
                         .fileUrl(filenameOnly)
                         .b2ObjectKey(key)
                         .unit(unit)
-                        .examType("mid-sem")
+                        .category(category)
+                        .examType(examType)
                         .uploadedBy("Backblaze B2")
                         .createdAt(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE))
                         .extractedText(extractedText != null && extractedText.length() > 5000 ? extractedText.substring(0, 5000) : extractedText)
@@ -316,6 +322,26 @@ public class LocalJsonDatabase {
                     note.setDepartment(matched.getDepartment());
                     note.setSemester(matched.getSemester());
                     note.setStatus("ready");
+
+                    // Mirror to PYQ repository if it's a PYQ/Question Paper
+                    if ("PYQ".equalsIgnoreCase(category)) {
+                        try {
+                            if (pyqRepository.findAll().stream().noneMatch(p -> key.equals(p.getFileUrl()))) {
+                                com.eduvault.model.PYQ pyq = com.eduvault.model.PYQ.builder()
+                                        .id(java.util.UUID.randomUUID().toString())
+                                        .subjectId(matched.getId())
+                                        .subjectName(matched.getName())
+                                        .year(String.valueOf(java.time.LocalDate.now().getYear()))
+                                        .examType(examType)
+                                        .tags("B2, PYQ, " + title)
+                                        .fileUrl(key)
+                                        .uploadedBy("Backblaze B2")
+                                        .createdAt(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE))
+                                        .build();
+                                pyqRepository.save(pyq);
+                            }
+                        } catch (Exception ignored) {}
+                    }
                 } else {
                     note.setSubjectId(null);
                     note.setStatus("PENDING_MAPPING");
@@ -365,6 +391,69 @@ public class LocalJsonDatabase {
             logger.error("Error deleting disposable test import notes: {}", e.getMessage(), e);
             return 0;
         }
+    }
+
+    private static class FolderInfo {
+        String subject;
+        String unit;
+    }
+
+    private FolderInfo extractFolderInfoFromKey(String key) {
+        FolderInfo info = new FolderInfo();
+        if (key == null || !key.contains("/")) return info;
+        String[] parts = key.split("/");
+        if (parts.length == 2) {
+            info.subject = parts[0].replace("_", " ").trim();
+        } else if (parts.length == 3) {
+            String p1Upper = parts[1].toUpperCase().trim();
+            if (p1Upper.startsWith("UNIT") || p1Upper.matches("(?i)U0?[1-6]") || p1Upper.equalsIgnoreCase("GENERAL") || p1Upper.equalsIgnoreCase("LAB") || p1Upper.equalsIgnoreCase("PYQ")) {
+                info.subject = parts[0].replace("_", " ").trim();
+                info.unit = parts[1].replace("_", " ").trim();
+            } else {
+                info.subject = parts[1].replace("_", " ").trim();
+            }
+        } else if (parts.length >= 4) {
+            info.subject = parts[1].replace("_", " ").trim();
+            info.unit = parts[2].replace("_", " ").trim();
+        }
+        return info;
+    }
+
+    private Subject findSubjectFromFolderOrKey(String folderSubject, String fullKey, List<Subject> subjects) {
+        if (subjects == null || subjects.isEmpty()) return null;
+
+        if (folderSubject != null && !folderSubject.isBlank()) {
+            for (Subject s : subjects) {
+                if (s.getName() != null && s.getName().equalsIgnoreCase(folderSubject)) return s;
+                if (s.getCode() != null && s.getCode().equalsIgnoreCase(folderSubject)) return s;
+            }
+            String cleanFolder = AcademicNormalizer.cleanCourseName(folderSubject).toUpperCase();
+            for (Subject s : subjects) {
+                if (s.getCode() != null && !s.getCode().isBlank() && folderSubject.toUpperCase().contains(s.getCode().toUpperCase())) {
+                    return s;
+                }
+                if (s.getName() != null && !s.getName().isBlank()) {
+                    String sName = s.getName().trim().toUpperCase();
+                    if (sName.equals(cleanFolder) || folderSubject.toUpperCase().contains(sName) || cleanFolder.contains(sName)) {
+                        return s;
+                    }
+                }
+            }
+        }
+
+        if (fullKey != null && !fullKey.isBlank()) {
+            String upperKey = fullKey.toUpperCase();
+            for (Subject s : subjects) {
+                if (s.getCode() != null && !s.getCode().isBlank() && upperKey.contains(s.getCode().toUpperCase())) {
+                    return s;
+                }
+                if (s.getName() != null && !s.getName().isBlank() && upperKey.contains(s.getName().toUpperCase())) {
+                    return s;
+                }
+            }
+        }
+
+        return null;
     }
 
     private Subject findSubjectFromContent(String text, List<Subject> subjects) {

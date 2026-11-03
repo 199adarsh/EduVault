@@ -225,7 +225,7 @@ public class ApiController {
                     if (finalUnit != null && !finalUnit.isBlank() && (n.getUnit() == null || !n.getUnit().equalsIgnoreCase(finalUnit))) {
                         return false;
                     }
-                    if (finalDept != null && !finalDept.isBlank()) {
+                    if (finalDept != null && !finalDept.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank())) {
                         String noteDept = n.getDepartment();
                         if ((noteDept == null || noteDept.isBlank()) && n.getSubjectId() != null) {
                             Subject s = subjectMap.get(n.getSubjectId());

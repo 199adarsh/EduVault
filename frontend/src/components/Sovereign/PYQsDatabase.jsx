@@ -90,26 +90,16 @@ const PYQsDatabase = ({
             return currentCatalog.length > 0 ? currentCatalog : currentRaw;
         }
 
-        const enrolled = currentRaw.filter(s => {
-            const sDept = s.department ? normalizeDept(s.department) : null;
-            const sSem = s.semester ? normalizeSem(s.semester) : null;
-            if (sDept && sSem) {
-                return sDept === studentDept && sSem === studentSem;
-            }
-            const catMatch = currentCatalog.find(cs => cs.id === s.id || (cs.code && s.code && cs.code.toLowerCase() === s.code.toLowerCase()));
-            if (catMatch) {
-                return normalizeDept(catMatch.department) === studentDept && normalizeSem(catMatch.semester) === studentSem;
-            }
-            return false;
-        });
-
-        if (enrolled.length > 0) return enrolled;
+        if (currentRaw && currentRaw.length > 0) {
+            return currentRaw;
+        }
 
         if (currentCatalog.length > 0) {
-            const matchedCatalog = currentCatalog.filter(cs =>
-                normalizeDept(cs.department) === studentDept &&
-                normalizeSem(cs.semester) === studentSem
-            );
+            const matchedCatalog = currentCatalog.filter(cs => {
+                const catDept = normalizeDept(cs.department);
+                const deptOk = catDept === studentDept || (studentDept === 'AIDS' && catDept === 'CSE') || (studentDept === 'CSE' && catDept === 'AIDS');
+                return deptOk && normalizeSem(cs.semester) === studentSem;
+            });
             if (matchedCatalog.length > 0) return matchedCatalog;
         }
 

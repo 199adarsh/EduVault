@@ -199,6 +199,9 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             if (note.subjectName && s.name && note.subjectName.toLowerCase().trim() === s.name.toLowerCase().trim()) return true;
             if (note.title && s.name && note.title.toLowerCase().includes(s.name.toLowerCase())) return true;
             if (note.title && s.code && note.title.toLowerCase().includes(s.code.toLowerCase())) return true;
+            if (note.fileUrl && s.name && note.fileUrl.toLowerCase().includes(s.name.toLowerCase())) return true;
+            if (note.b2ObjectKey && s.name && note.b2ObjectKey.toLowerCase().includes(s.name.toLowerCase())) return true;
+            if (note.b2ObjectKey && s.code && note.b2ObjectKey.toLowerCase().includes(s.code.toLowerCase())) return true;
             return false;
         });
     }, [notes, resolveSubjectId]);
@@ -223,19 +226,15 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             }
             if (baseList.length === 0) baseList = allKnownSubjects;
         } else {
-            const enrolled = (subjects || []).filter(s => {
-                const d = normalizeDept(s.department || profile?.department);
-                const sem = normalizeSem(s.semester || profile?.semester);
-                return d === studentDept && sem === studentSem;
-            });
-
-            if (enrolled.length > 0) {
-                baseList = enrolled;
+            if (subjects && subjects.length > 0) {
+                baseList = subjects;
             } else {
-                const catalogMatch = allKnownSubjects.filter(s =>
-                    normalizeDept(s.department) === studentDept &&
-                    normalizeSem(s.semester) === studentSem
-                );
+                const catalogMatch = allKnownSubjects.filter(s => {
+                    const d = normalizeDept(s.department);
+                    const sem = normalizeSem(s.semester);
+                    const deptOk = d === studentDept || (studentDept === 'AIDS' && d === 'CSE') || (studentDept === 'CSE' && d === 'AIDS');
+                    return deptOk && sem === studentSem;
+                });
                 baseList = catalogMatch.length > 0 ? catalogMatch : (subjects || []);
             }
         }

@@ -1,6 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 @import "@fontsource/inter";
-@import "@fontsource-variable/geist-mono";
+@font-face {
+  font-family: 'Geist Serif';
+  src: url('/fonts/GeistSerifVF.woff2') format('woff2-variations'),
+       url('/fonts/GeistSerifVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -11,8 +18,8 @@
 
 @theme inline {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Geist Mono", "Geist Mono Variable", ui-monospace, monospace;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-heading: "Geist Serif", Georgia, serif;
+  --font-mono: "Geist Serif", Georgia, serif;
 
   /* Theme mappings */
   --color-background: var(--background);
@@ -345,7 +352,7 @@ h4,
 h5,
 h6,
 .font-heading {
-  font-family: "Geist Mono", "Geist Mono Variable", ui-monospace, monospace;
+  font-family: "Geist Serif", Georgia, serif;
   color: var(--text-primary);
   font-weight: 600;
   line-height: 1.3;

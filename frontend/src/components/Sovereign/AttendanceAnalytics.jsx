@@ -5,6 +5,7 @@ import { useOutletContext } from 'react-router-dom';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import FacultyAttendance from './FacultyAttendance';
 import { FluidTabs } from '../fluid-tabs';
+import { cn } from '../../lib/utils';
 import { computeEngine, calculateLPW } from '../../lib/optimizationEngine';
 import {
     Calendar03Icon,

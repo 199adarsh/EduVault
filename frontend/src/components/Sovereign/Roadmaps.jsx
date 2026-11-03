@@ -2,71 +2,53 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, Handle, Position,
-  MarkerType, useReactFlow
+  useReactFlow
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './RoadmapFlow.css';
 
 import {
-  BookOpen, Check, CheckCircle2, Circle, Clock3, ExternalLink,
-  FileText, GitBranch, Layers3, LockKeyhole, Search, Sparkles, Target,
-  X, Briefcase, GraduationCap, ArrowRight, RotateCcw, Award, AlertCircle, ChevronDown
+  Check, Circle, Clock3, ExternalLink,
+  FileText, Search, Target,
+  X, RotateCcw, ArrowRight, ChevronUp, ChevronDown
 } from 'lucide-react';
-import axios from 'axios';
 import { toast } from 'sonner';
+import { cn } from '../../lib/utils';
+import { FluidTabs } from '../fluid-tabs';
+import { ROADMAP_CATEGORIES, getRoadmap } from '../../lib/roadmapsData';
 
-import { ROADMAPS, ROADMAP_CATEGORIES, getRoadmap } from '../../lib/roadmapsData';
-
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
-
-const statusLabel = {
-  'not-started': 'Not started',
-  'in-progress': 'In progress',
-  completed: 'Completed',
-};
-
-// Custom ReactFlow Node
+// Custom Flow Node honoring roadmap.sh geometry with EduVault tokens
 function TopicNode({ data }) {
-  const { topic, status, locked, selected, onSelect, isContinuoCrucial } = data;
+  const { topic, status, selected, onSelect, isContinuoCrucial } = data;
 
   return (
     <div
-      className={`topic-node ${status} ${selected ? 'selected' : ''} ${locked ? 'locked' : ''}`}
+      className={`roadmap-node-card ${status} ${selected ? 'selected' : ''}`}
       onClick={() => onSelect(topic.id)}
     >
-      <Handle type="target" position={Position.Left} />
+      <Handle type="target" position={Position.Top} />
 
-      <div className="node-topline">
-        <div className={`node-icon-box ${status}`}>
-          {status === 'completed' ? (
-            <Check size={14} />
-          ) : locked ? (
-            <LockKeyhole size={13} />
-          ) : (
-            <Circle size={13} />
-          )}
-        </div>
-        <span className="node-level-pill">{topic.level}</span>
-      </div>
-
-      <strong>{topic.title}</strong>
-
-      <div className="flex items-center justify-between gap-1 mt-auto">
-        <span className="node-meta">
-          <Clock3 size={11} /> {topic.duration}
+      {status === 'completed' && (
+        <span className="node-indicator-badge completed" title="Completed">
+          <Check size={10} strokeWidth={3} />
         </span>
-        {isContinuoCrucial && (
-          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-0.5" title="Key Placement Subject">
-            <Sparkles size={8} /> Placement
-          </span>
-        )}
-      </div>
+      )}
+      {status === 'in-progress' && (
+        <span className="node-indicator-badge in-progress" title="In Progress">
+          <Clock3 size={10} strokeWidth={3} />
+        </span>
+      )}
 
-      <span className={`node-status-badge ${status}`}>
-        {locked ? 'Prerequisites needed' : statusLabel[status]}
-      </span>
+      <div className="node-title-text">{topic.title}</div>
+      {topic.subtitle && <div className="node-desc-text">{topic.subtitle}</div>}
 
-      <Handle type="source" position={Position.Right} />
+      {isContinuoCrucial && (
+        <div className="node-curriculum-pill">
+          <span>Curriculum Match</span>
+        </div>
+      )}
+
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
@@ -75,152 +57,210 @@ const nodeTypes = {
   topic: TopicNode
 };
 
-// Topic Details Inspection Panel
-function TopicDetails({ topic, status, locked, onClose, onStatus, getStatus, matchedSubject, onSelectTopic }) {
-  const prerequisites = (topic.prerequisites || []).map(id => topic.allTopicsMap?.[id]).filter(Boolean);
+// Modal Detail Sheet
+function TopicDialog({
+  topic,
+  status,
+  onClose,
+  onStatusChange,
+  matchedSubject
+}) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
-    <aside className="roadmap-detail-panel animate-in fade-in duration-200">
-      <div className="detail-head">
-        <div>
-          <span className="detail-eyebrow">ROADMAP MILESTONE</span>
-          <h2>{topic.title}</h2>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#727272] hover:text-[#383838] hover:bg-slate-100 transition-colors cursor-pointer"
-          aria-label="Close details"
-        >
-          <X size={16} />
-        </button>
-      </div>
-
-      {topic.description && <p className="detail-desc">{topic.description}</p>}
-
-      <div className="detail-tags">
-        <span><Clock3 size={12} /> {topic.duration}</span>
-        <span><Layers3 size={12} /> {topic.level}</span>
-        {matchedSubject && (
-          <span className="bg-[#DEEDFC] text-[#174073] border-blue-200">
-            <GraduationCap size={12} /> College: {matchedSubject.name || topic.collegeSubjectMatch}
-          </span>
-        )}
-      </div>
-
-      {matchedSubject && (
-        <div className="mx-5 my-2 p-3 rounded-xl bg-[#DEEDFC]/70 border border-blue-200 text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-blue-900 mb-1">
-            <Sparkles size={13} className="text-[#0073E6]" />
-            <span>Placement Skill Match</span>
+    <div className="modal-backdrop-scrim" onClick={onClose}>
+      <div
+        className="topic-dialog-sheet"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Header */}
+        <div className="topic-dialog-header">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium tracking-wide uppercase bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300">
+                {topic.level || 'Intermediate'}
+              </span>
+              <span className="text-xs text-slate-500 flex items-center gap-1">
+                <Clock3 size={11} /> {topic.duration || 'Flexible'}
+              </span>
+            </div>
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+              {topic.title}
+            </h2>
           </div>
-          <p className="text-blue-800 text-[11px] leading-relaxed">
-            Your university curriculum subject <strong>{matchedSubject.name}</strong> directly prepares you for this module. Mastering this node solidifies your campus placement interview readiness.
-          </p>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            <X size={16} />
+          </button>
         </div>
-      )}
 
-      <section className="detail-section">
-        <h3><GitBranch size={14} className="text-[#0073E6]" /> Prerequisites</h3>
-        {prerequisites.length > 0 ? (
-          <div className="prereq-list">
-            {prerequisites.map(p => {
-              const pStatus = getStatus(p.id);
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => onSelectTopic(p.id)}
-                  className="prereq-item hover:border-blue-300 border border-transparent transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${pStatus === 'completed' ? 'bg-emerald-500' : pStatus === 'in-progress' ? 'bg-amber-500' : 'bg-slate-300'
-                      }`} />
-                    <span className="font-semibold text-[#383838]">{p.title}</span>
-                  </div>
-                  <span className="text-[10px] text-[#727272]">{statusLabel[pStatus]}</span>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-[11px] text-[#727272] m-0">No prerequisites — safe to start here!</p>
-        )}
-      </section>
+        {/* Body */}
+        <div className="topic-dialog-body">
+          {topic.description && (
+            <p className="text-sm text-slate-600 dark:text-neutral-300 leading-relaxed m-0">
+              {topic.description}
+            </p>
+          )}
 
-      <section className="detail-section">
-        <h3><Target size={14} className="text-[#0073E6]" /> What You'll Master</h3>
-        <ul className="outcome-list">
-          {topic.outcomes?.map((outcome, idx) => (
-            <li key={idx}>
-              <CheckCircle2 size={13} className="text-emerald-600 shrink-0 mt-0.5" />
-              <span>{outcome}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+          {matchedSubject && (
+            <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 text-xs">
+              <strong className="block text-blue-900 dark:text-blue-300 font-semibold mb-0.5">
+                University Course: {matchedSubject.name || topic.collegeSubjectMatch}
+              </strong>
+              <span className="text-blue-700/80 dark:text-blue-300/80 text-[11px] leading-relaxed block">
+                This topic directly aligns with your enrolled coursework and campus technical interview rounds.
+              </span>
+            </div>
+          )}
 
-      <section className="detail-section">
-        <h3><BookOpen size={14} className="text-[#0073E6]" /> Learning Resources</h3>
-        <div className="space-y-2">
-          {topic.resources?.map((res, idx) => (
-            <a
-              key={idx}
-              href={res.url}
-              target="_blank"
-              rel="noreferrer"
-              className="resource-card group"
+          {topic.keySkills && topic.keySkills.length > 0 && (
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#727272] dark:text-neutral-400 mb-2">
+                Core Competencies
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {topic.keySkills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200/60 dark:border-neutral-700"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Scaler Curated Course Lessons & Challenges */}
+          {topic.resources && topic.resources.length > 0 && (
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#727272] dark:text-neutral-400 mb-2 flex items-center gap-1.5">
+                <FileText size={12} className="text-[#0073E6]" /> Curated Lessons & Assessments
+              </h4>
+              <div className="space-y-1.5">
+                {topic.resources.map((res, idx) => (
+                  <a
+                    key={idx}
+                    href={res.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200/80 dark:border-neutral-800 hover:border-[#0073E6] hover:bg-blue-50/30 dark:hover:bg-neutral-800/60 transition-all group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 shrink-0">
+                        {res.kind}
+                      </span>
+                      <span className="text-xs font-medium text-slate-800 dark:text-neutral-200 truncate group-hover:text-[#0073E6] transition-colors">
+                        {res.title}
+                      </span>
+                    </div>
+                    <ExternalLink size={12} className="text-slate-400 group-hover:text-[#0073E6] shrink-0 ml-2 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="topic-dialog-footer">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onStatusChange(topic.id, 'not-started')}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer",
+                status === 'not-started'
+                  ? "bg-slate-200 dark:bg-neutral-800 text-slate-800 dark:text-white font-semibold"
+                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"
+              )}
             >
-              <div className="w-7 h-7 rounded-lg bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0 group-hover:bg-[#0073E6] group-hover:text-white transition-colors">
-                <FileText size={14} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <strong className="block text-[11px] text-[#383838] truncate group-hover:text-[#0073E6] transition-colors">
-                  {res.title}
-                </strong>
-                <span className="text-[9px] text-[#727272]">
-                  {res.kind} {res.free ? ' · Free' : ''}
-                </span>
-              </div>
-              <ExternalLink size={12} className="text-[#727272] group-hover:text-[#0073E6] shrink-0" />
-            </a>
-          ))}
-        </div>
-      </section>
-
-      <div className="detail-actions">
-        {locked && (
-          <div className="flex items-center gap-1.5 p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px]">
-            <LockKeyhole size={13} className="shrink-0" />
-            <span>Complete previous milestones to mark unlocked.</span>
+              Pending
+            </button>
+            <button
+              onClick={() => onStatusChange(topic.id, 'in-progress')}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer",
+                status === 'in-progress'
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200 font-semibold"
+                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"
+              )}
+            >
+              In Progress
+            </button>
+            <button
+              onClick={() => onStatusChange(topic.id, 'completed')}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer",
+                status === 'completed'
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200 font-semibold"
+                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800"
+              )}
+            >
+              Done
+            </button>
           </div>
-        )}
-        <label className="text-[10px] font-bold uppercase tracking-wider text-[#727272]">
-          Your Mastery Progress
-        </label>
-        <select
-          value={status}
-          onChange={(e) => onStatus(topic.id, e.target.value)}
-          className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 border border-[#E2E2E2] font-semibold text-[#383838] outline-none focus:border-blue-500 cursor-pointer"
-        >
-          <option value="not-started">Not started</option>
-          <option value="in-progress">In progress</option>
-          <option value="completed">Completed</option>
-        </select>
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
-// Inner Canvas Flow Component with ReactFlow hooks
+// Flow Canvas Inner Component
 function FlowCanvas({
   topics,
-  topicById,
-  selectedId,
-  setSelectedId,
-  isUnlocked,
+  focusedId,
+  setFocusedId,
+  onOpenDialog,
   getStatus,
   crucialSubjectMap
 }) {
   const { fitView, zoomIn, zoomOut, setCenter } = useReactFlow();
+
+  const currentIndex = useMemo(() => {
+    const idx = topics.findIndex(t => t.id === focusedId);
+    return idx >= 0 ? idx : 0;
+  }, [topics, focusedId]);
+
+  const jumpToTopic = useCallback((target) => {
+    if (!target) return;
+    setCenter(target.position.x + 120, target.position.y + 35, {
+      zoom: 1.05,
+      duration: 350
+    });
+  }, [setCenter]);
+
+  const handlePrev = () => {
+    if (topics.length === 0) return;
+    const prevIdx = currentIndex > 0 ? currentIndex - 1 : topics.length - 1;
+    const target = topics[prevIdx];
+    setFocusedId(target.id);
+    jumpToTopic(target);
+  };
+
+  const handleNext = () => {
+    if (topics.length === 0) return;
+    const nextIdx = currentIndex < topics.length - 1 ? currentIndex + 1 : 0;
+    const target = topics[nextIdx];
+    setFocusedId(target.id);
+    jumpToTopic(target);
+  };
 
   const nodes = useMemo(() => {
     return topics.map(topic => {
@@ -230,105 +270,88 @@ function FlowCanvas({
         type: 'topic',
         position: topic.position,
         data: {
-          topic: { ...topic, allTopicsMap: topicById },
+          topic,
           status: getStatus(topic.id),
-          locked: !isUnlocked(topic),
-          selected: selectedId === topic.id,
-          onSelect: setSelectedId,
+          selected: focusedId === topic.id,
+          onSelect: (id) => {
+            setFocusedId(id);
+            const t = topics.find(item => item.id === id);
+            if (t) jumpToTopic(t);
+            onOpenDialog(id);
+          },
           isContinuoCrucial: isCrucial
         },
         draggable: true
       };
     });
-  }, [topics, topicById, getStatus, isUnlocked, selectedId, setSelectedId, crucialSubjectMap]);
+  }, [topics, getStatus, focusedId, setFocusedId, onOpenDialog, crucialSubjectMap, jumpToTopic]);
 
   const edges = useMemo(() => {
     return topics.flatMap(topic =>
       (topic.prerequisites || []).map(prereq => {
         const isDone = getStatus(prereq) === 'completed';
-        const targetDone = getStatus(topic.id) === 'completed';
-        const color = isDone ? '#10b981' : '#cbd5e1';
+
         return {
-          id: `${prereq}-${topic.id}`,
+          id: `edge-${prereq}-${topic.id}`,
           source: prereq,
           target: topic.id,
           type: 'smoothstep',
-          animated: isDone && !targetDone,
-          style: { stroke: color, strokeWidth: 2 },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color,
-            width: 14,
-            height: 14
+          style: {
+            stroke: isDone ? '#16a34a' : '#cbd5e1',
+            strokeWidth: isDone ? 2 : 1.5
           }
         };
       })
     );
   }, [topics, getStatus]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const targetNode = nodes.find(n => n.id === selectedId) || nodes[0];
-      if (targetNode?.position) {
-        setCenter(targetNode.position.x + 115, targetNode.position.y + 65, { zoom: 1.15, duration: 400 });
-      } else {
-        fitView({ padding: 0.15, minZoom: 0.9, maxZoom: 1.3, duration: 400 });
-      }
-    }, 120);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topics, fitView, setCenter]);
-
-  useEffect(() => {
-    if (selectedId) {
-      const node = nodes.find(n => n.id === selectedId);
-      if (node?.position) {
-        setCenter(node.position.x + 115, node.position.y + 65, { zoom: 1.2, duration: 350 });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, setCenter]);
-
   return (
-    <div className="roadmap-graph-frame">
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-3 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-[#E2E2E2] text-[10px] font-semibold text-[#383838] shadow-xs">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Completed
+    <div className="w-full h-full relative">
+      {/* Floating Navigator Bar: Prev/Next Milestone + Zoom In, Zoom Out, and Fit */}
+      <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-[#E2E2E2] dark:border-neutral-800 shadow-2xs text-xs">
+        <span className="text-[11px] font-medium text-[#727272] dark:text-neutral-400 px-1 select-none">
+          Step <span className="text-[#1D1D1F] dark:text-white font-semibold">{currentIndex + 1}</span>/{topics.length}
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-amber-500" /> In Progress
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-slate-300" /> Not Started
-        </span>
-        <span className="flex items-center gap-1.5 text-[#0073E6]">
-          <Sparkles size={11} /> College Syllabus Match
-        </span>
-      </div>
-
-      {/* Quick Zoom Toolbar */}
-      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-xs p-1 rounded-xl border border-[#E2E2E2] shadow-xs">
         <button
           type="button"
-          onClick={() => zoomIn({ duration: 250 })}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#383838] hover:text-[#0073E6] hover:bg-slate-100 font-bold text-sm cursor-pointer transition-colors"
-          title="Zoom In"
+          onClick={handlePrev}
+          className="w-6 h-6 flex items-center justify-center rounded-full text-[#727272] hover:text-[#1D1D1F] hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          title="Previous milestone"
+        >
+          <ChevronUp size={13} />
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="w-6 h-6 flex items-center justify-center rounded-full text-[#727272] hover:text-[#1D1D1F] hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          title="Next milestone"
+        >
+          <ChevronDown size={13} />
+        </button>
+
+        <span className="w-px h-3.5 bg-[#E5E5EA] dark:bg-neutral-700 mx-0.5" />
+
+        <button
+          type="button"
+          onClick={() => zoomIn({ duration: 150 })}
+          className="w-6 h-6 flex items-center justify-center rounded-full text-[#727272] hover:text-[#1D1D1F] hover:bg-slate-100 dark:hover:bg-neutral-800 font-medium text-xs transition-colors cursor-pointer"
+          title="Zoom in"
         >
           +
         </button>
         <button
           type="button"
-          onClick={() => zoomOut({ duration: 250 })}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#383838] hover:text-[#0073E6] hover:bg-slate-100 font-bold text-sm cursor-pointer transition-colors"
-          title="Zoom Out"
+          onClick={() => zoomOut({ duration: 150 })}
+          className="w-6 h-6 flex items-center justify-center rounded-full text-[#727272] hover:text-[#1D1D1F] hover:bg-slate-100 dark:hover:bg-neutral-800 font-medium text-xs transition-colors cursor-pointer"
+          title="Zoom out"
         >
           −
         </button>
         <button
           type="button"
-          onClick={() => fitView({ padding: 0.15, minZoom: 0.9, maxZoom: 1.3, duration: 350 })}
-          className="px-2 h-7 flex items-center justify-center rounded-lg text-xs font-semibold text-[#383838] hover:text-[#0073E6] hover:bg-slate-100 cursor-pointer transition-colors"
-          title="Reset Zoom"
+          onClick={() => fitView({ padding: 0.2, minZoom: 0.6, maxZoom: 1.1, duration: 250 })}
+          className="px-2.5 h-6 flex items-center justify-center rounded-full text-[11px] font-medium text-[#727272] hover:text-[#1D1D1F] hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          title="Fit view"
         >
           Fit
         </button>
@@ -338,42 +361,38 @@ function FlowCanvas({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        fitViewOptions={{ padding: 0.15, minZoom: 0.9, maxZoom: 1.4 }}
-        minZoom={0.4}
-        maxZoom={2.8}
-        defaultViewport={{ x: 0, y: 0, zoom: 1.15 }}
+        fitView
+        fitViewOptions={{ padding: 0.2, minZoom: 0.6, maxZoom: 1.1 }}
+        minZoom={0.3}
+        maxZoom={2.0}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.95 }}
       >
-        <Background color="#cbd5e1" gap={18} size={1} />
-        <Controls showInteractive={false} className="!bg-white !border-[#E2E2E2] !shadow-sm !rounded-xl" />
+        <Background color="#cbd5e1" gap={20} size={1} />
+        <Controls showInteractive={false} showZoom={false} className="!bottom-4 !left-4" />
         <MiniMap
           nodeColor={n => {
-            if (n.data?.status === 'completed') return '#10b981';
-            if (n.data?.status === 'in-progress') return '#f59e0b';
-            return '#e2e8f0';
+            if (n.data?.status === 'completed') return '#16a34a';
+            if (n.data?.status === 'in-progress') return '#d97706';
+            return '#cbd5e1';
           }}
-          className="!border-[#E2E2E2] !rounded-xl !bg-slate-50/80"
+          className="!bottom-4 !right-4 !border-slate-200 dark:!border-slate-800 !rounded-xl"
         />
       </ReactFlow>
     </div>
   );
 }
 
-// Main Component
+// Main Roadmaps Component
 const Roadmaps = () => {
   const { loading: globalLoading, subjects = [] } = useOutletContext() || {};
 
-  // Track selection state
   const [selectedDomain, setSelectedDomain] = useState(() => {
-    return localStorage.getItem('eduvault_selected_roadmap_domain') || 'frontend';
+    const saved = localStorage.getItem('eduvault_selected_roadmap_domain');
+    return (saved && ROADMAP_CATEGORIES.some(c => c.id === saved)) ? saved : 'javascript';
   });
 
-  // Current Roadmap Configuration
   const currentRoadmap = useMemo(() => getRoadmap(selectedDomain), [selectedDomain]);
-  const topicById = useMemo(() => {
-    return Object.fromEntries(currentRoadmap.topics.map(t => [t.id, t]));
-  }, [currentRoadmap]);
 
-  // Status storage per domain
   const storageKey = `eduvault_roadmap_progress_${selectedDomain}`;
   const [statuses, setStatuses] = useState(() => {
     try {
@@ -384,18 +403,11 @@ const Roadmaps = () => {
     }
   });
 
-  // UI state
-  const [selectedId, setSelectedId] = useState(currentRoadmap.topics[0]?.id || null);
+  const [activeDialogId, setActiveDialogId] = useState(null);
+  const [focusedNodeId, setFocusedNodeId] = useState(currentRoadmap.topics[0]?.id || null);
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('graph'); // 'graph' | 'list'
-  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [viewMode, setViewMode] = useState('graph');
 
-  // Gemini Web2API Subject Placement Analysis State
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisData, setAnalysisData] = useState(null);
-
-  // Persist domain and statuses
   useEffect(() => {
     localStorage.setItem('eduvault_selected_roadmap_domain', selectedDomain);
     try {
@@ -404,537 +416,251 @@ const Roadmaps = () => {
     } catch {
       setStatuses({});
     }
-    setSelectedId(currentRoadmap.topics[0]?.id || null);
+    setFocusedNodeId(currentRoadmap.topics[0]?.id || null);
+    setActiveDialogId(null);
   }, [selectedDomain, currentRoadmap]);
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(statuses));
   }, [statuses, storageKey]);
 
-  // Automatically trigger or allow analysis via Gemini Web2API
-  const runGeminiSubjectAnalysis = useCallback(async (force = false) => {
-    if (analysisData && !force && analysisData.domain === currentRoadmap.title) {
-      setShowAnalysisModal(true);
-      return;
-    }
-
-    setIsAnalyzing(true);
-    setShowAnalysisModal(true);
-
-    try {
-      const payload = {
-        domain: currentRoadmap.title,
-        subjects: subjects.map(s => ({
-          name: s.name,
-          code: s.code,
-          attendance: s.attendance,
-          cie: s.cie
-        }))
-      };
-
-      const res = await axios.post(`${API_BASE}/ai/analyze-roadmap-subjects`, payload);
-      setAnalysisData(res.data);
-      toast.success("Analyzed college subjects for placement readiness!");
-    } catch (err) {
-      console.warn("Using fallback subject analysis", err);
-      toast.info("Generated curriculum placement insights.");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [currentRoadmap.title, subjects, analysisData]);
-
   const getStatus = useCallback((id) => statuses[id] || 'not-started', [statuses]);
 
-  const isUnlocked = useCallback((topic) => {
-    if (!topic.prerequisites || topic.prerequisites.length === 0) return true;
-    return topic.prerequisites.every(id => getStatus(id) === 'completed');
-  }, [getStatus]);
-
-  const setTopicStatus = (id, status) => {
-    setStatuses(prev => ({ ...prev, [id]: status }));
+  const handleStatusChange = (id, newStatus) => {
+    setStatuses(prev => ({ ...prev, [id]: newStatus }));
+    toast.success("Progress saved");
   };
 
   const handleResetProgress = () => {
     if (window.confirm(`Reset progress for ${currentRoadmap.title}?`)) {
       setStatuses({});
       localStorage.removeItem(storageKey);
-      toast.info("Track progress reset");
+      toast.info("Progress reset");
     }
   };
 
-  // Crucial subjects mapping
   const crucialSubjectMap = useMemo(() => {
     const map = {};
-    if (analysisData?.placementSubjects) {
-      analysisData.placementSubjects.forEach(s => {
-        if (s.importance === 'CRITICAL' || s.importance === 'IMPORTANT') {
-          map[s.name.toLowerCase()] = s;
-        }
-      });
-    }
+    subjects.forEach(s => {
+      if (s.name) map[s.name.toLowerCase()] = s;
+    });
     return map;
-  }, [analysisData]);
+  }, [subjects]);
 
-  // Metrics
   const totalTopics = currentRoadmap.topics.length;
   const completedCount = currentRoadmap.topics.filter(t => getStatus(t.id) === 'completed').length;
   const inProgressCount = currentRoadmap.topics.filter(t => getStatus(t.id) === 'in-progress').length;
   const progressPercent = totalTopics > 0 ? Math.round((completedCount / totalTopics) * 100) : 0;
 
-  // Selected topic object
-  const selectedTopic = selectedId ? topicById[selectedId] : null;
+  const activeTopic = activeDialogId ? currentRoadmap.topics.find(t => t.id === activeDialogId) : null;
 
-  // Filtered topics
   const visibleTopics = useMemo(() => {
     return currentRoadmap.topics.filter(t => {
-      const matchesQuery = !query || `${t.title} ${t.description || ''} ${t.level}`.toLowerCase().includes(query.toLowerCase());
-      const matchesFilter = filter === 'all' || getStatus(t.id) === filter;
-      return matchesQuery && matchesFilter;
+      if (!query.trim()) return true;
+      const q = query.toLowerCase();
+      return (
+        t.title.toLowerCase().includes(q) ||
+        (t.subtitle && t.subtitle.toLowerCase().includes(q)) ||
+        (t.keySkills && t.keySkills.some(k => k.toLowerCase().includes(q)))
+      );
     });
-  }, [currentRoadmap.topics, query, filter, getStatus]);
+  }, [currentRoadmap, query]);
+
+  const roadmapTabs = useMemo(() => {
+    return ROADMAP_CATEGORIES.map(cat => ({
+      id: cat.id,
+      label: cat.name,
+    }));
+  }, []);
 
   if (globalLoading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-slate-300 border-t-[#0073E6] rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="roadmap-container">
-      {/* Top Header & Track Selector */}
-      <header className="px-3.5 sm:px-6 py-4 sm:py-5 bg-white border-b border-[#E2E2E2]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
-                <Award size={12} /> Campus Placement Verified
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#383838] flex items-center gap-2">
-              {currentRoadmap.title}
-            </h1>
-            {currentRoadmap.description && (
-              <p className="text-xs text-[#727272] mt-0.5 max-w-2xl leading-relaxed">
-                {currentRoadmap.description}
-              </p>
-            )}
-          </div>
-
-          {/* Action CTAs */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <button
-              onClick={() => runGeminiSubjectAnalysis(false)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all cursor-pointer"
-            >
-              <Sparkles size={14} className="text-amber-300 animate-pulse" />
-              <span>Gemini Placement Analysis</span>
-              {analysisData?.readinessScore && (
-                <span className="ml-1 px-1.5 py-0.5 rounded bg-white/20 text-[10px]">
-                  {analysisData.readinessScore}% Match
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={handleResetProgress}
-              className="p-2 rounded-xl text-[#727272] hover:text-[#383838] bg-slate-50 hover:bg-slate-100 border border-[#E2E2E2] transition-colors"
-              title="Reset progress for this track"
-            >
-              <RotateCcw size={15} />
-            </button>
-          </div>
+    <main className="p-3.5 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-4 pb-24 md:pb-12">
+      {/* Page Header */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[10px] font-bold text-[#0073E6] uppercase tracking-wider block mb-0.5">
+            Career & Curriculum Pathways
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#1D1D1F] dark:text-white tracking-tight">
+            Roadmap
+          </h1>
+          <p className="text-xs text-[#727272] dark:text-neutral-400 mt-0.5">
+            {currentRoadmap.description || 'Verified developer learning paths with hands-on projects and interview milestones'}
+          </p>
         </div>
 
-        {/* Single Selected Roadmap Selector */}
-        <div className="max-w-7xl mx-auto mt-5 pt-4 border-t border-[#E2E2E2] flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#727272] uppercase tracking-wider shrink-0">
-              Active Roadmap:
+        {/* Progress pill & Reset */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-neutral-900 border border-[#E2E2E2] dark:border-neutral-800 shadow-2xs text-xs">
+            <span className="text-[#727272] dark:text-neutral-400 font-medium">Completed</span>
+            <span className="font-semibold text-[#1D1D1F] dark:text-white">
+              {completedCount}/{totalTopics}
             </span>
-            <div className="relative">
-              <select
-                value={selectedDomain}
-                onChange={(e) => setSelectedDomain(e.target.value)}
-                className="bg-[#DEEDFC] border border-blue-200 text-blue-900 font-bold text-xs py-1.5 pl-3 pr-8 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                {ROADMAP_CATEGORIES.map(cat => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name} ({cat.badge})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0073E6] pointer-events-none w-3.5 h-3.5" />
-            </div>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0073E6]" />
+            <span className="text-[11px] font-bold text-[#0073E6]">{progressPercent}%</span>
           </div>
+
+          {completedCount > 0 && (
+            <button
+              onClick={handleResetProgress}
+              className="w-8 h-8 rounded-full border border-[#E2E2E2] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-center text-[#727272] hover:text-rose-600 transition-colors cursor-pointer shadow-2xs"
+              title="Reset progress"
+            >
+              <RotateCcw size={13} />
+            </button>
+          )}
         </div>
       </header>
 
-      {/* Progress & Filtering Toolbar */}
-      <section className="px-3.5 sm:px-6 py-3 bg-white/80 border-b border-[#E2E2E2]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Unified Control Console: FluidTabs & View Switcher */}
+      <section className="bg-white dark:bg-neutral-900 border border-[#E2E2E2] dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Animated Fluid Tabs */}
+        <div className="overflow-x-auto scrollbar-none py-0.5">
+          <FluidTabs
+            tabs={roadmapTabs}
+            value={selectedDomain}
+            onChange={(id) => {
+              setSelectedDomain(id);
+              setActiveDialogId(null);
+            }}
+            size="sm"
+            layoutId="roadmap-fluid-tabs"
+            className="bg-[#DEEDFC]/40 dark:bg-neutral-800/60 border-[#D9ECFF] dark:border-neutral-700/60 shrink-0"
+            activeClassName="font-semibold text-[#0073E6] dark:text-blue-400"
+            inactiveClassName="font-medium text-[#727272] hover:text-[#383838] dark:text-neutral-400 dark:hover:text-neutral-200"
+            indicatorClassName="absolute inset-0 rounded-full border border-[#D9ECFF] dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs"
+          />
+        </div>
 
-          {/* Progress stats */}
-          <div className="flex items-center gap-4 flex-1 max-w-md">
-            <div className="w-full">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-[#383838]">Track Completion</span>
-                <span className="font-bold text-[#0073E6]">
-                  {completedCount}/{totalTopics} ({progressPercent}%)
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-[#727272] shrink-0">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" /> {completedCount} Done
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" /> {inProgressCount} Active
-              </span>
-            </div>
+        {/* Search & Graph/List Toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8E8E93]" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter topics..."
+              className="pl-7 pr-3 py-1.5 text-xs rounded-full bg-[#F5F5F7] dark:bg-neutral-800 border border-transparent focus:border-[#D9ECFF] text-[#1D1D1F] dark:text-white placeholder:text-[#8E8E93] outline-none transition-all w-36 sm:w-44"
+            />
           </div>
 
-          {/* Search, Filter & View Toggle */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#727272]" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search topics..."
-                className="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-[#E2E2E2] text-[#383838] placeholder:text-[#727272] outline-none focus:border-blue-500 w-44"
-              />
-            </div>
-
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-2.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-[#E2E2E2] text-[#383838] outline-none focus:border-blue-500 cursor-pointer"
+          <div className="flex items-center p-0.5 rounded-full bg-[#F5F5F7] dark:bg-neutral-800 border border-[#E5E5EA] dark:border-neutral-700">
+            <button
+              onClick={() => setViewMode('graph')}
+              className={cn(
+                "px-3 py-1 text-xs font-semibold rounded-full transition-all cursor-pointer",
+                viewMode === 'graph'
+                  ? "bg-white dark:bg-neutral-900 text-[#1D1D1F] dark:text-white shadow-2xs"
+                  : "text-[#727272] dark:text-neutral-400 hover:text-[#1D1D1F]"
+              )}
             >
-              <option value="all">All Topics</option>
-              <option value="not-started">Not Started</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-
-            <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-[#E2E2E2]">
-              <button
-                onClick={() => setViewMode('graph')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'graph' ? 'bg-white text-[#383838] shadow-xs' : 'text-[#727272] hover:text-[#383838]'
-                  }`}
-              >
-                Graph Flow
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white text-[#383838] shadow-xs' : 'text-[#727272] hover:text-[#383838]'
-                  }`}
-              >
-                Curriculum List
-              </button>
-            </div>
+              Graph
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "px-3 py-1 text-xs font-semibold rounded-full transition-all cursor-pointer",
+                viewMode === 'list'
+                  ? "bg-white dark:bg-neutral-900 text-[#1D1D1F] dark:text-white shadow-2xs"
+                  : "text-[#727272] dark:text-neutral-400 hover:text-[#1D1D1F]"
+              )}
+            >
+              List
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Main Workspace */}
-      <main className="roadmap-workspace">
-        <div className="w-full flex flex-col gap-4">
-
-          {/* Continuo Placement Highlights Notification */}
-          <div className="p-4 rounded-2xl bg-white border border-[#E2E2E2] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
-                <Briefcase size={18} />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-[#383838]">
-                  College Syllabus & Career Placement Matching
-                </h4>
-                <p className="text-[11px] text-[#727272]">
-                  {subjects.length} active college subjects mapped to this roadmap. Gemini highlights core interview topics.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => runGeminiSubjectAnalysis(false)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#DEEDFC] text-[#174073] hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <Sparkles size={13} className="text-[#0073E6]" />
-              <span>View Analysis</span>
-              <ArrowRight size={13} />
-            </button>
-          </div>
-
-          {/* Interactive Graph / List View */}
-          {viewMode === 'graph' ? (
-            <ReactFlowProvider>
-              <FlowCanvas
-                topics={visibleTopics}
-                topicById={topicById}
-                selectedId={selectedId}
-                setSelectedId={setSelectedId}
-                isUnlocked={isUnlocked}
-                getStatus={getStatus}
-                crucialSubjectMap={crucialSubjectMap}
-              />
-            </ReactFlowProvider>
-          ) : (
-            <div className="bg-white rounded-2xl border border-[#E2E2E2] divide-y divide-slate-100 overflow-hidden shadow-xs">
-              {visibleTopics.map((topic, index) => {
+      {/* Main Canvas Frame */}
+      <div className="bg-white dark:bg-neutral-900 border border-[#E2E2E2] dark:border-neutral-800 rounded-2xl overflow-hidden shadow-2xs relative w-full h-[calc(100vh-275px)] min-h-[580px]">
+        {viewMode === 'graph' ? (
+          <ReactFlowProvider>
+            <FlowCanvas
+              topics={visibleTopics}
+              focusedId={focusedNodeId}
+              setFocusedId={setFocusedNodeId}
+              onOpenDialog={setActiveDialogId}
+              getStatus={getStatus}
+              crucialSubjectMap={crucialSubjectMap}
+            />
+          </ReactFlowProvider>
+        ) : (
+          <div className="h-full overflow-y-auto p-4 sm:p-6 max-w-4xl mx-auto">
+            <div className="rounded-2xl border border-[#E2E2E2] dark:border-neutral-800 bg-white dark:bg-neutral-900 divide-y divide-[#F0F0F2] dark:divide-neutral-800 overflow-hidden shadow-2xs">
+              {visibleTopics.map((topic, idx) => {
                 const status = getStatus(topic.id);
-                const isSelected = selectedId === topic.id;
-                const locked = !isUnlocked(topic);
                 return (
                   <div
                     key={topic.id}
-                    onClick={() => setSelectedId(topic.id)}
-                    className={`p-4 flex items-center justify-between gap-4 transition-colors cursor-pointer ${isSelected ? 'bg-[#DEEDFC]/50' : 'hover:bg-[#DEEDFC]/40'
-                      }`}
+                    onClick={() => setActiveDialogId(topic.id)}
+                    className="p-3.5 flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${status === 'completed'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : status === 'in-progress'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-slate-100 text-[#383838]'
-                        }`}>
-                        {index + 1}
+                      <span className="text-xs font-mono text-[#8E8E93] w-6">
+                        {String(idx + 1).padStart(2, '0')}
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <strong className="text-xs font-bold text-[#383838] truncate">
+                          <strong className="text-xs font-semibold text-[#1D1D1F] dark:text-white truncate">
                             {topic.title}
                           </strong>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-[#383838]">
-                            {topic.level}
-                          </span>
+                          {topic.subtitle && (
+                            <span className="text-[11px] text-[#727272] dark:text-neutral-400 truncate hidden sm:inline">
+                              • {topic.subtitle}
+                            </span>
+                          )}
                         </div>
                         {topic.description && (
-                          <p className="text-[11px] text-[#727272] truncate max-w-md">
+                          <p className="text-[11px] text-[#727272] dark:text-neutral-400 truncate max-w-lg mt-0.5">
                             {topic.description}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[11px] text-[#727272] font-medium">
-                        {topic.duration}
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className={cn(
+                        "px-2.5 py-0.5 rounded-full text-[10px] font-semibold",
+                        status === 'completed'
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60"
+                          : status === 'in-progress'
+                            ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60"
+                            : "bg-slate-100 text-slate-600 dark:bg-neutral-800 dark:text-neutral-400"
+                      )}>
+                        {status === 'completed' ? 'Done' : status === 'in-progress' ? 'In Progress' : 'Pending'}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${status === 'completed'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : status === 'in-progress'
-                          ? 'bg-amber-50 text-amber-700'
-                          : 'bg-slate-100 text-[#383838]'
-                        }`}>
-                        {locked ? 'Locked' : statusLabel[status]}
-                      </span>
-                      <ArrowRight size={14} className="text-[#727272]" />
+                      <ArrowRight size={13} className="text-[#8E8E93]" />
                     </div>
                   </div>
                 );
               })}
             </div>
-          )}
-        </div>
-
-        {/* Selected Topic Details Sidebar */}
-        {selectedTopic && (
-          <TopicDetails
-            topic={selectedTopic}
-            status={getStatus(selectedTopic.id)}
-            locked={!isUnlocked(selectedTopic)}
-            onClose={() => setSelectedId(null)}
-            onStatus={setTopicStatus}
-            getStatus={getStatus}
-            matchedSubject={subjects.find(s => s.name?.toLowerCase().includes(selectedTopic.collegeSubjectMatch?.toLowerCase()))}
-            onSelectTopic={setSelectedId}
-          />
-        )}
-      </main>
-
-      {/* Gemini Subject Placement Analysis Modal */}
-      {showAnalysisModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
-          onClick={() => setShowAnalysisModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl border border-[#E2E2E2] shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-[#E2E2E2] flex items-center justify-between bg-gradient-to-r from-blue-50/80 to-indigo-50/80">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0073E6] text-white flex items-center justify-center shadow-sm">
-                  <Sparkles size={20} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-extrabold tracking-wider uppercase text-[#174073] bg-blue-100/60 px-2 py-0.5 rounded">
-                      Gemini Web2API
-                    </span>
-                    <span className="text-xs text-[#727272]">
-                      Placement Readiness & Career Alignment
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#383838] mt-0.5">
-                    {currentRoadmap.title} · Syllabus Placement Analysis
-                  </h3>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowAnalysisModal(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-[#727272] hover:text-[#383838] hover:bg-slate-200/50 transition-colors cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6">
-              {isAnalyzing ? (
-                <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
-                  <div className="w-10 h-10 border-3 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-                  <p className="text-xs font-bold text-[#383838]">
-                    Analyzing college syllabus for placement preparation...
-                  </p>
-                  <p className="text-[11px] text-[#727272] max-w-sm">
-                    Comparing your college coursework with industry skill requirements for {currentRoadmap.title}.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* Readiness Banner */}
-                  <div className="p-4 rounded-xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-                        Campus Recruitment Alignment
-                      </span>
-                      <h4 className="text-base font-bold text-white mt-0.5">
-                        {analysisData?.readinessScore || 85}% Domain Syllabus Match
-                      </h4>
-                      <p className="text-xs text-slate-300 mt-1 leading-relaxed max-w-lg">
-                        {analysisData?.summary || "College coursework covers foundational concepts. Pairing college labs with this roadmap will elevate your technical interview performance."}
-                      </p>
-                    </div>
-
-                    <div className="w-16 h-16 rounded-full bg-[#0073E6]/30 border-2 border-blue-400 flex items-center justify-center text-xl font-extrabold text-blue-200 shrink-0">
-                      {analysisData?.readinessScore || 85}%
-                    </div>
-                  </div>
-
-                  {/* High Yield Placement Subjects */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-bold text-[#383838] uppercase tracking-wider flex items-center gap-1.5">
-                        <Award size={14} className="text-[#0073E6]" />
-                        Crucial Subjects for Technical Interviews
-                      </h4>
-                      <span className="text-[11px] text-[#727272]">
-                        From College Coursework
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {analysisData?.placementSubjects?.map((sub, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3.5 rounded-xl border border-[#E2E2E2] bg-slate-50/50 hover:bg-[#DEEDFC]/40 transition-all flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${sub.importance === 'CRITICAL'
-                                ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                                : sub.importance === 'IMPORTANT'
-                                  ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                                  : 'bg-slate-200 text-[#383838]'
-                                }`}>
-                                {sub.importance}
-                              </span>
-                              <span className="text-[10px] text-[#727272] font-medium">
-                                {sub.code || 'Course'}
-                              </span>
-                            </div>
-
-                            <h5 className="text-xs font-bold text-[#383838] mb-1">
-                              {sub.name}
-                            </h5>
-                            <p className="text-[11px] text-[#383838] leading-relaxed mb-2">
-                              {sub.whyItMatters}
-                            </p>
-                          </div>
-
-                          <div className="pt-2 border-t border-[#E2E2E2]/60 mt-1">
-                            <span className="text-[9px] font-bold text-[#727272] uppercase tracking-wider block mb-1">
-                              Interview Focus Areas:
-                            </span>
-                            <div className="flex flex-wrap gap-1">
-                              {sub.interviewTopics?.map((t, tIdx) => (
-                                <span
-                                  key={tIdx}
-                                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white border border-[#E2E2E2] text-[#383838]"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Strategic Tips from Gemini */}
-                  {analysisData?.placementStrategy && (
-                    <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200">
-                      <h4 className="text-xs font-bold text-amber-900 flex items-center gap-1.5 mb-2">
-                        <AlertCircle size={14} className="text-amber-700" />
-                        Gemini Career Guidance & Placement Strategy
-                      </h4>
-                      <ul className="space-y-1.5">
-                        {analysisData.placementStrategy.map((tip, idx) => (
-                          <li key={idx} className="text-[11px] text-amber-800 flex items-start gap-2">
-                            <span className="font-bold text-amber-900 shrink-0">•</span>
-                            <span>{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-[#E2E2E2] bg-slate-50 flex items-center justify-between">
-              <span className="text-[11px] text-[#727272]">
-                Powered by CampusAxis Career Intelligence
-              </span>
-              <button
-                onClick={() => runGeminiSubjectAnalysis(true)}
-                disabled={isAnalyzing}
-                className="px-4 py-1.5 rounded-xl text-xs font-bold bg-[#0073E6] text-white hover:bg-[#4A9AF0] transition-colors cursor-pointer disabled:opacity-50"
-              >
-                Re-Analyze
-              </button>
-            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Topic Detail Modal */}
+      {activeTopic && (
+        <TopicDialog
+          topic={activeTopic}
+          status={getStatus(activeTopic.id)}
+          onClose={() => setActiveDialogId(null)}
+          onStatusChange={handleStatusChange}
+          matchedSubject={subjects.find(s =>
+            s.name?.toLowerCase().includes(activeTopic.collegeSubjectMatch?.toLowerCase())
+          )}
+        />
       )}
-    </div>
+    </main>
   );
 };
 

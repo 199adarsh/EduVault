@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
     DashboardSquare02Icon,
     BookOpen01Icon,
-    Route01Icon,
+    MapsLocation02Icon,
     Notification02Icon,
     CalendarCheckIn01Icon,
     Settings02Icon,
@@ -103,7 +103,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
         },
         {
             name: 'Roadmaps',
-            icon: Route01Icon,
+            icon: MapsLocation02Icon,
             path: '/roadmaps'
         },
         {

@@ -98,15 +98,19 @@ const NoteDetail = () => {
                 setBlobUrl(bUrl);
 
                 const ext = note?.fileUrl ? note.fileUrl.split('.').pop().toLowerCase() : '';
-                if (['doc', 'docx'].includes(ext)) {
+                if (ext === 'docx') {
                     try {
                         const arrayBuffer = await blob.arrayBuffer();
-                        const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
-                        if (html && html.trim().length > 0 && !cancelled) {
-                            setDocxHtml(html);
+                        const bytes = new Uint8Array(arrayBuffer.slice(0, 4));
+                        const isZip = bytes[0] === 0x50 && bytes[1] === 0x4B;
+                        if (isZip && typeof mammoth !== 'undefined' && mammoth?.convertToHtml) {
+                            const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
+                            if (html && html.trim().length > 0 && !cancelled) {
+                                setDocxHtml(html);
+                            }
                         }
                     } catch (mErr) {
-                        console.warn('Mammoth docx parse failed:', mErr);
+                        console.warn('Docx preview fallback:', mErr?.message || mErr);
                     }
                 }
             }
@@ -173,6 +177,21 @@ const NoteDetail = () => {
                 const data = await response.json();
                 if (data.answer && !data.answer.toLowerCase().includes("encountered an error")) {
                     answer = data.answer;
+                }
+            }
+
+            if (typeof answer === 'string') {
+                let clean = answer.trim();
+                if (clean.startsWith('```json')) {
+                    clean = clean.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+                } else if (clean.startsWith('```')) {
+                    clean = clean.replace(/^```\s*/, '').replace(/\s*```$/, '');
+                }
+                if (clean.startsWith('{') && clean.includes('"answer"')) {
+                    try {
+                        const parsed = JSON.parse(clean);
+                        if (parsed.answer) answer = parsed.answer;
+                    } catch (e) {}
                 }
             }
 

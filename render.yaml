@@ -27,3 +27,5 @@ services:
         value: ca-east-006
       - key: DDL_AUTO
         value: update
+      - key: GROQ_API_KEY
+        sync: false

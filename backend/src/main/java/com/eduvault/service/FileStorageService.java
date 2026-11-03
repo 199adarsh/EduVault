@@ -10,6 +10,7 @@ import org.apache.poi.xslf.usermodel.XSLFShape;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -96,12 +97,9 @@ public class FileStorageService {
                     text = stripper.getText(document);
                 }
             } else if (lowerName.endsWith(".docx")) {
-                try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(filePath))) {
-                    StringBuilder sb = new StringBuilder();
-                    for (XWPFParagraph p : doc.getParagraphs()) {
-                        sb.append(p.getText()).append("\n");
-                    }
-                    text = sb.toString();
+                try (XWPFDocument doc = new XWPFDocument(Files.newInputStream(filePath));
+                     XWPFWordExtractor extractor = new XWPFWordExtractor(doc)) {
+                    text = extractor.getText();
                 }
             } else if (lowerName.endsWith(".pptx")) {
                 try (XMLSlideShow ppt = new XMLSlideShow(Files.newInputStream(filePath))) {
@@ -213,16 +211,13 @@ public class FileStorageService {
                 try (PDDocument document = Loader.loadPDF(bytes)) {
                     PDFTextStripper stripper = new PDFTextStripper();
                     stripper.setStartPage(1);
-                    stripper.setEndPage(Math.min(3, document.getNumberOfPages()));
+                    stripper.setEndPage(Math.min(50, document.getNumberOfPages()));
                     return stripper.getText(document);
                 }
             } else if (lowerName.endsWith(".docx")) {
-                try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(bytes))) {
-                    StringBuilder sb = new StringBuilder();
-                    for (XWPFParagraph p : doc.getParagraphs()) {
-                        sb.append(p.getText()).append("\n");
-                    }
-                    return sb.toString();
+                try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(bytes));
+                     XWPFWordExtractor extractor = new XWPFWordExtractor(doc)) {
+                    return extractor.getText();
                 }
             } else if (lowerName.endsWith(".pptx")) {
                 try (XMLSlideShow ppt = new XMLSlideShow(new ByteArrayInputStream(bytes))) {

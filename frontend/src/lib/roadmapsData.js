@@ -1,556 +1,832 @@
-// Multi-domain Roadmaps Data with collegiate Continuo subject mapping
-// Inspired by EduVault Learning Paths & reference interactive node architecture
+// Sovereign Roadmaps - Categorized Curricula for Tier 2/3 Placement & Industry Prep
 
 const r = (title, kind, url, free = true) => ({ title, kind, url, free });
 
 export const ROADMAP_CATEGORIES = [
-  { id: 'frontend', name: 'Frontend Development', icon: 'palette', badge: 'Client & UI Systems' },
-  { id: 'backend', name: 'Backend & Systems', icon: 'dns', badge: 'Services & DB Architecture' },
-  { id: 'ai-ml', name: 'AI & Machine Learning', icon: 'psychology', badge: 'Models & RAG Engineering' },
-  { id: 'devops', name: 'DevOps & Cloud', icon: 'cloud_sync', badge: 'Infra & CI/CD Pipelines' },
-  { id: 'dsa-placement', name: 'Campus Placement DSA', icon: 'code_blocks', badge: 'Interviews & Tech Rounds' }
+  {
+    id: 'javascript',
+    name: 'JavaScript',
+    role: 'Language Foundation',
+    description: 'Complete 9-module Scaler foundation from variables and closures to async event loops & DOM',
+    icon: 'Code2',
+    level: 'Beginner to Intermediate',
+    topicsCount: 9,
+    badge: 'Core Language'
+  },
+  {
+    id: 'react',
+    name: 'React.js',
+    role: 'Frontend Engineering',
+    description: 'Component architecture, Hooks, State management, Context API and FilmVault Production App',
+    icon: 'Layout',
+    level: 'Beginner to Advanced',
+    topicsCount: 10,
+    badge: 'Frontend Core'
+  },
+  {
+    id: 'nodejs',
+    name: 'Node.js & Express',
+    role: 'Backend Engineering',
+    description: 'Master Node runtime, Express routing, Custom Middlewares, MongoDB and Mongoose modeling',
+    icon: 'Server',
+    level: 'Intermediate to Advanced',
+    topicsCount: 10,
+    badge: 'Backend Core'
+  },
+  {
+    id: 'full-stack',
+    name: 'Full Stack MERN',
+    role: 'Career Track',
+    description: 'End-to-end integration: React client, Node REST APIs, JWT Auth, Database clustering & Deployments',
+    icon: 'Layers',
+    level: 'Intermediate to Advanced',
+    topicsCount: 12,
+    badge: 'Full Stack'
+  },
+  {
+    id: 'dsa-placement',
+    name: 'DSA Placement Prep',
+    role: 'Placement Track',
+    description: 'Master Arrays, Linked Lists, Trees, Graphs, DP and LeetCode patterns for Campus Placements',
+    icon: 'Brain',
+    level: 'All Levels',
+    topicsCount: 9,
+    badge: 'Interview Ready'
+  }
 ];
 
 export const ROADMAPS = {
-  frontend: {
-    id: 'frontend',
-    title: 'Frontend Development',
-    tagline: 'Client Architecture, Responsive Frameworks & Web Vitals',
-    icon: 'palette',
-    totalHours: '80–100 hours',
-    level: 'Beginner to Advanced',
+  javascript: {
+    id: 'javascript',
+    title: 'JavaScript for Beginners ',
+    description: '9 Modules | 78 Lessons | 10h 14m comprehensive guide to mastering core JavaScript and modern ES6+.',
+    estimatedHours: 45,
+    difficulty: 'Beginner to Intermediate',
+    prerequisites: ['Basic HTML & CSS knowledge'],
     topics: [
       {
-        id: 'web-basics', title: 'How the Web Works', level: 'Foundation', duration: '2–3 hours',
-        prerequisites: [], position: { x: 40, y: 80 },
-        collegeSubjectMatch: 'Computer Networks',
-        outcomes: ['Explain client-server architecture', 'Inspect network headers in Chrome DevTools', 'Understand DNS resolution & TLS'],
-        resources: [
-          r('MDN: How the Web Works', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/How_the_Web_works'),
-          r('HTTP Overview & Status Codes', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview')
-        ]
-      },
-      {
-        id: 'html', title: 'HTML5 & Semantic Markup', level: 'Foundation', duration: '4–6 hours',
-        prerequisites: ['web-basics'], position: { x: 330, y: 80 },
+        id: 'js-m1',
+        title: 'Module 1: Getting Started with JS',
+        subtitle: 'Runtime, Browser Engine & First Program',
+        category: 'Basics',
         collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Structure content semantically', 'Build accessible forms and inputs', 'Master screen-reader accessibility basics'],
+        position: { x: 280, y: 50 },
+        prerequisites: [],
+        description: 'Understand how JavaScript executes in browsers and Node.js environments. Setup environment and write your first scripts.',
+        estimatedHours: 3,
+        keySkills: ['V8 Engine', 'Browser Console', 'Node REPL', 'Script Tags'],
         resources: [
-          r('MDN HTML Learning Area', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Learn/HTML'),
-          r('HTML Elements Reference', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element')
+          r('Intro to JavaScript Course', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/1637/'),
+          r('Introduction to JavaScript', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/239/'),
+          r('JavaScript in the Browser', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/240/'),
+          r('First JavaScript Program', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/241/'),
+          r('Introduction to Node.js', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/242/'),
+          r('Challenge 1 - JavaScript for Beginners', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/378888/')
         ]
       },
       {
-        id: 'css', title: 'Modern CSS & Layout Systems', level: 'Foundation', duration: '8–10 hours',
-        prerequisites: ['html'], position: { x: 620, y: 80 },
+        id: 'js-m2',
+        title: 'Module 2: Basics of JavaScript',
+        subtitle: 'Variables, Arrays, Objects & Memory',
+        category: 'Data Structures',
+        collegeSubjectMatch: 'Programming in C/C++',
+        position: { x: 280, y: 180 },
+        prerequisites: ['js-m1'],
+        description: 'Variables, data types, mutable arrays, and object reference mechanics in JavaScript memory models.',
+        estimatedHours: 4,
+        keySkills: ['Primitive vs Non-primitive', 'Array Methods', 'Object Literals', 'Pass by Reference'],
+        resources: [
+          r('Variables in JavaScript', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/243/'),
+          r('Arrays in JavaScript', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/244/'),
+          r('Array Methods (Push, Pop, Shift, Slice)', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/245/'),
+          r('Objects in JavaScript', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/246/'),
+          r('Advanced Object Manipulation', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/247/'),
+          r('Challenge 2 - JavaScript Basics', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/380308/')
+        ]
+      },
+      {
+        id: 'js-m3',
+        title: 'Module 3: Conditionals & Control Flow',
+        subtitle: 'If/Else, Loops (For, While, For-In, For-Of)',
+        category: 'Logic Building',
+        collegeSubjectMatch: 'Data Structures & Algorithms',
+        position: { x: 280, y: 310 },
+        prerequisites: ['js-m2'],
+        description: 'Control flow structures, iterative loops, switch branches, and loop iteration optimization.',
+        estimatedHours: 4,
+        keySkills: ['if-else-if', 'for loops', 'while/do-while', 'for...in vs for...of'],
+        resources: [
+          r('Conditional Statements', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/248/'),
+          r('The Standard For Loop', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/249/'),
+          r('While & Do-While Loops', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/250/'),
+          r('For-In Object Loop', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/251/'),
+          r('For-Of Iterable Loop', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/252/'),
+          r('Challenge 3 - Control Flow Statements', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/385327/')
+        ]
+      },
+      {
+        id: 'js-m4',
+        title: 'Module 4: Functions & Execution Context',
+        subtitle: 'Declarations, Expressions & Hoisting',
+        category: 'Core Language',
+        collegeSubjectMatch: 'Principles of Programming Languages',
+        position: { x: 280, y: 440 },
+        prerequisites: ['js-m3'],
+        description: 'Function statements, function expressions, call stack, execution contexts, and the hoisting mechanism.',
+        estimatedHours: 3,
+        keySkills: ['Execution Context', 'Call Stack', 'Variable Hoisting', 'Function Expressions'],
+        resources: [
+          r('Functions in JavaScript', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/253/'),
+          r('Functions as Expressions', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/254/'),
+          r('Hoisting Deep Dive', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/255/'),
+          r('Challenge 4 - Functions and Hoisting', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/380311/')
+        ]
+      },
+      {
+        id: 'js-m5',
+        title: 'Module 5: Modern ES6+ Features',
+        subtitle: 'Let/Const, Arrow Functions & Destructuring',
+        category: 'Modern JS',
         collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Build fluid responsive layouts with Flexbox and Grid', 'Understand specificity, inheritance & cascade', 'Implement fluid typography & container queries'],
+        position: { x: 280, y: 570 },
+        prerequisites: ['js-m4'],
+        description: 'Modern JavaScript features introduced in ECMAScript 2015+: block scoping, arrow functions, destructuring, and ES modules.',
+        estimatedHours: 5,
+        keySkills: ['Block Scope vs Function Scope', 'Arrow Syntax & Lexical this', 'Spread/Rest Operator', 'Destructuring'],
         resources: [
-          r('MDN CSS Guide', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Learn/CSS'),
-          r('Flexbox Froggy', 'Practice', 'https://flexboxfroggy.com/'),
-          r('CSS Grid Garden', 'Practice', 'https://cssgridgarden.com/')
+          r('Introduction to ES6', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/256/'),
+          r('Problems with var', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/257/'),
+          r('let and const Mechanics', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/258/'),
+          r('Arrow Functions', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/259/'),
+          r('Template Literals', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/260/'),
+          r('Array Destructuring', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/261/'),
+          r('Object Destructuring', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/262/'),
+          r('ES6 Modules & Imports', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/263/'),
+          r('Challenge 5 - ES6 Mastery', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/380323/')
         ]
       },
       {
-        id: 'git', title: 'Git & GitHub Collaboration', level: 'Foundation', duration: '3–4 hours',
-        prerequisites: ['web-basics'], position: { x: 330, y: 300 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Execute commits, merges, and rebasing', 'Resolve git merge conflicts', 'Set up GitHub repositories with pull request reviews'],
+        id: 'js-m6',
+        title: 'Module 6: Functional Programming',
+        subtitle: 'Pure Functions, HOFs, Map, Filter, Reduce',
+        category: 'Paradigm',
+        collegeSubjectMatch: 'Principles of Programming Languages',
+        position: { x: 280, y: 700 },
+        prerequisites: ['js-m5'],
+        description: 'Imperative vs declarative coding, immutability, high-order functions, and functional collection processing.',
+        estimatedHours: 6,
+        keySkills: ['Pure Functions', 'Side Effects', 'Callbacks', 'map / filter / reduce'],
         resources: [
-          r('Git Handbook', 'Documentation', 'https://guides.github.com/introduction/git-handbook/'),
-          r('Learn Git Branching', 'Practice', 'https://learngitbranching.js.org/')
+          r('Intro to Functional Programming', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/264/'),
+          r('Imperative vs Declarative', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/265/'),
+          r('Pure Functions & Side Effects', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/266/'),
+          r('Callback Functions', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/267/'),
+          r('Higher Order Functions (map, filter, reduce)', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/268/'),
+          r('Chaining Array Methods', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/270/'),
+          r('Challenge 6 - Functional Programming Test', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/380366/')
         ]
       },
       {
-        id: 'javascript', title: 'JavaScript (ES6+) Deep Dive', level: 'Core', duration: '14–18 hours',
-        prerequisites: ['html', 'css'], position: { x: 910, y: 80 },
-        collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Write modern modular JavaScript', 'Deeply grasp closures, scope chains, and `this`', 'Manipulate DOM events performantly'],
+        id: 'js-m7',
+        title: 'Module 7: Asynchronous Programming',
+        subtitle: 'Event Loop, Promises & Async/Await',
+        category: 'Core Language',
+        collegeSubjectMatch: 'Operating Systems',
+        position: { x: 280, y: 830 },
+        prerequisites: ['js-m6'],
+        description: 'Single-threaded event loop, call stack, microtask vs macrotask queues, callback hell, Promises and async/await.',
+        estimatedHours: 6,
+        keySkills: ['Event Loop', 'Callback Hell', 'Promises API', 'async/await', 'Error Handling'],
         resources: [
-          r('JavaScript.info Complete Guide', 'Course', 'https://javascript.info/'),
-          r('MDN JavaScript Guide', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide'),
-          r('Exercism JavaScript Track', 'Practice', 'https://exercism.org/tracks/javascript')
+          r('Asynchronous Programming Concepts', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/272/'),
+          r('Synchronous vs Asynchronous Execution', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/273/'),
+          r('The Browser Event Loop Explained', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/274/'),
+          r('Promises & Promise Chaining', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/275/'),
+          r('Async / Await Syntax', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/276/'),
+          r('Challenge 7 - Async JS Challenge', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/380372/')
         ]
       },
       {
-        id: 'responsive', title: 'Responsive UI & A11y', level: 'Core', duration: '6–8 hours',
-        prerequisites: ['css', 'html'], position: { x: 620, y: 300 },
-        collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Build mobile-first navigation menus', 'Audit pages with Lighthouse A11y', 'Support keyboard and screen reader users'],
-        resources: [
-          r('Web Accessibility — MDN', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Learn/Accessibility'),
-          r('web.dev Responsive Design', 'Course', 'https://web.dev/learn/design/')
-        ]
-      },
-      {
-        id: 'browser-apis', title: 'DOM, Web APIs & Async Flow', level: 'Core', duration: '8–10 hours',
-        prerequisites: ['javascript'], position: { x: 1200, y: 80 },
-        collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Handle asynchronous REST endpoints', 'Manage client side cache and tokens', 'Implement infinite scrolling with IntersectionObserver'],
-        resources: [
-          r('Using Fetch API', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch'),
-          r('DOM Scripting Guide', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Client-side_web_APIs')
-        ]
-      },
-      {
-        id: 'typescript', title: 'TypeScript Foundations', level: 'Core', duration: '6–8 hours',
-        prerequisites: ['javascript'], position: { x: 1490, y: 80 },
+        id: 'js-m8',
+        title: 'Module 8: OOP in JavaScript',
+        subtitle: 'Constructors, Prototypes & Classes',
+        category: 'Paradigm',
         collegeSubjectMatch: 'Object Oriented Programming',
-        outcomes: ['Type complex JSON payloads safely', 'Use generics and mapped types', 'Prevent runtime null and undefined bugs'],
+        position: { x: 280, y: 960 },
+        prerequisites: ['js-m7'],
+        description: 'Constructor functions, prototype inheritance chain, this keyword binding, and ES6 class syntax.',
+        estimatedHours: 5,
+        keySkills: ['this Keyword Binding', 'call/apply/bind', 'Prototype Chain', 'ES6 Classes & Inheritance'],
         resources: [
-          r('TypeScript Official Handbook', 'Documentation', 'https://www.typescriptlang.org/docs/handbook/intro.html')
+          r('Object Oriented Programming in JS', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/282/'),
+          r('The this Keyword Binding Rules', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/283/'),
+          r('Constructor Functions', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/284/'),
+          r('Prototypal Inheritance Chain', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/285/'),
+          r('ES6 Classes and Super Constructor', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/286/'),
+          r('Challenge 8 - OOP in JS Test', 'exercise', 'https://www.scaler.com/topics/course/javascript-beginners/challenge/380374/')
         ]
       },
       {
-        id: 'react', title: 'React 19 & Component Architecture', level: 'Core', duration: '14–18 hours',
-        prerequisites: ['javascript', 'html'], position: { x: 1490, y: 300 },
+        id: 'js-m9',
+        title: 'Module 9: DOM Manipulation & Web Events',
+        subtitle: 'Selectors, Event Bubbling & Dynamic UI',
+        category: 'Browser API',
         collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Decompose complex UIs into clean components', 'Manage reactive state and side effects', 'Build declarative reusable form controls'],
+        position: { x: 280, y: 1090 },
+        prerequisites: ['js-m8'],
+        description: 'Document Object Model tree, querySelector, dynamic HTML insertion, event listeners, bubbling and capturing.',
+        estimatedHours: 5,
+        keySkills: ['querySelector', 'DOM Tree Navigation', 'Event Listeners', 'Event Bubbling & Delegation'],
         resources: [
-          r('React Official Quick Start', 'Documentation', 'https://react.dev/learn'),
-          r('Thinking in React', 'Documentation', 'https://react.dev/learn/thinking-in-react')
+          r('Intro to Document Object Model', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/292/'),
+          r('DOM Querying and Manipulation', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/293/'),
+          r('Handling Click and Input Events', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/294/'),
+          r('Event Propagation (Bubbling & Capturing)', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/295/'),
+          r('Building an Interactive UI with JS', 'video', 'https://www.scaler.com/topics/course/javascript-beginners/video/300/')
         ]
-      },
+      }
+    ]
+  },
+
+  react: {
+    id: 'react',
+    title: 'React.js Frontend Roadmap',
+    description: '10 Modules | 58 Lessons | 9h 13m + FilmVault Production Project. Built specifically for college engineering placements.',
+    estimatedHours: 50,
+    difficulty: 'Beginner to Advanced',
+    prerequisites: ['HTML/CSS basics', 'JavaScript ES6+'],
+    topics: [
       {
-        id: 'tooling', title: 'Build Tools: Vite & NPM', level: 'Core', duration: '4–5 hours',
-        prerequisites: ['javascript', 'git'], position: { x: 910, y: 300 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Configure Vite and PostCSS', 'Set up script commands & linter rules', 'Manage dependencies with npm and lockfiles'],
-        resources: [
-          r('Vite Official Guide', 'Documentation', 'https://vite.dev/guide/'),
-          r('NPM Documentation', 'Documentation', 'https://docs.npmjs.com/')
-        ]
-      },
-      {
-        id: 'testing', title: 'Frontend Testing & Quality', level: 'Advanced', duration: '6–8 hours',
-        prerequisites: ['react', 'javascript'], position: { x: 1780, y: 300 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Write reliable unit tests with Vitest', 'Test user events with React Testing Library', 'Prevent UI regressions before deployment'],
-        resources: [
-          r('Vitest Guide', 'Documentation', 'https://vitest.dev/guide/'),
-          r('Testing Library Docs', 'Documentation', 'https://testing-library.com/docs/')
-        ]
-      },
-      {
-        id: 'performance', title: 'Web Vitals & Performance', level: 'Advanced', duration: '4–6 hours',
-        prerequisites: ['react', 'browser-apis'], position: { x: 2070, y: 80 },
+        id: 'react-m1',
+        title: 'Module 1: Introduction to React JS',
+        subtitle: 'SPA Architecture & Virtual DOM',
+        category: 'Foundations',
         collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Diagnose slow re-renders in Chrome DevTools', 'Optimize bundle sizes with dynamic imports', 'Achieve 90+ Lighthouse performance scores'],
+        position: { x: 280, y: 50 },
+        prerequisites: [],
+        description: 'Understand the problems with vanilla JavaScript DOM manipulation and how React solves them using declarative UI and reconciliation.',
+        estimatedHours: 3,
+        keySkills: ['Single Page Apps', 'Declarative UI', 'Virtual DOM', 'Reconciliation'],
         resources: [
-          r('web.dev Web Vitals Guide', 'Documentation', 'https://web.dev/learn/performance/'),
-          r('PageSpeed Insights', 'Practice', 'https://pagespeed.web.dev/')
+          r('Scaler Free React Course Page', 'article', 'https://www.scaler.com/topics/course/free-react-js-course/'),
+          r('Lesson 1: Introduction to React JS', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1644/'),
+          r('Module 1 Assessment (8 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/934748/')
         ]
       },
       {
-        id: 'deployment', title: 'CI/CD & Cloud Deployment', level: 'Advanced', duration: '4–6 hours',
-        prerequisites: ['tooling', 'git'], position: { x: 1780, y: 80 },
-        collegeSubjectMatch: 'Computer Networks',
-        outcomes: ['Set up automated GitHub Actions workflow', 'Deploy SPA with client routing rewrites', 'Manage production environment secrets safely'],
+        id: 'react-m2',
+        title: 'Module 2: Dev Environment Setup',
+        subtitle: 'Node, Vite/CRA & Modern Tooling',
+        category: 'Tooling',
+        collegeSubjectMatch: 'Software Engineering Lab',
+        position: { x: 280, y: 180 },
+        prerequisites: ['react-m1'],
+        description: 'Configure your React local workspace with Node.js, Vite bundler, VS Code extensions, and inspect project bundle structure.',
+        estimatedHours: 2,
+        keySkills: ['Vite / CRA', 'NPM Scripts', 'VS Code Setup', 'Hot Module Replacement'],
         resources: [
-          r('Vercel Deployment Docs', 'Documentation', 'https://vercel.com/docs'),
-          r('GitHub Actions Quickstart', 'Documentation', 'https://docs.github.com/en/actions/writing-workflows/quickstart')
+          r('Lesson 1: Dev Environment Setup', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1675/'),
+          r('Module 2 Assessment (6 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/934776/')
         ]
       },
       {
-        id: 'project', title: 'Capstone: Production Portfolio App', level: 'Project', duration: '1–2 weeks',
-        prerequisites: ['react', 'typescript', 'responsive', 'testing', 'deployment'], position: { x: 2360, y: 300 },
-        collegeSubjectMatch: 'Project Work / Capstone',
-        outcomes: ['Publish a live URL and clean GitHub repo', 'Showcase real-world API data and error handling', 'Document architectural design choices in README'],
+        id: 'react-m3',
+        title: 'Module 3: Component Architecture & JSX',
+        subtitle: 'Functional Components & Props',
+        category: 'Core Concepts',
+        collegeSubjectMatch: 'Object Oriented Software Design',
+        position: { x: 280, y: 310 },
+        prerequisites: ['react-m2'],
+        description: 'Build modular, reusable UI components with JSX syntax, props passing, destructuring, and conditional rendering.',
+        estimatedHours: 4,
+        keySkills: ['JSX Syntax', 'Props Passing', 'Component Composition', 'Conditional Rendering'],
         resources: [
-          r('Frontend Mentor Real Projects', 'Practice', 'https://www.frontendmentor.io/challenges'),
-          r('Web.dev Accessibility Checklist', 'Course', 'https://web.dev/learn/accessibility/')
+          r('Lesson 1: Component Architecture & JSX', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1683/'),
+          r('Module 3 Assessment (14 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/934800/')
+        ]
+      },
+      {
+        id: 'react-m4',
+        title: 'Module 4: State, Events & Forms',
+        subtitle: 'useState Hook & Controlled Inputs',
+        category: 'Interactivity',
+        collegeSubjectMatch: 'Human Computer Interaction',
+        position: { x: 280, y: 440 },
+        prerequisites: ['react-m3'],
+        description: 'Managing reactive component state using useState, synthetic event handlers, two-way data binding, and controlled forms.',
+        estimatedHours: 5,
+        keySkills: ['useState Hook', 'Synthetic Events', 'Controlled Inputs', 'Form Validation'],
+        resources: [
+          r('Lesson 1: State Events and Forms', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1695/'),
+          r('Module 4 Assessment (10 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/934861/')
+        ]
+      },
+      {
+        id: 'react-m5',
+        title: 'Module 5: Project - ToDo List App',
+        subtitle: 'Hands-on Mini Project',
+        category: 'Projects',
+        collegeSubjectMatch: 'Project Work / Mini Project',
+        position: { x: 280, y: 570 },
+        prerequisites: ['react-m4'],
+        description: 'Build a full-featured CRUD ToDo List web app: create, delete, toggle completion, and filter tasks.',
+        estimatedHours: 4,
+        keySkills: ['CRUD State Handling', 'Array State Updates', 'List Keys', 'Local Persistence'],
+        resources: [
+          r('Lesson 1: Build a ToDo List with React', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1701/'),
+          r('Module 5 Project Test (4 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/944500/')
+        ]
+      },
+      {
+        id: 'react-m6',
+        title: 'Module 6: Project FilmVault - Part 1',
+        subtitle: 'Movies Component & Grid Layout',
+        category: 'Production Project',
+        collegeSubjectMatch: 'Web Development Lab',
+        position: { x: 280, y: 700 },
+        prerequisites: ['react-m5'],
+        description: 'Kickstart FilmVault: build the Movies Component, movie card layouts, ratings badges, and responsive UI grid.',
+        estimatedHours: 5,
+        keySkills: ['Responsive Grid', 'Component Hierarchy', 'Styling UI', 'Reusable Cards'],
+        resources: [
+          r('Lesson 1: FilmVault-1 (Build Movies Component)', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1658/'),
+          r('Module 6 Assessment (10 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/944536/')
+        ]
+      },
+      {
+        id: 'react-m7',
+        title: 'Module 7: Project FilmVault - Part 2',
+        subtitle: 'HTTP Requests & useEffect Hook',
+        category: 'Production Project',
+        collegeSubjectMatch: 'Computer Networks / Web Tech',
+        position: { x: 280, y: 830 },
+        prerequisites: ['react-m6'],
+        description: 'Integrate live movie APIs (TMDB), lifecycle side effects with useEffect, loading spinners, and error boundaries.',
+        estimatedHours: 6,
+        keySkills: ['useEffect Hook', 'Axios / Fetch API', 'Side Effect Cleanup', 'Async API Handling'],
+        resources: [
+          r('Lesson 1: FilmVault-2 (Http & useEffect)', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1664/'),
+          r('Module 7 Assessment (5 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/944567/')
+        ]
+      },
+      {
+        id: 'react-m8',
+        title: 'Module 8: Project FilmVault - Part 3',
+        subtitle: 'Watchlist, Filtering & Pagination',
+        category: 'Production Project',
+        collegeSubjectMatch: 'Software Engineering Project',
+        position: { x: 280, y: 960 },
+        prerequisites: ['react-m7'],
+        description: 'Complete FilmVault with Watchlist storage, genre filtering, search debounce, sorting, and pagination controls.',
+        estimatedHours: 8,
+        keySkills: ['Local Storage Sync', 'Multi-field Sorting', 'Search Filtering', 'Pagination Logic'],
+        resources: [
+          r('Lesson 1: FilmVault-3 (Build the Watchlist)', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1670/'),
+          r('Module 8 Assessment (6 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/945755/')
+        ]
+      },
+      {
+        id: 'react-m9',
+        title: 'Module 9: Context API & Global State',
+        subtitle: 'Avoid Prop Drilling with Context',
+        category: 'Architecture',
+        collegeSubjectMatch: 'Design Patterns',
+        position: { x: 280, y: 1090 },
+        prerequisites: ['react-m8'],
+        description: 'Solve prop-drilling challenges using createContext, Context.Provider, and useContext hook for scalable application state.',
+        estimatedHours: 4,
+        keySkills: ['createContext', 'useContext Hook', 'Custom Provider', 'State Decoupling'],
+        resources: [
+          r('Lesson 1: Context API', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1682/'),
+          r('Module 9 Assessment (5 Questions)', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/945756/')
+        ]
+      },
+      {
+        id: 'react-m10',
+        title: 'Module 10: Advanced React Hooks',
+        subtitle: 'useReducer, useMemo & useCallback',
+        category: 'Performance',
+        collegeSubjectMatch: 'Algorithms Optimization',
+        position: { x: 280, y: 1220 },
+        prerequisites: ['react-m9'],
+        description: 'Master enterprise-level hooks: useReducer for state machines, useMemo for expensive calculations, and useCallback for reference stability.',
+        estimatedHours: 5,
+        keySkills: ['useReducer', 'useMemo', 'useCallback', 'React Profiler'],
+        resources: [
+          r('Lesson 1: Advanced Hooks', 'video', 'https://www.scaler.com/topics/course/free-react-js-course/video/1686/'),
+          r('Module 10 Assessment & Certification Test', 'exercise', 'https://www.scaler.com/topics/course/free-react-js-course/challenge/945757/')
         ]
       }
     ]
   },
 
-  backend: {
-    id: 'backend',
-    title: 'Backend & Systems Engineering',
-    tagline: 'High-Concurrency Services, Database Architecture & API Security',
-    icon: 'dns',
-    totalHours: '90–120 hours',
-    level: 'Intermediate to Advanced',
+  nodejs: {
+    id: 'nodejs',
+    title: 'Node.js  - Master the Fundamentals',
+    description: '10 Modules | 58 Lessons | 7h 6m. Comprehensive backend curriculum from Node runtime to Express REST APIs & MongoDB.',
+    estimatedHours: 45,
+    difficulty: 'Intermediate',
+    prerequisites: ['JavaScript Fundamentals', 'Basic Terminal / CLI'],
     topics: [
       {
-        id: 'os-internals', title: 'Operating Systems & Concurrency', level: 'Foundation', duration: '8–10 hours',
-        prerequisites: [], position: { x: 40, y: 80 },
-        collegeSubjectMatch: 'Operating Systems',
-        outcomes: ['Differentiate processes from threads', 'Analyze deadlock scenarios and semaphores', 'Understand multi-threaded memory safety'],
-        resources: [
-          r('OSTEP: Operating Systems Three Easy Pieces', 'Course', 'https://pages.cs.wisc.edu/~remzi/OSTEP/'),
-          r('Linux Journey CLI Basics', 'Practice', 'https://linuxjourney.com/')
-        ]
-      },
-      {
-        id: 'java-oop', title: 'OOP & Java/C++ Backend Language', level: 'Foundation', duration: '12–15 hours',
-        prerequisites: [], position: { x: 40, y: 300 },
-        collegeSubjectMatch: 'Object Oriented Programming in Java',
-        outcomes: ['Apply Polymorphism, Inheritance, Encapsulation', 'Implement SOLID design patterns in backend services', 'Use Collections and Stream APIs cleanly'],
-        resources: [
-          r('Baeldung Java Tutorials', 'Documentation', 'https://www.baeldung.com/'),
-          r('Java Design Patterns Guide', 'Course', 'https://refactoring.guru/design-patterns/java')
-        ]
-      },
-      {
-        id: 'databases-sql', title: 'Relational DBs & SQL Mastery', level: 'Core', duration: '12–16 hours',
-        prerequisites: ['os-internals'], position: { x: 340, y: 80 },
-        collegeSubjectMatch: 'Database Management Systems',
-        outcomes: ['Write advanced aggregate queries & CTEs', 'Structure relational schemas up to 3NF', 'Enforce ACID transaction boundaries'],
-        resources: [
-          r('PostgreSQL Official Tutorial', 'Documentation', 'https://www.postgresql.org/docs/current/tutorial.html'),
-          r('SQLBolt Interactive Practice', 'Practice', 'https://sqlbolt.com/')
-        ]
-      },
-      {
-        id: 'indexing-perf', title: 'DB Indexing & Query Tuning', level: 'Core', duration: '6–8 hours',
-        prerequisites: ['databases-sql'], position: { x: 640, y: 80 },
-        collegeSubjectMatch: 'Database Management Systems',
-        outcomes: ['Interpret EXPLAIN query plans', 'Select proper indexing strategies', 'Optimize slow queries for high throughput'],
-        resources: [
-          r('Use The Index, Luke!', 'Course', 'https://use-the-index-luke.com/'),
-          r('Postgres Indexing Deep Dive', 'Documentation', 'https://www.postgresql.org/docs/current/indexes.html')
-        ]
-      },
-      {
-        id: 'rest-api', title: 'RESTful API & Controller Design', level: 'Core', duration: '10–12 hours',
-        prerequisites: ['java-oop'], position: { x: 340, y: 300 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Design idempotent RESTful endpoints', 'Implement DTOs with validation annotations', 'Handle global exceptions with standardized JSON errors'],
-        resources: [
-          r('Spring Boot REST Tutorial', 'Documentation', 'https://spring.io/guides/tutorials/rest/'),
-          r('RESTful API Best Practices', 'Documentation', 'https://restfulapi.net/')
-        ]
-      },
-      {
-        id: 'auth-security', title: 'Auth: JWT, Sessions & OAuth2', level: 'Core', duration: '8–10 hours',
-        prerequisites: ['rest-api'], position: { x: 640, y: 300 },
-        collegeSubjectMatch: 'Computer Networks',
-        outcomes: ['Implement secure JWT token verification', 'Safeguard endpoints against SQLi and XSS', 'Set up Role-Based Access Control (RBAC)'],
-        resources: [
-          r('OWASP Top 10 Web Security', 'Documentation', 'https://owasp.org/www-project-top-ten/'),
-          r('JWT.io Introduction', 'Documentation', 'https://jwt.io/introduction')
-        ]
-      },
-      {
-        id: 'caching-redis', title: 'Caching & Redis In-Memory Store', level: 'Advanced', duration: '6–8 hours',
-        prerequisites: ['indexing-perf', 'rest-api'], position: { x: 940, y: 190 },
-        collegeSubjectMatch: 'Operating Systems',
-        outcomes: ['Integrate Redis as a low-latency cache layer', 'Design eviction policies (LRU/LFU)', 'Implement rate limiting with Redis counters'],
-        resources: [
-          r('Redis University', 'Course', 'https://university.redis.com/'),
-          r('System Design Primer Caching', 'Documentation', 'https://github.com/donnemartin/system-design-primer#caching')
-        ]
-      },
-      {
-        id: 'docker-containers', title: 'Docker & Containerization', level: 'Advanced', duration: '6–8 hours',
-        prerequisites: ['rest-api'], position: { x: 1240, y: 190 },
-        collegeSubjectMatch: 'Operating Systems',
-        outcomes: ['Package services into lightweight containers', 'Write multi-container docker-compose configs', 'Run containerized databases and redis locally'],
-        resources: [
-          r('Docker Documentation for Beginners', 'Documentation', 'https://docs.docker.com/get-started/'),
-          r('Docker Compose in 15 Minutes', 'Practice', 'https://docs.docker.com/compose/')
-        ]
-      },
-      {
-        id: 'system-design', title: 'System Design & High Availability', level: 'Advanced', duration: '14–18 hours',
-        prerequisites: ['caching-redis', 'docker-containers'], position: { x: 1540, y: 190 },
-        collegeSubjectMatch: 'Computer Networks',
-        outcomes: ['Design scalable architectures (e.g., TinyURL, Uber)', 'Apply CAP theorem trade-offs', 'Evaluate message brokers like Kafka/RabbitMQ'],
-        resources: [
-          r('System Design Primer', 'Course', 'https://github.com/donnemartin/system-design-primer'),
-          r('ByteByteGo System Design Blog', 'Documentation', 'https://blog.bytebytego.com/')
-        ]
-      },
-      {
-        id: 'backend-capstone', title: 'Capstone: Distributed Backend Service', level: 'Project', duration: '2 weeks',
-        prerequisites: ['system-design'], position: { x: 1840, y: 190 },
-        collegeSubjectMatch: 'Project Work / Capstone',
-        outcomes: ['Deliver benchmarked REST APIs with 500+ QPS', 'Publish Docker container to GitHub Registry', 'Write architecture decision records (ADRs)'],
-        resources: [
-          r('Real-World Backend Specs', 'Practice', 'https://github.com/gothinkster/realworld')
-        ]
-      }
-    ]
-  },
-
-  fullstack: {
-    id: 'fullstack',
-    title: 'Full Stack Engineering',
-    tagline: 'End-to-End Modern Web Architecture: Frontend + Backend + Cloud',
-    icon: 'layers',
-    totalHours: '100–130 hours',
-    level: 'Comprehensive Track',
-    topics: [
-      {
-        id: 'fs-git-web', title: 'Web Architecture & Git Workflows', level: 'Foundation', duration: '4–6 hours',
-        prerequisites: [], position: { x: 40, y: 190 },
-        collegeSubjectMatch: 'Computer Networks',
-        outcomes: ['Understand request cycles from browser to database', 'Manage multi-branch team repositories'],
-        resources: [r('MDN Client Server Basics', 'Documentation', 'https://developer.mozilla.org/en-US/docs/Learn')]
-      },
-      {
-        id: 'fs-frontend-core', title: 'Frontend: HTML, CSS & React UI', level: 'Foundation', duration: '16–20 hours',
-        prerequisites: ['fs-git-web'], position: { x: 340, y: 190 },
+        id: 'node-m1',
+        title: 'Module 1: Introduction to Node.js',
+        subtitle: 'Course Orientation & Scaler Certification',
+        category: 'Overview',
         collegeSubjectMatch: 'Web Technologies',
-        outcomes: ['Build reactive component trees', 'Manage form inputs and asynchronous data fetching'],
-        resources: [r('React 19 Official Documentation', 'Documentation', 'https://react.dev/')]
+        position: { x: 280, y: 50 },
+        prerequisites: [],
+        description: 'Understand the course roadmap, Scaler certification requirements, and the role of server-side JavaScript in modern web architectures.',
+        estimatedHours: 1,
+        keySkills: ['Node.js Architecture', 'Server-Side vs Client-Side', 'Learning Outcomes'],
+        resources: [
+          r('Introduction to the Node JS Course (04:11)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1634/')
+        ]
       },
       {
-        id: 'fs-backend-api', title: 'Backend: Node.js / Spring Boot APIs', level: 'Core', duration: '18–22 hours',
-        prerequisites: ['fs-frontend-core'], position: { x: 640, y: 190 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Construct CRUD endpoints with schema validation', 'Integrate ORM database persistence'],
-        resources: [r('Spring Boot Guides', 'Documentation', 'https://spring.io/guides')]
+        id: 'node-m2',
+        title: 'Module 2: Getting Started with Node.js',
+        subtitle: 'V8 Engine, Installation & First Program',
+        category: 'Foundations',
+        collegeSubjectMatch: 'Operating Systems Lab',
+        position: { x: 280, y: 180 },
+        prerequisites: ['node-m1'],
+        description: 'Setup Node.js runtime and VS Code development environment. Learn how V8 executes JavaScript outside the browser.',
+        estimatedHours: 2,
+        keySkills: ['Node Installation', 'VS Code Config', 'Node REPL', 'CLI Execution'],
+        resources: [
+          r('Introduction to Node.js (08:36)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/967/'),
+          r('Installing Node.js and VS Code (05:21)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/968/'),
+          r('First Node Program (03:36)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/969/')
+        ]
       },
       {
-        id: 'fs-db-storage', title: 'Database & Object Storage Integration', level: 'Core', duration: '12–14 hours',
-        prerequisites: ['fs-backend-api'], position: { x: 940, y: 190 },
-        collegeSubjectMatch: 'Database Management Systems',
-        outcomes: ['Model relational schemas with foreign keys', 'Implement secure file uploads with pre-signed URLs'],
-        resources: [r('Postgres Tutorial', 'Documentation', 'https://www.postgresql.org/docs/')]
-      },
-      {
-        id: 'fs-auth-security', title: 'Fullstack Authentication & Session Security', level: 'Advanced', duration: '8–10 hours',
-        prerequisites: ['fs-db-storage'], position: { x: 1240, y: 190 },
-        collegeSubjectMatch: 'Computer Networks',
-        outcomes: ['Protect frontend routes and backend APIs', 'Handle token refresh cycles without logout'],
-        resources: [r('Auth0 JWT Architecture', 'Documentation', 'https://auth0.com/learn/json-web-tokens/')]
-      },
-      {
-        id: 'fs-devops-deploy', title: 'Cloud Deployment & Monitoring', level: 'Advanced', duration: '6–8 hours',
-        prerequisites: ['fs-auth-security'], position: { x: 1540, y: 190 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Automate production deployments with GitHub CI', 'Monitor error traces and latency in production'],
-        resources: [r('Vercel + Spring Boot Deployment Docs', 'Documentation', 'https://vercel.com/')]
-      },
-      {
-        id: 'fs-capstone', title: 'Capstone: Complete SaaS Web Application', level: 'Project', duration: '2–3 weeks',
-        prerequisites: ['fs-devops-deploy'], position: { x: 1840, y: 190 },
-        collegeSubjectMatch: 'Project Work / Capstone',
-        outcomes: ['Deploy fully functional SaaS to production', 'Prepare project demo and resume architecture walkthrough'],
-        resources: [r('Full Stack Open Course', 'Course', 'https://fullstackopen.com/')]
-      }
-    ]
-  },
-
-  'ai-ml': {
-    id: 'ai-ml',
-    title: 'AI & Machine Learning',
-    tagline: 'From Linear Algebra to Deep Learning, LLMs & Autonomous Agents',
-    icon: 'psychology',
-    totalHours: '100–140 hours',
-    level: 'Intermediate to Advanced',
-    topics: [
-      {
-        id: 'python-math', title: 'Python for Data Science & Math Foundations', level: 'Foundation', duration: '12–15 hours',
-        prerequisites: [], position: { x: 40, y: 190 },
-        collegeSubjectMatch: 'Engineering Mathematics / Python',
-        outcomes: ['Perform matrix operations with NumPy', 'Compute gradients and partial derivatives', 'Understand probability distributions & Bayes theorem'],
-        resources: [r('3Blue1Brown Essence of Linear Algebra', 'Video', 'https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab')]
-      },
-      {
-        id: 'eda-pandas', title: 'Data Wrangling & EDA with Pandas', level: 'Foundation', duration: '10–12 hours',
-        prerequisites: ['python-math'], position: { x: 340, y: 190 },
-        collegeSubjectMatch: 'Data Science / Big Data',
-        outcomes: ['Clean messy real-world CSV datasets', 'Detect outliers and skewed distributions', 'Generate insightful statistical charts'],
-        resources: [r('Kaggle Pandas Course', 'Practice', 'https://www.kaggle.com/learn/pandas')]
-      },
-      {
-        id: 'classical-ml', title: 'Classical ML: Regression, Trees & Clustering', level: 'Core', duration: '14–18 hours',
-        prerequisites: ['eda-pandas'], position: { x: 640, y: 190 },
-        collegeSubjectMatch: 'Artificial Intelligence & Machine Learning',
-        outcomes: ['Train classification and regression models in Scikit-Learn', 'Evaluate with Precision, Recall, F1 and ROC-AUC', 'Tune hyperparameters with GridSearchCV'],
-        resources: [r('Scikit-Learn User Guide', 'Documentation', 'https://scikit-learn.org/stable/user_guide.html')]
-      },
-      {
-        id: 'deep-learning', title: 'Neural Networks & PyTorch Fundamentals', level: 'Core', duration: '16–20 hours',
-        prerequisites: ['classical-ml'], position: { x: 940, y: 190 },
-        collegeSubjectMatch: 'Artificial Intelligence & Machine Learning',
-        outcomes: ['Build multi-layer neural networks in PyTorch', 'Write clean training and validation loops', 'Prevent overfitting with Dropout and BatchNorm'],
-        resources: [r('PyTorch Official Deep Learning Tutorials', 'Documentation', 'https://pytorch.org/tutorials/')]
-      },
-      {
-        id: 'transformers-nlp', title: 'Transformers, Embeddings & LLM Basics', level: 'Advanced', duration: '14–18 hours',
-        prerequisites: ['deep-learning'], position: { x: 1240, y: 190 },
-        collegeSubjectMatch: 'Natural Language Processing',
-        outcomes: ['Tokenize and generate text with Hugging Face', 'Generate dense vector embeddings with open models', 'Fine-tune pre-trained models with PEFT/LoRA'],
-        resources: [r('Hugging Face NLP Course', 'Course', 'https://huggingface.co/learn/nlp-course')]
-      },
-      {
-        id: 'rag-agents', title: 'RAG Systems, Vector DBs & AI Agents', level: 'Advanced', duration: '12–16 hours',
-        prerequisites: ['transformers-nlp'], position: { x: 1540, y: 190 },
-        collegeSubjectMatch: 'Artificial Intelligence',
-        outcomes: ['Build production RAG pipelines with hybrid search', 'Implement structured JSON output from Gemini/Claude', 'Create autonomous tool-using agents'],
-        resources: [r('LangChain Conceptual Docs', 'Documentation', 'https://python.langchain.com/docs/')]
-      },
-      {
-        id: 'ai-capstone', title: 'Capstone: Intelligent RAG Knowledge Assistant', level: 'Project', duration: '2 weeks',
-        prerequisites: ['rag-agents'], position: { x: 1840, y: 190 },
-        collegeSubjectMatch: 'Project Work / Capstone',
-        outcomes: ['Deploy end-to-end RAG assistant with real documents', 'Benchmark retrieval accuracy and latency', 'Present architecture in interviews'],
-        resources: [r('Full Stack LLM Boot Camp', 'Course', 'https://fullstackdeeplearning.com/')]
-      }
-    ]
-  },
-
-  devops: {
-    id: 'devops',
-    title: 'DevOps & Cloud Engineering',
-    tagline: 'Infrastructure as Code, Kubernetes Orchestration & Observability',
-    icon: 'cloud_sync',
-    totalHours: '80–110 hours',
-    level: 'Intermediate to Advanced',
-    topics: [
-      {
-        id: 'linux-networking', title: 'Linux System Administration & Networking', level: 'Foundation', duration: '10–12 hours',
-        prerequisites: [], position: { x: 40, y: 190 },
-        collegeSubjectMatch: 'Operating Systems & Computer Networks',
-        outcomes: ['Write shell automation scripts', 'Manage systemd daemons and log files', 'Troubleshoot network drops and DNS latency'],
-        resources: [r('Linux Foundation System Admin Guide', 'Course', 'https://training.linuxfoundation.org/')]
-      },
-      {
-        id: 'docker-iac', title: 'Docker Containerization & Multi-Stage Builds', level: 'Core', duration: '8–10 hours',
-        prerequisites: ['linux-networking'], position: { x: 340, y: 190 },
+        id: 'node-m3',
+        title: 'Module 3: Node Module System',
+        subtitle: 'FS, Path, OS & Child Processes',
+        category: 'Core Modules',
         collegeSubjectMatch: 'Operating Systems',
-        outcomes: ['Minimize image sizes with alpine/distroless', 'Manage local container microservices with Docker Compose'],
-        resources: [r('Docker Best Practices', 'Documentation', 'https://docs.docker.com/develop/develop-images/dockerfile_best-practices/')]
+        position: { x: 280, y: 310 },
+        prerequisites: ['node-m2'],
+        description: 'Deep dive into CommonJS module system, global object, Child Process, OS module, Path module, and File System (FS).',
+        estimatedHours: 4,
+        keySkills: ['CommonJS (require/exports)', 'FS Module (Sync/Async)', 'Path & OS Modules', 'Child Processes'],
+        resources: [
+          r('The Global Object (03:07)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/970/'),
+          r('Modules and Modularity (08:18)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/971/'),
+          r('Introduction to Node Modules (03:00)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/972/'),
+          r('Child Process Module (06:46)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/973/'),
+          r('OS Module (04:42)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/974/'),
+          r('Path Module (05:44)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/975/'),
+          r('FS Module with Files (11:14)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/976/'),
+          r('FS Module with Directories (08:56)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/977/')
+        ]
       },
       {
-        id: 'cicd-github', title: 'CI/CD Pipelines with GitHub Actions', level: 'Core', duration: '8–10 hours',
-        prerequisites: ['docker-iac'], position: { x: 640, y: 190 },
+        id: 'node-m4',
+        title: 'Module 4: Node Package Manager (NPM)',
+        subtitle: 'Dependencies, SemVer & Package Publishing',
+        category: 'Tooling',
         collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Write production GitHub Actions workflows', 'Implement automatic semantic versioning and changelogs'],
-        resources: [r('GitHub Actions Docs', 'Documentation', 'https://docs.github.com/en/actions')]
+        position: { x: 280, y: 440 },
+        prerequisites: ['node-m3'],
+        description: 'Managing third-party packages with npm, lockfiles, semantic versioning (SemVer), .gitignore patterns, and publishing packages.',
+        estimatedHours: 3,
+        keySkills: ['package.json & package-lock', 'Semantic Versioning (^ vs ~)', 'NPM Scripts', 'Publishing Packages'],
+        resources: [
+          r('Introduction to NPM (05:19)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/978/'),
+          r('How to Install & Use an NPM Package (06:45)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/979/'),
+          r('All About .gitignore (05:31)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/980/'),
+          r('Semantic Versioning (05:21)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/981/'),
+          r('Publish Your Own NPM Package (08:57)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/982/')
+        ]
       },
       {
-        id: 'k8s-orchestration', title: 'Kubernetes Pods, Deployments & Services', level: 'Advanced', duration: '14–18 hours',
-        prerequisites: ['cicd-github'], position: { x: 940, y: 190 },
+        id: 'node-m5',
+        title: 'Module 5: Getting Started with Express',
+        subtitle: 'Routing, HTTP Verbs & Postman',
+        category: 'Web Framework',
+        collegeSubjectMatch: 'Web Technologies',
+        position: { x: 280, y: 570 },
+        prerequisites: ['node-m4'],
+        description: 'Building web servers using Express.js. Master route parameters, request query parsing, HTTP verbs (GET, POST, PUT, DELETE), and Postman testing.',
+        estimatedHours: 6,
+        keySkills: ['Express Routing', 'RESTful Endpoints', 'Route Parameters', 'Postman API Testing', 'Nodemon'],
+        resources: [
+          r('Introduction to Express (12:18)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/983/'),
+          r('Express Installation (02:08)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/984/'),
+          r("Let's Use Express (07:30)", 'video', 'https://www.scaler.com/topics/course/nodejs/video/985/'),
+          r('Nodemon Hot Reloading (02:01)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/986/'),
+          r('Environment Variables & PORT (02:34)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/987/'),
+          r('Route Parameters (05:18)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/988/'),
+          r('Handling Multiple Routes (10:52)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/989/'),
+          r('Testing APIs with Postman (05:12)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/990/'),
+          r('HTTP POST Method (08:56)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/991/'),
+          r('HTTP PUT Method (05:12)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/992/'),
+          r('HTTP DELETE Method (08:40)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/993/')
+        ]
+      },
+      {
+        id: 'node-m6',
+        title: 'Module 6: Middlewares in Express',
+        subtitle: 'Request Pipeline & Custom Middlewares',
+        category: 'Web Framework',
+        collegeSubjectMatch: 'Software Architecture',
+        position: { x: 280, y: 700 },
+        prerequisites: ['node-m5'],
+        description: 'Understand the middleware chain in Express. Build custom authentication and logging middlewares, and integrate third-party packages (morgan, cors).',
+        estimatedHours: 3,
+        keySkills: ['Middleware Chain', 'next() Function', 'Custom Middlewares', 'Third-Party Middlewares'],
+        resources: [
+          r('What are Middlewares (06:38)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/994/'),
+          r('Writing Custom Middlewares (07:04)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/995/'),
+          r('Third Party Middlewares (04:26)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/996/')
+        ]
+      },
+      {
+        id: 'node-m7',
+        title: 'Module 7: Asynchronous JavaScript in Node',
+        subtitle: 'Event Loop, Promises & Microtasks',
+        category: 'Core Runtime',
+        collegeSubjectMatch: 'Operating Systems',
+        position: { x: 280, y: 830 },
+        prerequisites: ['node-m6'],
+        description: 'Understand Node.js libuv event loop phases, non-blocking I/O, synchronous vs asynchronous file reads, Promises, and async/await mechanics.',
+        estimatedHours: 5,
+        keySkills: ['libuv Event Loop', 'Non-blocking I/O', 'Promises in Node', 'Async/Await error handling'],
+        resources: [
+          r('Introduction to Asynchronous Programming (14:16)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/286/'),
+          r('Reading a File Synchronously (05:44)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/287/'),
+          r('Reading a File Asynchronously (06:10)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/288/'),
+          r('The Event Loop & Everything (18:20)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/289/'),
+          r('Promises Deep Dive (12:45)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/290/'),
+          r('Async / Await in Node.js (15:10)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/291/')
+        ]
+      },
+      {
+        id: 'node-m8',
+        title: 'Module 8: Introduction to MongoDB',
+        subtitle: 'NoSQL Concepts, Collections & Shell Queries',
+        category: 'Databases',
+        collegeSubjectMatch: 'Database Management Systems',
+        position: { x: 280, y: 960 },
+        prerequisites: ['node-m7'],
+        description: 'Relational vs NoSQL databases, JSON/BSON document model, MongoDB Atlas cloud cluster setup, and basic CRUD operations via MongoDB Shell.',
+        estimatedHours: 4,
+        keySkills: ['NoSQL vs SQL', 'BSON Documents', 'MongoDB Atlas', 'Mongosh CRUD'],
+        resources: [
+          r('Introduction to NoSQL Databases (10:15)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/997/'),
+          r('Setting up MongoDB Atlas (08:30)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/998/'),
+          r('MongoDB Shell & Basic Commands (12:45)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/999/'),
+          r('Insert & Query Documents (11:20)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1000/'),
+          r('Update & Delete Operations (09:40)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1001/')
+        ]
+      },
+      {
+        id: 'node-m9',
+        title: 'Module 9: Working with Mongoose ODM',
+        subtitle: 'Schemas, Models & Validation',
+        category: 'Databases',
+        collegeSubjectMatch: 'Database Management Systems',
+        position: { x: 280, y: 1090 },
+        prerequisites: ['node-m8'],
+        description: 'Connect Express applications to MongoDB with Mongoose ODM. Create strongly typed Schemas, Models, custom validators, and query filters.',
+        estimatedHours: 5,
+        keySkills: ['Mongoose Schemas', 'Model CRUD', 'Built-in & Custom Validators', 'Query Operators ($gt, $in)'],
+        resources: [
+          r('Connecting Mongoose to Express (08:15)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1005/'),
+          r('Mongoose Schemas and Models (14:20)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1006/'),
+          r('Querying Data with Mongoose (12:10)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1007/'),
+          r('Validation Rules in Mongoose (10:45)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1008/')
+        ]
+      },
+      {
+        id: 'node-m10',
+        title: 'Module 10: Project - Data Modeling & Relationships',
+        subtitle: 'Referencing, Embedding & Production REST API',
+        category: 'Production Project',
+        collegeSubjectMatch: 'Major Project / Capstone',
+        position: { x: 280, y: 1220 },
+        prerequisites: ['node-m9'],
+        description: 'Complete capstone project: document normalization vs denormalization (subdocuments vs ObjectId references), population, and full CRUD REST API.',
+        estimatedHours: 8,
+        keySkills: ['Embedded Documents', 'ObjectId References', 'populate() Query', 'Complete REST API Project'],
+        resources: [
+          r('Data Modeling: Normalization vs Denormalization (12:30)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1009/'),
+          r('Embedding Subdocuments in Mongoose (11:40)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1010/'),
+          r('Referencing Documents using ObjectId (13:15)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1011/'),
+          r('Mongoose populate() Deep Dive (10:50)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1012/'),
+          r('Building the Full CRUD REST API Project (25:00)', 'video', 'https://www.scaler.com/topics/course/nodejs/video/1013/')
+        ]
+      }
+    ]
+  },
+
+  'full-stack': {
+    id: 'full-stack',
+    title: 'Full Stack MERN Developer Track',
+    description: 'Comprehensive pathway to building full-stack JavaScript applications with React, Node, Express & MongoDB.',
+    estimatedHours: 120,
+    difficulty: 'Intermediate to Advanced',
+    prerequisites: ['HTML, CSS & JS Basics'],
+    topics: [
+      {
+        id: 'fs-1',
+        title: 'Frontend Client Architecture',
+        subtitle: 'React Single Page App',
+        category: 'Frontend',
+        collegeSubjectMatch: 'Web Technologies',
+        position: { x: 280, y: 50 },
+        prerequisites: [],
+        description: 'Modern React SPA scaffolding with routing, global state, and responsive layouts.',
+        estimatedHours: 15,
+        keySkills: ['React 18+', 'Vite', 'Tailwind CSS', 'Client Routing'],
+        resources: [r('React Docs', 'docs', 'https://react.dev')]
+      },
+      {
+        id: 'fs-2',
+        title: 'Backend REST API Services',
+        subtitle: 'Express & Modular Routers',
+        category: 'Backend',
+        collegeSubjectMatch: 'Web Technologies',
+        position: { x: 280, y: 180 },
+        prerequisites: ['fs-1'],
+        description: 'Scalable Express controller-service-repository patterns and route modularity.',
+        estimatedHours: 15,
+        keySkills: ['Node.js', 'Express', 'REST Design', 'Middleware Pipelines'],
+        resources: [r('Express Guide', 'docs', 'https://expressjs.com')]
+      },
+      {
+        id: 'fs-3',
+        title: 'Database & Data Modeling',
+        subtitle: 'MongoDB & Mongoose Schema',
+        category: 'Database',
+        collegeSubjectMatch: 'Database Management Systems',
+        position: { x: 280, y: 310 },
+        prerequisites: ['fs-2'],
+        description: 'Document databases, indexing, indexing strategies, and Mongoose population.',
+        estimatedHours: 12,
+        keySkills: ['MongoDB', 'Mongoose', 'Aggregation Pipeline', 'Indexes'],
+        resources: [r('MongoDB University', 'course', 'https://learn.mongodb.com')]
+      },
+      {
+        id: 'fs-4',
+        title: 'Authentication & Security',
+        subtitle: 'JWT, bcrypt & HttpOnly Cookies',
+        category: 'Security',
+        collegeSubjectMatch: 'Cryptography & Network Security',
+        position: { x: 280, y: 440 },
+        prerequisites: ['fs-3'],
+        description: 'Stateful sessions vs stateless JWT authentication with refresh token rotation.',
+        estimatedHours: 10,
+        keySkills: ['JWT', 'bcrypt hashing', 'HttpOnly cookies', 'CORS & Helmet'],
+        resources: [r('OWASP Security Cheat Sheet', 'article', 'https://cheatsheetseries.owasp.org')]
+      },
+      {
+        id: 'fs-5',
+        title: 'Production Deployment & CI/CD',
+        subtitle: 'Vercel, Render & Docker',
+        category: 'DevOps',
         collegeSubjectMatch: 'Cloud Computing',
-        outcomes: ['Deploy scalable applications to a k8s cluster', 'Configure rolling updates and zero-downtime rollbacks'],
-        resources: [r('Kubernetes Official Tutorials', 'Documentation', 'https://kubernetes.io/docs/tutorials/')]
-      },
-      {
-        id: 'terraform-cloud', title: 'Infrastructure as Code (IaC) with Terraform', level: 'Advanced', duration: '10–12 hours',
-        prerequisites: ['k8s-orchestration'], position: { x: 1240, y: 190 },
-        collegeSubjectMatch: 'Cloud Computing',
-        outcomes: ['Declare cloud infrastructure idempotently', 'Manage team Terraform state with locking'],
-        resources: [r('HashiCorp Terraform Tutorials', 'Documentation', 'https://developer.hashicorp.com/terraform/tutorials')]
-      },
-      {
-        id: 'observability', title: 'Observability: Prometheus, Grafana & Logs', level: 'Advanced', duration: '8–10 hours',
-        prerequisites: ['terraform-cloud'], position: { x: 1540, y: 190 },
-        collegeSubjectMatch: 'Software Engineering',
-        outcomes: ['Set up SLO/SLA monitoring dashboards', 'Trigger alerts on HTTP 5xx spikes and high CPU utilization'],
-        resources: [r('Prometheus Monitoring Guide', 'Documentation', 'https://prometheus.io/docs/introduction/overview/')]
-      },
-      {
-        id: 'devops-capstone', title: 'Capstone: Automated GitOps Cloud Pipeline', level: 'Project', duration: '2 weeks',
-        prerequisites: ['observability'], position: { x: 1840, y: 190 },
-        collegeSubjectMatch: 'Project Work / Capstone',
-        outcomes: ['Demonstrate production-grade zero-downtime CI/CD', 'Walk through automated disaster recovery during interviews'],
-        resources: [r('GitOps Principles by Weaveworks', 'Documentation', 'https://www.gitops.tech/')]
+        position: { x: 280, y: 570 },
+        prerequisites: ['fs-4'],
+        description: 'Deploying frontend to CDN and backend containers with continuous integration.',
+        estimatedHours: 10,
+        keySkills: ['Docker Basics', 'Vercel / Render', 'GitHub Actions', 'Environment Variables'],
+        resources: [r('Docker Curriculum', 'article', 'https://docker-curriculum.com')]
       }
     ]
   },
 
   'dsa-placement': {
     id: 'dsa-placement',
-    title: 'Campus Placement DSA Master Track',
-    tagline: 'Technical Interview Mastery, Core CS Subjects & Coding Assessments',
-
-    totalHours: '120–150 hours',
-    level: 'High Priority Placement Track',
+    title: 'Data Structures & Algorithms',
+    description: 'Structured roadmap covering foundational to advanced DSA patterns frequently asked in campus interviews.',
+    estimatedHours: 100,
+    difficulty: 'Intermediate',
+    prerequisites: ['Any programming language (C++, Java, Python, or JS)'],
     topics: [
       {
-        id: 'complexity-arrays', title: 'Big-O Analysis, Arrays & Two Pointers', level: 'Foundation', duration: '10–12 hours',
-        prerequisites: [], position: { x: 40, y: 80 },
-        collegeSubjectMatch: 'Data Structures and Algorithms',
-        outcomes: ['Calculate Big-O of any nested loop', 'Solve Two Sum, 3Sum, Container with Most Water', 'Implement fast array partition schemes'],
-        resources: [
-          r('NeetCode Roadmap — Arrays', 'Practice', 'https://neetcode.io/roadmap'),
-          r('Big-O Cheat Sheet', 'Documentation', 'https://www.bigocheatsheet.com/')
-        ]
-      },
-      {
-        id: 'strings-sliding-window', title: 'Strings & Sliding Window Pattern', level: 'Foundation', duration: '8–10 hours',
-
-        prerequisites: ['complexity-arrays'], position: { x: 340, y: 80 },
-        collegeSubjectMatch: 'Data Structures and Algorithms',
-        outcomes: ['Solve Longest Substring Without Repeating Characters', 'Master Minimum Window Substring', 'Implement anagram and permutation search'],
-        resources: [
-          r('LeetCode Sliding Window Collection', 'Practice', 'https://leetcode.com/tag/sliding-window/')
-        ]
-      },
-      {
-        id: 'linked-lists-stacks', title: 'Linked Lists, Stacks & Monotonic Queues', level: 'Core', duration: '10–12 hours',
-
-        prerequisites: ['complexity-arrays'], position: { x: 340, y: 300 },
-        collegeSubjectMatch: 'Data Structures and Algorithms',
-        outcomes: ['Detect and break cycles in Linked Lists (Floyd’s algorithm)', 'Implement monotonic stack for Daily Temperatures and Histogram', 'Reverse linked list iteratively and recursively'],
-        resources: [
-          r('Visualgo Linked List & Stack', 'Practice', 'https://visualgo.net/en/list')
-        ]
-      },
-      {
-        id: 'trees-bst', title: 'Binary Trees, BST & Heap Structures', level: 'Core', duration: '14–18 hours',
-
-        prerequisites: ['linked-lists-stacks'], position: { x: 640, y: 190 },
-        collegeSubjectMatch: 'Data Structures and Algorithms',
-        outcomes: ['Construct binary trees from traversal arrays', 'Validate BST invariants', 'Implement Top K Frequent Elements with Heaps'],
-        resources: [
-          r('NeetCode Trees Deep Dive', 'Video', 'https://neetcode.io/practice')
-        ]
-      },
-      {
-        id: 'graphs-bfs-dfs', title: 'Graphs: BFS, DFS, Dijkstra & Topological Sort', level: 'Advanced', duration: '16–20 hours',
-
-        prerequisites: ['trees-bst'], position: { x: 940, y: 190 },
-        collegeSubjectMatch: 'Data Structures and Algorithms',
-        outcomes: ['Solve Number of Islands and Word Ladder', 'Implement Topological Sort for course schedule dependencies', 'Apply Dijkstra’s algorithm with priority queues'],
-        resources: [
-          r('William Fiset Graph Theory', 'Video', 'https://www.youtube.com/playlist?list=PLDV1Zeh2NRsDGO4--qE8yH72HFL1Km93P')
-        ]
-      },
-      {
-        id: 'dynamic-programming', title: 'Dynamic Programming: 1D & 2D Memoization', level: 'Advanced', duration: '18–22 hours',
-
-        prerequisites: ['graphs-bfs-dfs'], position: { x: 1240, y: 190 },
+        id: 'dsa-1',
+        title: 'Time & Space Complexity',
+        subtitle: 'Big-O Notation & Asymptotic Analysis',
+        category: 'Foundations',
         collegeSubjectMatch: 'Design and Analysis of Algorithms',
-        outcomes: ['Identify DP states and transition equations', 'Solve Coin Change, Longest Increasing Subsequence, Edit Distance', 'Optimize 2D space to 1D space'],
-        resources: [
-          r('Striver DP Series', 'Video', 'https://takeuforward.org/dynamic-programming/striver-dp-series-top-dp-interview-problems/'),
-          r('LeetCode DP Study Plan', 'Practice', 'https://leetcode.com/study-plan/dynamic-programming/')
-        ]
+        position: { x: 280, y: 50 },
+        prerequisites: [],
+        description: 'Understand best, average, and worst-case scenarios, recurrence relations and space tradeoffs.',
+        estimatedHours: 6,
+        keySkills: ['Big-O', 'Big-Omega', 'Master Theorem', 'Auxiliary Space'],
+        resources: [r('Scaler Free DSA Course', 'course', 'https://www.scaler.com/topics/data-structures/')]
       },
       {
-        id: 'core-cs-review', title: 'Core CS Review: OS, DBMS, Networks & OOP', level: 'Advanced', duration: '12–15 hours',
-
-        prerequisites: ['trees-bst'], position: { x: 1240, y: 390 },
-        collegeSubjectMatch: 'Continuous Semester Subjects',
-        outcomes: ['Answer technical interview theory questions confidently', 'Write clean SQL queries with joins on the whiteboard', 'Explain multithreading and networking protocols to interviewers'],
-        resources: [
-          r('Gate Smashers Core CS Playlists', 'Video', 'https://www.youtube.com/@GateSmashers'),
-          r('Last Minute Interview Notes', 'Documentation', 'https://www.geeksforgeeks.org/last-minute-notes-operating-systems/')
-        ]
+        id: 'dsa-2',
+        title: 'Arrays, Strings & Two Pointers',
+        subtitle: 'Sliding Window & Prefix Sum',
+        category: 'Data Structures',
+        collegeSubjectMatch: 'Data Structures',
+        position: { x: 280, y: 180 },
+        prerequisites: ['dsa-1'],
+        description: 'Master in-place manipulation, two-pointer convergence, sliding window maximums, and prefix sums.',
+        estimatedHours: 15,
+        keySkills: ['Two Pointers', 'Sliding Window', 'Kadane Algorithm', 'Prefix Sums'],
+        resources: [r('LeetCode Top Interview 150', 'exercise', 'https://leetcode.com')]
       },
       {
-        id: 'mock-interviews', title: 'Capstone: Mock Coding Interviews & Strategy', level: 'Project', duration: '2 weeks',
-
-        prerequisites: ['dynamic-programming', 'core-cs-review'], position: { x: 1540, y: 290 },
-        collegeSubjectMatch: 'Placement Assessment',
-        outcomes: ['Pass timed coding assessments with 100% test coverage', 'Communicate optimal algorithms clearly during live interviews', 'Negotiate campus placement offers with confidence'],
-        resources: [
-          r('Pramp Free Peer Mock Interviews', 'Practice', 'https://www.pramp.com/'),
-          r('LeetCode Weekly Contests', 'Practice', 'https://leetcode.com/contest/')
-        ]
+        id: 'dsa-3',
+        title: 'Hashing & Hash Maps',
+        subtitle: 'Collision Handling & Frequency Maps',
+        category: 'Data Structures',
+        collegeSubjectMatch: 'Data Structures',
+        position: { x: 280, y: 310 },
+        prerequisites: ['dsa-2'],
+        description: 'Internal working of hash tables, collisions, probing, and solving frequency count problems in O(1).',
+        estimatedHours: 10,
+        keySkills: ['Hash Functions', 'Hash Sets & Maps', 'Subarray Sum Equals K', 'Two Sum Variations'],
+        resources: [r('Hashing Techniques Guide', 'article', 'https://www.scaler.com/topics/data-structures/hash-table/')]
+      },
+      {
+        id: 'dsa-4',
+        title: 'Linked Lists',
+        subtitle: 'Singly, Doubly, Fast & Slow Pointers',
+        category: 'Data Structures',
+        collegeSubjectMatch: 'Data Structures',
+        position: { x: 280, y: 440 },
+        prerequisites: ['dsa-3'],
+        description: 'Node pointer manipulation, cycle detection (Floyd Cycle), reverse linked list, and merge k sorted lists.',
+        estimatedHours: 12,
+        keySkills: ['Pointer Reversal', 'Cycle Detection', 'Fast-Slow Pointers', 'LRU Cache Design'],
+        resources: [r('Linked List Patterns', 'article', 'https://www.scaler.com/topics/data-structures/linked-list/')]
+      },
+      {
+        id: 'dsa-5',
+        title: 'Stacks, Queues & Monotonic Stack',
+        subtitle: 'LIFO, FIFO & Next Greater Element',
+        category: 'Data Structures',
+        collegeSubjectMatch: 'Data Structures',
+        position: { x: 280, y: 570 },
+        prerequisites: ['dsa-4'],
+        description: 'Implementations using arrays and linked lists, circular queue, deque, and monotonic stack patterns.',
+        estimatedHours: 12,
+        keySkills: ['Monotonic Stack', 'Next Greater Element', 'Valid Parentheses', 'Queue using Stacks'],
+        resources: [r('Stacks & Queues Deep Dive', 'article', 'https://www.scaler.com/topics/data-structures/stack/')]
+      },
+      {
+        id: 'dsa-6',
+        title: 'Binary Trees & BST',
+        subtitle: 'Traversals, Views & Balance',
+        category: 'Data Structures',
+        collegeSubjectMatch: 'Data Structures',
+        position: { x: 280, y: 700 },
+        prerequisites: ['dsa-5'],
+        description: 'Inorder, preorder, postorder, BFS level-order traversal, tree diameter, lowest common ancestor, and BST validations.',
+        estimatedHours: 18,
+        keySkills: ['Tree Traversals (DFS/BFS)', 'LCA', 'Diameter of Tree', 'BST Validation'],
+        resources: [r('Binary Tree Scaler Tutorial', 'article', 'https://www.scaler.com/topics/data-structures/binary-tree/')]
+      },
+      {
+        id: 'dsa-7',
+        title: 'Recursion & Backtracking',
+        subtitle: 'Subsets, Permutations & N-Queens',
+        category: 'Algorithms',
+        collegeSubjectMatch: 'Design and Analysis of Algorithms',
+        position: { x: 280, y: 830 },
+        prerequisites: ['dsa-6'],
+        description: 'State space trees, recursive base conditions, pruning branches, combinations, permutations, and grid backtracking.',
+        estimatedHours: 15,
+        keySkills: ['Recursion Tree', 'Backtracking Pruning', 'Subsets & Permutations', 'N-Queens'],
+        resources: [r('Backtracking Patterns', 'article', 'https://www.scaler.com/topics/data-structures/backtracking-algorithm/')]
+      },
+      {
+        id: 'dsa-8',
+        title: 'Dynamic Programming',
+        subtitle: '1D/2D DP, Knapsack & Subsequences',
+        category: 'Algorithms',
+        collegeSubjectMatch: 'Design and Analysis of Algorithms',
+        position: { x: 280, y: 960 },
+        prerequisites: ['dsa-7'],
+        description: 'Overlapping subproblems, optimal substructure, memoization vs tabulation, 0/1 Knapsack, LCS, and LIS.',
+        estimatedHours: 25,
+        keySkills: ['Memoization (Top-down)', 'Tabulation (Bottom-up)', '0/1 Knapsack', 'LCS & LIS Patterns'],
+        resources: [r('Dynamic Programming Guide', 'article', 'https://www.scaler.com/topics/data-structures/dynamic-programming/')]
+      },
+      {
+        id: 'dsa-9',
+        title: 'Graphs & Shortest Paths',
+        subtitle: 'BFS, DFS, Dijkstra & Topological Sort',
+        category: 'Algorithms',
+        collegeSubjectMatch: 'Design and Analysis of Algorithms',
+        position: { x: 280, y: 1090 },
+        prerequisites: ['dsa-8'],
+        description: 'Adjacency list/matrix representation, connected components, cycle detection, Kahn Algorithm, and Dijkstra shortest path.',
+        estimatedHours: 20,
+        keySkills: ['Graph BFS & DFS', 'Topological Sort', 'Dijkstra Algorithm', 'Disjoint Set Union (DSU)'],
+        resources: [r('Graph Algorithms Masterclass', 'article', 'https://www.scaler.com/topics/data-structures/graph/')]
       }
     ]
   }
 };
 
-export const getRoadmap = (id) => ROADMAPS[id] || ROADMAPS.frontend;
-
-export const getTopicsMap = (roadmap) => {
-  return Object.fromEntries((roadmap?.topics || []).map(t => [t.id, t]));
+export const getRoadmap = (domain = 'javascript') => {
+  return ROADMAPS[domain] || ROADMAPS.javascript;
 };

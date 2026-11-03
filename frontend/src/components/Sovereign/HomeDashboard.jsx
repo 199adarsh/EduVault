@@ -29,7 +29,8 @@ import {
   Add01Icon,
   HourglassIcon,
   Download01Icon,
-  File01Icon
+  File01Icon,
+  BookOpen01Icon
 } from 'hugeicons-react';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import HackathonsFeed from './HackathonsFeed';
@@ -37,6 +38,13 @@ import DeadlinesPopover from './DeadlinesPopover';
 import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+
+const QUICK_NC_COMMENTS = [
+  'Verified with medical certificate',
+  'Approved for institutional / academic duty',
+  'Approved per department attendance policy',
+  'Proof document missing or unclear'
+];
 
 const getDepartmentName = (deptCode) => {
   if (!deptCode) return "";
@@ -1076,21 +1084,30 @@ const HomeDashboard = () => {
                 <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F5F7] border border-[#E5E5EA] transition-colors cursor-pointer shadow-xs"
                   >
-                    <Clock01Icon size={16} className="text-amber-600" />
-                    <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.pending}</span>
-                    <span className="text-[11px] text-[#727272]">Leave Requests</span>
+                    <Clock01Icon size={15} className={ncStats.pending > 0 ? "text-[#FF9F0A]" : "text-[#8E8E93]"} />
+                    <span className="text-xs font-semibold text-[#1D1D1F] tabular-nums">{ncStats.pending}</span>
+                    <span className="text-[11px] text-[#6E6E73]">Pending Requests</span>
                   </div>
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F5F7] border border-[#E5E5EA] transition-colors cursor-pointer shadow-xs"
                   >
-                    <CheckmarkBadge01Icon size={16} className="text-[#0073E6]" />
-                    <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.approved}</span>
-                    <span className="text-[11px] text-[#727272]">Approved</span>
+                    <CheckmarkBadge01Icon size={15} className="text-[#34C759]" />
+                    <span className="text-xs font-semibold text-[#1D1D1F] tabular-nums">{ncStats.approved}</span>
+                    <span className="text-[11px] text-[#6E6E73]">Approved</span>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate('/attendance')}
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium transition-colors cursor-pointer shadow-xs"
+                  >
+                    <span>Attendance Desk</span>
+                    <ArrowRight01Icon size={13} />
+                  </button>
                 </div>
               ) : (
                 <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
@@ -1115,8 +1132,49 @@ const HomeDashboard = () => {
               )}
             </div>
 
-            {/* Native Mobile Metric Cards Grid (Minimal Unstop Style) */}
-            {!isTeacher && (
+            {/* Native Mobile Metric Cards Grid */}
+            {isTeacher ? (
+              <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E5E5EA] lg:hidden">
+                <div
+                  onClick={() => navigate('/attendance')}
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E5E5EA] active:bg-[#F5F5F7] transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#6E6E73]">Pending NC</span>
+                    <Clock01Icon size={14} className={ncStats.pending > 0 ? "text-[#FF9F0A]" : "text-[#8E8E93]"} />
+                  </div>
+                  <div className="mt-1 flex items-baseline">
+                    <span className={cn("text-base font-bold leading-none tabular-nums", ncStats.pending > 0 ? "text-[#FF9F0A]" : "text-[#1D1D1F]")}>
+                      {ncStats.pending}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  onClick={() => navigate('/attendance')}
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E5E5EA] active:bg-[#F5F5F7] transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#6E6E73]">Approved</span>
+                    <CheckmarkBadge01Icon size={14} className="text-[#34C759]" />
+                  </div>
+                  <div className="mt-1 flex items-baseline">
+                    <span className="text-base font-bold text-[#1D1D1F] leading-none tabular-nums">{ncStats.approved}</span>
+                  </div>
+                </div>
+                <div
+                  onClick={() => navigate('/announcements')}
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E5E5EA] active:bg-[#F5F5F7] transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-[#6E6E73]">Notices</span>
+                    <Megaphone01Icon size={14} className="text-[#0071E3]" />
+                  </div>
+                  <div className="mt-1 flex items-baseline">
+                    <span className="text-base font-bold text-[#1D1D1F] leading-none tabular-nums">{announcements?.length || 0}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
               <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden">
                 <div
                   onClick={() => navigate('/attendance')}
@@ -1193,167 +1251,268 @@ const HomeDashboard = () => {
             <div className="lg:col-span-7 space-y-4">
               {/* Section 1: Attendance Activity Heatmap OR Faculty NC Management */}
               {isTeacher ? (
-                <section className="bg-white rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2">
+                <section className="bg-white rounded-xl p-5 border border-[#E5E5EA] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E5E5EA] gap-2.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-[#F5F5F7] text-[#1D1D1F] border border-[#E5E5EA] flex items-center justify-center shrink-0">
                         <CheckmarkBadge01Icon size={18} />
                       </div>
                       <div>
-                        <h2 className="text-base">Attendance Excuse Requests (NC)</h2>
-                        <span className="text-xs font-normal text-[#727272]">Review student submissions</span>
+                        <h2 className="text-sm sm:text-base font-semibold text-[#1D1D1F]">Student Leave Requests</h2>
+                        <span className="text-xs text-[#6E6E73]">Review medical and academic absence submissions</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                        {ncStats.pending} Pending
-                      </span>
+                    <div className="flex items-center gap-2">
+                      {ncStats.pending > 0 && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FFF8E6] text-[#B25E00] border border-[#FFE29A]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF9F0A]" />
+                          <span className="tabular-nums font-semibold">{ncStats.pending}</span> pending
+                        </span>
+                      )}
                       <button
                         onClick={fetchFacultyNc}
-                        className="p-1 rounded-full text-[#727272] hover:text-[#383838] hover:bg-[#DEEDFC]/40 transition cursor-pointer"
-                        title="Refresh NC Requests"
+                        disabled={facultyNcLoading}
+                        className="p-1.5 rounded-lg text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] border border-[#E5E5EA] transition cursor-pointer disabled:opacity-50"
+                        title="Refresh Submissions"
                       >
-                        <Refresh01Icon size={16} />
+                        <Refresh01Icon size={14} className={facultyNcLoading ? "animate-spin" : ""} />
                       </button>
                     </div>
                   </div>
 
-                  {/* Search & Filter pills */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-                      {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((st) => (
+                  {/* Filter Tabs & Search Controls */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+                    <div className="inline-flex items-center p-1 rounded-lg bg-[#F5F5F7] border border-[#E5E5EA] overflow-x-auto no-scrollbar">
+                      {[
+                        { id: 'ALL', label: 'All', count: ncStats.total },
+                        { id: 'PENDING', label: 'Pending', count: ncStats.pending },
+                        { id: 'APPROVED', label: 'Approved', count: ncStats.approved },
+                        { id: 'REJECTED', label: 'Rejected', count: ncStats.rejected }
+                      ].map((tab) => (
                         <button
-                          key={st}
+                          key={tab.id}
                           type="button"
-                          onClick={() => setNcFilterStatus(st)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${ncFilterStatus === st
-                            ? 'bg-primary text-white shadow-xs'
-                            : 'bg-slate-100 text-text-secondary hover:bg-slate-200/70'
-                            }`}
+                          onClick={() => setNcFilterStatus(tab.id)}
+                          className={cn(
+                            "px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
+                            ncFilterStatus === tab.id
+                              ? "bg-white text-[#1D1D1F] font-semibold shadow-xs"
+                              : "text-[#6E6E73] hover:text-[#1D1D1F]"
+                          )}
                         >
-                          {st === 'ALL' ? `All (${ncStats.total})` : st === 'PENDING' ? `Pending (${ncStats.pending})` : st === 'APPROVED' ? `Approved (${ncStats.approved})` : `Rejected (${ncStats.rejected})`}
+                          <span>{tab.label}</span>
+                          <span className={cn(
+                            "text-[10px] tabular-nums px-1.5 py-0.2 rounded-full",
+                            ncFilterStatus === tab.id
+                              ? "bg-[#F5F5F7] text-[#1D1D1F]"
+                              : "text-[#8E8E93]"
+                          )}>
+                            {tab.count}
+                          </span>
                         </button>
                       ))}
                     </div>
-                    <div className="relative w-full sm:w-48">
+
+                    <div className="relative w-full sm:w-52">
                       <input
                         type="text"
                         value={ncSearchQuery}
                         onChange={(e) => setNcSearchQuery(e.target.value)}
                         placeholder="Search student or PRN..."
-                        className="w-full text-xs pl-7 pr-2 py-1 rounded-lg bg-slate-50 border border-border-subtle focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full text-xs pl-7 pr-7 py-1.5 rounded-lg bg-white border border-[#E5E5EA] text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
                       />
-                      <Search01Icon size={14} className="text-text-secondary absolute left-2 top-1/2 -translate-y-1/2" />
+                      <Search01Icon size={13} className="text-[#8E8E93] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      {ncSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setNcSearchQuery('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8E8E93] hover:text-[#1D1D1F] p-0.5"
+                        >
+                          <Cancel01Icon size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
                   {/* Requests List */}
-                  <div className="space-y-2.5 max-h-[480px] overflow-y-auto no-scrollbar">
+                  <div className="space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar">
                     {facultyNcLoading ? (
-                      <div className="py-8 text-center text-xs text-text-secondary">Loading leave requests...</div>
+                      <div className="py-12 text-center text-xs text-[#6E6E73]">Loading submissions...</div>
                     ) : filteredFacultyNc.length === 0 ? (
-                      <div className="py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-border-subtle p-4">
-                        <Task01Icon size={32} className="text-slate-300 mx-auto mb-1" />
-                        <p className="text-xs font-semibold text-text-primary">No leave requests found</p>
-                        <p className="text-[11px] text-text-secondary mt-0.5">No student requests match the current filter.</p>
+                      <div className="py-10 text-center bg-[#FBFBFD] rounded-xl border border-dashed border-[#E5E5EA] p-6">
+                        <CheckmarkCircle01Icon size={28} className="text-[#34C759] mx-auto mb-2 opacity-80" />
+                        <p className="text-xs font-semibold text-[#1D1D1F]">All caught up</p>
+                        <p className="text-[11px] text-[#6E6E73] mt-0.5 max-w-xs mx-auto">
+                          {ncSearchQuery ? 'No student requests match your search criteria.' : 'No leave requests under this filter.'}
+                        </p>
                       </div>
                     ) : (
-                      filteredFacultyNc.map((req) => (
-                        <div key={req.id} className="p-3.5 rounded-xl border border-border-subtle bg-white text-xs space-y-2 shadow-2xs hover:border-primary/40 transition">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-text-primary">{req.studentName}</span>
-                              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200 font-semibold">
-                                {req.studentPrn}
-                              </span>
-                              {req.missedSubjects && req.missedSubjects.length > 0 && (
-                                <span className="text-[10px] px-2 py-0.2 rounded-full bg-blue-50 text-blue-700 font-medium">
-                                  {req.missedSubjects[0].subjectName}
-                                </span>
-                              )}
+                      filteredFacultyNc.map((req) => {
+                        const courseDisplay = Array.from(new Set((req.missedSubjects || []).map(m => m?.subjectName || m?.name || m).filter(Boolean))).join(' · ');
+                        const isApproved = req.status === 'APPROVED';
+                        const isRejected = req.status === 'REJECTED';
+                        const isPending = req.status === 'PENDING';
+
+                        return (
+                        <div
+                          key={req.id}
+                          className="p-4 rounded-xl border border-[#E5E5EA] bg-white text-xs space-y-3 hover:border-[#D2D2D7] transition shadow-xs"
+                        >
+                          {/* Student Header */}
+                          <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-8 h-8 rounded-full bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center text-[10px] font-semibold text-[#1D1D1F] shrink-0">
+                                {getInitials(req.studentName)}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-sm text-[#1D1D1F] truncate">{formatName(req.studentName)}</span>
+                                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#F5F5F7] text-[#6E6E73] border border-[#E5E5EA]">
+                                    {req.studentPrn}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#6E6E73] truncate mt-0.5">
+                                  {courseDisplay || 'Course Absence'}
+                                </p>
+                              </div>
                             </div>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                              req.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                                'bg-amber-50 text-amber-700 border border-amber-200'
-                              }`}>
-                              {req.status}
+                            <span className={cn(
+                              "px-2.5 py-0.5 rounded-full text-[10px] font-medium border shrink-0",
+                              isApproved ? 'bg-[#EAF9EE] text-[#1B7F37] border-[#C6EFD2]' :
+                              isRejected ? 'bg-[#FDF2F2] text-[#D32F2F] border-[#F8C8C8]' :
+                              'bg-[#FFF8E6] text-[#B25E00] border-[#FFE29A]'
+                            )}>
+                              {isApproved ? 'Approved' : isRejected ? 'Declined' : 'Pending Review'}
                             </span>
                           </div>
 
-                          <div className="text-[11px] text-text-secondary space-y-0.5">
-                            <div>Absent Dates: <strong className="font-mono text-text-primary">{(req.absentDates || []).join(', ')}</strong></div>
-                            <div>Reason: <strong className="text-text-primary">{req.reason}</strong>{req.description ? ` - "${req.description}"` : ''}</div>
-                          </div>
+                          {/* Request Details */}
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-2 pt-1 border-t border-[#E5E5EA]/60">
+                            <div className="md:col-span-8 space-y-1">
+                              <div className="flex items-center gap-2 text-xs flex-wrap">
+                                <span className="font-medium text-[#1D1D1F]">{req.reason}</span>
+                                <span className="text-[#D2D2D7]">•</span>
+                                <span className="text-[#6E6E73] font-mono text-[11px]">{(req.absentDates || []).join(', ')}</span>
+                              </div>
+                              {req.description && (
+                                <p className="text-[11px] text-[#6E6E73] italic">"{req.description}"</p>
+                              )}
+                              {req.reviewComment && (
+                                <p className="text-[10px] text-[#6E6E73] flex items-center gap-1.5 pt-0.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#1B7F37] shrink-0" />
+                                  <span>
+                                    <strong className="font-medium text-[#1D1D1F]">{req.reviewedBy || 'Faculty'}:</strong> "{req.reviewComment}"
+                                  </span>
+                                </p>
+                              )}
+                            </div>
 
-                          <div className="flex items-center justify-between pt-1 border-t border-border-subtle/50">
-                            {req.proofFileName ? (
+                            {/* Actions */}
+                            <div className="md:col-span-4 flex items-center justify-start md:justify-end gap-2 shrink-0 self-center">
+                              {req.proofFileName && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDocPreviewUrl(getNcProofUrl(req));
+                                    setDocPreviewName(req.proofFileName);
+                                  }}
+                                  className="text-[#1D1D1F] hover:text-[#0071E3] font-medium inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] transition cursor-pointer"
+                                >
+                                  <File01Icon size={13} />
+                                  <span>Proof</span>
+                                </button>
+                              )}
+
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setDocPreviewUrl(getNcProofUrl(req));
-                                  setDocPreviewName(req.proofFileName);
+                                  setReviewingReq(req);
+                                  setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
+                                  setReviewComment(req.reviewComment || '');
                                 }}
-                                className="text-primary hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
+                                className={cn(
+                                  "px-3 py-1 rounded-lg font-medium text-[11px] transition cursor-pointer",
+                                  isPending
+                                    ? "bg-[#0071E3] hover:bg-[#005BB5] text-white shadow-xs"
+                                    : "bg-white hover:bg-[#F5F5F7] text-[#6E6E73] hover:text-[#1D1D1F] border border-[#E5E5EA]"
+                                )}
                               >
-                                <EyeIcon size={14} />
-                                <span>View Document ({req.proofFileName})</span>
+                                {isPending ? 'Review' : 'Update'}
                               </button>
-                            ) : (
-                              <span className="text-slate-400 italic text-[11px]">No document attached</span>
-                            )}
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setReviewingReq(req);
-                                setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
-                                setReviewComment(req.reviewComment || '');
-                              }}
-                              className="px-2.5 py-1 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-[11px] cursor-pointer shadow-2xs"
-                            >
-                              Review
-                            </button>
+                            </div>
                           </div>
 
-                          {/* Quick Review Box */}
+                          {/* Inline Review Drawer */}
                           {reviewingReq && reviewingReq.id === req.id && (
-                            <div className="mt-2 p-3 rounded-lg bg-blue-50/60 border border-blue-200 space-y-2 animate-in fade-in duration-150">
+                            <div className="mt-2.5 p-3.5 rounded-xl bg-[#FBFBFD] border border-[#E5E5EA] space-y-3">
                               <div className="flex items-center justify-between">
-                                <span className="font-bold text-[11px] text-blue-900">Faculty Review Decision</span>
-                                <button type="button" onClick={() => setReviewingReq(null)} className="text-slate-400 hover:text-slate-600">
-                                  <Cancel01Icon size={15} />
+                                <span className="font-semibold text-xs text-[#1D1D1F]">Record Faculty Decision</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewingReq(null)}
+                                  className="text-[#8E8E93] hover:text-[#1D1D1F] p-0.5 rounded"
+                                >
+                                  <Cancel01Icon size={14} />
                                 </button>
                               </div>
-                              <div className="grid grid-cols-2 gap-1.5">
+
+                              {/* Decision Toggle */}
+                              <div className="grid grid-cols-2 gap-2">
                                 <button
                                   type="button"
                                   onClick={() => setReviewDecision('APPROVED')}
-                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${reviewDecision === 'APPROVED' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
-                                    }`}
+                                  className={cn(
+                                    "py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 border",
+                                    reviewDecision === 'APPROVED'
+                                      ? "bg-[#1B7F37] text-white border-[#1B7F37] shadow-xs"
+                                      : "bg-white text-[#1D1D1F] border-[#E5E5EA] hover:bg-[#F5F5F7]"
+                                  )}
                                 >
-                                  Approve Request
+                                  <CheckmarkCircle01Icon size={13} />
+                                  <span>Approve Request</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setReviewDecision('REJECTED')}
-                                  className={`py-1 rounded text-xs font-bold transition cursor-pointer ${reviewDecision === 'REJECTED' ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
-                                    }`}
+                                  className={cn(
+                                    "py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 border",
+                                    reviewDecision === 'REJECTED'
+                                      ? "bg-[#D32F2F] text-white border-[#D32F2F] shadow-xs"
+                                      : "bg-white text-[#1D1D1F] border-[#E5E5EA] hover:bg-[#F5F5F7]"
+                                  )}
                                 >
-                                  Reject Request
+                                  <Cancel01Icon size={13} />
+                                  <span>Reject Request</span>
                                 </button>
                               </div>
+
+                              {/* Quick Comment Chips */}
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {QUICK_NC_COMMENTS.map((qc, qidx) => (
+                                  <button
+                                    key={qidx}
+                                    type="button"
+                                    onClick={() => setReviewComment(qc)}
+                                    className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#E5E5EA] text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7] transition cursor-pointer"
+                                  >
+                                    {qc}
+                                  </button>
+                                ))}
+                              </div>
+
                               <input
                                 type="text"
                                 value={reviewComment}
                                 onChange={(e) => setReviewComment(e.target.value)}
-                                placeholder="Add teacher remarks or feedback..."
-                                className="w-full text-xs p-1.5 bg-white border border-slate-200 rounded outline-none"
+                                placeholder="Faculty feedback or reason for student..."
+                                className="w-full text-xs px-2.5 py-1.5 bg-white border border-[#E5E5EA] rounded-lg text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3]"
                               />
-                              <div className="flex justify-end gap-1.5">
+
+                              <div className="flex justify-end gap-2 pt-0.5">
                                 <button
                                   type="button"
                                   onClick={() => setReviewingReq(null)}
-                                  className="px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-200 rounded"
+                                  className="px-3 py-1 text-xs text-[#6E6E73] hover:text-[#1D1D1F] transition rounded-lg"
                                 >
                                   Cancel
                                 </button>
@@ -1361,7 +1520,7 @@ const HomeDashboard = () => {
                                   type="button"
                                   onClick={handleTeacherReview}
                                   disabled={isSubmittingReview}
-                                  className="px-3 py-1 rounded bg-primary text-white text-xs font-bold disabled:opacity-50"
+                                  className="px-3.5 py-1 rounded-lg bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium transition disabled:opacity-50 shadow-xs cursor-pointer"
                                 >
                                   {isSubmittingReview ? 'Saving...' : 'Save Decision'}
                                 </button>
@@ -1369,7 +1528,8 @@ const HomeDashboard = () => {
                             </div>
                           )}
                         </div>
-                      ))
+                      );
+                    })
                     )}
                   </div>
                 </section>
@@ -1413,7 +1573,7 @@ const HomeDashboard = () => {
               )}
 
               {/* Section 2: Brabble.ai Hackathons Feed */}
-              <HackathonsFeed />
+              {!isTeacher && <HackathonsFeed />}
 
               {/* Section 3: Milestones & Events */}
               <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
@@ -1643,8 +1803,94 @@ const HomeDashboard = () => {
                 </div>
               </section>
 
-              {/* Section 5: CIE Scores */}
-              {!isTeacher && (
+              {/* Section 5: CIE Scores (Student) OR Faculty Operations Hub (Teacher) */}
+              {isTeacher ? (
+                <section className="bg-white rounded-xl p-5 border border-[#E5E5EA] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0">
+                  <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E5E5EA]">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#F5F5F7] text-[#1D1D1F] border border-[#E5E5EA] flex items-center justify-center shrink-0">
+                        <Task01Icon size={17} />
+                      </div>
+                      <div>
+                        <h2 className="text-sm sm:text-base font-semibold text-[#1D1D1F]">
+                          Faculty Operations
+                        </h2>
+                        <p className="text-[11px] text-[#6E6E73]">Quick management shortcuts & tools</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/announcements')}
+                      className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#0071E3]/8 text-[#0071E3] flex items-center justify-center shrink-0 mt-0.5">
+                        <Megaphone01Icon size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-[#1D1D1F] group-hover:text-[#0071E3] transition-colors">Post Notice</span>
+                          <ArrowRight01Icon size={12} className="text-[#8E8E93] group-hover:text-[#0071E3] group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-[11px] text-[#6E6E73] mt-0.5 leading-snug">Publish department notices and exam circulars</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate('/attendance')}
+                      className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#34C759]/10 text-[#34C759] flex items-center justify-center shrink-0 mt-0.5">
+                        <CheckmarkBadge01Icon size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-[#1D1D1F] group-hover:text-[#0071E3] transition-colors">Attendance Desk</span>
+                          <ArrowRight01Icon size={12} className="text-[#8E8E93] group-hover:text-[#0071E3] group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-[11px] text-[#6E6E73] mt-0.5 leading-snug">Full class attendance logs and leave records</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate('/notes')}
+                      className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#F5F5F7] text-[#1D1D1F] border border-[#E5E5EA] flex items-center justify-center shrink-0 mt-0.5">
+                        <BookOpen01Icon size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-[#1D1D1F] group-hover:text-[#0071E3] transition-colors">Course Notes</span>
+                          <ArrowRight01Icon size={12} className="text-[#8E8E93] group-hover:text-[#0071E3] group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-[11px] text-[#6E6E73] mt-0.5 leading-snug">Upload subject modules, slides and question banks</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate('/roadmaps')}
+                      className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#F5F5F7] text-[#1D1D1F] border border-[#E5E5EA] flex items-center justify-center shrink-0 mt-0.5">
+                        <Calendar03Icon size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-[#1D1D1F] group-hover:text-[#0071E3] transition-colors">Curriculum Tracks</span>
+                          <ArrowRight01Icon size={12} className="text-[#8E8E93] group-hover:text-[#0071E3] group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-[11px] text-[#6E6E73] mt-0.5 leading-snug">Academic pathways and prerequisite maps</p>
+                      </div>
+                    </button>
+                  </div>
+                </section>
+              ) : (
                 <section className="bg-white rounded-[12px] p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                   <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E2E2E2] gap-3 min-w-0 w-full">
                     <div className="flex items-center gap-2.5 min-w-0">

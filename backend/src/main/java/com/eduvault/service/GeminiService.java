@@ -36,6 +36,9 @@ public class GeminiService {
     @Value("${app.gemini.model:gemini-3.5-flash}")
     private String model;
 
+    @Value("${app.groq.api-key:${GROQ_API_KEY:}}")
+    private String groqApiKey;
+
     @Autowired
     private LocalJsonDatabase database;
 
@@ -567,35 +570,47 @@ public class GeminiService {
     private String callGemini(String systemInstruction, String prompt, double temperature, String customApiKey) throws Exception {
         String completionsUrl = getCompletionsUrl();
         String effectiveApiKey = (customApiKey != null && !customApiKey.trim().isEmpty()) ? customApiKey.trim() : getEffectiveApiKey();
-
-        if (effectiveApiKey != null && (effectiveApiKey.startsWith("AIza") || effectiveApiKey.length() > 30)) {
-            completionsUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+        if ((effectiveApiKey == null || effectiveApiKey.isEmpty()) && groqApiKey != null && !groqApiKey.isBlank()) {
+            effectiveApiKey = groqApiKey.trim();
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        if (effectiveApiKey != null && !effectiveApiKey.isEmpty()) {
+        headers.set("User-Agent", "EduVault/1.0");
+
+        List<String> modelCascade;
+        boolean isGroq = effectiveApiKey != null && effectiveApiKey.startsWith("gsk_");
+        if (isGroq) {
+            completionsUrl = "https://api.groq.com/openai/v1/chat/completions";
+            modelCascade = List.of("openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b");
+            headers.setBearerAuth(effectiveApiKey);
+        } else if (effectiveApiKey != null && (effectiveApiKey.startsWith("AIza") || effectiveApiKey.length() > 30)) {
+            completionsUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+            modelCascade = List.of("gemini-1.5-flash");
             headers.setBearerAuth(effectiveApiKey);
             headers.set("x-goog-api-key", effectiveApiKey);
+        } else {
+            String m = (model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-1.5-flash";
+            modelCascade = List.of(m);
+            if (effectiveApiKey != null && !effectiveApiKey.isEmpty()) {
+                headers.setBearerAuth(effectiveApiKey);
+            }
         }
 
         Map<String, Object> requestBody = new HashMap<>();
-        String reqModel = (effectiveApiKey != null && (effectiveApiKey.startsWith("AIza") || effectiveApiKey.length() > 30))
-                ? "gemini-1.5-flash"
-                : ((model != null && !model.trim().isEmpty()) ? model.trim() : "gemini-1.5-flash");
-        requestBody.put("model", reqModel);
         requestBody.put("messages", List.of(
                 Map.of("role", "system", "content", systemInstruction),
                 Map.of("role", "user", "content", prompt)
         ));
         requestBody.put("temperature", temperature);
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
         int maxRetries = 3;
         int retryDelay = 1000;
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            String activeModel = modelCascade.get(Math.min(attempt - 1, modelCascade.size() - 1));
+            requestBody.put("model", activeModel);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             try {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> response = restTemplate.postForObject(completionsUrl, entity, Map.class);

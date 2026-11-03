@@ -405,11 +405,11 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                         {isTeacher && (
                             <button
                                 onClick={() => setShowLmsSync(true)}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#174073] bg-[#DEEDFC] hover:bg-[#D9ECFF] border border-[#D9ECFF] transition-all cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] transition cursor-pointer"
                                 title="Teacher access: Sync latest materials from Moodle LMS"
                             >
-                                <RefreshCw className="w-3.5 h-3.5 text-[#0073E6]" />
-                                <span>Sync LMS</span>
+                                <RefreshCw className="w-3.5 h-3.5 text-[#0071E3]" />
+                                <span>Sync Moodle</span>
                             </button>
                         )}
                         <button
@@ -676,10 +676,10 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                     {isTeacher && (
                                         <button
                                             onClick={() => setShowLmsSync(true)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all shadow-xs cursor-pointer"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] transition cursor-pointer"
                                         >
-                                            <RefreshCw className="w-3.5 h-3.5" />
-                                            <span>Sync Moodle / LMS</span>
+                                            <RefreshCw className="w-3.5 h-3.5 text-[#0071E3]" />
+                                            <span>Sync Moodle</span>
                                         </button>
                                     )}
                                     <button

@@ -5,31 +5,64 @@ import {
     Calendar,
     CheckCircle2,
     XCircle,
-    Clock,
     Search,
-    Eye,
     Download,
     X,
     FileCheck,
     RefreshCw,
-    Filter,
     FileText,
-    UserCheck,
     AlertCircle,
-    ExternalLink
+    ChevronDown,
+    ChevronRight,
+    User
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { FluidTabs } from '@/components/fluid-tabs';
+import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const QUICK_COMMENTS = [
     'Verified with medical certificate',
-    'Approved for university / academic event',
+    'Approved for institutional / academic duty',
     'Approved as per department attendance policy',
     'Proof document missing or unclear'
 ];
+
+const formatStudentName = (name) => {
+    if (!name) return 'Student';
+    return name.trim().split(/\s+/).map(w => {
+        if (w.length <= 2 && w.toUpperCase() === w) return w;
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }).join(' ');
+};
+
+const formatDateRange = (dates) => {
+    if (!Array.isArray(dates) || dates.length === 0) return 'No dates specified';
+    return dates.map(d => {
+        if (!d) return '';
+        const parts = d.split('-');
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                const date = new Date(parts[0], parseInt(parts[1], 10) - 1, parts[2]);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                }
+            } else if (parts[2].length === 4) {
+                const date = new Date(parts[2], parseInt(parts[1], 10) - 1, parts[0]);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                }
+            }
+        }
+        return d;
+    }).filter(Boolean).join(', ');
+};
+
+const getCourseDisplay = (missedSubjects) => {
+    if (!Array.isArray(missedSubjects) || missedSubjects.length === 0) return 'Course Absence';
+    const unique = Array.from(new Set(missedSubjects.map(m => m?.subjectName || m?.name || m).filter(Boolean)));
+    return unique.length > 0 ? unique.join(' · ') : 'Course Absence';
+};
 
 const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
     const [allRequests, setAllRequests] = useState([]);
@@ -47,6 +80,7 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
     // Document Preview Modal States
     const [docPreviewUrl, setDocPreviewUrl] = useState(null);
     const [docPreviewName, setDocPreviewName] = useState('');
+    const [docPreviewError, setDocPreviewError] = useState(false);
 
     const teacherName = localStorage.getItem('eduvault_teacher_name') || profile?.name || 'Faculty Member';
 
@@ -111,7 +145,7 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                     headers: { 'X-User-Role': 'teacher' }
                 }
             );
-            toast.success(`Request marked as ${reviewDecision}!`, { id: toastId });
+            toast.success(`Request marked as ${reviewDecision.toLowerCase()}`, { id: toastId });
             setReviewingReq(null);
             setReviewComment('');
             fetchFacultyRequests();
@@ -124,30 +158,6 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
         }
     };
 
-    // Quick direct approve/reject handler
-    const handleQuickAction = async (req, decision) => {
-        const toastId = toast.loading(`Marking request as ${decision}...`);
-        try {
-            await axios.put(
-                `${API_BASE}/nc/requests/${req.id}/review`,
-                {
-                    status: decision,
-                    comment: decision === 'APPROVED' ? 'Approved by faculty' : 'Rejected by faculty',
-                    reviewerName: teacherName
-                },
-                {
-                    headers: { 'X-User-Role': 'teacher' }
-                }
-            );
-            toast.success(`Request ${decision.toLowerCase()}!`, { id: toastId });
-            fetchFacultyRequests();
-            if (onRefresh) onRefresh();
-        } catch (err) {
-            console.error('Quick action failed', err);
-            toast.error('Failed to update request', { id: toastId });
-        }
-    };
-
     // Scoped requests for this faculty member
     const teacherBaseRequests = useMemo(() => {
         if (!teacherSubjects || teacherSubjects.length === 0) return allRequests;
@@ -157,14 +167,13 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
         );
     }, [allRequests, teacherSubjects]);
 
-    // Available subjects list for filter (strictly teacher's selected subjects if assigned)
+    // Available subjects list for filter
     const availableSubjects = useMemo(() => {
         const set = new Set();
         (teacherSubjects || []).forEach(s => {
             const name = typeof s === 'string' ? s : s?.name;
             if (name) set.add(name);
         });
-        // If teacher has no assigned subjects, fall back to subjects present in actual requests
         if (set.size === 0) {
             allRequests.forEach(req => {
                 (req.missedSubjects || []).forEach(ms => {
@@ -175,7 +184,7 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
         return Array.from(set).sort();
     }, [teacherSubjects, allRequests]);
 
-    // Statistics based on teacher's course requests (or all if department view selected)
+    // Statistics based on current view
     const stats = useMemo(() => {
         const pool = (subjectFilter === 'ALL_DEPT' || (!teacherSubjects || teacherSubjects.length === 0))
             ? allRequests
@@ -194,18 +203,15 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
             : teacherBaseRequests;
 
         return basePool.filter(req => {
-            // Status filter
             if (statusFilter !== 'ALL' && req.status !== statusFilter) {
                 return false;
             }
-            // Subject filter
             if (subjectFilter !== 'ALL' && subjectFilter !== 'ALL_DEPT') {
                 const hasSubject = (req.missedSubjects || []).some(ms =>
                     ms.subjectName?.toLowerCase() === subjectFilter.toLowerCase()
                 );
                 if (!hasSubject) return false;
             }
-            // Search query filter (name, PRN, reason, description)
             if (searchQuery.trim()) {
                 const q = searchQuery.toLowerCase();
                 const nameMatch = req.studentName?.toLowerCase().includes(q);
@@ -220,122 +226,190 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
         });
     }, [allRequests, teacherBaseRequests, statusFilter, subjectFilter, searchQuery, teacherSubjects]);
 
+    // Group requests by Student (PRN or normalized name) so multiple requests from the same student stay clustered
+    const groupedStudents = useMemo(() => {
+        const map = new Map();
+        filteredRequests.forEach(req => {
+            const key = (req.studentPrn || req.studentName || 'UNKNOWN').trim().toLowerCase();
+            if (!map.has(key)) {
+                map.set(key, {
+                    key,
+                    studentName: req.studentName,
+                    studentPrn: req.studentPrn,
+                    department: req.department,
+                    requests: []
+                });
+            }
+            map.get(key).requests.push(req);
+        });
+
+        return Array.from(map.values()).map(group => {
+            const pendingCount = group.requests.filter(r => r.status === 'PENDING').length;
+            const approvedCount = group.requests.filter(r => r.status === 'APPROVED').length;
+            const rejectedCount = group.requests.filter(r => r.status === 'REJECTED').length;
+            return {
+                ...group,
+                pendingCount,
+                approvedCount,
+                rejectedCount
+            };
+        });
+    }, [filteredRequests]);
+
+    const [collapsedStudents, setCollapsedStudents] = useState({});
+    const toggleStudentGroup = (key) => {
+        setCollapsedStudents(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
+    const expandAll = () => setCollapsedStudents({});
+    const collapseAll = () => {
+        const nextState = {};
+        groupedStudents.forEach(g => {
+            nextState[g.key] = true;
+        });
+        setCollapsedStudents(nextState);
+    };
+
+    const allAreCollapsed = useMemo(() => {
+        if (groupedStudents.length === 0) return false;
+        return groupedStudents.every(g => !!collapsedStudents[g.key]);
+    }, [groupedStudents, collapsedStudents]);
+
     return (
-        <div className="w-full space-y-6 animate-in fade-in duration-200">
+        <div className="w-full space-y-5">
             {/* Header Section */}
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Faculty Portal</span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                            {profile?.department || 'AI & Data Science'}
+            <div className="bg-white border border-[#E5E5EA] rounded-2xl p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold text-[#0071E3] bg-[#0071E3]/8 px-2.5 py-0.5 rounded-full">
+                            Faculty Portal
+                        </span>
+                        <span className="text-[#E5E5EA]">•</span>
+                        <span className="text-xs font-medium text-[#6E6E73]">
+                            {profile?.department || 'Department of Engineering'}
                         </span>
                     </div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                        Attendance &amp; Leave Approvals (NC)
+                    <h1 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] tracking-tight">
+                        Attendance &amp; Leave Approvals
                     </h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                        Review medical, academic event, and official leave submissions from students.
+                    <p className="text-xs text-[#6E6E73] max-w-2xl">
+                        Review Non-Credit (NC) medical, academic competition, and official duty absence submissions.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 shrink-0">
-                    <div className="text-right hidden md:block">
-                        <div className="text-xs font-bold text-slate-800">{teacherName}</div>
-                        <div className="text-[10px] text-slate-400">Authorized Faculty Reviewer</div>
+                <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+                    <div className="text-right hidden sm:block">
+                        <div className="text-xs font-semibold text-[#1D1D1F]">{teacherName}</div>
+                        <div className="text-[11px] text-[#8E8E93]">Faculty Reviewer</div>
                     </div>
                     <button
                         type="button"
                         onClick={fetchFacultyRequests}
                         disabled={loading}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition shadow-xs cursor-pointer disabled:opacity-50"
-                        title="Refresh requests"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] transition cursor-pointer disabled:opacity-50"
+                        title="Refresh submissions"
                     >
-                        <RefreshCw className={cn("w-3.5 h-3.5 text-slate-600", loading && "animate-spin")} />
-                        <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+                        <RefreshCw className={cn("w-3.5 h-3.5 text-[#6E6E73]", loading && "animate-spin")} />
+                        <span>{loading ? 'Refreshing' : 'Refresh'}</span>
                     </button>
                 </div>
             </div>
 
-            {/* KPI Stat Cards (Light Shadcn Style) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                <div className="bg-white border border-amber-200/80 rounded-xl p-4 shadow-2xs hover:shadow-xs transition">
+            {/* Metrics Overview */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-500">Pending Review</span>
-                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="text-xs font-medium text-[#6E6E73]">Pending Action</span>
+                        {stats.pending > 0 && (
+                            <span className="w-2 h-2 rounded-full bg-[#FF9F0A]" />
+                        )}
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-3xl font-extrabold text-amber-600 tracking-tight">{stats.pending}</span>
-                        <span className="text-[11px] text-slate-400 font-medium">awaiting review</span>
+                        <span className={cn(
+                            "text-2xl sm:text-3xl font-semibold tabular-nums tracking-tight",
+                            stats.pending > 0 ? "text-[#FF9F0A]" : "text-[#1D1D1F]"
+                        )}>
+                            {stats.pending}
+                        </span>
+                        <span className="text-[11px] text-[#8E8E93]">requests</span>
                     </div>
-                    <p className="text-[10px] text-amber-700/80 font-medium mt-1">Requires faculty decision</p>
+                    <p className="text-[11px] text-[#8E8E93] mt-1">Awaiting decision</p>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-xs transition">
+                <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-500">Approved Leaves</span>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-medium text-[#6E6E73]">Approved</span>
+                        <CheckCircle2 className="w-4 h-4 text-[#34C759]" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-3xl font-extrabold text-emerald-600 tracking-tight">{stats.approved}</span>
-                        <span className="text-[11px] text-slate-400 font-medium">granted</span>
+                        <span className="text-2xl sm:text-3xl font-semibold tabular-nums text-[#1D1D1F] tracking-tight">
+                            {stats.approved}
+                        </span>
+                        <span className="text-[11px] text-[#8E8E93]">credited</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium mt-1">Attendance credited</p>
+                    <p className="text-[11px] text-[#8E8E93] mt-1">Attendance accounted</p>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-xs transition">
+                <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-500">Rejected Requests</span>
-                        <XCircle className="w-4 h-4 text-rose-500" />
+                        <span className="text-xs font-medium text-[#6E6E73]">Declined</span>
+                        <XCircle className="w-4 h-4 text-[#FF3B30]" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-3xl font-extrabold text-rose-600 tracking-tight">{stats.rejected}</span>
-                        <span className="text-[11px] text-slate-400 font-medium">declined</span>
+                        <span className="text-2xl sm:text-3xl font-semibold tabular-nums text-[#1D1D1F] tracking-tight">
+                            {stats.rejected}
+                        </span>
+                        <span className="text-[11px] text-[#8E8E93]">rejected</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium mt-1">Invalid / insufficient proof</p>
+                    <p className="text-[11px] text-[#8E8E93] mt-1">Inadequate proof</p>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-xs transition">
+                <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-500">Total Requests</span>
-                        <FileCheck className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs font-medium text-[#6E6E73]">Total Submissions</span>
+                        <FileCheck className="w-4 h-4 text-[#0071E3]" />
                     </div>
                     <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{stats.total}</span>
-                        <span className="text-[11px] text-slate-400 font-medium">recorded</span>
+                        <span className="text-2xl sm:text-3xl font-semibold tabular-nums text-[#1D1D1F] tracking-tight">
+                            {stats.total}
+                        </span>
+                        <span className="text-[11px] text-[#8E8E93]">all-time</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium mt-1">All student submissions</p>
+                    <p className="text-[11px] text-[#8E8E93] mt-1">Course submissions</p>
                 </div>
             </div>
 
             {/* Filter and Search Bar */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-                {/* Status Tabs */}
-                <div className="overflow-x-auto no-scrollbar">
-                    <FluidTabs
-                        value={statusFilter}
-                        onChange={setStatusFilter}
-                        size="xs"
-                        layoutId="faculty-status-filter-tabs"
-                        tabs={[
-                            { id: 'ALL', label: 'All', badge: stats.total },
-                            { id: 'PENDING', label: 'Pending', badge: stats.pending },
-                            { id: 'APPROVED', label: 'Approved', badge: stats.approved },
-                            { id: 'REJECTED', label: 'Rejected', badge: stats.rejected }
-                        ]}
-                    />
-                </div>
+            <div className="bg-white border border-[#E5E5EA] rounded-xl p-3 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col md:flex-row md:items-center justify-between gap-3">
+                {/* Fluid Status Tabs */}
+                <FluidTabs
+                    value={statusFilter}
+                    onChange={(id) => setStatusFilter(id)}
+                    size="sm"
+                    className="bg-[#F5F5F7] border-[#E5E5EA] p-0.5"
+                    tabClassName="px-3 py-1"
+                    activeClassName="font-semibold text-[#1D1D1F]"
+                    inactiveClassName="text-[#6E6E73] hover:text-[#1D1D1F]"
+                    indicatorClassName="absolute inset-0 rounded-full bg-white shadow-2xs border border-[#E5E5EA]"
+                    tabs={[
+                        { id: 'ALL', label: 'All', badge: stats.total },
+                        { id: 'PENDING', label: 'Pending', badge: stats.pending },
+                        { id: 'APPROVED', label: 'Approved', badge: stats.approved },
+                        { id: 'REJECTED', label: 'Rejected', badge: stats.rejected }
+                    ]}
+                />
 
                 {/* Secondary Filters: Subject & Search */}
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                     {/* Subject Filter */}
-                    <div className="relative min-w-[160px] flex-1 sm:flex-none">
+                    <div className="relative min-w-[170px] flex-1 sm:flex-none">
                         <select
                             value={subjectFilter}
                             onChange={(e) => setSubjectFilter(e.target.value)}
-                            className="w-full text-xs bg-slate-50 hover:bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 transition cursor-pointer"
+                            className="w-full text-xs bg-white border border-[#E5E5EA] rounded-lg px-2.5 py-1.5 font-medium text-[#1D1D1F] outline-none focus:border-[#0071E3] transition cursor-pointer pr-7 appearance-none"
                         >
                             <option value="ALL">
                                 {teacherSubjects?.length > 0 ? `My Courses (${availableSubjects.length})` : `All Subjects (${availableSubjects.length})`}
@@ -344,26 +418,27 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                 <option key={sub} value={sub}>{sub}</option>
                             ))}
                             {teacherSubjects?.length > 0 && (
-                                <option value="ALL_DEPT">All Department Requests ({allRequests.length})</option>
+                                <option value="ALL_DEPT">Department-Wide ({allRequests.length})</option>
                             )}
                         </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-[#8E8E93] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
 
                     {/* Search Field */}
-                    <div className="relative min-w-[200px] flex-1 sm:flex-none">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <div className="relative min-w-[210px] flex-1 sm:flex-none">
+                        <Search className="w-3.5 h-3.5 text-[#8E8E93] absolute left-2.5 top-1/2 -translate-y-1/2" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search student or PRN..."
-                            className="w-full text-xs bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg pl-8 pr-7 py-1.5 outline-none focus:ring-1 focus:ring-blue-500 transition"
+                            className="w-full text-xs bg-white border border-[#E5E5EA] rounded-lg pl-8 pr-7 py-1.5 text-[#1D1D1F] placeholder:text-[#8E8E93] outline-none focus:border-[#0071E3] transition"
                         />
                         {searchQuery && (
                             <button
                                 type="button"
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8E8E93] hover:text-[#1D1D1F] p-0.5 cursor-pointer"
                             >
                                 <X className="w-3.5 h-3.5" />
                             </button>
@@ -372,38 +447,44 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                 </div>
             </div>
 
-            {/* Main NC Approval List (Shadcn Light UI) */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            {/* Requests Ledger Table / List */}
+            <div className="bg-white border border-[#E5E5EA] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+                <div className="px-5 py-4 border-b border-[#E5E5EA] flex items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
-                            Student Leave Requests ({filteredRequests.length})
+                        <h2 className="text-sm sm:text-base font-semibold text-[#1D1D1F] leading-tight">
+                            Leave Requests ({filteredRequests.length} across {groupedStudents.length} students)
                         </h2>
-                        <span className="text-[11px] text-slate-500">
-                            Showing student absence records filtered by selected status and course
+                        <span className="text-xs text-[#6E6E73]">
+                            Grouped by student • Expand or collapse to review all absence applications
                         </span>
                     </div>
-                    {filteredRequests.length > 0 && (
-                        <span className="text-[11px] font-medium text-slate-400">
-                            Click 'Review' to approve or reject
-                        </span>
+                    {groupedStudents.length > 0 && (
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={allAreCollapsed ? expandAll : collapseAll}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] transition cursor-pointer"
+                            >
+                                <span>{allAreCollapsed ? 'Expand All' : 'Collapse All'}</span>
+                            </button>
+                        </div>
                     )}
                 </div>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[#E5E5EA]">
                     {loading ? (
-                        <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2.5">
-                            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <div className="py-16 text-center text-xs text-[#6E6E73] flex flex-col items-center justify-center gap-2">
+                            <div className="w-5 h-5 border-2 border-[#0071E3] border-t-transparent rounded-full animate-spin" />
                             <span>Loading leave requests...</span>
                         </div>
-                    ) : filteredRequests.length === 0 ? (
+                    ) : groupedStudents.length === 0 ? (
                         <div className="py-16 text-center px-4 space-y-2">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-slate-400">
-                                <FileCheck className="w-6 h-6" />
+                            <div className="w-10 h-10 rounded-full bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center mx-auto text-[#6E6E73]">
+                                <FileCheck className="w-5 h-5" />
                             </div>
-                            <h4 className="font-bold text-sm text-slate-800">No Leave Requests Found</h4>
-                            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                                No student leave requests match the selected status or search filter.
+                            <h4 className="font-semibold text-sm text-[#1D1D1F]">No Requests Found</h4>
+                            <p className="text-xs text-[#6E6E73] max-w-sm mx-auto">
+                                No leave requests match the selected status or search filter.
                             </p>
                             {(statusFilter !== 'ALL' || subjectFilter !== 'ALL' || searchQuery) && (
                                 <button
@@ -413,15 +494,15 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                         setSubjectFilter('ALL');
                                         setSearchQuery('');
                                     }}
-                                    className="mt-2 px-3 py-1 rounded-lg text-xs font-semibold text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                                    className="mt-2 px-3 py-1 rounded-lg text-xs font-medium text-[#0071E3] hover:bg-[#F5F5F7] border border-[#E5E5EA] transition cursor-pointer"
                                 >
                                     Reset Filters
                                 </button>
                             )}
                         </div>
                     ) : (
-                        filteredRequests.map(req => {
-                            const initials = (req.studentName || 'ST')
+                        groupedStudents.map(group => {
+                            const initials = (group.studentName || 'ST')
                                 .split(' ')
                                 .filter(Boolean)
                                 .slice(0, 2)
@@ -429,137 +510,170 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                 .join('')
                                 .toUpperCase();
 
-                            const isPending = req.status === 'PENDING';
-                            const isApproved = req.status === 'APPROVED';
-                            const isRejected = req.status === 'REJECTED';
+                            const isCollapsed = collapsedStudents[group.key] || false;
 
                             return (
-                                <div
-                                    key={req.id}
-                                    className={cn(
-                                        "p-4 sm:p-5 hover:bg-slate-50/70 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4",
-                                        isPending && "bg-amber-50/15"
-                                    )}
-                                >
-                                    {/* Left: Student identity & absence details */}
-                                    <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200/80 shadow-2xs">
-                                            {initials}
-                                        </div>
-
-                                        <div className="space-y-1.5 min-w-0 flex-1">
-                                            {/* Name, PRN, and Subject Badges */}
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-bold text-sm text-slate-900 leading-tight">
-                                                    {req.studentName}
-                                                </span>
-                                                <span className="text-[10px] font-mono font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200/80">
-                                                    {req.studentPrn}
-                                                </span>
-                                                {req.missedSubjects && req.missedSubjects.length > 0 && (
-                                                    <span className="text-[11px] font-medium bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full border border-blue-200/60">
-                                                        {req.missedSubjects.map(m => m.subjectName).filter(Boolean).join(', ')}
-                                                    </span>
-                                                )}
+                                <div key={group.key} className="border-b border-[#E5E5EA] last:border-b-0">
+                                    {/* Student Group Header Banner */}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleStudentGroup(group.key)}
+                                        className="w-full text-left px-5 py-3.5 bg-[#F9F9FB] hover:bg-[#F2F2F7] transition flex items-center justify-between gap-3 border-b border-[#E5E5EA]/80 cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-8 h-8 rounded-full bg-white border border-[#E5E5EA] text-[#1D1D1F] font-semibold text-xs flex items-center justify-center shrink-0">
+                                                {initials}
                                             </div>
-
-                                            {/* Absent Dates & Reason */}
-                                            <div className="flex items-center gap-2 flex-wrap text-xs text-slate-600">
-                                                <span className="inline-flex items-center gap-1 font-mono text-[11px] bg-slate-50 border border-slate-200/70 px-2 py-0.5 rounded-md text-slate-700">
-                                                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                                                    <span>{(req.absentDates || []).join(', ')}</span>
-                                                </span>
-                                                <span className="text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/70 px-2 py-0.5 rounded-md">
-                                                    {req.reason}
-                                                </span>
-                                                {req.description && (
-                                                    <span className="text-slate-500 italic max-w-md truncate" title={req.description}>
-                                                        "{req.description}"
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="font-semibold text-sm text-[#1D1D1F] tracking-tight truncate">
+                                                        {formatStudentName(group.studentName)}
                                                     </span>
-                                                )}
-                                            </div>
-
-                                            {/* Existing Reviewer Comment */}
-                                            {req.reviewComment && (
-                                                <div className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200/60 p-2 rounded-lg mt-1 flex items-start gap-1.5">
-                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                                                    <span>
-                                                        <strong className="text-slate-700">Faculty Note ({req.reviewedBy || 'Reviewer'}):</strong> "{req.reviewComment}"
+                                                    <span className="font-mono text-[11px] text-[#6E6E73] bg-white px-1.5 py-0.5 rounded border border-[#E5E5EA]">
+                                                        {group.studentPrn}
                                                     </span>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Right: Status badge & Action buttons */}
-                                    <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center flex-wrap sm:flex-nowrap">
-                                        {/* Status Badge */}
-                                        <span className={cn(
-                                            "px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 border",
-                                            isApproved && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                                            isRejected && "bg-rose-50 text-rose-700 border-rose-200",
-                                            isPending && "bg-amber-50 text-amber-700 border-amber-200"
-                                        )}>
-                                            {isPending && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
-                                            {isApproved && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
-                                            {isRejected && <XCircle className="w-3.5 h-3.5 text-rose-600" />}
-                                            <span>{req.status}</span>
-                                        </span>
-
-                                        {/* Proof Document Link */}
-                                        {req.proofFileName ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setDocPreviewUrl(getProofUrl(req));
-                                                    setDocPreviewName(req.proofFileName);
-                                                }}
-                                                className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-2xs"
-                                                title={`View ${req.proofFileName}`}
-                                            >
-                                                <Eye className="w-3.5 h-3.5 text-blue-600" />
-                                                <span>Proof</span>
-                                            </button>
-                                        ) : (
-                                            <span className="text-[11px] text-slate-400 italic px-2">No Doc</span>
-                                        )}
-
-                                        {/* Review Button */}
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setReviewingReq(req);
-                                                setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
-                                                setReviewComment(req.reviewComment || '');
-                                            }}
-                                            className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
-                                        >
-                                            <FileCheck className="w-3.5 h-3.5" />
-                                            <span>Review</span>
-                                        </button>
-
-                                        {/* Quick Action Pills if Pending */}
-                                        {isPending && (
-                                            <div className="hidden sm:flex items-center gap-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleQuickAction(req, 'APPROVED')}
-                                                    title="Quick Approve"
-                                                    className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 border border-emerald-200/60 transition cursor-pointer"
-                                                >
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleQuickAction(req, 'REJECTED')}
-                                                    title="Quick Reject"
-                                                    className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 border border-rose-200/60 transition cursor-pointer"
-                                                >
-                                                    <XCircle className="w-4 h-4" />
-                                                </button>
                                             </div>
-                                        )}
-                                    </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <div className="flex items-center gap-1.5 text-[11px]">
+                                                {group.pendingCount > 0 && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-[#FFF8E6] text-[#B25E00] border border-[#FFE29A] font-medium">
+                                                        {group.pendingCount} pending
+                                                    </span>
+                                                )}
+                                                {group.approvedCount > 0 && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-[#EAF9EE] text-[#1B7F37] border border-[#C6EFD2] font-medium">
+                                                        {group.approvedCount} approved
+                                                    </span>
+                                                )}
+                                                {group.rejectedCount > 0 && (
+                                                    <span className="px-2 py-0.5 rounded-full bg-[#FDF2F2] text-[#D32F2F] border-[#F8C8C8] font-medium">
+                                                        {group.rejectedCount} declined
+                                                    </span>
+                                                )}
+                                                <span className="text-[#8E8E93] text-[11px] hidden sm:inline">
+                                                    ({group.requests.length} {group.requests.length === 1 ? 'request' : 'requests'})
+                                                </span>
+                                            </div>
+                                            <div className="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center text-[#6E6E73]">
+                                                {isCollapsed ? (
+                                                    <ChevronRight className="w-4 h-4" />
+                                                ) : (
+                                                    <ChevronDown className="w-4 h-4" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    {/* Requests List under this student */}
+                                    {!isCollapsed && (
+                                        <div className="divide-y divide-[#E5E5EA]">
+                                            {group.requests.map(req => {
+                                                const isPending = req.status === 'PENDING';
+                                                const isApproved = req.status === 'APPROVED';
+                                                const isRejected = req.status === 'REJECTED';
+                                                const courseName = getCourseDisplay(req.missedSubjects);
+
+                                                return (
+                                                    <div
+                                                        key={req.id}
+                                                        className="px-5 py-3.5 transition-colors bg-white hover:bg-[#FBFBFD] flex flex-col md:flex-row md:items-center justify-between gap-3"
+                                                    >
+                                                        {/* Left / Middle: Reason, Course & Dates */}
+                                                        <div className="space-y-1 min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="font-semibold text-xs text-[#1D1D1F]">
+                                                                    {req.reason}
+                                                                </span>
+                                                                <span className="text-[#D2D2D7]">•</span>
+                                                                <span className="text-xs text-[#0071E3] font-medium">
+                                                                    {courseName}
+                                                                </span>
+                                                                <span className="text-[#D2D2D7]">•</span>
+                                                                <span className="text-[#6E6E73] font-mono text-[11px]">
+                                                                    {formatDateRange(req.absentDates)}
+                                                                </span>
+                                                            </div>
+
+                                                            {req.description && (
+                                                                <p className="text-xs text-[#6E6E73] leading-relaxed line-clamp-2">
+                                                                    "{req.description}"
+                                                                </p>
+                                                            )}
+
+                                                            {req.reviewComment && (
+                                                                <div className="inline-flex items-center gap-1.5 text-[11px] text-[#6E6E73] bg-[#F5F5F7] px-2 py-0.5 rounded border border-[#E5E5EA]">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-[#1B7F37] shrink-0" />
+                                                                    <span>
+                                                                        <strong className="font-medium text-[#1D1D1F]">{req.reviewedBy || 'Faculty'}:</strong> "{req.reviewComment}"
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Right Side: Status Badge, Proof & Action */}
+                                                        <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                                                            <span className={cn(
+                                                                "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border",
+                                                                isApproved && "bg-[#EAF9EE] text-[#1B7F37] border-[#C6EFD2]",
+                                                                isRejected && "bg-[#FDF2F2] text-[#D32F2F] border-[#F8C8C8]",
+                                                                isPending && "bg-[#FFF8E6] text-[#B25E00] border-[#FFE29A]"
+                                                            )}>
+                                                                {isApproved && <CheckCircle2 className="w-3 h-3 text-[#1B7F37]" />}
+                                                                {isRejected && <XCircle className="w-3 h-3 text-[#D32F2F]" />}
+                                                                {isPending && <span className="w-1.5 h-1.5 rounded-full bg-[#FF9F0A]" />}
+                                                                <span>{isApproved ? 'Approved' : isRejected ? 'Declined' : 'Pending'}</span>
+                                                            </span>
+
+                                                            {req.proofFileName && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setDocPreviewUrl(getProofUrl(req));
+                                                                        setDocPreviewName(req.proofFileName);
+                                                                        setDocPreviewError(false);
+                                                                    }}
+                                                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] text-xs font-medium text-[#1D1D1F] transition cursor-pointer"
+                                                                    title={`View ${req.proofFileName}`}
+                                                                >
+                                                                    <FileText className="w-3 h-3 text-[#6E6E73]" />
+                                                                    <span>Proof</span>
+                                                                </button>
+                                                            )}
+
+                                                            {isPending ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setReviewingReq(req);
+                                                                        setReviewDecision('APPROVED');
+                                                                        setReviewComment('');
+                                                                    }}
+                                                                    className="px-2.5 py-1 rounded-md bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium shadow-xs transition cursor-pointer"
+                                                                >
+                                                                    Review
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setReviewingReq(req);
+                                                                        setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
+                                                                        setReviewComment(req.reviewComment || '');
+                                                                    }}
+                                                                    className="px-2 py-1 rounded-md bg-white hover:bg-[#F5F5F7] border border-[#E5E5EA] text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] transition cursor-pointer"
+                                                                >
+                                                                    Update
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })
@@ -567,28 +681,28 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                 </div>
             </div>
 
-            {/* Review Decision Dialog (Shadcn Light Style) */}
+            {/* Review Decision Modal */}
             {reviewingReq && (
                 <div
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150"
                     onClick={() => setReviewingReq(null)}
                 >
                     <div
-                        className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+                        className="bg-white rounded-2xl border border-[#E5E5EA] max-w-lg w-full shadow-xl overflow-hidden animate-in zoom-in-95 duration-150"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <div className="px-5 py-4 border-b border-[#E5E5EA] bg-[#FBFBFD] flex items-center justify-between">
                             <div>
-                                <h3 className="font-bold text-sm text-slate-900">Review Student Leave Request</h3>
-                                <p className="text-[11px] text-slate-500">
-                                    Student: <strong className="text-slate-800">{reviewingReq.studentName}</strong> ({reviewingReq.studentPrn})
+                                <h3 className="font-semibold text-sm text-[#1D1D1F]">Review Leave Request</h3>
+                                <p className="text-[11px] text-[#6E6E73] mt-0.5">
+                                    Student: <strong className="text-[#1D1D1F]">{formatStudentName(reviewingReq.studentName)}</strong> ({reviewingReq.studentPrn})
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setReviewingReq(null)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 cursor-pointer"
+                                className="p-1 rounded-lg text-[#8E8E93] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -596,40 +710,40 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
 
                         {/* Modal Body */}
                         <div className="p-5 space-y-4 text-xs">
-                            {/* Request Info Summary */}
-                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                            {/* Summary Box */}
+                            <div className="bg-[#F5F5F7] p-3 rounded-xl border border-[#E5E5EA] space-y-2">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-slate-500 font-medium">Dates of Absence:</span>
-                                    <span className="font-bold font-mono text-slate-800">
-                                        {(reviewingReq.absentDates || []).join(', ')}
+                                    <span className="text-[#6E6E73]">Dates of Absence:</span>
+                                    <span className="font-semibold font-mono text-[#1D1D1F]">
+                                        {formatDateRange(reviewingReq.absentDates)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-slate-500 font-medium">Reason Category:</span>
-                                    <span className="font-semibold text-slate-800">{reviewingReq.reason}</span>
+                                    <span className="text-[#6E6E73]">Reason:</span>
+                                    <span className="font-medium text-[#1D1D1F]">{reviewingReq.reason}</span>
                                 </div>
                                 {reviewingReq.description && (
                                     <div className="flex justify-between items-start gap-2">
-                                        <span className="text-slate-500 font-medium shrink-0">Student Explanation:</span>
-                                        <span className="italic text-slate-700 text-right">{reviewingReq.description}</span>
+                                        <span className="text-[#6E6E73] shrink-0">Explanation:</span>
+                                        <span className="italic text-[#1D1D1F] text-right">{reviewingReq.description}</span>
                                     </div>
                                 )}
                                 {reviewingReq.missedSubjects && reviewingReq.missedSubjects.length > 0 && (
                                     <div className="flex justify-between items-center">
-                                        <span className="text-slate-500 font-medium">Affected Subject:</span>
-                                        <span className="font-semibold text-blue-700">
-                                            {reviewingReq.missedSubjects.map(m => m.subjectName).filter(Boolean).join(', ')}
+                                        <span className="text-[#6E6E73]">Affected Course:</span>
+                                        <span className="font-medium text-[#0071E3]">
+                                            {getCourseDisplay(reviewingReq.missedSubjects)}
                                         </span>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Proof Document preview button inside modal */}
+                            {/* Proof Document Link */}
                             {reviewingReq.proofFileName && (
-                                <div className="flex items-center justify-between p-2.5 rounded-xl border border-blue-100 bg-blue-50/60">
+                                <div className="flex items-center justify-between p-2.5 rounded-xl border border-[#E5E5EA] bg-white">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                                        <span className="font-semibold text-slate-800 truncate text-[11px]">
+                                        <FileText className="w-4 h-4 text-[#0071E3] shrink-0" />
+                                        <span className="font-medium text-[#1D1D1F] truncate text-[11px]">
                                             {reviewingReq.proofFileName}
                                         </span>
                                     </div>
@@ -638,10 +752,10 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                         onClick={() => {
                                             setDocPreviewUrl(getProofUrl(reviewingReq));
                                             setDocPreviewName(reviewingReq.proofFileName);
+                                            setDocPreviewError(false);
                                         }}
-                                        className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
+                                        className="px-2.5 py-1 rounded-md bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] border border-[#E5E5EA] font-medium text-[11px] flex items-center gap-1 cursor-pointer transition"
                                     >
-                                        <Eye className="w-3.5 h-3.5" />
                                         <span>Preview</span>
                                     </button>
                                 </div>
@@ -649,16 +763,16 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
 
                             {/* Decision Select Buttons */}
                             <div className="space-y-1.5">
-                                <label className="font-bold text-slate-700">Decision</label>
+                                <label className="font-semibold text-[#1D1D1F]">Decision</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         type="button"
                                         onClick={() => setReviewDecision('APPROVED')}
                                         className={cn(
-                                            "p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border",
+                                            "py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer border",
                                             reviewDecision === 'APPROVED'
-                                                ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-                                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                                ? "bg-[#1B7F37] text-white border-[#1B7F37] shadow-xs"
+                                                : "bg-white border-[#E5E5EA] text-[#1D1D1F] hover:bg-[#F5F5F7]"
                                         )}
                                     >
                                         <CheckCircle2 className="w-4 h-4" />
@@ -668,10 +782,10 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                         type="button"
                                         onClick={() => setReviewDecision('REJECTED')}
                                         className={cn(
-                                            "p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border",
+                                            "py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition cursor-pointer border",
                                             reviewDecision === 'REJECTED'
-                                                ? "bg-rose-600 text-white border-rose-600 shadow-sm"
-                                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                                ? "bg-[#D32F2F] text-white border-[#D32F2F] shadow-xs"
+                                                : "bg-white border-[#E5E5EA] text-[#1D1D1F] hover:bg-[#F5F5F7]"
                                         )}
                                     >
                                         <XCircle className="w-4 h-4" />
@@ -682,14 +796,14 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
 
                             {/* Presets and Custom Comment */}
                             <div className="space-y-1.5">
-                                <label className="font-bold text-slate-700">Faculty Remarks / Feedback</label>
+                                <label className="font-semibold text-[#1D1D1F]">Remarks / Feedback for Student</label>
                                 <div className="flex flex-wrap gap-1.5 pb-1">
                                     {QUICK_COMMENTS.map((preset, idx) => (
                                         <button
                                             key={idx}
                                             type="button"
                                             onClick={() => setReviewComment(preset)}
-                                            className="text-[10px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200/60 transition cursor-pointer"
+                                            className="text-[10px] font-medium bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#6E6E73] hover:text-[#1D1D1F] px-2 py-0.5 rounded-md border border-[#E5E5EA] transition cursor-pointer"
                                         >
                                             {preset}
                                         </button>
@@ -698,18 +812,18 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                 <textarea
                                     value={reviewComment}
                                     onChange={(e) => setReviewComment(e.target.value)}
-                                    placeholder="Add approval justification, condition, or rejection reason..."
+                                    placeholder="Add feedback, conditions, or reason..."
                                     rows={2}
-                                    className="w-full text-xs bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-1 focus:ring-blue-500 transition"
+                                    className="w-full text-xs bg-white border border-[#E5E5EA] rounded-lg p-2.5 text-[#1D1D1F] placeholder:text-[#8E8E93] outline-none focus:border-[#0071E3] transition"
                                 />
                             </div>
 
                             {/* Actions */}
-                            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                            <div className="flex justify-end gap-2 pt-2 border-t border-[#E5E5EA]">
                                 <button
                                     type="button"
                                     onClick={() => setReviewingReq(null)}
-                                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                                    className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] transition cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -717,9 +831,9 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                     type="button"
                                     onClick={handleTeacherReview}
                                     disabled={isSubmittingReview}
-                                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition disabled:opacity-50"
+                                    className="px-4 py-1.5 rounded-lg bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium shadow-xs cursor-pointer transition disabled:opacity-50"
                                 >
-                                    {isSubmittingReview ? 'Submitting...' : 'Confirm Decision'}
+                                    {isSubmittingReview ? 'Saving...' : 'Confirm Decision'}
                                 </button>
                             </div>
                         </div>
@@ -730,17 +844,17 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
             {/* Document Preview Modal */}
             {docPreviewUrl && (
                 <div
-                    className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+                    className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150"
                     onClick={() => setDocPreviewUrl(null)}
                 >
                     <div
-                        className="bg-white rounded-2xl border border-slate-200 max-w-3xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]"
+                        className="bg-white rounded-2xl border border-[#E5E5EA] max-w-3xl w-full shadow-xl relative overflow-hidden flex flex-col max-h-[85vh]"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50">
+                        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E5E5EA] bg-[#FBFBFD]">
                             <div className="flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-blue-600" />
-                                <span className="font-bold text-xs sm:text-sm text-slate-900">{docPreviewName}</span>
+                                <FileText className="w-4 h-4 text-[#0071E3]" />
+                                <span className="font-semibold text-xs sm:text-sm text-[#1D1D1F]">{docPreviewName}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <a
@@ -748,7 +862,7 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                     download={docPreviewName}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200/60 transition cursor-pointer"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] text-xs font-medium border border-[#E5E5EA] transition cursor-pointer"
                                 >
                                     <Download className="w-3.5 h-3.5" />
                                     <span>Download</span>
@@ -756,34 +870,32 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
                                 <button
                                     type="button"
                                     onClick={() => setDocPreviewUrl(null)}
-                                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                                    className="p-1 rounded-lg text-[#8E8E93] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="p-4 flex-1 overflow-auto bg-slate-50 flex items-center justify-center min-h-[300px]">
-                            {docPreviewUrl.endsWith('.pdf') ? (
+                        <div className="p-4 flex-1 overflow-auto bg-[#F5F5F7] flex items-center justify-center min-h-[320px]">
+                            {docPreviewUrl.toLowerCase().endsWith('.pdf') ? (
                                 <iframe
                                     src={docPreviewUrl}
                                     title="PDF Document Preview"
-                                    className="w-full h-[500px] border border-slate-200 rounded-lg bg-white"
+                                    className="w-full h-[520px] border border-[#E5E5EA] rounded-xl bg-white"
                                 />
+                            ) : docPreviewError ? (
+                                <div className="p-6 text-center text-xs text-[#6E6E73] space-y-2">
+                                    <AlertCircle className="w-6 h-6 text-[#8E8E93] mx-auto" />
+                                    <p className="font-semibold text-[#1D1D1F]">Preview not available inline</p>
+                                    <p>Please download the document to inspect it locally.</p>
+                                </div>
                             ) : (
                                 <img
                                     src={docPreviewUrl}
                                     alt="Student absence proof document"
-                                    className="max-h-[500px] max-w-full rounded-lg object-contain shadow-xs border border-slate-200"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.parentNode.innerHTML += `
-                                            <div class="p-6 text-center text-xs text-slate-500">
-                                                <p class="font-bold text-slate-700 mb-1">Preview not directly displayable in browser</p>
-                                                <p>Click Download above to view the file locally.</p>
-                                            </div>
-                                        `;
-                                    }}
+                                    className="max-h-[520px] max-w-full rounded-xl object-contain border border-[#E5E5EA] bg-white shadow-xs"
+                                    onError={() => setDocPreviewError(true)}
                                 />
                             )}
                         </div>

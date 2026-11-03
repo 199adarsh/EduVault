@@ -6,16 +6,16 @@ import {
     RefreshCw,
     CheckCircle2,
     AlertCircle,
-    BookOpen,
-    Layers,
     FileText,
     ChevronDown,
     ChevronUp,
     Lock,
     User,
-    Sparkles,
-    Check
+    Check,
+    Minus,
+    Maximize2
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
@@ -30,6 +30,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
     const [showUnmatched, setShowUnmatched] = useState(false);
     const [discoveredCourses, setDiscoveredCourses] = useState(null);
     const [activeTab, setActiveTab] = useState('sync'); // 'sync' | 'preview'
+    const [isMinimized, setIsMinimized] = useState(false);
 
     const pollingRef = useRef(null);
     const logContainerRef = useRef(null);
@@ -46,16 +47,23 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
         }
     }, [progress?.logs]);
 
+    // If modal is opened fresh, reset minimize state
+    useEffect(() => {
+        if (isOpen && !isLoading && !syncResult) {
+            setIsMinimized(false);
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const handleDiscover = async () => {
         if (!username || !password) {
-            toast.error('Please enter both LMS username and password.');
+            toast.error('Please enter both Moodle username and password.');
             return;
         }
 
         setIsLoading(true);
-        const toastId = toast.loading('Connecting to LMS & discovering courses...');
+        const toastId = toast.loading('Connecting to Moodle portal & discovering courses...');
         const userRole = localStorage.getItem('eduvault_user_role') || 'teacher';
         try {
             const res = await axios.post(`${API_BASE}/lms/discover`, {
@@ -66,10 +74,10 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
             });
             setDiscoveredCourses(res.data);
             setActiveTab('preview');
-            toast.success(`Discovered ${res.data.length} accessible courses!`, { id: toastId });
+            toast.success(`Discovered ${res.data.length} accessible courses`, { id: toastId });
         } catch (err) {
-            console.error('LMS Discovery failed:', err);
-            const msg = err.response?.data?.error || err.message || 'Failed to connect to LMS portal.';
+            console.error('Moodle Discovery failed:', err);
+            const msg = err.response?.data?.error || err.message || 'Failed to connect to Moodle portal.';
             toast.error(msg, { id: toastId });
         } finally {
             setIsLoading(false);
@@ -78,7 +86,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
     const handleSync = async () => {
         if (!username || !password) {
-            toast.error('Please enter both LMS username and password.');
+            toast.error('Please enter both Moodle username and password.');
             return;
         }
 
@@ -86,12 +94,12 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
         setSyncResult(null);
         setProgress({
             status: 'AUTHENTICATING',
-            currentStage: 'Connecting to DKTE Moodle portal...',
+            currentStage: 'Connecting to Moodle portal...',
             percent: 5,
             materialsFound: 0,
             importedCount: 0,
             skippedCount: 0,
-            logs: ['[' + new Date().toLocaleTimeString() + '] Sync started for ' + username.trim()]
+            logs: [`[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}] Connecting to portal as ${username.trim()}`]
         });
 
         if (pollingRef.current) clearInterval(pollingRef.current);
@@ -102,7 +110,7 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                     setProgress(progRes.data);
                 }
             } catch (ignored) { }
-        }, 350);
+        }, 400);
 
         try {
             const userRole = localStorage.getItem('eduvault_user_role') || 'teacher';
@@ -117,14 +125,14 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
             });
             setSyncResult(res.data);
             toast.success(
-                `Sync Completed! Imported ${res.data.importedCount} materials (${res.data.skippedDuplicatesCount} skipped duplicates).`
+                `Sync complete: ${res.data.importedCount} new notes imported (${res.data.skippedDuplicatesCount} duplicates skipped).`
             );
             if (onSyncComplete) {
                 onSyncComplete();
             }
         } catch (err) {
-            console.error('LMS Sync failed:', err);
-            const msg = err.response?.data?.error || err.message || 'Failed to synchronize with LMS.';
+            console.error('Moodle Sync failed:', err);
+            const msg = err.response?.data?.error || err.message || 'Failed to synchronize with Moodle.';
             toast.error(msg);
         } finally {
             if (pollingRef.current) clearInterval(pollingRef.current);
@@ -133,40 +141,121 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
     };
 
     const resetState = () => {
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        setIsLoading(false);
         setSyncResult(null);
         setDiscoveredCourses(null);
         setActiveTab('sync');
+        setIsMinimized(false);
         onClose();
     };
 
+    // Minimized Floating Widget
+    if (isMinimized) {
+        return (
+            <div
+                className="fixed bottom-6 right-6 z-[120] bg-white border border-[#E5E5EA] rounded-2xl shadow-xl p-3.5 flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-200 text-xs text-[#1D1D1F] max-w-sm"
+                role="region"
+                aria-label="Background Moodle Sync"
+            >
+                <div className="w-8 h-8 rounded-full bg-[#0071E3]/8 text-[#0071E3] flex items-center justify-center shrink-0">
+                    <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-[#1D1D1F] truncate">
+                            {isLoading ? 'Syncing Moodle...' : syncResult ? 'Sync Completed' : 'Moodle Sync'}
+                        </span>
+                        {isLoading && (
+                            <span className="font-mono text-[10px] text-[#0071E3] font-semibold tabular-nums">
+                                {progress?.percent || 5}%
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-[11px] text-[#6E6E73] truncate mt-0.5">
+                        {isLoading
+                            ? (progress?.currentStage || 'Processing courses...')
+                            : syncResult
+                                ? `${syncResult.importedCount} materials imported`
+                                : 'Ready to resume'}
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                    <button
+                        type="button"
+                        onClick={() => setIsMinimized(false)}
+                        className="p-1.5 rounded-lg text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer"
+                        title="Expand window"
+                    >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    {!isLoading && (
+                        <button
+                            type="button"
+                            onClick={resetState}
+                            className="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer"
+                            title="Dismiss"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-3xl max-h-[92vh] bg-zinc-950 border border-zinc-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden text-zinc-100">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+            <div
+                className="relative w-full max-w-2xl max-h-[90vh] bg-white border border-[#E5E5EA] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[#1D1D1F] animate-in zoom-in-95 duration-150"
+                onClick={e => e.stopPropagation()}
+            >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800/80 bg-zinc-900/40">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E5EA] bg-[#FBFBFD]">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                        <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center text-[#1D1D1F] shrink-0">
+                            <RefreshCw className={cn("w-4 h-4 text-[#0071E3]", isLoading && "animate-spin")} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-base font-bold tracking-tight text-white uppercase">Sync Moodle Notes</h2>
-                                <span className="text-[9px] font-black tracking-widest bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full uppercase">Moodle 4.x</span>
+                                <h2 className="text-sm sm:text-base font-semibold text-[#1D1D1F] tracking-tight">
+                                    Sync Moodle Notes
+                                </h2>
+                                <span className="text-[10px] font-medium text-[#0071E3] bg-[#0071E3]/8 px-2 py-0.2 rounded-full border border-[#0071E3]/20">
+                                    Portal Integration
+                                </span>
                             </div>
-                            <p className="text-xs text-zinc-400">Download course notes and slides directly from Moodle</p>
+                            <p className="text-xs text-[#6E6E73] mt-0.5">
+                                Import syllabus modules, slides and question banks directly from institutional LMS
+                            </p>
                         </div>
                     </div>
-                    <button
-                        onClick={resetState}
-                        disabled={isLoading}
-                        className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/50 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            onClick={() => setIsMinimized(true)}
+                            className="p-1.5 rounded-lg text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer"
+                            title="Minimize to background"
+                        >
+                            <Minus className="w-4 h-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={resetState}
+                            disabled={isLoading}
+                            className="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer disabled:opacity-40"
+                            title="Close"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b border-zinc-800/80 px-6 py-3 bg-zinc-900/20">
+                <div className="border-b border-[#E5E5EA] px-6 py-2.5 bg-white">
                     <FluidTabs
                         value={activeTab}
                         onChange={(tabId) => {
@@ -177,13 +266,13 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                             }
                         }}
                         size="xs"
-                        layoutId="lms-sync-modal-tabs"
-                        className="bg-zinc-900 border-zinc-800"
-                        activeClassName="font-bold text-white"
-                        inactiveClassName="font-medium text-zinc-400 hover:text-zinc-200"
-                        indicatorClassName="absolute inset-0 rounded-full border border-zinc-700/80 bg-zinc-800 shadow-md"
+                        layoutId="lms-sync-fluid-tabs"
+                        className="bg-[#F5F5F7] border-[#E5E5EA]"
+                        activeClassName="font-semibold text-[#1D1D1F]"
+                        inactiveClassName="font-medium text-[#6E6E73] hover:text-[#1D1D1F]"
+                        indicatorClassName="absolute inset-0 rounded-full border border-[#E5E5EA] bg-white shadow-xs"
                         tabs={[
-                            { id: 'sync', label: 'Sync Options' },
+                            { id: 'sync', label: 'Sync Setup' },
                             {
                                 id: 'preview',
                                 label: 'Course Discovery',
@@ -193,160 +282,177 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                     />
                 </div>
 
-                {/* Body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Body Content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-5">
                     {activeTab === 'sync' && (
                         <>
                             {/* Credentials Form */}
-                            <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-xl p-5 space-y-4">
-                                <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                                    <Lock className="w-3.5 h-3.5 text-blue-400" /> Authorized LMS Credentials
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">LMS Username / PRN</label>
+                            <div className="bg-[#FBFBFD] border border-[#E5E5EA] rounded-xl p-4 sm:p-5 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                        <Lock className="w-3.5 h-3.5 text-[#0071E3]" />
+                                        <span>Authorized Moodle Credentials</span>
+                                    </h3>
+                                    <span className="text-[11px] text-[#8E8E93]">Encrypted session transit</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-[#6E6E73]">Username / PRN</label>
                                         <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8E8E93]" />
                                             <input
                                                 type="text"
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
                                                 disabled={isLoading}
                                                 placeholder="e.g. 24uad022"
-                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50"
+                                                className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 pl-9 pr-3 text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">LMS Password</label>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-[#6E6E73]">Moodle Password</label>
                                         <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8E8E93]" />
                                             <input
                                                 type="password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 disabled={isLoading}
-                                                placeholder="Enter password"
-                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50"
+                                                placeholder="••••••••"
+                                                className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 pl-9 pr-3 text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Sync Mode Selection */}
-                                <div className="pt-3 border-t border-zinc-800/50">
-                                    <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-2">Scope of Synchronization</label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Scope of Synchronization */}
+                                <div className="pt-2 border-t border-[#E5E5EA]/70 space-y-2">
+                                    <label className="text-xs font-medium text-[#6E6E73] block">
+                                        Scope of Synchronization
+                                    </label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                         <div
                                             onClick={() => !isLoading && setSyncMode('all')}
-                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${syncMode === 'all'
-                                                    ? 'border-blue-500/60 bg-blue-500/10 text-white'
-                                                    : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700'
-                                                }`}
+                                            className={cn(
+                                                "p-3 rounded-lg border cursor-pointer transition text-left",
+                                                syncMode === 'all'
+                                                    ? "border-[#0071E3] bg-[#0071E3]/5 text-[#1D1D1F]"
+                                                    : "border-[#E5E5EA] bg-white text-[#6E6E73] hover:border-[#D2D2D7]"
+                                            )}
                                         >
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold uppercase tracking-wider">Sync All Courses</span>
-                                                {syncMode === 'all' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                                                <span className="text-xs font-semibold text-[#1D1D1F]">All Enrolled Courses</span>
+                                                {syncMode === 'all' && <Check className="w-3.5 h-3.5 text-[#0071E3]" />}
                                             </div>
-                                            <p className="text-[11px] text-zinc-500 leading-tight">
-                                                Scrape all accessible courses matching existing Campusaxis subjects.
+                                            <p className="text-[11px] text-[#6E6E73] leading-snug">
+                                                Scans all semester subjects and downloads verified notes to EduVault.
                                             </p>
                                         </div>
 
                                         <div
                                             onClick={() => !isLoading && setSyncMode('test')}
-                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${syncMode === 'test'
-                                                    ? 'border-blue-500/60 bg-blue-500/10 text-white'
-                                                    : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700'
-                                                }`}
+                                            className={cn(
+                                                "p-3 rounded-lg border cursor-pointer transition text-left",
+                                                syncMode === 'test'
+                                                    ? "border-[#0071E3] bg-[#0071E3]/5 text-[#1D1D1F]"
+                                                    : "border-[#E5E5EA] bg-white text-[#6E6E73] hover:border-[#D2D2D7]"
+                                            )}
                                         >
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold uppercase tracking-wider">Test Sync (1 Course)</span>
-                                                {syncMode === 'test' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                                                <span className="text-xs font-semibold text-[#1D1D1F]">Single Course Test</span>
+                                                {syncMode === 'test' && <Check className="w-3.5 h-3.5 text-[#0071E3]" />}
                                             </div>
-                                            <p className="text-[11px] text-zinc-500 leading-tight">
-                                                Download notes for 1 subject first to test the connection.
+                                            <p className="text-[11px] text-[#6E6E73] leading-snug">
+                                                Tests connection and imports notes from 1 course to verify pipeline.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Live Ingestion HUD */}
+                            {/* Live Ingestion Progress Card */}
                             {isLoading && (
-                                <div className="bg-zinc-900/60 border border-blue-500/30 rounded-xl p-5 space-y-4 animate-in fade-in duration-300 shadow-xl shadow-blue-950/20">
+                                <div className="bg-white border border-[#E5E5EA] rounded-xl p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
-                                            <span className="text-xs font-bold text-white uppercase tracking-wider">
-                                                {progress?.status || 'DOWNLOADING MOODLE NOTES'}
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-[#0071E3] animate-pulse" />
+                                            <span className="text-xs font-semibold text-[#1D1D1F]">
+                                                {progress?.status || 'Downloading Moodle Materials...'}
                                             </span>
                                         </div>
-                                        <span className="text-xs font-mono font-bold text-blue-400">
+                                        <span className="text-xs font-mono font-semibold text-[#0071E3] tabular-nums">
                                             {progress?.percent || 5}%
                                         </span>
                                     </div>
 
-                                    {/* Animated Progress Bar */}
-                                    <div className="w-full bg-zinc-950 rounded-full h-2.5 overflow-hidden border border-zinc-800">
+                                    {/* Minimal Progress Bar */}
+                                    <div className="w-full bg-[#F5F5F7] rounded-full h-1.5 overflow-hidden border border-[#E5E5EA]">
                                         <div
-                                            className="bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-300 ease-out"
+                                            className="bg-[#0071E3] h-full rounded-full transition-all duration-300 ease-out"
                                             style={{ width: `${Math.max(5, progress?.percent || 5)}%` }}
                                         />
                                     </div>
 
-                                    {/* Active Course & Action */}
-                                    <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-lg p-3 text-xs space-y-1.5">
-                                        <div className="flex items-center justify-between text-zinc-400 text-[11px]">
-                                            <span className="font-semibold text-zinc-300">Active Stage:</span>
-                                            <span className="font-mono text-blue-400">
+                                    {/* Active Stage Details */}
+                                    <div className="bg-[#FBFBFD] border border-[#E5E5EA] rounded-lg p-3 text-xs space-y-1">
+                                        <div className="flex items-center justify-between text-[11px] text-[#6E6E73]">
+                                            <span>Current Stage</span>
+                                            <span className="font-mono text-[#1D1D1F]">
                                                 {progress?.currentCourseIndex && progress?.totalCourses
                                                     ? `Course ${progress.currentCourseIndex} of ${progress.totalCourses}`
-                                                    : 'Initializing'}
+                                                    : 'Connecting'}
                                             </span>
                                         </div>
-                                        <p className="text-white font-medium text-xs truncate">
-                                            {progress?.currentStage || 'Uploding LMS materials...'}
+                                        <p className="font-medium text-[#1D1D1F] truncate text-xs">
+                                            {progress?.currentStage || 'Uploading Moodle documents...'}
                                         </p>
                                         {progress?.currentMaterial && (
-                                            <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-400 truncate border-t border-zinc-800/50">
-                                                <FileText className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                                                <span className="truncate text-zinc-300 font-mono">{progress.currentMaterial}</span>
+                                            <div className="flex items-center gap-2 pt-1 text-[11px] text-[#6E6E73] truncate border-t border-[#E5E5EA]/50">
+                                                <FileText className="w-3 h-3 text-[#0071E3] shrink-0" />
+                                                <span className="truncate font-mono">{progress.currentMaterial}</span>
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Counters HUD */}
-                                    <div className="grid grid-cols-3 gap-2.5 pt-1">
-                                        <div className="bg-zinc-950 border border-zinc-800/60 rounded-lg p-2.5 text-center">
-                                            <span className="text-[10px] uppercase font-bold text-zinc-500 block">Materials Found</span>
-                                            <span className="text-sm font-bold text-white">{progress?.materialsFound || 0}</span>
+                                    {/* Counts Row */}
+                                    <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                                        <div className="bg-[#F5F5F7] rounded-lg p-2 border border-[#E5E5EA]">
+                                            <span className="text-[10px] text-[#6E6E73] block">Discovered</span>
+                                            <span className="text-sm font-semibold text-[#1D1D1F] tabular-nums">
+                                                {progress?.materialsFound || 0}
+                                            </span>
                                         </div>
-                                        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-2.5 text-center">
-                                            <span className="text-[10px] uppercase font-bold text-emerald-400 block">Uploaded to B2</span>
-                                            <span className="text-sm font-bold text-emerald-400">{progress?.importedCount || 0}</span>
+                                        <div className="bg-[#EAF9EE] rounded-lg p-2 border border-[#C6EFD2]">
+                                            <span className="text-[10px] text-[#1B7F37] block">Imported</span>
+                                            <span className="text-sm font-semibold text-[#1B7F37] tabular-nums">
+                                                {progress?.importedCount || 0}
+                                            </span>
                                         </div>
-                                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5 text-center">
-                                            <span className="text-[10px] uppercase font-bold text-amber-400 block">Duplicates Skipped</span>
-                                            <span className="text-sm font-bold text-amber-400">{progress?.skippedCount || 0}</span>
+                                        <div className="bg-[#FFF8E6] rounded-lg p-2 border border-[#FFE29A]">
+                                            <span className="text-[10px] text-[#B25E00] block">Duplicates</span>
+                                            <span className="text-sm font-semibold text-[#B25E00] tabular-nums">
+                                                {progress?.skippedCount || 0}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    {/* Live Terminal Feed */}
+                                    {/* Activity Log Feed */}
                                     {progress?.logs && progress.logs.length > 0 && (
-                                        <div className="space-y-1 pt-1">
-                                            <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                                                <span>Live Activity Feed</span>
-                                                <span className="font-mono text-[9px] text-zinc-600">Activity Log</span>
-                                            </div>
+                                        <div className="space-y-1.5 pt-1">
+                                            <span className="text-[11px] font-medium text-[#6E6E73] block">Activity Log</span>
                                             <div
                                                 ref={logContainerRef}
-                                                className="bg-black/90 border border-zinc-800 rounded-lg p-3 font-mono text-[11px] text-zinc-300 max-h-36 overflow-y-auto space-y-1"
+                                                className="bg-[#F5F5F7] border border-[#E5E5EA] rounded-lg p-2.5 font-mono text-[11px] text-[#1D1D1F] max-h-28 overflow-y-auto space-y-1"
                                             >
                                                 {progress.logs.map((log, idx) => (
-                                                    <div key={idx} className="leading-tight flex items-start gap-1.5">
-                                                        <span className="text-blue-500 font-bold select-none">&gt;</span>
-                                                        <span className={log.includes('Saved to B2') || log.includes('Complete') ? 'text-emerald-400 font-semibold' : log.includes('duplicate') ? 'text-amber-400' : 'text-zinc-300'}>
+                                                    <div key={idx} className="leading-snug flex items-start gap-1.5">
+                                                        <span className="text-[#8E8E93] select-none">·</span>
+                                                        <span className={cn(
+                                                            log.includes('Saved') || log.includes('Complete') ? 'text-[#1B7F37]' :
+                                                            log.includes('duplicate') ? 'text-[#B25E00]' : 'text-[#6E6E73]'
+                                                        )}>
                                                             {log}
                                                         </span>
                                                     </div>
@@ -354,84 +460,106 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* Minimize prompt */}
+                                    <div className="pt-1 text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsMinimized(true)}
+                                            className="text-xs font-medium text-[#0071E3] hover:underline cursor-pointer"
+                                        >
+                                            Continue in background →
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Results Display */}
+                            {/* Completed Results Summary */}
                             {syncResult && (
-                                <div className="space-y-4 animate-in fade-in duration-300">
+                                <div className="space-y-4 animate-in fade-in duration-200">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Sync Summary
+                                        <h3 className="text-xs font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-[#34C759]" />
+                                            <span>Synchronization Summary</span>
                                         </h3>
-                                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Live Session Data</span>
+                                        <span className="text-[11px] text-[#6E6E73]">Completed Session</span>
                                     </div>
 
-                                    {/* Metrics Grid */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        <div className="p-3 bg-zinc-900/40 border border-zinc-800/80 rounded-xl">
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Discovered</p>
-                                            <p className="text-xl font-bold text-white mt-1">{syncResult.totalDiscoveredCourses}</p>
-                                            <p className="text-[9px] text-zinc-500 mt-0.5">Total Portal Courses</p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                                        <div className="p-3 bg-[#F5F5F7] border border-[#E5E5EA] rounded-xl">
+                                            <p className="text-[11px] text-[#6E6E73]">Discovered</p>
+                                            <p className="text-lg font-semibold text-[#1D1D1F] mt-0.5 tabular-nums">
+                                                {syncResult.totalDiscoveredCourses}
+                                            </p>
+                                            <p className="text-[10px] text-[#8E8E93]">Courses</p>
                                         </div>
-                                        <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-xl">
-                                            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Matched</p>
-                                            <p className="text-xl font-bold text-blue-400 mt-1">{syncResult.matchedCoursesCount}</p>
-                                            <p className="text-[9px] text-blue-500/70 mt-0.5">Campusaxis Subjects</p>
+                                        <div className="p-3 bg-white border border-[#E5E5EA] rounded-xl">
+                                            <p className="text-[11px] text-[#6E6E73]">Matched</p>
+                                            <p className="text-lg font-semibold text-[#0071E3] mt-0.5 tabular-nums">
+                                                {syncResult.matchedCoursesCount}
+                                            </p>
+                                            <p className="text-[10px] text-[#8E8E93]">Subjects</p>
                                         </div>
-                                        <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
-                                            <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Imported</p>
-                                            <p className="text-xl font-bold text-emerald-400 mt-1">{syncResult.importedCount}</p>
-                                            <p className="text-[9px] text-emerald-500/70 mt-0.5">New Materials Saved</p>
+                                        <div className="p-3 bg-[#EAF9EE] border border-[#C6EFD2] rounded-xl">
+                                            <p className="text-[11px] text-[#1B7F37]">Imported</p>
+                                            <p className="text-lg font-semibold text-[#1B7F37] mt-0.5 tabular-nums">
+                                                {syncResult.importedCount}
+                                            </p>
+                                            <p className="text-[10px] text-[#1B7F37]/80">New Notes</p>
                                         </div>
-                                        <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-                                            <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Duplicates Skipped</p>
-                                            <p className="text-xl font-bold text-amber-400 mt-1">{syncResult.skippedDuplicatesCount}</p>
-                                            <p className="text-[9px] text-amber-500/70 mt-0.5">Idempotent Guards</p>
+                                        <div className="p-3 bg-[#FFF8E6] border border-[#FFE29A] rounded-xl">
+                                            <p className="text-[11px] text-[#B25E00]">Duplicates</p>
+                                            <p className="text-lg font-semibold text-[#B25E00] mt-0.5 tabular-nums">
+                                                {syncResult.skippedDuplicatesCount}
+                                            </p>
+                                            <p className="text-[10px] text-[#B25E00]/80">Skipped</p>
                                         </div>
                                     </div>
 
-                                    {/* Course Breakdown */}
-                                    <div className="bg-zinc-900/20 border border-zinc-800/60 rounded-xl divide-y divide-zinc-800/40 overflow-hidden">
-                                        <div className="px-4 py-2.5 bg-zinc-900/40 flex items-center justify-between text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                                    {/* Processed Courses List */}
+                                    <div className="bg-white border border-[#E5E5EA] rounded-xl divide-y divide-[#E5E5EA] overflow-hidden">
+                                        <div className="px-4 py-2.5 bg-[#FBFBFD] flex items-center justify-between text-xs font-medium text-[#6E6E73]">
                                             <span>Processed Courses</span>
-                                            <span>Status</span>
+                                            <span>Outcome</span>
                                         </div>
                                         {syncResult.courses?.filter(c => c.matched).map((c, i) => (
-                                            <div key={i} className="px-4 py-3 flex items-center justify-between gap-4">
-                                                <div>
+                                            <div key={i} className="px-4 py-3 flex items-center justify-between gap-4 text-xs">
+                                                <div className="min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold text-white">{c.subjectName || c.courseName}</span>
-                                                        <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-1.5 py-0.2 rounded">
+                                                        <span className="font-semibold text-[#1D1D1F] truncate">{c.subjectName || c.courseName}</span>
+                                                        <span className="text-[10px] font-mono text-[#6E6E73] bg-[#F5F5F7] px-1.5 py-0.2 rounded border border-[#E5E5EA]">
                                                             {c.courseCode}
                                                         </span>
                                                     </div>
-                                                    <p className="text-[10px] text-zinc-400 mt-0.5">
-                                                        Found: {c.materialsFound} &bull; Imported: <span className="text-emerald-400 font-bold">{c.importedCount}</span> &bull; Skipped: {c.skippedCount}
+                                                    <p className="text-[11px] text-[#6E6E73] mt-0.5">
+                                                        Found: {c.materialsFound} · Imported: <span className="font-medium text-[#1B7F37]">{c.importedCount}</span> · Skipped: {c.skippedCount}
                                                     </p>
                                                 </div>
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${c.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                                    }`}>
+                                                <span className={cn(
+                                                    "text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0",
+                                                    c.status === 'SUCCESS' ? "bg-[#EAF9EE] text-[#1B7F37] border-[#C6EFD2]" : "bg-[#FDF2F2] text-[#D32F2F] border-[#F8C8C8]"
+                                                )}>
                                                     {c.status}
                                                 </span>
                                             </div>
                                         ))}
                                     </div>
 
-                                    {/* Unmatched Courses Section */}
+                                    {/* Unmatched Courses Collapsible */}
                                     {syncResult.unmatchedCourses?.length > 0 && (
-                                        <div className="border border-zinc-800/60 rounded-xl overflow-hidden">
+                                        <div className="border border-[#E5E5EA] rounded-xl overflow-hidden text-xs">
                                             <button
+                                                type="button"
                                                 onClick={() => setShowUnmatched(!showUnmatched)}
-                                                className="w-full px-4 py-2.5 bg-zinc-900/40 flex items-center justify-between text-[11px] font-bold text-zinc-400 uppercase tracking-wider hover:bg-zinc-900/60 transition-colors"
+                                                className="w-full px-4 py-2.5 bg-[#FBFBFD] flex items-center justify-between text-[#6E6E73] hover:text-[#1D1D1F] transition cursor-pointer"
                                             >
                                                 <span>Unmatched Courses ({syncResult.unmatchedCourses.length})</span>
-                                                {showUnmatched ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                                {showUnmatched ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                             </button>
                                             {showUnmatched && (
-                                                <div className="p-3 bg-zinc-950 max-h-40 overflow-y-auto space-y-1 text-xs text-zinc-500 font-mono divide-y divide-zinc-900">
+                                                <div className="p-3 bg-white max-h-36 overflow-y-auto space-y-1 font-mono text-[11px] text-[#6E6E73] divide-y divide-[#E5E5EA]/60">
                                                     {syncResult.unmatchedCourses.map((uc, i) => (
-                                                        <p key={i} className="py-1 text-[11px] text-zinc-400">{uc}</p>
+                                                        <p key={i} className="py-1">{uc}</p>
                                                     ))}
                                                 </div>
                                             )}
@@ -444,42 +572,44 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
                     {/* Preview / Discovery Tab */}
                     {activeTab === 'preview' && (
-                        <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="space-y-4 animate-in fade-in duration-200">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                                    Discovered Portal Courses ({discoveredCourses?.length || 0})
+                                <h3 className="text-xs font-semibold text-[#1D1D1F]">
+                                    Discovered Courses ({discoveredCourses?.length || 0})
                                 </h3>
                                 <button
+                                    type="button"
                                     onClick={handleDiscover}
                                     disabled={isLoading}
-                                    className="text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest flex items-center gap-1"
+                                    className="text-xs font-medium text-[#0071E3] hover:text-[#005BB5] flex items-center gap-1 cursor-pointer disabled:opacity-50"
                                 >
-                                    <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} /> Refresh
+                                    <RefreshCw className={cn("w-3 h-3", isLoading && "animate-spin")} />
+                                    <span>Refresh Discovery</span>
                                 </button>
                             </div>
 
-                            <div className="bg-zinc-900/20 border border-zinc-800/60 rounded-xl divide-y divide-zinc-800/40 max-h-[380px] overflow-y-auto">
+                            <div className="bg-white border border-[#E5E5EA] rounded-xl divide-y divide-[#E5E5EA] max-h-[380px] overflow-y-auto text-xs">
                                 {discoveredCourses?.map((c, i) => (
-                                    <div key={i} className="p-3.5 flex items-center justify-between gap-4 hover:bg-zinc-900/30 transition-colors">
-                                        <div className="space-y-0.5">
+                                    <div key={i} className="p-3.5 flex items-center justify-between gap-4 hover:bg-[#FBFBFD] transition">
+                                        <div className="min-w-0 space-y-0.5">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-zinc-200">{c.fullname}</span>
-                                                <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-1.5 py-0.2 rounded">
+                                                <span className="font-semibold text-[#1D1D1F] truncate">{c.fullname}</span>
+                                                <span className="text-[10px] font-mono text-[#6E6E73] bg-[#F5F5F7] px-1.5 py-0.2 rounded border border-[#E5E5EA]">
                                                     {c.code}
                                                 </span>
                                             </div>
-                                            <p className="text-[10px] text-zinc-500">
-                                                ID: {c.id} &bull; Shortname: {c.shortname}
+                                            <p className="text-[11px] text-[#8E8E93]">
+                                                ID: {c.id} · Shortcode: {c.shortname}
                                             </p>
                                         </div>
                                         <div>
                                             {c.matched ? (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#0071E3]/8 text-[#0071E3] border border-[#0071E3]/20 whitespace-nowrap">
                                                     Matches: {c.matchedSubjectName}
                                                 </span>
                                             ) : (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-500 whitespace-nowrap">
-                                                    Other Curriculum
+                                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#F5F5F7] text-[#8E8E93] border border-[#E5E5EA] whitespace-nowrap">
+                                                    Unmatched
                                                 </span>
                                             )}
                                         </div>
@@ -491,31 +621,43 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                 </div>
 
                 {/* Footer Controls */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800/80 bg-zinc-900/40">
+                <div className="flex items-center justify-between px-6 py-4 border-t border-[#E5E5EA] bg-[#FBFBFD]">
                     <button
+                        type="button"
                         onClick={resetState}
                         disabled={isLoading}
-                        className="px-4 py-2 text-xs font-bold text-zinc-400 hover:text-white uppercase tracking-wider transition-colors"
+                        className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] transition cursor-pointer disabled:opacity-40"
                     >
                         Close
                     </button>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
+                        {isLoading && (
+                            <button
+                                type="button"
+                                onClick={() => setIsMinimized(true)}
+                                className="px-3 py-1.5 rounded-lg border border-[#E5E5EA] bg-white text-xs font-medium text-[#1D1D1F] hover:bg-[#F5F5F7] transition cursor-pointer"
+                            >
+                                Minimize
+                            </button>
+                        )}
+
                         {activeTab === 'sync' ? (
                             <button
+                                type="button"
                                 onClick={handleSync}
                                 disabled={isLoading}
-                                className="inline-flex items-center justify-center rounded-xl text-xs font-bold transition-all bg-blue-600 text-white hover:bg-blue-500 h-9 px-5 gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                                className="inline-flex items-center justify-center rounded-lg text-xs font-medium bg-[#0071E3] hover:bg-[#005BB5] text-white h-9 px-4 gap-2 shadow-xs transition cursor-pointer disabled:opacity-50"
                             >
-                                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                                <span>{isLoading ? 'Synchronizing...' : syncMode === 'test' ? 'Execute Test Sync' : 'Sync All Courses'}</span>
+                                <RefreshCw className={cn("w-3.5 h-3.5", isLoading && "animate-spin")} />
+                                <span>{isLoading ? 'Synchronizing...' : syncMode === 'test' ? 'Test Connection' : 'Sync Notes'}</span>
                             </button>
                         ) : (
                             <button
+                                type="button"
                                 onClick={() => setActiveTab('sync')}
-                                className="inline-flex items-center justify-center rounded-xl text-xs font-bold transition-all bg-blue-600 text-white hover:bg-blue-500 h-9 px-5 gap-2"
+                                className="inline-flex items-center justify-center rounded-lg text-xs font-medium bg-[#0071E3] hover:bg-[#005BB5] text-white h-9 px-4 gap-2 shadow-xs transition cursor-pointer"
                             >
-                                <Sparkles className="w-3.5 h-3.5" />
                                 <span>Proceed to Sync</span>
                             </button>
                         )}

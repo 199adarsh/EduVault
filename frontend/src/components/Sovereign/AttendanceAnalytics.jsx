@@ -1091,7 +1091,7 @@ const AttendanceAnalytics = () => {
 
     if (isTeacher) {
         return (
-            <div className="flex-1 overflow-y-auto bg-background p-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-6 pb-24 md:pb-10 antialiased text-[#383838] font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
+            <div className="flex-1 overflow-y-auto bg-[#F5F5F7] p-4 sm:px-6 lg:px-8 py-5 sm:py-6 pb-24 md:pb-12 antialiased text-[#1D1D1F] font-sans min-h-screen w-full min-w-0 max-w-full overflow-x-hidden">
                 <div className="max-w-7xl mx-auto w-full min-w-0">
                     <FacultyAttendance profile={profile} subjects={globalSubjects || subjects} onRefresh={refreshData} />
                 </div>
@@ -2537,7 +2537,7 @@ const AttendanceAnalytics = () => {
                                                                         className="text-[#0073E6] hover:underline font-semibold flex items-center gap-1 cursor-pointer text-[11px]"
                                                                     >
                                                                         <Eye className="w-3.5 h-3.5" />
-                                                                        <span>View Document ({req.proofFileName})</span>
+                                                                        <span>View Document </span>
                                                                     </button>
                                                                 ) : (
                                                                     <span className="text-[#727272] italic">No document attached</span>

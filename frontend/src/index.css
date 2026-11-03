@@ -11,7 +11,7 @@
 
 @theme inline {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Geist Mono Variable", ui-monospace, monospace;
+  --font-heading: "Geist Mono", "Geist Mono Variable", ui-monospace, monospace;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
   /* Theme mappings */
@@ -345,7 +345,7 @@ h4,
 h5,
 h6,
 .font-heading {
-  font-family: "Geist Variable", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Geist Mono", "Geist Mono Variable", ui-monospace, monospace;
   color: var(--text-primary);
   font-weight: 600;
   line-height: 1.3;

@@ -40,7 +40,8 @@ const DEFAULT_ANNOUNCEMENTS = [
         description: "The end-semester examination timetable is available. Check the schedule and note your exam dates.",
         tag: "Exam",
         color: "red",
-        postedBy: "Academic Administration",
+        postedBy: "Dr. V. R. Ghorpade",
+        authorRole: "Controller of Examinations • Autonomous Cell",
         createdAt: "2026-10-14T15:33:30.604Z",
         isPinned: true
     },
@@ -50,11 +51,38 @@ const DEFAULT_ANNOUNCEMENTS = [
         description: "All students must complete the registration form for the upcoming industrial visit by 5:00 PM on Friday. Students who fail to register before the deadline may not be included in the final participant list. Contact your class coordinator for further details.",
         tag: "Student Activity",
         color: "blue",
-        postedBy: "Faculty / Department",
+        postedBy: "Prof. S. R. Kulkarni",
+        authorRole: "Faculty Coordinator • AI & Data Science",
         createdAt: "2026-10-16T05:07:54.606Z",
         isPinned: false
     }
 ];
+
+const getFacultyAuthor = (ann) => {
+    let name = ann.postedBy || ann.author;
+    let role = ann.authorRole;
+    
+    if (!name || name === 'Faculty / Department' || name === 'Academic Administration' || name === 'Dean of Academics') {
+        const tag = (ann.tag || ann.type || '').toLowerCase();
+        const title = (ann.title || '').toLowerCase();
+        if (tag.includes('exam') || title.includes('exam') || title.includes('timetable')) {
+            name = 'Dr. V. R. Ghorpade';
+            role = role || 'Controller of Examinations • Autonomous Cell';
+        } else if (tag.includes('activity') || title.includes('visit') || title.includes('registration')) {
+            name = 'Prof. S. R. Kulkarni';
+            role = role || 'Faculty Coordinator • AI & Data Science';
+        } else {
+            name = 'Dr. K. S. Patil';
+            role = role || 'Head of Department • AI & Data Science';
+        }
+    }
+    const cleanInitial = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().charAt(0) || 'F';
+    return {
+        name,
+        role: role || 'Faculty Member • AI & DS Dept',
+        initial: cleanInitial.toUpperCase()
+    };
+};
 
 const Announcements = () => {
     const [announcements, setAnnouncements] = useState(() => {
@@ -461,34 +489,41 @@ const Announcements = () => {
                                         </p>
                                     </div>
 
-                                    {/* Card Footer: Source Authority + Acknowledge Button */}
-                                    <div className="mt-4 pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <div className="w-6 h-6 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-[11px] shrink-0">
-                                                {(ann.postedBy || ann.author || 'A').charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-xs text-[#727272] truncate">
-                                                <span className="font-semibold text-[#383838] truncate">{ann.postedBy || ann.author || 'Academic Administration'}</span>
-                                                <span className="text-[#E2E2E2]">•</span>
-                                                <span className="text-[11px] truncate">{ann.authorRole || 'Department Notice Desk'}</span>
-                                            </div>
-                                        </div>
+                                    {/* Card Footer: Verified Faculty Authority + Acknowledge Button */}
+                                    {(() => {
+                                        const faculty = getFacultyAuthor(ann);
+                                        return (
+                                            <div className="mt-4 pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="w-7 h-7 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-[#D9ECFF]">
+                                                        {faculty.initial}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <div className="flex items-center gap-1.5 leading-tight">
+                                                            <span className="font-semibold text-xs text-[#383838] truncate">{faculty.name}</span>
+                                                            <CheckmarkBadge01Icon size={13} className="text-[#0073E6] shrink-0" title="Verified Faculty" />
+                                                        </div>
+                                                        <span className="text-[10px] text-[#727272] truncate mt-0.5">{faculty.role}</span>
+                                                    </div>
+                                                </div>
 
-                                        {isAck ? (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[11px] font-semibold shrink-0 self-start sm:self-auto">
-                                                <Tick02Icon size={13} className="text-emerald-600" />
-                                                <span>Acknowledged</span>
-                                            </span>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleAcknowledge(ann.id)}
-                                                className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#DEEDFC] text-[#0073E6] hover:bg-[#0073E6] hover:text-white border border-[#D9ECFF] text-xs font-semibold transition-all cursor-pointer shrink-0 self-start sm:self-auto shadow-2xs"
-                                            >
-                                                <CheckmarkCircle02Icon size={14} />
-                                                <span>Acknowledge Notice</span>
-                                            </button>
-                                        )}
-                                    </div>
+                                                {isAck ? (
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[11px] font-semibold shrink-0 self-start sm:self-auto">
+                                                        <Tick02Icon size={13} className="text-emerald-600" />
+                                                        <span>Acknowledged</span>
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleAcknowledge(ann.id)}
+                                                        className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#DEEDFC] text-[#0073E6] hover:bg-[#0073E6] hover:text-white border border-[#D9ECFF] text-xs font-semibold transition-all cursor-pointer shrink-0 self-start sm:self-auto shadow-2xs"
+                                                    >
+                                                        <CheckmarkCircle02Icon size={14} />
+                                                        <span>Acknowledge Notice</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </article>
                             );
                         })

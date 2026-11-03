@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { cn } from '../../lib/utils';
 import { getSubjectAbbreviation, normalizeDateKey } from '../../lib/attendanceUtils';
-import { Check, X } from 'lucide-react';
+import { Tick01Icon as Check, Cancel01Icon as X } from 'hugeicons-react';
 
 export function buildSharedHeatmapData(subjects) {
   const dayMap = new Map();

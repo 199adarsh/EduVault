@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FluidTabs } from '../fluid-tabs';
-import { Trophy, ArrowUpRight } from 'lucide-react';
+import { ChampionIcon, ArrowUpRight01Icon } from 'hugeicons-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -53,7 +53,7 @@ const HackathonsFeed = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5 w-full min-w-0">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                        <Trophy className="w-4 h-4 text-[#0073E6]" />
+                        <ChampionIcon size={16} className="w-4 h-4 text-[#0073E6]" />
                     </div>
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold text-[#383838] leading-tight truncate">Hackathons</h2>
@@ -112,7 +112,7 @@ const HackathonsFeed = () => {
                                 </div>
                             </div>
                             <div className="w-7 h-7 rounded-full bg-[#DEEDFC]/50 group-hover:bg-[#0073E6] text-[#0073E6] group-hover:text-white flex items-center justify-center shrink-0 transition-all border border-[#D9ECFF] group-hover:border-[#0073E6]">
-                                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                <ArrowUpRight01Icon size={14} className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                             </div>
                         </a>
                     ))

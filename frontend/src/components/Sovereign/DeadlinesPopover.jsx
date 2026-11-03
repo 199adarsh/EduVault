@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Calendar as CalendarIcon, Clock, X, CheckCircle2 } from 'lucide-react';
+import { Calendar03Icon as CalendarIcon, Clock01Icon as Clock, Cancel01Icon as X, CheckmarkCircle01Icon as CheckCircle2 } from 'hugeicons-react';
 import { cn } from '../../lib/utils';
 import { parseDeadlineDate, getDaysRemainingInfo, formatDeadlineDate } from './deadlineUtils';
 

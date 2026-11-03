@@ -6,7 +6,31 @@ import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { getSubjectAbbreviation } from '../../lib/attendanceUtils';
 import { toast } from 'sonner';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import {
+  Shield01Icon,
+  Loading03Icon,
+  CheckmarkCircle01Icon,
+  Search01Icon,
+  Notification01Icon,
+  Clock01Icon,
+  CheckmarkBadge01Icon,
+  AlertCircleIcon,
+  Calendar03Icon,
+  Calendar03Icon as CalendarIcon,
+  BarChartIcon,
+  Analytics01Icon,
+  Megaphone01Icon,
+  ArrowRight01Icon,
+  Refresh01Icon,
+  Task01Icon,
+  EyeIcon,
+  Cancel01Icon,
+  Delete02Icon,
+  Add01Icon,
+  HourglassIcon,
+  Download01Icon,
+  File01Icon
+} from 'hugeicons-react';
 import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import HackathonsFeed from './HackathonsFeed';
 import DeadlinesPopover from './DeadlinesPopover';
@@ -644,7 +668,7 @@ const HomeDashboard = () => {
         <div className="w-full max-w-md bg-surface-card border border-border-subtle rounded-2xl p-6">
           <div className="flex flex-col items-center text-center gap-2 mb-6">
             <div className="w-12 h-12 rounded-xl bg-surface-subtle-blue flex items-center justify-center mb-2">
-              <span className="material-symbols-outlined text-[24px] text-primary">shield</span>
+              <Shield01Icon size={24} className="text-primary" />
             </div>
             <h2 className="text-xl font-bold tracking-tight text-text-primary text-balance">CampusAxis Student Portal</h2>
             <p className="text-xs text-text-secondary max-w-xs leading-normal text-pretty">
@@ -674,7 +698,7 @@ const HomeDashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 min-w-0 pr-3">
                   <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60">
-                    <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                    <Loading03Icon size={18} className="animate-spin text-blue-600" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-900 truncate">{syncStage}</p>
@@ -708,7 +732,7 @@ const HomeDashboard = () => {
                     <div key={item.step} className="flex items-center gap-3 text-xs transition-all">
                       <div className="w-5 h-5 flex items-center justify-center shrink-0">
                         {isDone ? (
-                          <span className="material-symbols-outlined text-[19px] text-emerald-600">check_circle</span>
+                          <CheckmarkCircle01Icon size={19} className="text-emerald-600" />
                         ) : isCurrent ? (
                           <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
                         ) : (
@@ -837,7 +861,7 @@ const HomeDashboard = () => {
       <header className="hidden md:flex sticky top-0 z-40 h-16 bg-[#FFFFFF] px-6 lg:px-8 items-center justify-between border-b border-[#E2E2E2] shrink-0">
         <div className="flex items-center gap-4 flex-1 max-w-md">
           <div className="relative w-full">
-            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272] text-[18px]">search</span>
+            <Search01Icon size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272]" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -890,7 +914,7 @@ const HomeDashboard = () => {
             className="relative w-9 h-9 rounded-full bg-[#FFFFFF] hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] flex items-center justify-center text-[#383838] transition-colors cursor-pointer"
             title="Notifications"
           >
-            <span className="material-symbols-outlined text-[19px] text-[#174073]">notifications</span>
+            <Notification01Icon size={19} className="text-[#174073]" />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#0073E6]"></span>
           </button>
           <div className="flex items-center gap-2.5 pl-3 border-l border-[#E2E2E2]">
@@ -989,7 +1013,7 @@ const HomeDashboard = () => {
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-amber-600">pending_actions</span>
+                    <Clock01Icon size={16} className="text-amber-600" />
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.pending}</span>
                     <span className="text-[11px] text-[#727272]">Leave Requests</span>
                   </div>
@@ -998,7 +1022,7 @@ const HomeDashboard = () => {
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
+                    <CheckmarkBadge01Icon size={16} className="text-[#0073E6]" />
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.approved}</span>
                     <span className="text-[11px] text-[#727272]">Approved</span>
                   </div>
@@ -1009,7 +1033,7 @@ const HomeDashboard = () => {
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
+                    <CheckmarkBadge01Icon size={16} className="text-[#0073E6]" />
                     <span className="text-xs font-bold text-[#383838] tabular-nums">{stats.overall}%</span>
                     <span className="text-[11px] text-[#727272]">Attendance</span>
                   </div>
@@ -1018,7 +1042,7 @@ const HomeDashboard = () => {
                     onClick={() => navigate('/attendance')}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-rose-50/40 border border-[#E2E2E2] hover:border-[#E11D48]/30 transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-[#E11D48]">warning</span>
+                    <AlertCircleIcon size={16} className="text-[#E11D48]" />
                     <span className="text-xs font-bold text-[#E11D48] tabular-nums">{stats.riskCount}</span>
                     <span className="text-[11px] text-[#727272]">At-Risk</span>
                   </div>
@@ -1035,7 +1059,7 @@ const HomeDashboard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-normal text-[#727272]">Attendance</span>
-                    <span className="material-symbols-outlined text-[#0073E6] text-[15px]">event_available</span>
+                    <Calendar03Icon size={15} className="text-[#0073E6]" />
                   </div>
                   <div className="mt-1 flex items-baseline">
                     <span className="text-base font-bold text-[#0073E6] leading-none tabular-nums">{stats.overall}%</span>
@@ -1047,7 +1071,7 @@ const HomeDashboard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-normal text-[#727272]">Below 75%</span>
-                    <span className="material-symbols-outlined text-[#E11D48] text-[15px]">error_outline</span>
+                    <AlertCircleIcon size={15} className="text-[#E11D48]" />
                   </div>
                   <div className="mt-1 flex items-baseline gap-1">
                     <span className="text-base font-bold text-[#E11D48] leading-none tabular-nums">{stats.riskCount}</span>
@@ -1060,7 +1084,7 @@ const HomeDashboard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-normal text-[#727272]">CIE Avg</span>
-                    <span className="material-symbols-outlined text-[#174073] text-[15px]">bar_chart</span>
+                    <BarChartIcon size={15} className="text-[#174073]" />
                   </div>
                   <div className="mt-1 flex items-baseline">
                     <span className="text-base font-bold text-[#383838] leading-none tabular-nums">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
@@ -1075,7 +1099,7 @@ const HomeDashboard = () => {
             <div className="lg:hidden bg-white rounded-xl p-3 border border-[#E2E2E2] flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="w-8 h-8 rounded-full bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[17px]">campaign</span>
+                  <Megaphone01Icon size={17} />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -1093,7 +1117,7 @@ const HomeDashboard = () => {
                 className="px-3.5 py-1 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white font-medium text-xs shrink-0 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <span>View</span>
-                <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                <ArrowRight01Icon size={13} />
               </button>
             </div>
           )}
@@ -1108,7 +1132,7 @@ const HomeDashboard = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                        <CheckmarkBadge01Icon size={18} />
                       </div>
                       <div>
                         <h2 className="text-base">Attendance Excuse Requests (NC)</h2>
@@ -1124,7 +1148,7 @@ const HomeDashboard = () => {
                         className="p-1 rounded-full text-[#727272] hover:text-[#383838] hover:bg-[#DEEDFC]/40 transition cursor-pointer"
                         title="Refresh NC Requests"
                       >
-                        <span className="material-symbols-outlined text-[16px]">refresh</span>
+                        <Refresh01Icon size={16} />
                       </button>
                     </div>
                   </div>
@@ -1154,9 +1178,7 @@ const HomeDashboard = () => {
                         placeholder="Search student or PRN..."
                         className="w-full text-xs pl-7 pr-2 py-1 rounded-lg bg-slate-50 border border-border-subtle focus:outline-none focus:ring-1 focus:ring-primary"
                       />
-                      <span className="material-symbols-outlined text-[14px] text-text-secondary absolute left-2 top-1/2 -translate-y-1/2">
-                        search
-                      </span>
+                      <Search01Icon size={14} className="text-text-secondary absolute left-2 top-1/2 -translate-y-1/2" />
                     </div>
                   </div>
 
@@ -1166,7 +1188,7 @@ const HomeDashboard = () => {
                       <div className="py-8 text-center text-xs text-text-secondary">Loading leave requests...</div>
                     ) : filteredFacultyNc.length === 0 ? (
                       <div className="py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-border-subtle p-4">
-                        <span className="material-symbols-outlined text-3xl text-slate-300 mx-auto mb-1">rule</span>
+                        <Task01Icon size={32} className="text-slate-300 mx-auto mb-1" />
                         <p className="text-xs font-semibold text-text-primary">No leave requests found</p>
                         <p className="text-[11px] text-text-secondary mt-0.5">No student requests match the current filter.</p>
                       </div>
@@ -1208,7 +1230,7 @@ const HomeDashboard = () => {
                                 }}
                                 className="text-primary hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
                               >
-                                <span className="material-symbols-outlined text-[14px]">visibility</span>
+                                <EyeIcon size={14} />
                                 <span>View Document ({req.proofFileName})</span>
                               </button>
                             ) : (
@@ -1234,7 +1256,7 @@ const HomeDashboard = () => {
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-[11px] text-blue-900">Faculty Review Decision</span>
                                 <button type="button" onClick={() => setReviewingReq(null)} className="text-slate-400 hover:text-slate-600">
-                                  <span className="material-symbols-outlined text-[15px]">close</span>
+                                  <Cancel01Icon size={15} />
                                 </button>
                               </div>
                               <div className="grid grid-cols-2 gap-1.5">
@@ -1291,7 +1313,7 @@ const HomeDashboard = () => {
                   <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                        <Calendar03Icon size={18} />
                       </div>
                       <div>
                         <h2 className="text-base">Attendance Activity</h2>
@@ -1333,7 +1355,7 @@ const HomeDashboard = () => {
                 <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
+                      <Calendar03Icon size={18} />
                     </div>
                     <div>
                       <h2 className="text-base">Deadlines &amp; Events</h2>
@@ -1375,7 +1397,7 @@ const HomeDashboard = () => {
                       onClick={() => setShowAddForm(!showAddForm)}
                       className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-medium whitespace-nowrap transition-all shadow-xs cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[14px]">{showAddForm ? 'close' : 'add'}</span>
+                      {showAddForm ? <Cancel01Icon size={14} /> : <Add01Icon size={14} />}
                       <span>{showAddForm ? 'Cancel' : 'Add Event'}</span>
                     </button>
                   </div>
@@ -1456,7 +1478,7 @@ const HomeDashboard = () => {
                               className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 text-slate-400 hover:text-status-danger-text transition-opacity p-1.5 rounded-lg hover:bg-slate-50 shrink-0 cursor-pointer"
                               title="Delete"
                             >
-                              <span className="material-symbols-outlined text-[15px]">delete</span>
+                              <Delete02Icon size={15} />
                             </button>
                           )}
                         </div>
@@ -1465,14 +1487,14 @@ const HomeDashboard = () => {
                   </div>
                 ) : (
                   <div className="mt-3 p-5 rounded-xl bg-slate-50/70 border border-dashed border-border-subtle flex flex-col items-center justify-center text-center">
-                    <span className="material-symbols-outlined text-[22px] text-text-secondary/70 mb-1.5">event_upcoming</span>
+                    <Calendar03Icon size={22} className="text-text-secondary/70 mb-1.5" />
                     <p className="text-xs font-bold text-text-primary">No Upcoming Deadlines</p>
                     <p className="text-[11px] text-text-secondary mt-0.5 max-w-xs text-pretty">Track key academic deadlines, lab submissions, and tests.</p>
                     <button
                       onClick={() => setShowAddForm(true)}
                       className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-border-subtle text-xs font-semibold text-text-primary transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] shadow-2xs cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[14px] text-primary">add</span>
+                      <Add01Icon size={14} className="text-primary" />
                       <span>Add Milestone</span>
                     </button>
                   </div>
@@ -1487,12 +1509,12 @@ const HomeDashboard = () => {
                 <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E2E2E2] gap-3 min-w-0 w-full">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-[10px] bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-[18px]">campaign</span>
+                      <Megaphone01Icon size={18} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <h2 className="text-sm sm:text-base font-bold text-[#383838] tracking-tight">
-                          <span className="text-[#0073E6]">Campus</span> Announcements
+                          Campus Announcements
                         </h2>
                         {announcements && announcements.length > 0 && (
                           <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#D9ECFF] text-[#0073E6] tabular-nums">
@@ -1508,7 +1530,7 @@ const HomeDashboard = () => {
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-[#0073E6] bg-white hover:bg-[#DEEDFC]/50 border border-[#D9ECFF] transition-all cursor-pointer shrink-0 shadow-2xs"
                   >
                     <span>View All</span>
-                    <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    <ArrowRight01Icon size={13} />
                   </button>
                 </div>
 
@@ -1545,9 +1567,7 @@ const HomeDashboard = () => {
                           </h3>
                         </div>
 
-                        <span className="material-symbols-outlined text-[14px] text-[#727272] group-hover:text-[#0073E6] group-hover:translate-x-0.5 transition-all shrink-0 mt-2">
-                          arrow_forward
-                        </span>
+                        <ArrowRight01Icon size={14} className="text-[#727272] group-hover:text-[#0073E6] group-hover:translate-x-0.5 transition-all shrink-0 mt-2" />
                       </div>
                     ))
                   ) : (
@@ -1564,12 +1584,12 @@ const HomeDashboard = () => {
                   <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E2E2E2] gap-3 min-w-0 w-full">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-8 h-8 rounded-[10px] bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[18px]">analytics</span>
+                        <Analytics01Icon size={18} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <h2 className="text-sm sm:text-base font-bold text-[#383838] tracking-tight">
-                            <span className="text-[#0073E6]">Internal</span> Marks (CIE)
+                            Internal Marks (CIE)
                           </h2>
                           <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#DEEDFC] text-[#174073]">
                             Sem {profile?.semester ? (profile.semester.match(/\d+/)?.[0] || '5') : '5'}
@@ -1583,7 +1603,7 @@ const HomeDashboard = () => {
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-[#0073E6] bg-white hover:bg-[#DEEDFC]/50 border border-[#D9ECFF] transition-all cursor-pointer shrink-0 shadow-2xs"
                     >
                       <span>View All</span>
-                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                      <ArrowRight01Icon size={13} />
                     </button>
                   </div>
 
@@ -1650,7 +1670,7 @@ const HomeDashboard = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 border-b border-[#E2E2E2] gap-3 bg-white">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0 border border-[#D9ECFF]">
-                    <span className="material-symbols-outlined text-[20px]">bar_chart</span>
+                    <BarChartIcon size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -1803,7 +1823,7 @@ const HomeDashboard = () => {
                 <div className="flex items-center justify-between pb-5 border-b border-slate-200 gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
-                      <span className="material-symbols-outlined text-[26px]">analytics</span>
+                      <Analytics01Icon size={26} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -1943,9 +1963,7 @@ const HomeDashboard = () => {
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#0073E6] hover:bg-[#4A9AF0] text-white text-xs font-medium rounded-full transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
                   title="Download or share marks card as image"
                 >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {exportingCie ? 'hourglass_top' : 'download'}
-                  </span>
+                  {exportingCie ? <HourglassIcon size={16} /> : <Download01Icon size={16} />}
                   <span>{exportingCie ? 'Generating...' : 'Download Marks Card'}</span>
                 </button>
                 <button
@@ -1966,7 +1984,7 @@ const HomeDashboard = () => {
           <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[18px]">description</span>
+                <File01Icon size={18} className="text-primary" />
                 <span className="font-bold text-xs sm:text-sm text-slate-900">{docPreviewName}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -1978,13 +1996,13 @@ const HomeDashboard = () => {
                   className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200"
                   title="Download Document"
                 >
-                  <span className="material-symbols-outlined text-[18px]">download</span>
+                  <Download01Icon size={18} />
                 </a>
                 <button
                   onClick={() => setDocPreviewUrl(null)}
                   className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200"
                 >
-                  <span className="material-symbols-outlined text-[18px]">close</span>
+                  <Cancel01Icon size={18} />
                 </button>
               </div>
             </div>
@@ -2008,7 +2026,7 @@ const HomeDashboard = () => {
                 />
               )}
               <div className="hidden text-center p-6 text-slate-500">
-                <span className="material-symbols-outlined text-amber-500 text-3xl mx-auto mb-1">warning</span>
+                <AlertCircleIcon size={32} className="text-amber-500 mx-auto mb-1" />
                 <p className="text-xs font-semibold">Document cannot be previewed directly in frame.</p>
                 <a
                   href={docPreviewUrl}

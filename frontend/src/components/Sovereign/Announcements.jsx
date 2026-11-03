@@ -33,9 +33,40 @@ const FILTER_TABS = [
     { id: 'bookmarked', label: 'Saved' }
 ];
 
+const DEFAULT_ANNOUNCEMENTS = [
+    {
+        id: "bbcee379-d370-44fc-ac9b-d266d60d3bc0",
+        title: "End-Semester Examination Timetable",
+        description: "The end-semester examination timetable is available. Check the schedule and note your exam dates.",
+        tag: "Exam",
+        color: "red",
+        postedBy: "Academic Administration",
+        createdAt: "2026-10-14T15:33:30.604Z",
+        isPinned: true
+    },
+    {
+        id: "55160785-d8a7-4e8d-8f50-bea2c2724f57",
+        title: "Mandatory Industrial Visit Registration",
+        description: "All students must complete the registration form for the upcoming industrial visit by 5:00 PM on Friday. Students who fail to register before the deadline may not be included in the final participant list. Contact your class coordinator for further details.",
+        tag: "Student Activity",
+        color: "blue",
+        postedBy: "Faculty / Department",
+        createdAt: "2026-10-16T05:07:54.606Z",
+        isPinned: false
+    }
+];
+
 const Announcements = () => {
-    const [announcements, setAnnouncements] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [announcements, setAnnouncements] = useState(() => {
+        try {
+            const saved = localStorage.getItem('eduvault_announcements');
+            const parsed = saved ? JSON.parse(saved) : null;
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ANNOUNCEMENTS;
+        } catch {
+            return DEFAULT_ANNOUNCEMENTS;
+        }
+    });
+    const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('all');
     const [acknowledgedIds, setAcknowledgedIds] = useState(() => {
@@ -76,15 +107,26 @@ const Announcements = () => {
     }, []);
 
     const fetchAnnouncements = async () => {
-        setLoading(true);
         try {
             const res = await axios.get(`${API_BASE}/announcements`, { 
-                headers: { 'X-User-Role': userRole },
-                timeout: 4000 
+                headers: { 'X-User-Role': userRole }
             });
-            setAnnouncements(Array.isArray(res.data) ? res.data : []);
+            const data = Array.isArray(res.data) && res.data.length > 0 ? res.data : DEFAULT_ANNOUNCEMENTS;
+            setAnnouncements(data);
+            localStorage.setItem('eduvault_announcements', JSON.stringify(data));
         } catch {
-            setAnnouncements([]);
+            // Keep existing state or fallback
+            const cached = localStorage.getItem('eduvault_announcements');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        setAnnouncements(parsed);
+                    }
+                } catch {
+                    // ignore
+                }
+            }
         } finally {
             setLoading(false);
         }
@@ -178,7 +220,7 @@ const Announcements = () => {
                 return tagStr.includes('exam') || (item.title || '').toLowerCase().includes('exam') || Boolean(item.deadline);
             }
             if (activeFilter === 'official') {
-                return tagStr.includes('official') || (item.postedBy || '').toLowerCase().includes('admin');
+                return tagStr.includes('official') || (item.postedBy || '').toLowerCase().includes('admin') || tagStr.includes('activity');
             }
             if (activeFilter === 'bookmarked') {
                 return bookmarkedIds.includes(item.id);

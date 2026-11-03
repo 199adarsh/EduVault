@@ -3,20 +3,19 @@ import { NavLink } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
 import {
-    LayoutDashboard,
-    BookOpen,
-    Compass,
-    Sparkles,
-    Bell,
-    CalendarCheck2,
-    Settings,
-    GraduationCap,
-    RefreshCw,
-    LogOut,
-    X,
-    ChevronUp,
-    User
-} from 'lucide-react';
+    DashboardSquare02Icon,
+    BookOpen01Icon,
+    Route01Icon,
+    Notification02Icon,
+    CalendarCheckIn01Icon,
+    Settings02Icon,
+    Mortarboard02Icon,
+    RefreshIcon,
+    Logout01Icon,
+    Cancel01Icon,
+    ArrowUp01Icon,
+    UserIcon
+} from 'hugeicons-react';
 import { cn } from '../../lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
@@ -94,34 +93,33 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
     const navItems = [
         {
             name: 'Home',
-            icon: LayoutDashboard,
+            icon: DashboardSquare02Icon,
             path: '/'
         },
         {
             name: 'Notes & PYQs',
-            icon: BookOpen,
+            icon: BookOpen01Icon,
             path: '/notes'
         },
         {
             name: 'Roadmaps',
-            icon: Compass,
+            icon: Route01Icon,
             path: '/roadmaps'
         },
-
         {
             name: 'Announcements',
-            icon: Bell,
+            icon: Notification02Icon,
             path: '/announcements'
         },
         {
             name: isTeacher ? 'Attendance & NC' : 'Attendance',
-            icon: CalendarCheck2,
+            icon: CalendarCheckIn01Icon,
             path: '/attendance',
             badge: attendance ? `${attendance}%` : null,
         },
         {
             name: 'Settings',
-            icon: Settings,
+            icon: Settings02Icon,
             path: '/settings'
         },
     ];
@@ -145,7 +143,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
             <div className="h-16 px-4 flex items-center justify-between border-b border-[#E2E2E2] shrink-0">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-9 h-9 rounded-xl bg-[#0073E6] flex items-center justify-center text-white shadow-xs shrink-0">
-                        <GraduationCap className="w-5 h-5" strokeWidth={2} />
+                        <Mortarboard02Icon size={20} />
                     </div>
                     <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-1.5 leading-none">
@@ -164,7 +162,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                     className="md:hidden ml-2 p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-[#F2F7FC] transition-colors cursor-pointer shrink-0"
                     aria-label="Close sidebar"
                 >
-                    <X className="w-4 h-4" />
+                    <Cancel01Icon size={18} />
                 </button>
             </div>
 
@@ -193,13 +191,13 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                                     <>
                                         <div className="flex items-center gap-3 min-w-0">
                                             <Icon
+                                                size={18}
                                                 className={cn(
-                                                    "w-[18px] h-[18px] shrink-0 transition-colors",
+                                                    "shrink-0 transition-colors",
                                                     isActive
                                                         ? "text-[#0073E6]"
                                                         : "text-[#727272] group-hover:text-[#0073E6]"
                                                 )}
-                                                strokeWidth={isActive ? 2.2 : 1.8}
                                             />
                                             <span className="truncate">{item.name}</span>
                                         </div>
@@ -231,14 +229,14 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                             onClick={handleSync}
                             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#383838] hover:bg-[#DEEDFC]/50 hover:text-[#0073E6] rounded-lg transition-colors cursor-pointer"
                         >
-                            <RefreshCw className="w-4 h-4 text-[#0073E6]" />
+                            <RefreshIcon size={16} className="text-[#0073E6]" />
                             <span>Refresh Data</span>
                         </button>
                         <button
                             onClick={handleLogout}
                             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                         >
-                            <LogOut className="w-4 h-4" />
+                            <Logout01Icon size={16} />
                             <span>Logout</span>
                         </button>
                     </div>
@@ -265,7 +263,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                             />
                         ) : null}
                         <div className={`w-8 h-8 rounded-full bg-[#0073E6] text-white items-center justify-center shrink-0 font-bold text-xs ring-2 ring-white ${profile?.image ? 'hidden' : 'flex'}`}>
-                            {profile?.name ? profile.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
+                            {profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon size={16} />}
                         </div>
                         <div className="flex flex-col min-w-0">
                             <span className="text-xs font-bold text-[#383838] group-hover:text-[#0073E6] transition-colors truncate">
@@ -278,7 +276,7 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 pl-1">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white shrink-0" title="Active Session" />
-                        <ChevronUp className={cn("w-3.5 h-3.5 text-[#727272] transition-transform duration-200", showUserMenu && "rotate-180")} />
+                        <ArrowUp01Icon size={14} className={cn("text-[#727272] transition-transform duration-200", showUserMenu && "rotate-180")} />
                     </div>
                 </div>
             </div>

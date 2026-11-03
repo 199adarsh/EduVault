@@ -927,21 +927,9 @@ const HomeDashboard = () => {
 
 
         <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0">
-          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop Native Dashboard Card) */}
-          <section className="relative overflow-hidden bg-white rounded-xl border border-[#E2E2E2] p-4 sm:p-5 w-full min-w-0 transition-colors">
-            {/* Precision Watermark Dot Grid (Zero blur/glow, crisp architectural pattern) */}
-            <div
-              className="absolute top-0 right-0 w-36 sm:w-64 h-full pointer-events-none opacity-20"
-              style={{
-                backgroundImage: 'radial-gradient(#174073 1.2px, transparent 1.2px)',
-                backgroundSize: '10px 10px',
-                maskImage: 'linear-gradient(to left, black 25%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to left, black 25%, transparent 100%)',
-              }}
-              aria-hidden="true"
-            />
-
-            <div className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-4 relative z-10">
+          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop-UI Compliant) */}
+          <section className="bg-white rounded-lg border border-[#E2E2E2] p-4 sm:p-5 w-full min-w-0">
+            <div className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-4">
               {/* Left Identity: Clear hierarchy, honest student data */}
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="relative shrink-0">
@@ -950,7 +938,7 @@ const HomeDashboard = () => {
                       src={profile.image}
                       alt={formatName(profile?.name)}
                       referrerPolicy="no-referrer"
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-[#D9ECFF]"
+                      className="w-12 h-12 rounded-full object-cover ring-1 ring-[#E2E2E2]"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         if (e.currentTarget.nextElementSibling) {
@@ -959,7 +947,7 @@ const HomeDashboard = () => {
                       }}
                     />
                   ) : null}
-                  <div className={`w-12 h-12 rounded-full bg-[#0073E6] text-white items-center justify-center font-bold text-sm ring-2 ring-[#D9ECFF] ${profile?.image ? 'hidden' : 'flex'}`}>
+                  <div className={`w-12 h-12 rounded-full bg-[#0073E6] text-white items-center justify-center font-bold text-sm ring-1 ring-[#E2E2E2] ${profile?.image ? 'hidden' : 'flex'}`}>
                     {getInitials(profile?.name)}
                   </div>
                 </div>
@@ -974,7 +962,7 @@ const HomeDashboard = () => {
                   {/* Clean unstop metadata chips */}
                   <div className="flex items-center gap-1.5 text-xs text-[#727272] mt-1 flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
-                      <span className="font-mono text-xs font-medium text-[#174073] bg-[#DEEDFC]/50 px-2 py-0.5 rounded-md border border-[#D9ECFF]">
+                      <span className="font-mono text-xs font-medium text-[#174073] bg-[#DEEDFC] px-2 py-0.5 rounded-md border border-[#D9ECFF]">
                         {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? `ID: ${profile?.prn}` : (profile?.rollNo || profile?.prn)}
                       </span>
                     )}
@@ -999,7 +987,7 @@ const HomeDashboard = () => {
                 <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-amber-600">pending_actions</span>
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.pending}</span>
@@ -1008,7 +996,7 @@ const HomeDashboard = () => {
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.approved}</span>
@@ -1016,55 +1004,43 @@ const HomeDashboard = () => {
                   </div>
                 </div>
               ) : (
-                <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0">
+                <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:border-[#D9ECFF] transition-all cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer group"
                   >
-                    <div className="w-8 h-8 rounded-md bg-[#DEEDFC] flex items-center justify-center text-[#0073E6]">
-                      <span className="material-symbols-outlined text-[18px]">verified</span>
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-xs font-bold text-[#383838] tabular-nums leading-none">{stats.overall}%</span>
-                      <span className="text-[10px] text-[#727272] font-medium mt-1">Attendance</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
+                    <span className="text-xs font-bold text-[#383838] tabular-nums">{stats.overall}%</span>
+                    <span className="text-[11px] text-[#727272]">Attendance</span>
                   </div>
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] hover:bg-rose-50/50 border border-[#E2E2E2] hover:border-rose-200 transition-all cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F8FAFC] hover:bg-rose-50/50 border border-[#E2E2E2] hover:border-rose-200 transition-colors cursor-pointer group"
                   >
-                    <div className="w-8 h-8 rounded-md bg-rose-50 flex items-center justify-center text-[#E11D48]">
-                      <span className="material-symbols-outlined text-[18px]">warning</span>
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-xs font-bold text-[#E11D48] tabular-nums leading-none">{stats.riskCount} Subs</span>
-                      <span className="text-[10px] text-[#727272] font-medium mt-1">Below 75%</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#E11D48]">warning</span>
+                    <span className="text-xs font-bold text-[#E11D48] tabular-nums">{stats.riskCount}</span>
+                    <span className="text-[11px] text-[#727272]">At-Risk</span>
                   </div>
 
                   <div
                     onClick={() => setCiePopupOpen(true)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:border-[#D9ECFF] transition-all cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer group"
                   >
-                    <div className="w-8 h-8 rounded-md bg-[#F2F7FC] flex items-center justify-center text-[#174073]">
-                      <span className="material-symbols-outlined text-[18px]">bar_chart</span>
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-xs font-bold text-[#383838] tabular-nums leading-none">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
-                      <span className="text-[10px] text-[#727272] font-medium mt-1">CIE Score</span>
-                    </div>
+                    <span className="material-symbols-outlined text-[16px] text-[#174073]">bar_chart</span>
+                    <span className="text-xs font-bold text-[#383838] tabular-nums">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
+                    <span className="text-[11px] text-[#727272]">CIE</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Native Mobile Metric Cards Grid (Part of Dashboard Aesthetic) */}
+            {/* Native Mobile Metric Cards Grid */}
             {!isTeacher && (
-              <div className="w-full grid grid-cols-3 gap-2 sm:gap-2.5 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden relative z-10">
+              <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden">
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
+                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-md p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#727272]">Attendance</span>
@@ -1076,7 +1052,7 @@ const HomeDashboard = () => {
                 </div>
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
+                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-md p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#727272]">Below 75%</span>
@@ -1089,7 +1065,7 @@ const HomeDashboard = () => {
                 </div>
                 <div
                   onClick={() => setCiePopupOpen(true)}
-                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
+                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-md p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#727272]">CIE Avg</span>
@@ -1105,7 +1081,7 @@ const HomeDashboard = () => {
 
           {/* Urgent Broadcast Notification Banner (Unstop Mobile Style) */}
           {latestAnnouncement && (
-            <div className="lg:hidden bg-white rounded-xl p-3 border border-[#E2E2E2] flex items-center justify-between gap-2.5">
+            <div className="lg:hidden bg-white rounded-lg p-3 border border-[#E2E2E2] flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="w-8 h-8 rounded-full bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-[17px]">campaign</span>
@@ -1137,7 +1113,7 @@ const HomeDashboard = () => {
             <div className="lg:col-span-7 space-y-4">
               {/* Section 1: Attendance Activity Heatmap OR Faculty NC Management */}
               {isTeacher ? (
-                <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
+                <section className="bg-white rounded-lg p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
@@ -1320,7 +1296,7 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               ) : (
-                <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden" id="attendance-radar">
+                <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden" id="attendance-radar">
                   <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
@@ -1362,7 +1338,7 @@ const HomeDashboard = () => {
               <HackathonsFeed />
 
               {/* Section 3: Milestones & Events */}
-              <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+              <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
@@ -1516,7 +1492,7 @@ const HomeDashboard = () => {
             {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
             <div className="lg:col-span-5 space-y-4">
               {/* Section 4: Campus Announcements Feed (Desktop Only) */}
-              <section className="hidden lg:flex flex-col justify-between bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+              <section className="hidden lg:flex flex-col justify-between bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
@@ -1584,7 +1560,7 @@ const HomeDashboard = () => {
 
               {/* Section 5: CIE Scores */}
               {!isTeacher && (
-                <section className="bg-gradient-to-b from-white to-[#F2F7FC] rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                   <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">

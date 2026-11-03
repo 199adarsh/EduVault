@@ -927,10 +927,10 @@ const HomeDashboard = () => {
 
 
         <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0">
-          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop-UI Compliant) */}
-          <section className="bg-white rounded-lg border border-[#E2E2E2] p-4 sm:p-5 w-full min-w-0">
+          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop-UI Minimal) */}
+          <section className="bg-white rounded-[12px] border border-[#E2E2E2] p-4 sm:p-5 w-full min-w-0">
             <div className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-4">
-              {/* Left Identity: Clear hierarchy, honest student data */}
+              {/* Left Identity: Clear hierarchy, honest data, zero decorative slop */}
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="relative shrink-0">
                   {profile?.image ? (
@@ -954,22 +954,22 @@ const HomeDashboard = () => {
 
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-base sm:text-lg font-bold text-[#383838] tracking-tight leading-snug truncate">
-                      Welcome, <span className="text-[#0073E6]">{formatName(profile?.name)}</span>
+                    <h1 className="text-base sm:text-lg font-semibold text-[#383838] tracking-normal leading-tight truncate">
+                      Welcome, <span className="text-[#0073E6] font-bold">{formatName(profile?.name)}</span>
                     </h1>
                   </div>
 
                   {/* Clean unstop metadata chips */}
-                  <div className="flex items-center gap-1.5 text-xs text-[#727272] mt-1 flex-wrap">
+                  <div className="flex items-center gap-2 text-xs text-[#727272] mt-1 flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
-                      <span className="font-mono text-xs font-medium text-[#174073] bg-[#DEEDFC] px-2 py-0.5 rounded-md border border-[#D9ECFF]">
+                      <span className="font-mono text-[#174073] font-medium">
                         {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? `ID: ${profile?.prn}` : (profile?.rollNo || profile?.prn)}
                       </span>
                     )}
                     {getDepartmentName(profile?.department) && (
                       <>
                         <span className="text-[#E2E2E2]">•</span>
-                        <span className="text-[#383838] font-medium">{getDepartmentName(profile?.department)}</span>
+                        <span>{getDepartmentName(profile?.department)}</span>
                       </>
                     )}
                     {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (profile?.semester || profile?.section) && (
@@ -982,12 +982,12 @@ const HomeDashboard = () => {
                 </div>
               </div>
 
-              {/* Right Key Metrics: Desktop integrated stat blocks */}
+              {/* Right Key Metrics: Minimal, honest, flat unstop style */}
               {isTeacher ? (
                 <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-amber-600">pending_actions</span>
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.pending}</span>
@@ -996,7 +996,7 @@ const HomeDashboard = () => {
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.approved}</span>
@@ -1007,7 +1007,7 @@ const HomeDashboard = () => {
                 <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
                     <span className="text-xs font-bold text-[#383838] tabular-nums">{stats.overall}%</span>
@@ -1016,34 +1016,25 @@ const HomeDashboard = () => {
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F8FAFC] hover:bg-rose-50/50 border border-[#E2E2E2] hover:border-rose-200 transition-colors cursor-pointer group"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-rose-50/40 border border-[#E2E2E2] hover:border-[#E11D48]/30 transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-[#E11D48]">warning</span>
                     <span className="text-xs font-bold text-[#E11D48] tabular-nums">{stats.riskCount}</span>
                     <span className="text-[11px] text-[#727272]">At-Risk</span>
                   </div>
-
-                  <div
-                    onClick={() => setCiePopupOpen(true)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer group"
-                  >
-                    <span className="material-symbols-outlined text-[16px] text-[#174073]">bar_chart</span>
-                    <span className="text-xs font-bold text-[#383838] tabular-nums">{cieAverage ? `${cieAverage}%` : 'N/A'}</span>
-                    <span className="text-[11px] text-[#727272]">CIE</span>
-                  </div>
                 </div>
               )}
             </div>
 
-            {/* Native Mobile Metric Cards Grid */}
+            {/* Native Mobile Metric Cards Grid (Minimal Unstop Style) */}
             {!isTeacher && (
               <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden">
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-md p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#727272]">Attendance</span>
+                    <span className="text-[11px] font-normal text-[#727272]">Attendance</span>
                     <span className="material-symbols-outlined text-[#0073E6] text-[15px]">event_available</span>
                   </div>
                   <div className="mt-1 flex items-baseline">
@@ -1052,10 +1043,10 @@ const HomeDashboard = () => {
                 </div>
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-md p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#727272]">Below 75%</span>
+                    <span className="text-[11px] font-normal text-[#727272]">Below 75%</span>
                     <span className="material-symbols-outlined text-[#E11D48] text-[15px]">error_outline</span>
                   </div>
                   <div className="mt-1 flex items-baseline gap-1">
@@ -1065,10 +1056,10 @@ const HomeDashboard = () => {
                 </div>
                 <div
                   onClick={() => setCiePopupOpen(true)}
-                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-md p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
+                  className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#727272]">CIE Avg</span>
+                    <span className="text-[11px] font-normal text-[#727272]">CIE Avg</span>
                     <span className="material-symbols-outlined text-[#174073] text-[15px]">bar_chart</span>
                   </div>
                   <div className="mt-1 flex items-baseline">
@@ -1081,7 +1072,7 @@ const HomeDashboard = () => {
 
           {/* Urgent Broadcast Notification Banner (Unstop Mobile Style) */}
           {latestAnnouncement && (
-            <div className="lg:hidden bg-white rounded-lg p-3 border border-[#E2E2E2] flex items-center justify-between gap-2.5">
+            <div className="lg:hidden bg-white rounded-xl p-3 border border-[#E2E2E2] flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="w-8 h-8 rounded-full bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-[17px]">campaign</span>
@@ -1113,7 +1104,7 @@ const HomeDashboard = () => {
             <div className="lg:col-span-7 space-y-4">
               {/* Section 1: Attendance Activity Heatmap OR Faculty NC Management */}
               {isTeacher ? (
-                <section className="bg-white rounded-lg p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
+                <section className="bg-white rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4" id="faculty-nc-hub">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
@@ -1296,7 +1287,7 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               ) : (
-                <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden" id="attendance-radar">
+                <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden" id="attendance-radar">
                   <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
@@ -1338,7 +1329,7 @@ const HomeDashboard = () => {
               <HackathonsFeed />
 
               {/* Section 3: Milestones & Events */}
-              <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+              <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center">
@@ -1492,7 +1483,7 @@ const HomeDashboard = () => {
             {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
             <div className="lg:col-span-5 space-y-4">
               {/* Section 4: Campus Announcements Feed (Desktop Only) */}
-              <section className="hidden lg:flex flex-col justify-between bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+              <section className="hidden lg:flex flex-col justify-between bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
@@ -1560,7 +1551,7 @@ const HomeDashboard = () => {
 
               {/* Section 5: CIE Scores */}
               {!isTeacher && (
-                <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
                   <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">

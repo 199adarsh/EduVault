@@ -11,9 +11,9 @@
 
 @theme inline {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Geist Variable", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 
-  /* Theme mappings (Strict Unstop Design.md & Antislop-UI System) */
+  /* Theme mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -24,15 +24,11 @@
   --color-popover-foreground: var(--popover-foreground);
 
   --color-primary: var(--primary);
-  --color-primary-60: #4A9AF0;
-  --color-primary-20: #D9ECFF;
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-tertiary: #6A5AF9;
-  --color-neutral: #DEEDFC;
 
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -42,16 +38,14 @@
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-error: #E11D48;
 
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Unstop Surfaces */
+  /* Additional design tokens */
   --color-surface: var(--surface);
-  --color-on-surface: #383838;
   --color-surface-card: var(--surface-card);
   --color-surface-muted: var(--surface-muted);
   --color-surface-hover: var(--surface-hover);
@@ -66,26 +60,28 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
-  --color-violet: #6A5AF9;
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-cyan: var(--cyan);
 
   /* Chart colors */
-  --color-chart-1: #0073E6;
-  --color-chart-2: #16A34A;
-  --color-chart-3: #F59E0B;
-  --color-chart-4: #6A5AF9;
-  --color-chart-5: #E11D48;
-  --color-chart-6: #174073;
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
 
-  /* Radius system (Strict Unstop Design.md) */
-  --radius-none: 0px;
+  /* Radius system (Apple & Notion restrained radii) */
   --radius-sm: 4px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
   --radius-full: 9999px;
 
   /* Motion */
-  --animate-transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-transition: 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* =========================================================
@@ -96,90 +92,102 @@
 .light {
   color-scheme: light;
 
-  /* Canvas (Airy Unstop surface & soft blue background) */
-  --background: #F2F7FC;
-  --canvas-bg: #F2F7FC;
-  --foreground: #383838;
+  /* 60%: Fresh cool-tinted canvas — hint of blue */
+  --background: #F2F4F8;
+  --canvas-bg: #F2F4F8;
+  --foreground: #1A1C21;
 
-  /* Surface / Cards (Unstop clean surface) */
+  /* 30%: Crisp white cards — elevated with refined shadows */
   --card: #FFFFFF;
-  --card-foreground: #383838;
+  --card-foreground: #1A1C21;
 
   --surface: #FFFFFF;
   --surface-card: #FFFFFF;
-  --surface-muted: #DEEDFC;
-  --surface-hover: #D9ECFF;
-  --surface-subtle-blue: #DEEDFC;
+  --surface-muted: #F2F4F8;
+  --surface-hover: #E8EBF0;
+  --surface-subtle-blue: #ECF3FF;
 
   --popover: #FFFFFF;
-  --popover-foreground: #383838;
+  --popover-foreground: #1A1C21;
 
-  /* Unstop Secondary & Muted */
-  --secondary: #174073;
-  --secondary-foreground: #FFFFFF;
+  --secondary: #EEF0F5;
+  --secondary-foreground: #474B55;
 
-  --muted: #DEEDFC;
-  --muted-foreground: #727272;
+  --muted: #EEF0F5;
+  --muted-foreground: #5C6070;
 
-  /* Unstop High Readability Typography */
-  --text-primary: #383838;
-  --text-secondary: #727272;
-  --text-tertiary: #9E9E9E;
+  /* High Readability Text */
+  --text-primary: #171920;
+  --text-secondary: #4E5361;
+  --text-tertiary: #848898;
 
-  /* Unstop 1px Borders */
-  --border: #E2E2E2;
-  --border-subtle: #EDEDED;
-  --border-hover: #D9ECFF;
-  --border-strong: #CFCFCF;
-  --input: #E2E2E2;
+  /* Cool-tinted 1px Borders */
+  --border: #DDE0E8;
+  --border-subtle: #E2E5EC;
+  --border-hover: #CDD1DB;
+  --border-strong: #C2C7D2;
+  --input: #DDE0E8;
 
-  /* Unstop Electric Blue Primary Accent (#0073E6) */
-  --primary: #0073E6;
-  --primary-hover: #4A9AF0;
+  /* 10%: Lightning Blue Accent */
+  --primary: #0071E3;
+  --primary-hover: #005BB5;
   --primary-foreground: #FFFFFF;
-  --accent-lightning: #0073E6;
+  --accent-lightning: #0A84FF;
 
-  --accent: #DEEDFC;
-  --accent-foreground: #0073E6;
+  --accent: #E8F2FF;
+  --accent-foreground: #0065CC;
 
-  --ring: rgba(0, 115, 230, 0.25);
+  --ring: rgba(10, 132, 255, 0.30);
 
   /* Semantic colors */
-  --success: #16A34A;
-  --success-bg: #DCFCE7;
-  --success-text: #15803D;
+  --success: #34C759;
+  --success-bg: #E6F9EC;
+  --success-text: #16833B;
 
-  --warning: #F59E0B;
-  --warning-bg: #FEF3C7;
-  --warning-text: #B45309;
+  --warning: #FF9F0A;
+  --warning-bg: #FFF4E3;
+  --warning-text: #A65B00;
 
-  --destructive: #E11D48;
+  --destructive: #FF3B30;
   --destructive-foreground: #FFFFFF;
-  --danger-bg: #FFE4E6;
-  --danger-text: #E11D48;
+  --danger-bg: #FFEEEC;
+  --danger-text: #C62828;
 
-  --info: #0073E6;
-  --tertiary: #6A5AF9;
-  --violet: #6A5AF9;
+  --info: #0A84FF;
+
+  --violet: #7C6CFF;
+  --pink: #FF6B9A;
+  --cyan: #5AC8FA;
 
   /* Chart palette */
-  --chart-1: #0073E6;
-  --chart-2: #16A34A;
-  --chart-3: #F59E0B;
-  --chart-4: #6A5AF9;
-  --chart-5: #E11D48;
-  --chart-6: #174073;
+  --chart-1: #0A84FF;
+  --chart-2: #34C759;
+  --chart-3: #FF9F0A;
+  --chart-4: #7C6CFF;
+  --chart-5: #FF6B9A;
+  --chart-6: #5AC8FA;
 
-  /* Tonal, calm Unstop elevation (Flat contrast-led depth, no heavy glow) */
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --popover-shadow: 0 4px 16px -2px rgba(23, 64, 115, 0.10);
-  --modal-shadow: 0 8px 30px -4px rgba(23, 64, 115, 0.16);
+  /* Layered elevation shadows — elegant depth */
+  --card-shadow:
+    0 0 0 1px rgba(0, 20, 60, 0.02),
+    0 1px 2px rgba(0, 20, 60, 0.04),
+    0 4px 12px rgba(0, 20, 60, 0.04);
 
-  /* Glass for sticky header */
-  --glass-bg: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(226, 226, 226, 0.80);
+  --popover-shadow:
+    0 0 0 1px rgba(0, 20, 60, 0.03),
+    0 4px 8px rgba(0, 20, 60, 0.04),
+    0 12px 32px rgba(0, 20, 60, 0.10);
 
-  --radius: 12px;
+  --modal-shadow:
+    0 0 0 1px rgba(0, 20, 60, 0.04),
+    0 8px 20px rgba(0, 20, 60, 0.06),
+    0 24px 56px rgba(0, 20, 60, 0.14);
+
+  /* Glass for floating headers */
+  --glass-bg: rgba(242, 244, 248, 0.82);
+  --glass-border: rgba(26, 28, 33, 0.06);
+
+  --radius: 10px;
 }
 
 /* =========================================================
@@ -336,11 +344,11 @@ h4,
 h5,
 h6,
 .font-heading {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Geist Variable", -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text-primary);
   font-weight: 600;
   line-height: 1.3;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.022em;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   text-wrap: balance;
 }

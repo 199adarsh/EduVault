@@ -48,7 +48,7 @@ const HackathonsFeed = () => {
     }, [city]);
 
     return (
-        <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+        <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5 w-full min-w-0">
                 <div className="flex items-center gap-2.5 min-w-0">

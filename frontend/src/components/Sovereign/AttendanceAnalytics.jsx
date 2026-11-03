@@ -22,8 +22,8 @@ import {
     Tick02Icon,
     RefreshIcon,
     ChartLineData02Icon,
-    BookOpen01Icon,
-    LabsIcon,
+    Quiz03Icon,
+    ComputerProgramming01Icon,
     ArrowRight01Icon,
     ArrowDown01Icon,
     ArrowUp01Icon,
@@ -910,7 +910,7 @@ const AttendanceAnalytics = () => {
                                             <div key={sub.id} className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <div className={`p-1.5 rounded-lg shrink-0 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-50 text-amber-600'}`}>
-                                                        {isLab ? <LabsIcon size={16} /> : <BookOpen01Icon size={16} />}
+                                                        {isLab ? <ComputerProgramming01Icon size={16} /> : <Quiz03Icon size={16} />}
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2">
@@ -1600,7 +1600,7 @@ const AttendanceAnalytics = () => {
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
                                             <div className={`p-2 rounded-lg mt-0.5 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
                                                 }`}>
-                                                {isLab ? <LabsIcon size={18} /> : <BookOpen01Icon size={18} />}
+                                                {isLab ? <ComputerProgramming01Icon size={18} /> : <Quiz03Icon size={18} />}
                                             </div>
 
                                             <div className="flex-1 min-w-0">
@@ -1746,14 +1746,14 @@ const AttendanceAnalytics = () => {
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <BookOpen01Icon size={17} className="text-[#0073E6] shrink-0" />
+                                            <Quiz03Icon size={17} className="text-[#0073E6] shrink-0" />
                                             <span className="text-xs font-semibold text-[#383838] truncate">Lectures</span>
                                         </div>
                                         <span className="text-xs font-bold text-[#0073E6] shrink-0">{theoryPercentage}%</span>
                                     </div>
                                     <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <LabsIcon size={17} className="text-[#383838] shrink-0" />
+                                            <ComputerProgramming01Icon size={17} className="text-[#383838] shrink-0" />
                                             <span className="text-xs font-semibold text-[#383838] truncate">Labs</span>
                                         </div>
                                         <span className="text-xs font-bold text-[#383838] shrink-0">{labPercentage}%</span>

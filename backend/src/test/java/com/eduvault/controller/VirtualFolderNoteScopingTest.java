@@ -166,8 +166,11 @@ public class VirtualFolderNoteScopingTest {
         );
 
         assertNotNull(res.getBody());
-        assertEquals(2, res.getBody().size());
-        assertTrue(res.getBody().stream().allMatch(n -> n.getId().equals("note-1") || n.getId().equals("note-2")));
+        // AIDS-S05 student sees own AIDS-S05 notes + allied CSE-S05 notes (cross-department subjects like Software Engineering)
+        assertEquals(3, res.getBody().size());
+        assertTrue(res.getBody().stream().anyMatch(n -> n.getId().equals("note-1")));
+        assertTrue(res.getBody().stream().anyMatch(n -> n.getId().equals("note-2")));
+        assertTrue(res.getBody().stream().anyMatch(n -> n.getId().equals("note-4"))); // CSE-S05 allied
     }
 
     @Test
@@ -208,8 +211,11 @@ public class VirtualFolderNoteScopingTest {
         );
 
         assertNotNull(res.getBody());
-        assertEquals(1, res.getBody().size());
-        assertEquals("note-4", res.getBody().get(0).getId());
+        // CSE-S05 folder returns CSE-S05 notes + allied AIDS-S05 notes
+        assertEquals(3, res.getBody().size());
+        assertTrue(res.getBody().stream().anyMatch(n -> n.getId().equals("note-4")));
+        assertTrue(res.getBody().stream().anyMatch(n -> n.getId().equals("note-1")));
+        assertTrue(res.getBody().stream().anyMatch(n -> n.getId().equals("note-2")));
 
         // Faculty querying AIDS-S04
         org.springframework.http.ResponseEntity<List<Note>> resAids4 = controller.getNotes(
@@ -217,8 +223,9 @@ public class VirtualFolderNoteScopingTest {
         );
 
         assertNotNull(resAids4.getBody());
-        assertEquals(1, resAids4.getBody().size());
-        assertEquals("note-3", resAids4.getBody().get(0).getId());
+        assertEquals(2, resAids4.getBody().size());
+        assertTrue(resAids4.getBody().stream().anyMatch(n -> n.getId().equals("note-3")));
+        assertTrue(resAids4.getBody().stream().anyMatch(n -> n.getId().equals("note-5")));
     }
 }
 

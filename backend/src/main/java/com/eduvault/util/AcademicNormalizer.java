@@ -90,6 +90,19 @@ public class AcademicNormalizer {
     }
 
     /**
+     * Check if two departments are allied (share cross-listed subjects).
+     * AIDS and CSE share many subjects like Software Engineering, Data Structures, etc.
+     */
+    public static boolean isAlliedDepartment(String d1, String d2) {
+        if (d1 == null || d2 == null) return false;
+        String n1 = normalizeDepartment(d1);
+        String n2 = normalizeDepartment(d2);
+        if (n1.equalsIgnoreCase(n2)) return true;
+        java.util.Set<String> csAllied = java.util.Set.of("AIDS", "CSE", "AIML");
+        return csAllied.contains(n1.toUpperCase()) && csAllied.contains(n2.toUpperCase());
+    }
+
+    /**
      * Check if two semester strings represent the same canonical semester.
      */
     public static boolean isSemesterMatch(String s1, String s2) {

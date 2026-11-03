@@ -231,7 +231,7 @@ public class ApiController {
                             Subject s = subjectMap.get(n.getSubjectId());
                             if (s != null) noteDept = s.getDepartment();
                         }
-                        if (noteDept == null || !AcademicNormalizer.isDepartmentMatch(noteDept, finalDept)) {
+                        if (noteDept == null || (!AcademicNormalizer.isDepartmentMatch(noteDept, finalDept) && !AcademicNormalizer.isAlliedDepartment(noteDept, finalDept))) {
                             return false;
                         }
                     }

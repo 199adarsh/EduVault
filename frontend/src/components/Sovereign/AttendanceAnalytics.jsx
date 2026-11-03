@@ -1191,27 +1191,32 @@ const AttendanceAnalytics = () => {
                     </section>
                 ) : (
                     <section className="hidden lg:grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="summary-ribbon">
-                        {/* Master Attendance Card (Refined Minimal Design) */}
-                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                            <div className="flex items-center justify-between gap-1">
-                                <span className="text-xs font-medium text-[#6E6E73] font-sans">
-                                    Overall Attendance
-                                </span>
-                                <span className={cn(
-                                    "text-[11px] font-semibold px-2 py-0.5 rounded-full border font-sans",
-                                    parseFloat(overallPercentage) >= 75
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
-                                        : "bg-rose-50 text-rose-700 border-rose-200/80"
-                                )}>
-                                    {parseFloat(overallPercentage) >= 75 ? 'Safe' : 'Action Required'}
-                                </span>
-                            </div>
+                        {/* Master Attendance Card (Apple Minimal) */}
+                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                            <div>
+                                <div className="flex items-center justify-between gap-1">
+                                    <span className="text-xs font-semibold text-[#6E6E73] font-sans">
+                                        Overall Attendance
+                                    </span>
+                                    <span className={cn(
+                                        "text-[11px] font-semibold px-2 py-0.5 rounded-full border font-sans",
+                                        parseFloat(overallPercentage) >= 75
+                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                            : "bg-rose-50 text-rose-700 border-rose-200/80"
+                                    )}>
+                                        {parseFloat(overallPercentage) >= 75 ? 'Safe' : 'At Risk'}
+                                    </span>
+                                </div>
 
-                            <div className="my-3 flex items-baseline gap-2">
-                                <span className="text-3xl sm:text-4xl font-bold text-[#1D1D1F] tracking-tight font-sans tabular-nums">
-                                    {overallPercentage}%
-                                </span>
-                                <span className="text-xs text-[#6E6E73] font-normal font-sans">aggregate</span>
+                                <div className="mt-3 mb-1 flex items-baseline gap-2">
+                                    <span className="text-3xl sm:text-[34px] font-bold text-[#1D1D1F] tracking-tight font-sans tabular-nums leading-none">
+                                        {overallPercentage}%
+                                    </span>
+                                    <span className="text-xs text-[#8E8E93] font-normal font-sans">aggregate</span>
+                                </div>
+                                <p className="text-[11px] text-[#8E8E93] font-sans">
+                                    Across {activeSubjects.length} enrolled subjects
+                                </p>
                             </div>
 
                             {/* Clean Inline Breakdown: Theory & Labs */}
@@ -1257,9 +1262,9 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Activity Overview Heatmap (Wider Layout: 6 Cols) */}
-                        <div className="md:col-span-6 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                        <div className="md:col-span-6 bg-white border border-[#E5E5EA] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-[#6E6E73] font-sans">
+                                <span className="text-xs font-semibold text-[#6E6E73] font-sans">
                                     Activity Overview
                                 </span>
                                 <div className="flex items-center gap-1.5 text-[10px] text-[#727272] font-sans">
@@ -1278,38 +1283,55 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Risk Nodes Summary */}
-                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-[#6E6E73] font-sans">
-                                    Shortage Alerts
-                                </span>
-                                <span className={cn(
-                                    "text-[11px] font-semibold px-2 py-0.5 rounded-full border font-sans",
-                                    riskSubjects.length > 0 ? "bg-rose-50 text-rose-700 border-rose-200/80" : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
-                                )}>
-                                    {riskSubjects.length > 0 ? `${riskSubjects.length} At Risk` : 'All Clear'}
-                                </span>
+                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold text-[#6E6E73] font-sans">
+                                        Shortage Alerts
+                                    </span>
+                                    <span className={cn(
+                                        "text-[11px] font-semibold px-2 py-0.5 rounded-full border font-sans",
+                                        riskSubjects.length > 0 ? "bg-rose-50 text-rose-700 border-rose-200/80" : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                    )}>
+                                        {riskSubjects.length > 0 ? `${riskSubjects.length} At Risk` : 'All Clear'}
+                                    </span>
+                                </div>
+
+                                <div className="mt-3 space-y-2 text-xs">
+                                    {riskSubjects.length > 0 ? (
+                                        riskSubjects.slice(0, 3).map(sub => {
+                                            const pct = getPrecisePct(sub);
+                                            const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
+                                            const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+                                            const needed = Math.max(0, Math.ceil((0.75 * conducted - attended) / 0.25));
+
+                                            return (
+                                                <div key={sub.id} className="flex items-center justify-between py-1 border-b border-[#E5E5EA]/60 font-sans">
+                                                    <div className="min-w-0 pr-2">
+                                                        <span className="text-[#1D1D1F] truncate block font-medium" title={sub.name}>
+                                                            {sub.name}
+                                                        </span>
+                                                        {needed > 0 && (
+                                                            <span className="text-[10px] text-[#8E8E93]">
+                                                                Need +{needed} {needed === 1 ? 'class' : 'classes'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="font-semibold text-[#FF3B30] tabular-nums text-xs shrink-0">
+                                                        {pct}%
+                                                    </span>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="py-6 text-center text-xs text-[#6E6E73] font-sans">
+                                            All courses meet the 75% attendance threshold.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="my-2 space-y-1.5 text-xs max-h-[110px] overflow-y-auto no-scrollbar">
-                                {riskSubjects.length > 0 ? (
-                                    riskSubjects.slice(0, 4).map(sub => (
-                                        <div key={sub.id} className="flex items-center justify-between py-1 border-b border-[#E5E5EA]/60 font-sans">
-                                            <span className="text-[#1D1D1F] truncate pr-2 font-medium" title={sub.name}>
-                                                {sub.name}
-                                            </span>
-                                            <span className="font-semibold text-[#FF3B30] tabular-nums">
-                                                {getPrecisePct(sub)}%
-                                            </span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="py-4 text-center text-xs text-[#6E6E73] font-sans">
-                                        All courses meet the 75% attendance threshold.
-                                    </div>
-                                )}
-                            </div>
-                            <div className="text-[11px] text-[#8E8E93] font-sans pt-1">
+                            <div className="text-[11px] text-[#8E8E93] font-sans pt-2 border-t border-[#E5E5EA]/40">
                                 {riskSubjects.length > 0 ? 'Minimum 75% presence required for exams' : 'Good attendance standing'}
                             </div>
                         </div>

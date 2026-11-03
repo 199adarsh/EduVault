@@ -7,24 +7,30 @@ import FacultyAttendance from './FacultyAttendance';
 import { FluidTabs } from '../fluid-tabs';
 import { computeEngine, calculateLPW } from '../../lib/optimizationEngine';
 import {
-    Calendar,
-    Clock,
-    FileText,
-    UploadCloud,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
-    Filter,
-    Search,
-    Eye,
-    Download,
-    Shield,
-    Check,
-    X,
-    FileCheck,
-    RefreshCw,
-    TrendingUp
-} from 'lucide-react';
+    Calendar03Icon,
+    Clock01Icon,
+    File01Icon,
+    Upload01Icon,
+    CheckmarkCircle02Icon,
+    Cancel01Icon,
+    AlertCircleIcon,
+    FilterIcon,
+    Search01Icon,
+    ViewIcon,
+    Download04Icon,
+    Shield01Icon,
+    Tick02Icon,
+    RefreshIcon,
+    ChartLineData02Icon,
+    BookOpen01Icon,
+    LabsIcon,
+    ArrowRight01Icon,
+    ArrowDown01Icon,
+    ArrowUp01Icon,
+    SlidersHorizontalIcon,
+    InformationCircleIcon,
+    Settings02Icon
+} from 'hugeicons-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -624,14 +630,11 @@ const AttendanceAnalytics = () => {
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
-                                <span className="material-symbols-outlined text-[18px]">tune</span>
+                                <SlidersHorizontalIcon size={18} />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h2 className="text-sm font-bold text-[#383838] tracking-tight">Attendance Calculator &amp; Planner</h2>
-                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]">
-                                        Attendance Calculator
-                                    </span>
                                 </div>
                                 <p className="text-[11px] text-[#727272]">
                                     Calculate required classes, safe leaves, and target attendance
@@ -654,9 +657,7 @@ const AttendanceAnalytics = () => {
                                 className="w-7 h-7 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-100 flex items-center justify-center transition-colors"
                                 title={isOptMinimized ? "Expand Attendance Calculator" : "Minimize Attendance Calculator"}
                             >
-                                <span className="material-symbols-outlined text-[20px]">
-                                    {isOptMinimized ? 'expand_more' : 'expand_less'}
-                                </span>
+                                {isOptMinimized ? <ArrowDown01Icon size={18} /> : <ArrowUp01Icon size={18} />}
                             </button>
                         </div>
                     </div>
@@ -706,7 +707,7 @@ const AttendanceAnalytics = () => {
                                                 : 'bg-white text-[#383838] border-[#E2E2E2] hover:bg-slate-50'
                                             }`}
                                     >
-                                        <span className="material-symbols-outlined text-[15px]">settings</span>
+                                        <Settings02Icon size={15} />
                                         <span>{showOptSettings ? 'Hide Settings' : 'Adjust Class Schedule'}</span>
                                     </button>
                                 </div>
@@ -890,9 +891,7 @@ const AttendanceAnalytics = () => {
                                             <div key={sub.id} className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <div className={`p-1.5 rounded-lg shrink-0 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-50 text-amber-600'}`}>
-                                                        <span className="material-symbols-outlined text-[16px]">
-                                                            {isLab ? 'science' : 'menu_book'}
-                                                        </span>
+                                                        {isLab ? <LabsIcon size={16} /> : <BookOpen01Icon size={16} />}
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2">
@@ -1043,7 +1042,7 @@ const AttendanceAnalytics = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] text-[#727272] gap-3 animate-pulse">
-                <span className="material-symbols-outlined text-3xl animate-spin text-[#0073E6]">sync</span>
+                <RefreshIcon size={32} className="animate-spin text-[#0073E6]" />
                 <p className="text-xs font-semibold tracking-wider uppercase">Loading Attendance Records...</p>
             </div>
         );
@@ -1066,10 +1065,6 @@ const AttendanceAnalytics = () => {
                 {/* Top Academic Standing Header */}
                 <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full min-w-0">
                     <div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-[#0073E6] uppercase tracking-wider mb-1">
-                            <span className="material-symbols-outlined text-[16px]">{isTeacher ? 'verified_user' : 'trending_up'}</span>
-                            <span>{isTeacher ? 'Faculty Portal' : 'Attendance Overview'}</span>
-                        </div>
                         <h1 className="text-xl sm:text-2xl font-bold text-[#383838] tracking-tight">
                             {isTeacher ? 'Faculty Attendance & Leave Requests' : 'My Attendance'}
                         </h1>
@@ -1086,7 +1081,7 @@ const AttendanceAnalytics = () => {
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#383838] bg-white hover:bg-slate-50 border border-[#E2E2E2] rounded-full shadow-xs transition cursor-pointer"
                             title="View NC & Leave Requests"
                         >
-                            <Shield className="w-3.5 h-3.5 text-[#0073E6]" />
+                            <Shield01Icon size={14} className="text-[#0073E6]" />
                             <span>NC Requests</span>
                             {(isTeacher ? allFacultyNc.filter(r => r.status === 'PENDING').length : myNcRequests.length) > 0 && (
                                 <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
@@ -1100,16 +1095,14 @@ const AttendanceAnalytics = () => {
                             title="Refresh Data"
                             className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-[#E2E2E2] text-[#383838] hover:bg-slate-50 shadow-xs transition cursor-pointer disabled:opacity-50"
                         >
-                            <span className={`material-symbols-outlined text-[18px] text-[#383838] ${isSyncing || allFacultyNcLoading ? 'animate-spin' : ''}`}>
-                                sync
-                            </span>
+                            <RefreshIcon size={16} className={`text-[#383838] ${isSyncing || allFacultyNcLoading ? "animate-spin" : ""}`} />
                         </button>
                         {!isTeacher && (
                             <button
                                 onClick={handleExportData}
                                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] active:bg-blue-800 rounded-full shadow-xs transition cursor-pointer"
                             >
-                                <span className="material-symbols-outlined text-[18px]">download</span>
+                                <Download04Icon size={16} />
                                 <span>Export</span>
                             </button>
                         )}
@@ -1278,12 +1271,12 @@ const AttendanceAnalytics = () => {
                                     {
                                         id: 'nc',
                                         label: `Leave Requests Queue (${allFacultyNc.length})`,
-                                        icon: <span className="material-symbols-outlined text-[16px] mr-1">fact_check</span>
+                                        icon: <CheckmarkCircle02Icon size={16} className="mr-1" />
                                     },
                                     {
                                         id: 'courses',
                                         label: `Class Attendance Registers (${subjects?.length || 0})`,
-                                        icon: <span className="material-symbols-outlined text-[16px] mr-1">list_alt</span>
+                                        icon: <File01Icon size={16} className="mr-1" />
                                     }
                                 ]}
                             />
@@ -1306,7 +1299,7 @@ const AttendanceAnalytics = () => {
                                             onClick={fetchAllFacultyNc}
                                             className="px-3 py-1.5 rounded-xl border border-[#E2E2E2] text-xs font-semibold text-[#383838] hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer transition"
                                         >
-                                            <RefreshCw className="w-3.5 h-3.5 text-[#727272]" />
+                                            <RefreshIcon size={14} className="text-[#727272]" />
                                             <span>Refresh</span>
                                         </button>
                                     </div>
@@ -1352,7 +1345,7 @@ const AttendanceAnalytics = () => {
                                             ))}
                                         </select>
                                         <div className="relative">
-                                            <Search className="w-3.5 h-3.5 text-[#727272] absolute left-2.5 top-2.5" />
+                                            <Search01Icon size={14} className="text-[#727272] absolute left-2.5 top-2.5" />
                                             <input
                                                 type="text"
                                                 value={globalNcSearch}
@@ -1380,7 +1373,7 @@ const AttendanceAnalytics = () => {
                                         return true;
                                     }).length === 0 ? (
                                         <div className="py-14 text-center bg-slate-50/60 rounded-2xl border border-dashed border-[#E2E2E2] p-6 space-y-2">
-                                            <FileCheck className="w-8 h-8 text-[#727272] mx-auto" />
+                                            <CheckmarkCircle02Icon size={32} className="text-[#727272] mx-auto" />
                                             <h4 className="font-bold text-sm text-[#383838]">No Leave Requests Found</h4>
                                             <p className="text-xs text-[#727272] max-w-sm mx-auto">
                                                 There are no student leave requests matching the selected filter.
@@ -1428,7 +1421,7 @@ const AttendanceAnalytics = () => {
 
                                                             <div className="text-xs text-[#383838] flex items-center gap-2 flex-wrap pt-0.5">
                                                                 <span className="inline-flex items-center gap-1 font-mono text-[11px] bg-slate-50 border border-[#E2E2E2] px-2 py-0.5 rounded-md text-[#383838]">
-                                                                    <Calendar className="w-3.5 h-3.5 text-[#0073E6]" />
+                                                                    <Calendar03Icon size={14} className="text-[#0073E6]" />
                                                                     <span>{(req.absentDates || []).join(', ')}</span>
                                                                 </span>
                                                                 <span className="text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/60 px-2 py-0.5 rounded-md">
@@ -1443,7 +1436,7 @@ const AttendanceAnalytics = () => {
 
                                                             {req.reviewComment && (
                                                                 <div className="text-[11px] text-[#383838] bg-slate-50 border border-[#E2E2E2] p-2 rounded-xl mt-1.5 flex items-start gap-1.5">
-                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                                                    <CheckmarkCircle02Icon size={14} className="text-emerald-600 shrink-0 mt-0.5" />
                                                                     <span><strong>Faculty Note ({req.reviewedBy}):</strong> "{req.reviewComment}"</span>
                                                                 </div>
                                                             )}
@@ -1522,7 +1515,7 @@ const AttendanceAnalytics = () => {
                                             <p className="text-[11px] text-[#727272]">{sub.department} • {sub.semester}</p>
                                             <div className="pt-2 border-t border-[#E2E2E2] flex items-center justify-between text-xs text-[#0073E6] font-bold">
                                                 <span>View Attendance &amp; Leave Requests</span>
-                                                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                                <ArrowRight01Icon size={16} />
                                             </div>
                                         </div>
                                     );
@@ -1588,9 +1581,7 @@ const AttendanceAnalytics = () => {
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
                                             <div className={`p-2 rounded-lg mt-0.5 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
                                                 }`}>
-                                                <span className="material-symbols-outlined text-[18px]">
-                                                    {isLab ? 'science' : 'menu_book'}
-                                                </span>
+                                                {isLab ? <LabsIcon size={18} /> : <BookOpen01Icon size={18} />}
                                             </div>
 
                                             <div className="flex-1 min-w-0">
@@ -1650,9 +1641,6 @@ const AttendanceAnalytics = () => {
                                     <h2 className="text-sm font-bold text-[#383838]">Recent Classes</h2>
                                     <p className="text-[11px] text-[#727272]">Recent attendance records</p>
                                 </div>
-                                <span className="text-[11px] font-semibold text-[#0073E6] bg-[#DEEDFC] px-2 py-0.5 rounded-full">
-                                    Recent
-                                </span>
                             </div>
 
                             {/* Log timeline list */}
@@ -1695,7 +1683,7 @@ const AttendanceAnalytics = () => {
                             {/* Regulatory Policy Notice Footer */}
                             <div className="mt-3 pt-3 border-t border-[#E2E2E2] text-[11px] text-[#727272] leading-relaxed bg-slate-50/80 p-3 rounded-lg">
                                 <div className="flex items-center gap-1.5 font-semibold text-[#383838] mb-1">
-                                    <span className="material-symbols-outlined text-[15px] text-[#0073E6]">info</span>
+                                    <InformationCircleIcon size={15} className="text-[#0073E6]" />
                                     <span>College Attendance Policy</span>
                                 </div>
                                 75% minimum physical presence is mandatory for End-Semester Examination eligibility. Medical condonation forms must be submitted within 7 calendar days of recovery.
@@ -1739,14 +1727,14 @@ const AttendanceAnalytics = () => {
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="material-symbols-outlined text-[17px] text-[#0073E6] shrink-0">school</span>
+                                            <BookOpen01Icon size={17} className="text-[#0073E6] shrink-0" />
                                             <span className="text-xs font-semibold text-[#383838] truncate">Lectures</span>
                                         </div>
                                         <span className="text-xs font-bold text-[#0073E6] shrink-0">{theoryPercentage}%</span>
                                     </div>
                                     <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="material-symbols-outlined text-[17px] text-[#383838] shrink-0">science</span>
+                                            <LabsIcon size={17} className="text-[#383838] shrink-0" />
                                             <span className="text-xs font-semibold text-[#383838] truncate">Labs</span>
                                         </div>
                                         <span className="text-xs font-bold text-[#383838] shrink-0">{labPercentage}%</span>
@@ -1757,7 +1745,7 @@ const AttendanceAnalytics = () => {
                                 {riskSubjects.length > 0 && (
                                     <div className="rounded-xl bg-rose-50/80 border border-rose-200/80 p-3 flex flex-col gap-1.5 text-rose-900">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-[17px] text-rose-600">warning</span>
+                                            <AlertCircleIcon size={17} className="text-rose-600 shrink-0" />
                                             <span className="text-xs font-bold tracking-wide text-rose-700">
                                                 {riskSubjects.length} {riskSubjects.length === 1 ? 'Subject' : 'Subjects'} below 75% Cutoff
                                             </span>
@@ -1891,7 +1879,7 @@ const AttendanceAnalytics = () => {
                             <section className="rounded-2xl bg-white border border-[#E2E2E2] p-3.5 shadow-xs flex flex-col gap-2.5">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[#0073E6] text-[17px]">history</span>
+                                        <Clock01Icon size={16} className="text-[#0073E6]" />
                                         <h3 className="text-xs font-bold text-[#383838]">Recent Classes</h3>
                                     </div>
                                     <span className="text-[10px] text-[#727272] font-medium">{sessionLogs.length} records</span>
@@ -1982,7 +1970,7 @@ const AttendanceAnalytics = () => {
                                 }}
                                 className="self-end sm:self-auto p-1.5 rounded-lg text-[#727272] hover:text-[#383838] hover:bg-slate-200/70 cursor-pointer transition"
                             >
-                                <span className="material-symbols-outlined text-[20px]">close</span>
+                                <Cancel01Icon size={18} />
                             </button>
                         </div>
 
@@ -1997,7 +1985,7 @@ const AttendanceAnalytics = () => {
                                     {
                                         id: 'presence',
                                         label: 'Presence Log (P / Absent)',
-                                        icon: <span className="material-symbols-outlined text-[15px] mr-1">list_alt</span>
+                                        icon: <File01Icon size={15} className="mr-1" />
                                     },
                                     {
                                         id: 'nc',
@@ -2192,7 +2180,7 @@ const AttendanceAnalytics = () => {
                                                                         >
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="font-bold flex items-center gap-1.5 font-mono">
-                                                                                    <Calendar className="w-3.5 h-3.5 text-[#0073E6]" />
+                                                                                    <Calendar03Icon size={14} className="text-[#0073E6]" />
                                                                                     {rec.date}
                                                                                 </span>
                                                                                 {isAlreadyFiled ? (
@@ -2884,7 +2872,7 @@ const AttendanceAnalytics = () => {
                                         if (list.length === 0) {
                                             return (
                                                 <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-dashed border-[#E2E2E2] p-6">
-                                                    <Shield className="w-10 h-10 text-[#E2E2E2] mx-auto mb-2" />
+                                                    <Shield01Icon size={40} className="text-[#E2E2E2] mx-auto mb-2" />
                                                     <h4 className="text-xs font-bold text-[#383838]">No Leave Requests Found</h4>
                                                     <p className="text-[11px] text-[#727272]">No student submissions match this filter.</p>
                                                 </div>

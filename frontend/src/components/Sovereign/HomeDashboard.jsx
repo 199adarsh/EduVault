@@ -1483,18 +1483,32 @@ const HomeDashboard = () => {
             {/* Right Column: Broadcasts & CIE Scores (5 Cols) */}
             <div className="lg:col-span-5 space-y-4">
               {/* Section 4: Campus Announcements Feed (Desktop Only) */}
-              <section className="hidden lg:flex flex-col justify-between bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between gap-3 mb-3.5 min-w-0 w-full">
-                  <div className="min-w-0">
-                    <h2 className="text-base font-semibold text-[#383838] tracking-tight">Campus Announcements</h2>
-                    <p className="text-xs text-[#727272]">Official notices &amp; circulars</p>
+              <section className="hidden lg:flex flex-col justify-between bg-white rounded-[12px] p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E2E2E2] gap-3 min-w-0 w-full">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-[10px] bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[18px]">campaign</span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm sm:text-base font-bold text-[#383838] tracking-tight">
+                          <span className="text-[#0073E6]">Campus</span> Announcements
+                        </h2>
+                        {announcements && announcements.length > 0 && (
+                          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#D9ECFF] text-[#0073E6] tabular-nums">
+                            {announcements.length}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#727272] truncate mt-0.5">Official circulars &amp; academic notices</p>
+                    </div>
                   </div>
                   <button
                     onClick={() => navigate('/announcements')}
-                    className="text-xs font-semibold text-[#0073E6] hover:text-[#174073] inline-flex items-center gap-1 transition-colors cursor-pointer group shrink-0"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-[#0073E6] bg-white hover:bg-[#DEEDFC]/50 border border-[#D9ECFF] transition-all cursor-pointer shrink-0 shadow-2xs"
                   >
                     <span>View All</span>
-                    <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
                   </button>
                 </div>
 
@@ -1546,20 +1560,30 @@ const HomeDashboard = () => {
 
               {/* Section 5: CIE Scores */}
               {!isTeacher && (
-                <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
-                  <div className="flex items-center justify-between gap-3 mb-3.5 min-w-0 w-full">
-                    <div className="min-w-0">
-                      <h2 className="text-base font-semibold text-[#383838] tracking-tight">Internal Marks (CIE)</h2>
-                      <p className="text-xs text-[#727272]">
-                        Semester {profile?.semester ? (profile.semester.match(/\d+/)?.[0] || '5') : '5'} Assessment
-                      </p>
+                <section className="bg-white rounded-[12px] p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E2E2E2] gap-3 min-w-0 w-full">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-[10px] bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-[18px]">analytics</span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-sm sm:text-base font-bold text-[#383838] tracking-tight">
+                            <span className="text-[#0073E6]">Internal</span> Marks (CIE)
+                          </h2>
+                          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#DEEDFC] text-[#174073]">
+                            Sem {profile?.semester ? (profile.semester.match(/\d+/)?.[0] || '5') : '5'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#727272] truncate mt-0.5">Continuous internal evaluation</p>
+                      </div>
                     </div>
                     <button
                       onClick={() => setCiePopupOpen(true)}
-                      className="text-xs font-semibold text-[#0073E6] hover:text-[#174073] inline-flex items-center gap-1 transition-colors cursor-pointer group shrink-0"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-[#0073E6] bg-white hover:bg-[#DEEDFC]/50 border border-[#D9ECFF] transition-all cursor-pointer shrink-0 shadow-2xs"
                     >
                       <span>View All</span>
-                      <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
                     </button>
                   </div>
 

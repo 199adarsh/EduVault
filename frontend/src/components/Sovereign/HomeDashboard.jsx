@@ -927,22 +927,17 @@ const HomeDashboard = () => {
 
 
         <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-5 min-w-0">
-          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop-UI Craft) */}
-          <section className="relative overflow-hidden bg-white rounded-2xl border border-[#D9ECFF] shadow-[0_4px_20px_-4px_rgba(0,115,230,0.08)] p-4 sm:p-5 lg:p-6 w-full min-w-0 transition-all">
-            {/* Precision Dotted Pattern Accent (Unstop engineering motif) */}
+          {/* Student Profile & Hero Area (Strict Unstop Design.md & Antislop Native Dashboard Card) */}
+          <section className="relative overflow-hidden bg-white rounded-xl border border-[#E2E2E2] p-4 sm:p-5 w-full min-w-0 transition-colors">
+            {/* Precision Watermark Dot Grid (Zero blur/glow, crisp architectural pattern) */}
             <div
-              className="absolute top-0 right-0 w-48 sm:w-80 h-full pointer-events-none opacity-40"
+              className="absolute top-0 right-0 w-36 sm:w-64 h-full pointer-events-none opacity-20"
               style={{
-                backgroundImage: 'radial-gradient(#0073E6 1.25px, transparent 1.25px)',
-                backgroundSize: '12px 12px',
-                maskImage: 'radial-gradient(ellipse at top right, black 25%, transparent 75%)',
-                WebkitMaskImage: 'radial-gradient(ellipse at top right, black 25%, transparent 75%)',
+                backgroundImage: 'radial-gradient(#174073 1.2px, transparent 1.2px)',
+                backgroundSize: '10px 10px',
+                maskImage: 'linear-gradient(to left, black 25%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to left, black 25%, transparent 100%)',
               }}
-              aria-hidden="true"
-            />
-            {/* Ambient Soft Wash */}
-            <div
-              className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-[#DEEDFC]/50 blur-2xl pointer-events-none"
               aria-hidden="true"
             />
 
@@ -955,7 +950,7 @@ const HomeDashboard = () => {
                       src={profile.image}
                       alt={formatName(profile?.name)}
                       referrerPolicy="no-referrer"
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-[#DEEDFC] shadow-2xs"
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-[#D9ECFF]"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         if (e.currentTarget.nextElementSibling) {
@@ -964,48 +959,47 @@ const HomeDashboard = () => {
                       }}
                     />
                   ) : null}
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#0073E6] text-white items-center justify-center font-bold text-base ring-2 ring-[#DEEDFC] shadow-2xs ${profile?.image ? 'hidden' : 'flex'}`}>
+                  <div className={`w-12 h-12 rounded-full bg-[#0073E6] text-white items-center justify-center font-bold text-sm ring-2 ring-[#D9ECFF] ${profile?.image ? 'hidden' : 'flex'}`}>
                     {getInitials(profile?.name)}
                   </div>
-                  {/* Verified active indicator */}
-                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white shadow-2xs" title="Enrolled Student" />
                 </div>
 
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-base sm:text-xl font-bold text-[#383838] tracking-tight leading-snug truncate">
+                    <h1 className="text-base sm:text-lg font-bold text-[#383838] tracking-tight leading-snug truncate">
                       Welcome, <span className="text-[#0073E6]">{formatName(profile?.name)}</span>
                     </h1>
                   </div>
 
                   {/* Clean unstop metadata chips */}
-                  <div className="flex items-center gap-1.5 text-xs text-[#727272] mt-1.5 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-xs text-[#727272] mt-1 flex-wrap">
                     {(profile?.rollNo || profile?.prn) && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#DEEDFC]/70 border border-[#D9ECFF] font-mono text-[11px] font-semibold text-[#174073]">
-                        <span className="material-symbols-outlined text-[13px] text-[#0073E6]">badge</span>
+                      <span className="font-mono text-xs font-medium text-[#174073] bg-[#DEEDFC]/50 px-2 py-0.5 rounded-md border border-[#D9ECFF]">
                         {(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') ? `ID: ${profile?.prn}` : (profile?.rollNo || profile?.prn)}
                       </span>
                     )}
                     {getDepartmentName(profile?.department) && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F2F7FC] border border-[#E2E2E2] text-[11px] font-medium text-[#383838]">
-                        {getDepartmentName(profile?.department)}
-                      </span>
+                      <>
+                        <span className="text-[#E2E2E2]">•</span>
+                        <span className="text-[#383838] font-medium">{getDepartmentName(profile?.department)}</span>
+                      </>
                     )}
                     {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (profile?.semester || profile?.section) && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F2F7FC] border border-[#E2E2E2] text-[11px] font-medium text-[#727272]">
-                        {[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' • ')}
-                      </span>
+                      <>
+                        <span className="text-[#E2E2E2]">•</span>
+                        <span>{[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' ')}</span>
+                      </>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Right Key Metrics: Minimal, honest, flat unstop style */}
+              {/* Right Key Metrics: Desktop integrated stat blocks */}
               {isTeacher ? (
                 <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-amber-600">pending_actions</span>
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.pending}</span>
@@ -1014,7 +1008,7 @@ const HomeDashboard = () => {
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px] text-[#0073E6]">verified</span>
                     <span className="text-xs font-semibold text-[#383838] tabular-nums">{ncStats.approved}</span>
@@ -1025,9 +1019,9 @@ const HomeDashboard = () => {
                 <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0">
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F8FAFC] hover:bg-[#DEEDFC]/40 border border-[#D9ECFF] shadow-2xs transition-all cursor-pointer group"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:border-[#D9ECFF] transition-all cursor-pointer group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-[#DEEDFC] flex items-center justify-center text-[#0073E6] group-hover:bg-[#0073E6] group-hover:text-white transition-colors">
+                    <div className="w-8 h-8 rounded-md bg-[#DEEDFC] flex items-center justify-center text-[#0073E6]">
                       <span className="material-symbols-outlined text-[18px]">verified</span>
                     </div>
                     <div className="flex flex-col text-left">
@@ -1038,9 +1032,9 @@ const HomeDashboard = () => {
 
                   <div
                     onClick={() => navigate('/attendance')}
-                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F8FAFC] hover:bg-rose-50/60 border border-[#E2E2E2] hover:border-rose-200 shadow-2xs transition-all cursor-pointer group"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] hover:bg-rose-50/50 border border-[#E2E2E2] hover:border-rose-200 transition-all cursor-pointer group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-[#E11D48] group-hover:bg-[#E11D48] group-hover:text-white transition-colors">
+                    <div className="w-8 h-8 rounded-md bg-rose-50 flex items-center justify-center text-[#E11D48]">
                       <span className="material-symbols-outlined text-[18px]">warning</span>
                     </div>
                     <div className="flex flex-col text-left">
@@ -1051,9 +1045,9 @@ const HomeDashboard = () => {
 
                   <div
                     onClick={() => setCiePopupOpen(true)}
-                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F8FAFC] hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] hover:border-[#174073]/30 shadow-2xs transition-all cursor-pointer group"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] hover:border-[#D9ECFF] transition-all cursor-pointer group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-[#F2F7FC] flex items-center justify-center text-[#174073] group-hover:bg-[#174073] group-hover:text-white transition-colors">
+                    <div className="w-8 h-8 rounded-md bg-[#F2F7FC] flex items-center justify-center text-[#174073]">
                       <span className="material-symbols-outlined text-[18px]">bar_chart</span>
                     </div>
                     <div className="flex flex-col text-left">
@@ -1065,12 +1059,12 @@ const HomeDashboard = () => {
               )}
             </div>
 
-            {/* Native Mobile Metric Cards Grid (Anti-slop Unstop Elevated Cards) */}
+            {/* Native Mobile Metric Cards Grid (Part of Dashboard Aesthetic) */}
             {!isTeacher && (
-              <div className="w-full grid grid-cols-3 gap-2 sm:gap-3 mt-3.5 pt-3.5 border-t border-[#E8EFF6] lg:hidden relative z-10">
+              <div className="w-full grid grid-cols-3 gap-2 sm:gap-2.5 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden relative z-10">
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-[#F8FAFC] rounded-xl p-2.5 border border-[#D9ECFF] shadow-2xs active:scale-[0.98] transition-all cursor-pointer"
+                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#727272]">Attendance</span>
@@ -1082,7 +1076,7 @@ const HomeDashboard = () => {
                 </div>
                 <div
                   onClick={() => navigate('/attendance')}
-                  className="flex flex-col bg-[#F8FAFC] rounded-xl p-2.5 border border-[#E2E2E2] shadow-2xs active:scale-[0.98] transition-all cursor-pointer"
+                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#727272]">Below 75%</span>
@@ -1095,7 +1089,7 @@ const HomeDashboard = () => {
                 </div>
                 <div
                   onClick={() => setCiePopupOpen(true)}
-                  className="flex flex-col bg-[#F8FAFC] rounded-xl p-2.5 border border-[#E2E2E2] shadow-2xs active:scale-[0.98] transition-all cursor-pointer"
+                  className="flex flex-col bg-[#F8FAFC] hover:bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-[#727272]">CIE Avg</span>

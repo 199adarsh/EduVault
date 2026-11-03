@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 @import "@fontsource/inter";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -11,7 +11,8 @@
 
 @theme inline {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Geist Variable", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-heading: "Geist Mono Variable", ui-monospace, monospace;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
   /* Theme mappings */
   --color-background: var(--background);

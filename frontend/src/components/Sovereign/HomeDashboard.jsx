@@ -969,13 +969,13 @@ const HomeDashboard = () => {
                     {getDepartmentName(profile?.department) && (
                       <>
                         <span className="text-[#E2E2E2]">•</span>
-                        <span>{getDepartmentName(profile?.department)}</span>
+                        <span>{getDepartmentName(profile?.department).toUpperCase()}</span>
                       </>
                     )}
                     {!(localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER') && (profile?.semester || profile?.section) && (
                       <>
                         <span className="text-[#E2E2E2]">•</span>
-                        <span>{[profile?.semester ? `Sem ${profile.semester}` : null, profile?.section ? `Sec ${profile.section}` : null].filter(Boolean).join(' ')}</span>
+                        <span>{[profile?.semester ? `${profile.semester.toUpperCase()}` : null].filter(Boolean).join(' ')}</span>
                       </>
                     )}
                   </div>
@@ -1295,7 +1295,7 @@ const HomeDashboard = () => {
                       </div>
                       <div>
                         <h2 className="text-base font-semibold text-[#383838] leading-tight">Attendance Activity</h2>
-                        <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Records</span>
+                        <span className="text-xs font-normal text-[#727272]"> {profile?.semester} Records</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

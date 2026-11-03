@@ -16,12 +16,9 @@ import {
     Edit02Icon,
     Delete02Icon,
     File01Icon,
-    Location01Icon,
-    Time02Icon,
-    BookOpen01Icon,
     SentIcon,
     InformationCircleIcon,
-    ArrowUpRight01Icon,
+    ArrowRight01Icon,
     Tick02Icon,
     CheckmarkBadge01Icon
 } from 'hugeicons-react';
@@ -31,8 +28,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const FILTER_TABS = [
     { id: 'all', label: 'All Bulletins' },
-    { id: 'official', label: 'Official' },
-    { id: 'academic', label: 'Academic' },
+    { id: 'exam', label: 'Exams & Schedules' },
+    { id: 'official', label: 'Official Notices' },
     { id: 'bookmarked', label: 'Saved' }
 ];
 
@@ -99,7 +96,7 @@ const Announcements = () => {
             localStorage.setItem('eduvault_ack_announcements', JSON.stringify(next));
             return next;
         });
-        toast.success("Notice marked as acknowledged");
+        toast.success("Notice acknowledged");
     };
 
     const toggleBookmark = (id) => {
@@ -115,6 +112,9 @@ const Announcements = () => {
         try {
             const payload = {
                 ...newAnn,
+                tag: newAnn.type,
+                color: newAnn.colorTag,
+                postedBy: 'Faculty / Department',
                 deadline: newAnn.deadline || null,
                 createdAt: new Date().toISOString()
             };
@@ -136,6 +136,8 @@ const Announcements = () => {
         try {
             const payload = {
                 ...editingAnn,
+                tag: editingAnn.type || editingAnn.tag,
+                color: editingAnn.colorTag || editingAnn.color,
                 deadline: editingAnn.deadline || null
             };
             await axios.put(`${API_BASE}/announcements/${editingAnn.id}`, payload, {
@@ -165,17 +167,18 @@ const Announcements = () => {
     const filteredAnnouncements = useMemo(() => {
         return announcements.filter(item => {
             const query = searchQuery.trim().toLowerCase();
+            const tagStr = (item.tag || item.type || '').toLowerCase();
             const matchesSearch = !query || 
                 (item.title || '').toLowerCase().includes(query) ||
                 (item.description || '').toLowerCase().includes(query) ||
-                (item.author || '').toLowerCase().includes(query);
+                (item.postedBy || item.author || '').toLowerCase().includes(query);
             if (!matchesSearch) return false;
 
-            if (activeFilter === 'official') {
-                return (item.type || '').toLowerCase().includes('official');
+            if (activeFilter === 'exam') {
+                return tagStr.includes('exam') || (item.title || '').toLowerCase().includes('exam') || Boolean(item.deadline);
             }
-            if (activeFilter === 'academic') {
-                return (item.type || '').toLowerCase().includes('academic') || (item.type || '').toLowerCase().includes('schedule');
+            if (activeFilter === 'official') {
+                return tagStr.includes('official') || (item.postedBy || '').toLowerCase().includes('admin');
             }
             if (activeFilter === 'bookmarked') {
                 return bookmarkedIds.includes(item.id);
@@ -194,15 +197,25 @@ const Announcements = () => {
             .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
     }, [announcements]);
 
+    const acknowledgedCount = useMemo(() => {
+        return announcements.filter(a => acknowledgedIds.includes(a.id)).length;
+    }, [announcements, acknowledgedIds]);
+
     return (
         <main className="w-full px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12 max-w-[1360px] mx-auto min-w-0 font-sans text-[#383838]">
             {/* Page Header (Open, airy, unboxed) */}
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5">
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E2E2E2]">
                 <div>
-                    <span className="text-[10px] font-bold text-[#0073E6] uppercase tracking-wider block mb-0.5">
-                        Campus Noticeboard
-                    </span>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-[#0073E6] uppercase tracking-wider">
+                            Campus Noticeboard
+                        </span>
+                        <span className="text-[#E2E2E2]">•</span>
+                        <span className="text-[11px] font-semibold text-[#727272]">
+                            {announcements.length} Published Bulletins
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 mt-1">
                         <h1 className="text-xl sm:text-2xl font-bold text-[#383838] tracking-tight">
                             Announcements &amp; Circulars
                         </h1>
@@ -262,7 +275,7 @@ const Announcements = () => {
             </header>
 
             {/* Filter & Search Bar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 my-5">
                 {/* Search Bar */}
                 <div className="relative flex-1 min-w-0 max-w-md">
                     <Search01Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272] shrink-0" />
@@ -308,7 +321,7 @@ const Announcements = () => {
                     ) : filteredAnnouncements.length === 0 ? (
                         <div className="bg-white rounded-xl p-12 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] text-center text-[#727272]">
                             <Megaphone01Icon size={32} className="mx-auto mb-2 text-[#D9ECFF]" />
-                            <p className="text-xs font-semibold text-[#383838]">No circulars found</p>
+                            <p className="text-xs font-semibold text-[#383838]">No circulars match your query</p>
                             <p className="text-[11px] text-[#727272] mt-0.5">Try searching with a different keyword or reset the filter.</p>
                         </div>
                     ) : (
@@ -320,16 +333,17 @@ const Announcements = () => {
                                 month: 'short',
                                 year: 'numeric'
                             });
-                            const isOfficial = (ann.type || '').toLowerCase().includes('official');
-                            const isUrgent = ann.colorTag === 'red' || (ann.type || '').toLowerCase().includes('urgent');
+                            const tagLabel = ann.tag || ann.type || 'Notice';
+                            const isUrgent = ann.color === 'red' || ann.colorTag === 'red' || tagLabel.toLowerCase().includes('exam') || (ann.title || '').toLowerCase().includes('exam');
+                            const isOfficial = !isUrgent && (tagLabel.toLowerCase().includes('official') || (ann.postedBy || '').toLowerCase().includes('admin'));
 
                             return (
                                 <article
                                     key={ann.id || idx}
                                     className={cn(
                                         "bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] hover:border-[#4A9AF0] transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] group flex flex-col justify-between",
-                                        isUrgent && "border-l-4 border-l-[#E11D48]",
-                                        !isUrgent && isOfficial && "border-l-4 border-l-[#0073E6]"
+                                        isUrgent && "border-l-4 border-l-[#E11D48] bg-white",
+                                        isOfficial && "border-l-4 border-l-[#0073E6]"
                                     )}
                                 >
                                     <div>
@@ -344,7 +358,7 @@ const Announcements = () => {
                                                         ? "bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]"
                                                         : "bg-slate-100 text-[#174073] border border-slate-200"
                                                 )}>
-                                                    {ann.type || 'Notice'}
+                                                    {tagLabel}
                                                 </span>
 
                                                 <span className="inline-flex items-center gap-1 text-[11px] font-normal text-[#727272]">
@@ -407,58 +421,18 @@ const Announcements = () => {
                                         <p className="text-xs sm:text-[13px] text-[#4A4A4A] font-normal mt-2 leading-relaxed whitespace-pre-line">
                                             {ann.description}
                                         </p>
-
-                                        {/* Academic Details Strip (Duration, Syllabus, Hall) */}
-                                        {ann.meta && (
-                                            <div className="mt-3.5 p-3 rounded-lg bg-[#F8F9FA] border border-[#E2E2E2] grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                                                {ann.meta.duration && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Time02Icon size={14} className="text-[#0073E6] shrink-0" />
-                                                        <span className="truncate text-[#727272]">Duration: <strong className="text-[#383838] font-semibold">{ann.meta.duration}</strong></span>
-                                                    </div>
-                                                )}
-                                                {ann.meta.portion && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <BookOpen01Icon size={14} className="text-[#6A5AF9] shrink-0" />
-                                                        <span className="truncate text-[#727272]">Portion: <strong className="text-[#383838] font-semibold">{ann.meta.portion}</strong></span>
-                                                    </div>
-                                                )}
-                                                {ann.meta.hall && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Location01Icon size={14} className="text-[#E11D48] shrink-0" />
-                                                        <span className="truncate text-[#727272]">Hall: <strong className="text-[#383838] font-semibold">{ann.meta.hall}</strong></span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Document Attachments */}
-                                        {ann.attachments && ann.attachments.length > 0 && (
-                                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                                                {ann.attachments.map((att, aIdx) => (
-                                                    <span
-                                                        key={aIdx}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E2E2E2] hover:border-[#4A9AF0] text-[#174073] text-[11px] font-medium transition-colors cursor-pointer shadow-2xs group/att"
-                                                    >
-                                                        <File01Icon size={13} className="text-[#0073E6]" />
-                                                        <span>{att.name}</span>
-                                                        <ArrowUpRight01Icon size={12} className="text-[#727272] group-hover/att:text-[#0073E6]" />
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
 
                                     {/* Card Footer: Source Authority + Acknowledge Button */}
                                     <div className="pt-3.5 mt-4 border-t border-[#F0F0F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <div className="w-7 h-7 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-xs shrink-0">
-                                                {ann.authorInitials || (ann.author ? ann.author.charAt(0) : 'D')}
+                                                {(ann.postedBy || ann.author || 'A').charAt(0).toUpperCase()}
                                             </div>
                                             <div className="flex items-center gap-1.5 text-xs text-[#727272] truncate">
-                                                <span className="font-semibold text-[#383838] truncate">{ann.author || 'Dean of Academics'}</span>
+                                                <span className="font-semibold text-[#383838] truncate">{ann.postedBy || ann.author || 'Academic Administration'}</span>
                                                 <span className="text-[#E2E2E2]">•</span>
-                                                <span className="text-[11px] truncate">{ann.authorRole || 'Department Office'}</span>
+                                                <span className="text-[11px] truncate">{ann.authorRole || 'Department Notice Desk'}</span>
                                             </div>
                                         </div>
 
@@ -587,12 +561,12 @@ const Announcements = () => {
                             </div>
                             <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F9FA] border border-[#EAEAEA]">
                                 <span className="text-[#727272]">Acknowledged by You</span>
-                                <span className="font-bold text-emerald-700 tabular-nums">{acknowledgedIds.length}</span>
+                                <span className="font-bold text-emerald-700 tabular-nums">{acknowledgedCount}</span>
                             </div>
                             <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F9FA] border border-[#EAEAEA]">
                                 <span className="text-[#727272]">Pending Action</span>
                                 <span className="font-bold text-[#0073E6] tabular-nums">
-                                    {Math.max(0, announcements.length - acknowledgedIds.length)}
+                                    {Math.max(0, announcements.length - acknowledgedCount)}
                                 </span>
                             </div>
                             <p className="text-[11px] text-[#727272] pt-1">
@@ -741,7 +715,7 @@ const Announcements = () => {
                                     </label>
                                     <input
                                         type="text"
-                                        value={editingAnn.type || ''}
+                                        value={editingAnn.type || editingAnn.tag || ''}
                                         onChange={e => setEditingAnn({ ...editingAnn, type: e.target.value })}
                                         className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
                                     />
@@ -752,8 +726,8 @@ const Announcements = () => {
                                         Priority Tag
                                     </label>
                                     <select
-                                        value={editingAnn.colorTag || 'blue'}
-                                        onChange={e => setEditingAnn({ ...editingAnn, colorTag: e.target.value })}
+                                        value={editingAnn.colorTag || editingAnn.color || 'blue'}
+                                        onChange={e => setEditingAnn({ ...editingAnn, colorTag: e.target.value, color: e.target.value })}
                                         className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
                                     >
                                         <option value="blue">Blue (Official)</option>

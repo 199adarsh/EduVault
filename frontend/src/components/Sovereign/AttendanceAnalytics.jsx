@@ -1215,10 +1215,13 @@ const AttendanceAnalytics = () => {
                             </div>
 
                             {/* Clean Inline Breakdown: Theory & Labs */}
-                            <div className="pt-3 border-t border-[#E5E5EA] space-y-2">
+                            <div className="pt-3 border-t border-[#E5E5EA] space-y-2.5">
                                 <div>
                                     <div className="flex items-center justify-between text-xs mb-1 font-sans">
-                                        <span className="text-[#6E6E73] font-medium text-[11px]">Lectures</span>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <Quiz03Icon size={14} className="text-[#0071E3] shrink-0" />
+                                            <span className="text-[#6E6E73] font-medium text-[11px]">Lectures</span>
+                                        </div>
                                         <span className="font-semibold text-[#1D1D1F] text-[11px] tabular-nums">{theoryPercentage}%</span>
                                     </div>
                                     <div className="w-full bg-[#E5E5EA] rounded-full h-1.5 overflow-hidden">
@@ -1234,7 +1237,10 @@ const AttendanceAnalytics = () => {
 
                                 <div>
                                     <div className="flex items-center justify-between text-xs mb-1 font-sans">
-                                        <span className="text-[#6E6E73] font-medium text-[11px]">Labs</span>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <ComputerProgramming01Icon size={14} className="text-[#174073] shrink-0" />
+                                            <span className="text-[#6E6E73] font-medium text-[11px]">Labs</span>
+                                        </div>
                                         <span className="font-semibold text-[#1D1D1F] text-[11px] tabular-nums">{labPercentage}%</span>
                                     </div>
                                     <div className="w-full bg-[#E5E5EA] rounded-full h-1.5 overflow-hidden">
@@ -1639,8 +1645,7 @@ const AttendanceAnalytics = () => {
                                                             </h3>
                                                             <div className="flex items-center gap-2 text-xs text-[#727272] mt-1 flex-wrap">
                                                                 <span>{attended} / {conducted} sessions</span>
-                                                                <span className="text-[#E2E2E2]">•</span>
-                                                                <span>Target: 75%</span>
+
                                                                 {sub.faculty && (
                                                                     <>
                                                                         <span className="text-[#E2E2E2]">•</span>

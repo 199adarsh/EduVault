@@ -1191,51 +1191,59 @@ const AttendanceAnalytics = () => {
                     </section>
                 ) : (
                     <section className="hidden lg:grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="summary-ribbon">
-                        {/* Master Attendance Card (Compact Size) */}
-                        <div className="md:col-span-3 bg-white border border-[#E2E2E2] rounded-2xl p-4 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                        {/* Master Attendance Card (Refined Minimal Design) */}
+                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                             <div className="flex items-center justify-between gap-1">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#727272]">
-                                    Attendance
+                                <span className="text-xs font-medium text-[#6E6E73] font-sans">
+                                    Overall Attendance
                                 </span>
-                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${parseFloat(overallPercentage) >= 75
-                                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200/80'
-                                    : 'text-rose-700 bg-rose-50 border-rose-200/80'
-                                    }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${parseFloat(overallPercentage) >= 75 ? 'bg-emerald-600' : 'bg-rose-600'}`} />
-                                    {parseFloat(overallPercentage) >= 75 ? 'Safe' : 'Critical'}
+                                <span className={cn(
+                                    "text-[11px] font-semibold px-2 py-0.5 rounded-full border font-sans",
+                                    parseFloat(overallPercentage) >= 75
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                        : "bg-rose-50 text-rose-700 border-rose-200/80"
+                                )}>
+                                    {parseFloat(overallPercentage) >= 75 ? 'Safe' : 'Action Required'}
                                 </span>
                             </div>
 
-                            <div className="my-2.5 flex items-baseline gap-1.5">
-                                <span className="text-3xl font-black text-[#383838] tracking-tight">
+                            <div className="my-3 flex items-baseline gap-2">
+                                <span className="text-3xl sm:text-4xl font-bold text-[#1D1D1F] tracking-tight font-sans tabular-nums">
                                     {overallPercentage}%
                                 </span>
-                                <span className="text-[11px] text-[#727272] font-semibold">aggregate</span>
+                                <span className="text-xs text-[#6E6E73] font-normal font-sans">aggregate</span>
                             </div>
 
-                            {/* Refined Breakdown: Theory & Labs */}
-                            <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-[#E2E2E2] text-xs">
-                                <div className="bg-slate-50/80 p-2 rounded-xl border border-[#E2E2E2]">
-                                    <div className="flex items-center justify-between text-[#383838] mb-1">
-                                        <span className="font-semibold text-[10px]">Lectures</span>
-                                        <span className="font-extrabold text-[#383838] font-sans text-[11px]">{theoryPercentage}%</span>
+                            {/* Clean Inline Breakdown: Theory & Labs */}
+                            <div className="pt-3 border-t border-[#E5E5EA] space-y-2">
+                                <div>
+                                    <div className="flex items-center justify-between text-xs mb-1 font-sans">
+                                        <span className="text-[#6E6E73] font-medium text-[11px]">Lectures</span>
+                                        <span className="font-semibold text-[#1D1D1F] text-[11px] tabular-nums">{theoryPercentage}%</span>
                                     </div>
-                                    <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                    <div className="w-full bg-[#E5E5EA] rounded-full h-1.5 overflow-hidden">
                                         <div
-                                            className={`h-full rounded-full transition-all duration-500 ${parseFloat(theoryPercentage) >= 75 ? 'bg-emerald-500 shadow-2xs' : 'bg-amber-500 shadow-2xs'}`}
-                                            style={{ width: `${Math.min(100, Math.max(4, parseFloat(theoryPercentage)))}%` }}
+                                            className={cn(
+                                                "h-full rounded-full transition-all duration-500",
+                                                parseFloat(theoryPercentage) >= 75 ? "bg-[#0071E3]" : "bg-[#FF9F0A]"
+                                            )}
+                                            style={{ width: `${Math.min(100, Math.max(0, parseFloat(theoryPercentage)))}%` }}
                                         />
                                     </div>
                                 </div>
-                                <div className="bg-slate-50/80 p-2 rounded-xl border border-[#E2E2E2]">
-                                    <div className="flex items-center justify-between text-[#383838] mb-1">
-                                        <span className="font-semibold text-[10px]">Labs</span>
-                                        <span className="font-extrabold text-[#383838] font-sans text-[11px]">{labPercentage}%</span>
+
+                                <div>
+                                    <div className="flex items-center justify-between text-xs mb-1 font-sans">
+                                        <span className="text-[#6E6E73] font-medium text-[11px]">Labs</span>
+                                        <span className="font-semibold text-[#1D1D1F] text-[11px] tabular-nums">{labPercentage}%</span>
                                     </div>
-                                    <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                    <div className="w-full bg-[#E5E5EA] rounded-full h-1.5 overflow-hidden">
                                         <div
-                                            className={`h-full rounded-full transition-all duration-500 ${parseFloat(labPercentage) >= 75 ? 'bg-emerald-500 shadow-2xs' : 'bg-amber-500 shadow-2xs'}`}
-                                            style={{ width: `${Math.min(100, Math.max(4, parseFloat(labPercentage)))}%` }}
+                                            className={cn(
+                                                "h-full rounded-full transition-all duration-500",
+                                                parseFloat(labPercentage) >= 75 ? "bg-[#0071E3]" : "bg-[#FF9F0A]"
+                                            )}
+                                            style={{ width: `${Math.min(100, Math.max(0, parseFloat(labPercentage)))}%` }}
                                         />
                                     </div>
                                 </div>
@@ -1243,12 +1251,12 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Activity Overview Heatmap (Wider Layout: 6 Cols) */}
-                        <div className="md:col-span-6 bg-white border border-[#E2E2E2] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                        <div className="md:col-span-6 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+                                <span className="text-xs font-medium text-[#6E6E73] font-sans">
                                     Activity Overview
                                 </span>
-                                <div className="flex items-center gap-1.5 text-[10px] text-[#727272]">
+                                <div className="flex items-center gap-1.5 text-[10px] text-[#727272] font-sans">
                                     <span>Less</span>
                                     <span className="w-2.5 h-2.5 rounded-xs bg-slate-100 border border-[#E2E2E2] inline-block" />
                                     <span className="w-2.5 h-2.5 rounded-xs bg-emerald-300 inline-block" />
@@ -1264,35 +1272,39 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Risk Nodes Summary */}
-                        <div className="md:col-span-3 bg-white border border-[#E2E2E2] rounded-xl p-5 shadow-xs flex flex-col justify-between">
+                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
-                                    <span className="h-2 w-2 rounded-full bg-rose-500" />
-                                    {riskSubjects.length} Subjects
+                                <span className="text-xs font-medium text-[#6E6E73] font-sans">
+                                    Shortage Alerts
                                 </span>
-                                <span className="text-[11px] font-medium text-[#727272]">&lt; 75% Cutoff</span>
+                                <span className={cn(
+                                    "text-[11px] font-semibold px-2 py-0.5 rounded-full border font-sans",
+                                    riskSubjects.length > 0 ? "bg-rose-50 text-rose-700 border-rose-200/80" : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                )}>
+                                    {riskSubjects.length > 0 ? `${riskSubjects.length} At Risk` : 'All Clear'}
+                                </span>
                             </div>
 
                             <div className="my-2 space-y-1.5 text-xs max-h-[110px] overflow-y-auto no-scrollbar">
                                 {riskSubjects.length > 0 ? (
                                     riskSubjects.slice(0, 4).map(sub => (
-                                        <div key={sub.id} className="flex items-center justify-between py-1 border-b border-slate-50">
-                                            <span className="text-[#383838] truncate pr-2 font-medium" title={sub.name}>
+                                        <div key={sub.id} className="flex items-center justify-between py-1 border-b border-[#E5E5EA]/60 font-sans">
+                                            <span className="text-[#1D1D1F] truncate pr-2 font-medium" title={sub.name}>
                                                 {sub.name}
                                             </span>
-                                            <span className="font-semibold text-rose-600 font-sans">
+                                            <span className="font-semibold text-[#FF3B30] tabular-nums">
                                                 {getPrecisePct(sub)}%
                                             </span>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="py-4 text-center text-emerald-600 font-medium">
-                                        All subjects are above 75%
+                                    <div className="py-4 text-center text-xs text-[#6E6E73] font-sans">
+                                        All courses meet the 75% attendance threshold.
                                     </div>
                                 )}
                             </div>
-                            <div className="text-[11px] text-[#727272]">
-                                {riskSubjects.length > 0 ? 'Needs attention to reach 75%' : 'Good attendance maintained'}
+                            <div className="text-[11px] text-[#8E8E93] font-sans pt-1">
+                                {riskSubjects.length > 0 ? 'Minimum 75% presence required for exams' : 'Good attendance standing'}
                             </div>
                         </div>
                     </section>

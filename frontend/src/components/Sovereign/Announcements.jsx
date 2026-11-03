@@ -56,14 +56,25 @@ const DEFAULT_ANNOUNCEMENTS = [
     }
 ];
 
+const getAccountName = () => {
+    try {
+        const saved = localStorage.getItem('eduvault_profile');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed?.name && parsed.name.trim()) return parsed.name.trim();
+        }
+    } catch {
+        // ignore
+    }
+    return localStorage.getItem('eduvault_user_name') || 'Faculty Member';
+};
+
 const getAuthorInfo = (ann) => {
     const rawName = ann.postedBy || ann.author;
     const name = rawName && rawName.trim() ? rawName.trim() : 'Department Office';
-    const role = ann.authorRole && ann.authorRole.trim() ? ann.authorRole.trim() : null;
     const cleanInitial = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().charAt(0) || 'A';
     return {
         name,
-        role,
         initial: cleanInitial.toUpperCase()
     };
 };
@@ -109,8 +120,6 @@ const Announcements = () => {
         description: '',
         colorTag: 'blue',
         type: 'Official Notice',
-        postedBy: '',
-        authorRole: '',
         deadline: ''
     });
 
@@ -170,8 +179,7 @@ const Announcements = () => {
                 ...newAnn,
                 tag: newAnn.type,
                 color: newAnn.colorTag,
-                postedBy: (newAnn.postedBy && newAnn.postedBy.trim()) ? newAnn.postedBy.trim() : 'Department Office',
-                authorRole: (newAnn.authorRole && newAnn.authorRole.trim()) ? newAnn.authorRole.trim() : null,
+                postedBy: getAccountName(),
                 deadline: newAnn.deadline || null,
                 createdAt: new Date().toISOString()
             };
@@ -180,7 +188,7 @@ const Announcements = () => {
             });
             toast.success("Notice published successfully");
             setShowCreate(false);
-            setNewAnn({ title: '', description: '', colorTag: 'blue', type: 'Official Notice', postedBy: '', authorRole: '', deadline: '' });
+            setNewAnn({ title: '', description: '', colorTag: 'blue', type: 'Official Notice', deadline: '' });
             fetchAnnouncements();
         } catch (err) {
             toast.error(err.response?.data?.error || "Failed to publish notice");
@@ -195,8 +203,6 @@ const Announcements = () => {
                 ...editingAnn,
                 tag: editingAnn.type || editingAnn.tag,
                 color: editingAnn.colorTag || editingAnn.color,
-                postedBy: (editingAnn.postedBy && editingAnn.postedBy.trim()) ? editingAnn.postedBy.trim() : 'Department Office',
-                authorRole: (editingAnn.authorRole && editingAnn.authorRole.trim()) ? editingAnn.authorRole.trim() : null,
                 deadline: editingAnn.deadline || null
             };
             await axios.put(`${API_BASE}/announcements/${editingAnn.id}`, payload, {
@@ -487,14 +493,9 @@ const Announcements = () => {
                                                     <div className="w-7 h-7 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-[#D9ECFF]">
                                                         {author.initial}
                                                     </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <div className="flex items-center gap-1.5 leading-tight">
-                                                            <span className="font-semibold text-xs text-[#383838] truncate">{author.name}</span>
-                                                            <CheckmarkBadge01Icon size={13} className="text-[#0073E6] shrink-0" />
-                                                        </div>
-                                                        {author.role && (
-                                                            <span className="text-[10px] text-[#727272] truncate mt-0.5">{author.role}</span>
-                                                        )}
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <span className="font-semibold text-xs text-[#383838] truncate">{author.name}</span>
+                                                        <CheckmarkBadge01Icon size={13} className="text-[#0073E6] shrink-0" />
                                                     </div>
                                                 </div>
 
@@ -676,33 +677,6 @@ const Announcements = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-[#383838] mb-1">
-                                        Teacher / Author Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newAnn.postedBy || ''}
-                                        onChange={e => setNewAnn({ ...newAnn, postedBy: e.target.value })}
-                                        placeholder="e.g. Dr. A. P. Sharma"
-                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
-                                        Designation / Role (Optional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newAnn.authorRole || ''}
-                                        onChange={e => setNewAnn({ ...newAnn, authorRole: e.target.value })}
-                                        placeholder="e.g. Faculty Coordinator"
-                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
                                         Category / Type
                                     </label>
                                     <input
@@ -797,33 +771,6 @@ const Announcements = () => {
                                     onChange={e => setEditingAnn({ ...editingAnn, title: e.target.value })}
                                     className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
                                 />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
-                                        Teacher / Author Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={editingAnn.postedBy || ''}
-                                        onChange={e => setEditingAnn({ ...editingAnn, postedBy: e.target.value })}
-                                        placeholder="e.g. Dr. A. P. Sharma"
-                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
-                                        Designation / Role (Optional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={editingAnn.authorRole || ''}
-                                        onChange={e => setEditingAnn({ ...editingAnn, authorRole: e.target.value })}
-                                        placeholder="e.g. Faculty Coordinator"
-                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
-                                    />
-                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">

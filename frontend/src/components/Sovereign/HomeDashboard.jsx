@@ -1295,7 +1295,7 @@ const HomeDashboard = () => {
                       </div>
                       <div>
                         <h2 className="text-base">Attendance Activity</h2>
-                        <span className="text-xs font-normal text-[#727272]"> {profile?.semester} Records</span>
+
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -1484,26 +1484,21 @@ const HomeDashboard = () => {
             <div className="lg:col-span-5 space-y-4">
               {/* Section 4: Campus Announcements Feed (Desktop Only) */}
               <section className="hidden lg:flex flex-col justify-between bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-[18px]">campaign</span>
-                    </div>
-                    <div>
-                      <h2 className="text-base">Campus Announcements</h2>
-                      <span className="text-[0.625rem] font-normal text-[#727272]">Official Notices</span>
-                    </div>
+                <div className="flex items-center justify-between gap-3 mb-3.5 min-w-0 w-full">
+                  <div className="min-w-0">
+                    <h2 className="text-base font-semibold text-[#383838] tracking-tight">Campus Announcements</h2>
+                    <p className="text-xs text-[#727272]">Official notices &amp; circulars</p>
                   </div>
                   <button
                     onClick={() => navigate('/announcements')}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-[#0073E6] bg-white hover:bg-[#D9ECFF]/50 border border-[#D9ECFF] transition-all cursor-pointer"
+                    className="text-xs font-semibold text-[#0073E6] hover:text-[#174073] inline-flex items-center gap-1 transition-colors cursor-pointer group shrink-0"
                   >
                     <span>View All</span>
-                    <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                   </button>
                 </div>
 
-                <div className="mt-3.5 flex-1 flex flex-col justify-between gap-2">
+                <div className="flex-1 flex flex-col justify-between gap-2">
                   {announcements && announcements.length > 0 ? (
                     announcements.slice(0, 2).map((item, idx) => (
                       <div
@@ -1552,27 +1547,24 @@ const HomeDashboard = () => {
               {/* Section 5: CIE Scores */}
               {!isTeacher && (
                 <section className="bg-white rounded-xl p-5 sm:p-6 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] w-full min-w-0 overflow-hidden">
-                  <div className="flex items-center justify-between pb-3.5 border-b border-[#E2E2E2] gap-2 min-w-0 w-full">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[18px]">bar_chart</span>
-                      </div>
-                      <div>
-                        <h2 className="text-base">Internal Marks (CIE)</h2>
-                        <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Assessment</span>
-                      </div>
+                  <div className="flex items-center justify-between gap-3 mb-3.5 min-w-0 w-full">
+                    <div className="min-w-0">
+                      <h2 className="text-base font-semibold text-[#383838] tracking-tight">Internal Marks (CIE)</h2>
+                      <p className="text-xs text-[#727272]">
+                        Semester {profile?.semester ? (profile.semester.match(/\d+/)?.[0] || '5') : '5'} Assessment
+                      </p>
                     </div>
                     <button
                       onClick={() => setCiePopupOpen(true)}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-[#0073E6] bg-white hover:bg-[#D9ECFF]/50 border border-[#D9ECFF] transition-all cursor-pointer"
+                      className="text-xs font-semibold text-[#0073E6] hover:text-[#174073] inline-flex items-center gap-1 transition-colors cursor-pointer group shrink-0"
                     >
                       <span>View All</span>
-                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                      <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                     </button>
                   </div>
 
                   {/* High-Density Subject Scores Ledger */}
-                  <div className="mt-3.5 space-y-2">
+                  <div className="space-y-2">
                     {displayCieList.length > 0 ? (
                       displayCieList.slice(0, 4).map((sub, i) => {
                         const cie = parseFloat(sub.cie) || 0;

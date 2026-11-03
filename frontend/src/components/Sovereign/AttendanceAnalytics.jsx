@@ -940,7 +940,7 @@ const AttendanceAnalytics = () => {
                                                             <h4 className="text-xs font-semibold text-[#383838] truncate" title={sub.name}>
                                                                 {sub.name}
                                                             </h4>
-                                                            <span className="text-[10px] font-mono text-[#727272] bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
+                                                            <span className="text-[10px] font-sans text-[#727272] bg-slate-100 px-1.5 py-0.2 rounded shrink-0">
                                                                 {sub.code || 'COURSE'}
                                                             </span>
                                                         </div>
@@ -1126,7 +1126,7 @@ const AttendanceAnalytics = () => {
                             <Shield01Icon size={14} className="text-[#0073E6]" />
                             <span>NC Requests</span>
                             {(isTeacher ? allFacultyNc.filter(r => r.status === 'PENDING').length : myNcRequests.length) > 0 && (
-                                <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
+                                <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-sans">
                                     {isTeacher ? allFacultyNc.filter(r => r.status === 'PENDING').length : myNcRequests.length}
                                 </span>
                             )}
@@ -1220,7 +1220,7 @@ const AttendanceAnalytics = () => {
                                 <div className="bg-slate-50/80 p-2 rounded-xl border border-[#E2E2E2]">
                                     <div className="flex items-center justify-between text-[#383838] mb-1">
                                         <span className="font-semibold text-[10px]">Lectures</span>
-                                        <span className="font-extrabold text-[#383838] font-mono text-[11px]">{theoryPercentage}%</span>
+                                        <span className="font-extrabold text-[#383838] font-sans text-[11px]">{theoryPercentage}%</span>
                                     </div>
                                     <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
                                         <div
@@ -1232,7 +1232,7 @@ const AttendanceAnalytics = () => {
                                 <div className="bg-slate-50/80 p-2 rounded-xl border border-[#E2E2E2]">
                                     <div className="flex items-center justify-between text-[#383838] mb-1">
                                         <span className="font-semibold text-[10px]">Labs</span>
-                                        <span className="font-extrabold text-[#383838] font-mono text-[11px]">{labPercentage}%</span>
+                                        <span className="font-extrabold text-[#383838] font-sans text-[11px]">{labPercentage}%</span>
                                     </div>
                                     <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
                                         <div
@@ -1282,7 +1282,7 @@ const AttendanceAnalytics = () => {
                                             <span className="text-[#383838] truncate pr-2 font-medium" title={sub.name}>
                                                 {sub.name}
                                             </span>
-                                            <span className="font-semibold text-rose-600 font-mono">
+                                            <span className="font-semibold text-rose-600 font-sans">
                                                 {getPrecisePct(sub)}%
                                             </span>
                                         </div>
@@ -1330,7 +1330,7 @@ const AttendanceAnalytics = () => {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h2 className="text-base font-bold text-[#383838]">Student Leave &amp; Absence Requests</h2>
-                                            <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]/60">
+                                            <span className="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]/60">
                                                 Verified Documents
                                             </span>
                                         </div>
@@ -1451,7 +1451,7 @@ const AttendanceAnalytics = () => {
                                                         <div className="space-y-1 min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <span className="font-bold text-sm text-[#383838]">{req.studentName}</span>
-                                                                <span className="text-[10px] font-mono font-semibold bg-slate-100 text-[#383838] px-2 py-0.5 rounded-md border border-[#E2E2E2]">
+                                                                <span className="text-[10px] font-sans font-semibold bg-slate-100 text-[#383838] px-2 py-0.5 rounded-md border border-[#E2E2E2]">
                                                                     {req.studentPrn}
                                                                 </span>
                                                                 {req.missedSubjects && req.missedSubjects.length > 0 && (
@@ -1462,7 +1462,7 @@ const AttendanceAnalytics = () => {
                                                             </div>
 
                                                             <div className="text-xs text-[#383838] flex items-center gap-2 flex-wrap pt-0.5">
-                                                                <span className="inline-flex items-center gap-1 font-mono text-[11px] bg-slate-50 border border-[#E2E2E2] px-2 py-0.5 rounded-md text-[#383838]">
+                                                                <span className="inline-flex items-center gap-1 font-sans text-[11px] bg-slate-50 border border-[#E2E2E2] px-2 py-0.5 rounded-md text-[#383838]">
                                                                     <Calendar03Icon size={14} className="text-[#0073E6]" />
                                                                     <span>{(req.absentDates || []).join(', ')}</span>
                                                                 </span>
@@ -1546,7 +1546,7 @@ const AttendanceAnalytics = () => {
                                             className="p-5 rounded-2xl bg-white border border-[#E2E2E2] hover:border-blue-500 hover:shadow-md transition cursor-pointer space-y-3"
                                         >
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-[#383838]">
+                                                <span className="text-[10px] font-sans font-bold px-2 py-0.5 rounded bg-slate-100 text-[#383838]">
                                                     {sub.code || 'COURSE'}
                                                 </span>
                                                 <span className="text-xs font-bold text-[#0073E6] bg-[#DEEDFC] px-2 py-0.5 rounded-full">
@@ -1699,7 +1699,7 @@ const AttendanceAnalytics = () => {
                                                     }`}
                                             >
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-[11px] font-mono text-[#727272]">
+                                                    <span className="text-[11px] font-sans text-[#727272]">
                                                         {log.date} {log.time ? `• ${log.time}` : ''}
                                                     </span>
                                                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isPresent
@@ -1749,7 +1749,7 @@ const AttendanceAnalytics = () => {
                                             <span className="text-3xl font-extrabold text-[#0073E6] tracking-tight">
                                                 {overallPercentage}%
                                             </span>
-                                            <span className="text-xs font-semibold text-[#727272] font-mono">
+                                            <span className="text-xs font-semibold text-[#727272] font-sans">
                                                 ({totalAttended}/{totalConducted})
                                             </span>
                                         </div>
@@ -1988,7 +1988,7 @@ const AttendanceAnalytics = () => {
                                     <h3 className="text-base sm:text-lg font-bold text-[#383838] leading-tight">
                                         {selectedSubject.name}
                                     </h3>
-                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-mono">
+                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold font-sans">
                                         {selectedSubject.code || 'Course'}
                                     </span>
                                     <span className="text-xs font-bold text-[#383838] bg-white px-2 py-0.5 rounded-md border border-[#E2E2E2]">
@@ -2051,16 +2051,85 @@ const AttendanceAnalytics = () => {
                         {/* Modal Body */}
                         <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
                             {/* TAB 1: PRESENCE LOG */}
+                            {/* TAB 1: PRESENCE LOG */}
                             {modalTab === 'presence' && (
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-bold text-[#727272] uppercase tracking-wider block">
-                                            Date-Wise Lecture Sessions & Absence Status
-                                        </span>
+                                <div className="space-y-4">
+                                    {/* Course Standing & Attendance Bar */}
+                                    {(() => {
+                                        const conducted = selectedSubject.totalConducted > 0 ? selectedSubject.totalConducted : (selectedSubject.detailedAttendance?.length || 0);
+                                        const attended = selectedSubject.totalAttended > 0 ? selectedSubject.totalAttended : (selectedSubject.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+                                        const absent = Math.max(0, conducted - attended);
+                                        const pct = conducted > 0 ? Math.round((attended / conducted) * 100) : 0;
+                                        const isSafe = pct >= 75;
+
+                                        return (
+                                            <div className="bg-white rounded-xl p-4 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-3">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                    <div>
+                                                        <span className="text-xs font-semibold text-[#383838] font-sans">Course Attendance Standing</span>
+                                                        <p className="text-[11px] text-[#727272] font-sans mt-0.5">
+                                                            {attended} attended of {conducted} sessions conducted ({absent} {absent === 1 ? 'absence' : 'absences'})
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={cn(
+                                                            "px-2.5 py-0.5 rounded-full text-xs font-bold font-sans border",
+                                                            isSafe
+                                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                                : "bg-rose-50 text-[#E11D48] border-rose-200"
+                                                        )}>
+                                                            {pct}% {isSafe ? '• Safe' : '• Shortage'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Attendance Progress Bar */}
+                                                <div className="space-y-1.5">
+                                                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                                                        <div
+                                                            className={cn("h-full transition-all duration-300", isSafe ? "bg-[#0073E6]" : "bg-[#E11D48]")}
+                                                            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center justify-between text-[10px] text-[#727272] font-sans">
+                                                        <span>0%</span>
+                                                        <span className="font-medium text-[#174073]">Target: 75%</span>
+                                                        <span>100%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Filter & Action Header */}
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                            {[
+                                                { id: 'all', label: `All (${sortedSubjectRecords.length})` },
+                                                { id: 'Present', label: `Present (${subjectPresentCount})` },
+                                                { id: 'Absent', label: `Absent (${subjectAbsentCount})` }
+                                            ].map(tab => (
+                                                <button
+                                                    key={tab.id}
+                                                    type="button"
+                                                    onClick={() => setSubjectFilterTab(tab.id)}
+                                                    className={cn(
+                                                        "px-3 py-1 rounded-full text-xs font-semibold font-sans transition-colors cursor-pointer",
+                                                        subjectFilterTab === tab.id
+                                                            ? "bg-[#0073E6] text-white shadow-2xs"
+                                                            : "bg-white text-[#727272] hover:text-[#383838] border border-[#E2E2E2] hover:bg-slate-50"
+                                                    )}
+                                                >
+                                                    {tab.label}
+                                                </button>
+                                            ))}
+                                        </div>
+
                                         {!isTeacher && (
                                             <button
+                                                type="button"
                                                 onClick={() => setModalTab('nc')}
-                                                className="text-[11px] font-bold text-[#0073E6] hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+                                                className="text-xs font-semibold text-[#0073E6] hover:text-blue-800 flex items-center gap-1.5 cursor-pointer self-start sm:self-auto font-sans"
                                             >
                                                 <UploadCloud className="w-3.5 h-3.5" />
                                                 <span>Apply for Leave (NC)</span>
@@ -2068,69 +2137,96 @@ const AttendanceAnalytics = () => {
                                         )}
                                     </div>
 
-                                    {selectedSubject.detailedAttendance && selectedSubject.detailedAttendance.length > 0 ? (
+                                    {/* Sorted Attendance Session Logs */}
+                                    {filteredSubjectRecords && filteredSubjectRecords.length > 0 ? (
                                         <div className="space-y-2">
-                                            {selectedSubject.detailedAttendance.map((rec, i) => {
-                                                const isAbsent = rec.status === 'Absent';
-                                                const existingNc = subjectNcRequests.find(r => 
+                                            {filteredSubjectRecords.map((rec, i) => {
+                                                const isAbsent = rec.status === 'Absent' || rec.effectiveStatus === 'Absent';
+                                                const existingNc = rec.matchingNc || subjectNcRequests.find(r =>
                                                     r.absentDates && r.absentDates.includes(rec.date)
                                                 );
 
                                                 return (
                                                     <div
-                                                        key={i}
-                                                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border text-xs gap-2 transition ${
-                                                            isAbsent ? 'bg-rose-50/40 border-rose-100' : 'bg-slate-50/70 border-[#E2E2E2]'
-                                                        }`}
+                                                        key={rec.origIdx !== undefined ? rec.origIdx : i}
+                                                        className="bg-white rounded-xl p-3 border border-[#E2E2E2] hover:border-[#0073E6]/40 hover:shadow-2xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                                                     >
-                                                        <div className="flex items-center gap-2.5">
-                                                            <Calendar className={`w-4 h-4 ${isAbsent ? 'text-rose-500' : 'text-[#727272]'}`} />
-                                                            <div>
-                                                                <span className="font-mono font-semibold text-[#383838]">{rec.date}</span>
-                                                                {(rec.slot || rec.time) && (
-                                                                    <span className="text-[11px] text-[#727272] ml-2 font-mono">
-                                                                        ({rec.slot || rec.time})
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            {/* Present / Absent badge icon in place of Calendar */}
+                                                            <div className={cn(
+                                                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border",
+                                                                isAbsent
+                                                                    ? "bg-rose-50 text-[#E11D48] border-rose-200/80"
+                                                                    : "bg-emerald-50 text-emerald-600 border-emerald-200/80"
+                                                            )}>
+                                                                {isAbsent ? (
+                                                                    <AbsentBadgeIcon size={16} className="text-[#E11D48] shrink-0" />
+                                                                ) : (
+                                                                    <PresentBadgeIcon size={16} className="text-emerald-600 shrink-0" />
+                                                                )}
+                                                            </div>
+
+                                                            <div className="min-w-0">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-semibold text-xs text-[#383838] font-sans">
+                                                                        {rec.date}
                                                                     </span>
+                                                                    {rec.dayName && (
+                                                                        <span className="text-[10px] text-[#727272] font-sans">
+                                                                            {rec.dayName}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {(rec.slot || rec.time) && (
+                                                                    <p className="text-[11px] text-[#727272] font-sans truncate mt-0.5">
+                                                                        {rec.slot || rec.time}
+                                                                    </p>
                                                                 )}
                                                             </div>
                                                         </div>
 
                                                         <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
                                                             {/* Standard Presence Status */}
-                                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-    !isAbsent
-        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-        : 'bg-rose-50 text-[#E11D48] border-rose-200/80'
-}`}>
-    {!isAbsent ? <PresentBadgeIcon size={13} className="text-emerald-600 shrink-0" /> : <AbsentBadgeIcon size={13} className="text-[#E11D48] shrink-0" />}
-    <span>{rec.status}</span>
-</span>
+                                                            <span className={cn(
+                                                                "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-sans border",
+                                                                isAbsent
+                                                                    ? "bg-rose-50 text-[#E11D48] border-rose-200/80"
+                                                                    : "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                                            )}>
+                                                                {isAbsent ? (
+                                                                    <AbsentBadgeIcon size={12} className="text-[#E11D48] shrink-0" />
+                                                                ) : (
+                                                                    <PresentBadgeIcon size={12} className="text-emerald-600 shrink-0" />
+                                                                )}
+                                                                <span>{rec.status}</span>
+                                                            </span>
 
                                                             {/* NC Status / Apply Action */}
                                                             {isAbsent && (
                                                                 <>
                                                                     {existingNc ? (
                                                                         existingNc.status === 'APPROVED' ? (
-                                                                            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold flex items-center gap-1">
+                                                                            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold flex items-center gap-1 font-sans">
                                                                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Leave Approved
                                                                             </span>
                                                                         ) : existingNc.status === 'PENDING' ? (
-                                                                            <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold flex items-center gap-1">
+                                                                            <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold flex items-center gap-1 font-sans">
                                                                                 <Clock className="w-3 h-3 text-amber-600" /> Leave Pending
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold flex items-center gap-1">
+                                                                            <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-semibold flex items-center gap-1 font-sans">
                                                                                 <XCircle className="w-3 h-3 text-rose-600" /> Leave Rejected
                                                                             </span>
                                                                         )
                                                                     ) : (
                                                                         !isTeacher && (
                                                                             <button
+                                                                                type="button"
                                                                                 onClick={() => {
                                                                                     setSelectedNcDates([rec.date]);
                                                                                     setModalTab('nc');
                                                                                 }}
-                                                                                className="px-2 py-0.5 rounded-md bg-[#DEEDFC] hover:bg-blue-100 text-[#174073] border border-[#D9ECFF] text-[10px] font-bold flex items-center gap-1 cursor-pointer transition"
+                                                                                className="px-2.5 py-0.5 rounded-full bg-[#DEEDFC] hover:bg-[#0073E6] hover:text-white text-[#0073E6] border border-[#D9ECFF] text-[10px] font-semibold flex items-center gap-1 cursor-pointer transition font-sans"
                                                                             >
                                                                                 <UploadCloud className="w-3 h-3" /> Request Leave
                                                                             </button>
@@ -2144,7 +2240,12 @@ const AttendanceAnalytics = () => {
                                             })}
                                         </div>
                                     ) : (
-                                        <p className="text-xs text-[#727272] py-8 text-center">No detailed logs stored for this subject.</p>
+                                        <div className="bg-white rounded-xl p-8 border border-[#E2E2E2] text-center text-[#727272]">
+                                            <p className="text-xs font-semibold text-[#383838] font-sans">No attendance records found</p>
+                                            <p className="text-[11px] text-[#727272] mt-0.5 font-sans">
+                                                {subjectFilterTab !== 'all' ? `No ${subjectFilterTab.toLowerCase()} sessions recorded for this course.` : 'No lecture or lab logs available yet.'}
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -2164,7 +2265,7 @@ const AttendanceAnalytics = () => {
                                                             Submit Leave / Absence Request
                                                         </span>
                                                     </div>
-                                                    <span className="text-[11px] text-[#727272] font-mono">
+                                                    <span className="text-[11px] text-[#727272] font-sans">
                                                         Course: {selectedSubject.code || selectedSubject.name}
                                                     </span>
                                                 </div>
@@ -2173,7 +2274,7 @@ const AttendanceAnalytics = () => {
                                                 <div className="space-y-1.5">
                                                     <label className="text-xs font-bold text-[#383838] flex items-center justify-between">
                                                         <span>1. Select Absent Date(s)</span>
-                                                        <span className="text-[11px] font-normal text-[#727272] font-mono">
+                                                        <span className="text-[11px] font-normal text-[#727272] font-sans">
                                                             {selectedNcDates.length} selected
                                                         </span>
                                                     </label>
@@ -2223,7 +2324,7 @@ const AttendanceAnalytics = () => {
                                                                             }`}
                                                                         >
                                                                             <div className="flex items-center justify-between">
-                                                                                <span className="font-bold flex items-center gap-1.5 font-mono">
+                                                                                <span className="font-bold flex items-center gap-1.5 font-sans">
                                                                                     <Calendar03Icon size={14} className="text-[#0073E6]" />
                                                                                     {rec.date}
                                                                                 </span>
@@ -2241,7 +2342,7 @@ const AttendanceAnalytics = () => {
                                                                                 )}
                                                                             </div>
                                                                             {(rec.slot || rec.time) && (
-                                                                                <span className="text-[10px] text-[#727272] font-mono block mt-1">
+                                                                                <span className="text-[10px] text-[#727272] font-sans block mt-1">
                                                                                     Slot: {rec.slot || rec.time}
                                                                                 </span>
                                                                             )}
@@ -2337,7 +2438,7 @@ const AttendanceAnalytics = () => {
                                                     subjectNcRequests.map((req) => (
                                                         <div key={req.id} className="p-3 rounded-xl border border-[#E2E2E2] bg-white text-xs space-y-1.5 shadow-xs">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="font-bold text-[#383838] font-mono">
+                                                                <span className="font-bold text-[#383838] font-sans">
                                                                     Dates: {(req.absentDates || []).join(', ')}
                                                                 </span>
                                                                 {req.status === 'APPROVED' ? (
@@ -2422,7 +2523,7 @@ const AttendanceAnalytics = () => {
                                                                     <span className="font-bold text-[#383838] text-sm">
                                                                         {req.studentName}
                                                                     </span>
-                                                                    <span className="text-[#727272] text-[11px] ml-2 font-mono">
+                                                                    <span className="text-[#727272] text-[11px] ml-2 font-sans">
                                                                         PRN: {req.studentPrn} {req.rollNo ? `(Roll: ${req.rollNo})` : ''}
                                                                     </span>
                                                                 </div>
@@ -2437,7 +2538,7 @@ const AttendanceAnalytics = () => {
 
                                                             <div className="text-[#383838] text-[11px] space-y-1">
                                                                 <div>
-                                                                    Absent Dates: <strong className="font-mono">{(req.absentDates || []).join(', ')}</strong>
+                                                                    Absent Dates: <strong className="font-sans">{(req.absentDates || []).join(', ')}</strong>
                                                                 </div>
                                                                 <div>
                                                                     Reason: <strong>{req.reason}</strong>
@@ -2676,7 +2777,7 @@ const AttendanceAnalytics = () => {
                                                         </div>
 
                                                         <div className="text-[11px] text-[#383838] space-y-1">
-                                                            <div className="flex items-center gap-1.5 font-mono">
+                                                            <div className="flex items-center gap-1.5 font-sans">
                                                                 <Calendar className="w-3.5 h-3.5 text-[#727272]" />
                                                                 <span>Absent: <strong className="text-[#383838]">{(req.absentDates || []).join(', ')}</strong></span>
                                                             </div>
@@ -2740,7 +2841,7 @@ const AttendanceAnalytics = () => {
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-bold text-[#383838] flex items-center justify-between">
                                                     <span>Absent Date(s)</span>
-                                                    <span className="text-[11px] font-normal text-[#727272] font-mono">
+                                                    <span className="text-[11px] font-normal text-[#727272] font-sans">
                                                         {selectedNcDates.length} selected
                                                     </span>
                                                 </label>
@@ -2759,7 +2860,7 @@ const AttendanceAnalytics = () => {
                                                                             prev.includes(rec.date) ? prev.filter(d => d !== rec.date) : [...prev, rec.date]
                                                                         );
                                                                     }}
-                                                                    className={`p-1.5 rounded-lg border text-[11px] font-mono text-left transition cursor-pointer ${
+                                                                    className={`p-1.5 rounded-lg border text-[11px] font-sans text-left transition cursor-pointer ${
                                                                         isSel ? 'bg-[#DEEDFC] border-blue-400 text-blue-900 font-bold' : 'bg-white border-[#E2E2E2] text-[#383838] hover:border-slate-300'
                                                                     }`}
                                                                 >
@@ -2789,7 +2890,7 @@ const AttendanceAnalytics = () => {
                                                 {selectedNcDates.length > 0 && (
                                                     <div className="flex flex-wrap gap-1.5 pt-1">
                                                         {selectedNcDates.map(d => (
-                                                            <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF] text-[11px] font-mono font-semibold">
+                                                            <span key={d} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF] text-[11px] font-sans font-semibold">
                                                                 {d}
                                                                 <button
                                                                     type="button"
@@ -2929,7 +3030,7 @@ const AttendanceAnalytics = () => {
                                                         <div className="flex items-center justify-between gap-2">
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <span className="font-bold text-[#383838]">{req.studentName}</span>
-                                                                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-[#383838] font-semibold border border-[#E2E2E2]">
+                                                                <span className="font-sans text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-[#383838] font-semibold border border-[#E2E2E2]">
                                                                     {req.studentPrn}
                                                                 </span>
                                                                 {req.missedSubjects && req.missedSubjects.length > 0 && (
@@ -2948,7 +3049,7 @@ const AttendanceAnalytics = () => {
                                                         </div>
 
                                                         <div className="text-[11px] text-[#383838] space-y-0.5">
-                                                            <div>Absent: <strong className="font-mono text-[#383838]">{(req.absentDates || []).join(', ')}</strong></div>
+                                                            <div>Absent: <strong className="font-sans text-[#383838]">{(req.absentDates || []).join(', ')}</strong></div>
                                                             <div>Reason: <strong className="text-[#383838]">{req.reason}</strong>{req.description ? ` - "${req.description}"` : ''}</div>
                                                         </div>
 
@@ -3002,7 +3103,7 @@ const AttendanceAnalytics = () => {
                             <div className="flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-[#0073E6]" />
                                 <span className="font-bold text-xs sm:text-sm text-[#383838]">{docPreviewName}</span>
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold font-mono">
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold font-sans">
                                     Document Cloud
                                 </span>
                             </div>
@@ -3090,7 +3191,7 @@ const AttendanceAnalytics = () => {
                             <div className="bg-slate-50 p-3 rounded-xl border border-[#E2E2E2] space-y-1.5">
                                 <div className="flex justify-between">
                                     <span className="text-[#727272]">Dates of Absence:</span>
-                                    <span className="font-bold font-mono text-[#383838]">{(reviewingReq.absentDates || []).join(', ')}</span>
+                                    <span className="font-bold font-sans text-[#383838]">{(reviewingReq.absentDates || []).join(', ')}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-[#727272]">Reason Category:</span>

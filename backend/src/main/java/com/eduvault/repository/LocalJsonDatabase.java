@@ -425,8 +425,15 @@ public class LocalJsonDatabase {
         return info;
     }
 
+    public static String extractCourseCode(String text, String key) {
+        String combined = (text != null ? text : "") + " " + (key != null ? key : "");
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("([0-9]{2}[A-Z]{2,6}[0-9]{3,4}[A-Z]?)").matcher(combined.toUpperCase());
+        if (m.find()) return m.group(1);
+        return null;
+    }
+
     private Subject findSubjectFromFolderOrKey(String folderSubject, String fullKey, List<Subject> subjects) {
-        if (subjects == null || subjects.isEmpty()) return null;
+        if (subjects == null) return null;
 
         if (folderSubject != null && !folderSubject.isBlank()) {
             for (Subject s : subjects) {
@@ -456,6 +463,30 @@ public class LocalJsonDatabase {
                 if (s.getName() != null && !s.getName().isBlank() && upperKey.contains(s.getName().toUpperCase())) {
                     return s;
                 }
+            }
+        }
+
+        // Auto-create missing catalog subject from folder/key to guarantee notes are never unlinked
+        if (folderSubject != null && !folderSubject.isBlank()) {
+            String cleanName = AcademicNormalizer.cleanCourseName(folderSubject);
+            if (cleanName.length() >= 3 && !cleanName.equalsIgnoreCase("General") && !cleanName.equalsIgnoreCase("Lab") && !cleanName.toUpperCase().startsWith("UNIT")) {
+                String code = extractCourseCode(folderSubject, fullKey);
+                String dept = AcademicNormalizer.inferDepartmentFromCourse(code, folderSubject);
+                String sem = AcademicNormalizer.inferSemesterFromCourse(code, folderSubject);
+
+                Subject newSub = Subject.builder()
+                        .id(java.util.UUID.randomUUID().toString())
+                        .name(cleanName)
+                        .code(code)
+                        .department(dept)
+                        .semester(sem)
+                        .createdAt(java.time.LocalDate.now().toString())
+                        .noteCount(0)
+                        .build();
+                subjectRepository.save(newSub);
+                subjects.add(newSub);
+                logger.info("Auto-created missing catalog subject: {} [{}] ({})", cleanName, code, sem);
+                return newSub;
             }
         }
 
@@ -757,9 +788,72 @@ public class LocalJsonDatabase {
                     .noteCount(0)
                     .build());
         }
+
+        if (subjectRepository.findAll().stream().noneMatch(s -> s.getName() != null && s.getName().equalsIgnoreCase("Mathematics for Artificial Intelligence and Data Science"))) {
+            subjectRepository.save(Subject.builder()
+                    .id("sub-uad-maths-ai")
+                    .name("Mathematics for Artificial Intelligence and Data Science")
+                    .code("01ADL201")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (subjectRepository.findAll().stream().noneMatch(s -> s.getName() != null && s.getName().equalsIgnoreCase("Design and Analysis of Algorithms"))) {
+            subjectRepository.save(Subject.builder()
+                    .id("sub-uad-daa")
+                    .name("Design and Analysis of Algorithms")
+                    .code("01ADL210")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (subjectRepository.findAll().stream().noneMatch(s -> s.getName() != null && s.getName().equalsIgnoreCase("Design Thinking and Idea Lab"))) {
+            subjectRepository.save(Subject.builder()
+                    .id("sub-uad-dtil")
+                    .name("Design Thinking and Idea Lab")
+                    .code("03TCP156")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (subjectRepository.findAll().stream().noneMatch(s -> s.getName() != null && s.getName().equalsIgnoreCase("Microprocessors"))) {
+            subjectRepository.save(Subject.builder()
+                    .id("sub-uad-mp")
+                    .name("Microprocessors")
+                    .code("02ADL204")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
+        if (subjectRepository.findAll().stream().noneMatch(s -> s.getName() != null && s.getName().equalsIgnoreCase("Mini-Project-I"))) {
+            subjectRepository.save(Subject.builder()
+                    .id("sub-uad-mini-proj-1")
+                    .name("Mini-Project-I")
+                    .code("02ADD220")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
+                    .createdAt("2026-05-01")
+                    .noteCount(0)
+                    .build());
+        }
     }
 
     private Subject matchSubjectForNote(Note note, List<Subject> subjects) {
+        String keyToInspect = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
+        if (keyToInspect != null && keyToInspect.contains("/")) {
+            FolderInfo folderInfo = extractFolderInfoFromKey(keyToInspect);
+            Subject fromKey = findSubjectFromFolderOrKey(folderInfo.subject, keyToInspect, subjects);
+            if (fromKey != null) return fromKey;
+        }
+
         String combined = ((note.getTitle() != null ? note.getTitle() : "") + " "
                 + (note.getTags() != null ? String.join(" ", note.getTags()) : "") + " "
                 + (note.getExtractedText() != null ? note.getExtractedText() : "")).toUpperCase();

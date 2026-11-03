@@ -178,15 +178,8 @@ const PYQsDatabase = ({
     // Filter subjects dropdown to ONLY show subjects that have at least 1 PYQ document available
     const subjectsWithPyqs = useMemo(() => {
         if (!subjects || subjects.length === 0) return [];
-        const pool = allPyqs.length > 0 ? allPyqs : (pyqs || []);
-        return subjects.filter(s => {
-            return pool.some(q => 
-                (q.subjectId && q.subjectId === s.id) ||
-                (q.subjectName && s.name && q.subjectName.toLowerCase().trim() === s.name.toLowerCase().trim()) ||
-                (s.code && q.subjectId && s.code.toLowerCase().trim() === q.subjectId.toLowerCase().trim())
-            );
-        });
-    }, [subjects, allPyqs, pyqs]);
+        return subjects;
+    }, [subjects]);
 
     // Reset filterSubject if selected subject has no PYQs
     useEffect(() => {

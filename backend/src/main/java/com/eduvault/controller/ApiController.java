@@ -235,7 +235,7 @@ public class ApiController {
                             return false;
                         }
                     }
-                    if (finalSem != null && !finalSem.isBlank()) {
+                    if (finalSem != null && !finalSem.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank())) {
                         String noteSem = n.getSemester();
                         if ((noteSem == null || noteSem.isBlank()) && n.getSubjectId() != null) {
                             Subject s = subjectMap.get(n.getSubjectId());

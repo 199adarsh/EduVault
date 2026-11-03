@@ -239,7 +239,9 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             }
         }
 
-        // Strictly include subjects that actually have notes. Do not display subjects with 0 notes.
+        if (!isTeacher && subjects && subjects.length > 0) {
+            return subjects;
+        }
         return baseList.filter(s => subjectHasNotes(s));
     }, [isTeacher, subjects, allKnownSubjects, profile, studentDept, studentSem, subjectHasNotes]);
 

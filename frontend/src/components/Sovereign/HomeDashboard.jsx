@@ -1111,7 +1111,7 @@ const HomeDashboard = () => {
                         <span className="material-symbols-outlined text-[18px]">verified_user</span>
                       </div>
                       <div>
-                        <h2 className="text-base font-semibold text-[#383838] leading-tight">Attendance Excuse Requests (NC)</h2>
+                        <h2 className="text-base">Attendance Excuse Requests (NC)</h2>
                         <span className="text-xs font-normal text-[#727272]">Review student submissions</span>
                       </div>
                     </div>
@@ -1294,7 +1294,7 @@ const HomeDashboard = () => {
                         <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                       </div>
                       <div>
-                        <h2 className="text-base font-semibold text-[#383838] leading-tight">Attendance Activity</h2>
+                        <h2 className="text-base">Attendance Activity</h2>
                         <span className="text-xs font-normal text-[#727272]"> {profile?.semester} Records</span>
                       </div>
                     </div>
@@ -1336,7 +1336,7 @@ const HomeDashboard = () => {
                       <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold text-[#383838] leading-tight">Deadlines &amp; Events</h2>
+                      <h2 className="text-base">Deadlines &amp; Events</h2>
                       <span className="text-xs font-normal text-[#727272]">Academic Schedule</span>
                     </div>
                   </div>
@@ -1490,7 +1490,7 @@ const HomeDashboard = () => {
                       <span className="material-symbols-outlined text-[18px]">campaign</span>
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold text-[#383838] leading-tight">Campus Announcements</h2>
+                      <h2 className="text-base">Campus Announcements</h2>
                       <span className="text-[0.625rem] font-normal text-[#727272]">Official Notices</span>
                     </div>
                   </div>
@@ -1558,7 +1558,7 @@ const HomeDashboard = () => {
                         <span className="material-symbols-outlined text-[18px]">bar_chart</span>
                       </div>
                       <div>
-                        <h2 className="text-base font-semibold text-[#383838] leading-tight">Internal Marks (CIE)</h2>
+                        <h2 className="text-base">Internal Marks (CIE)</h2>
                         <span className="text-xs font-normal text-[#727272]">Semester {profile?.semester || 5} Assessment</span>
                       </div>
                     </div>
@@ -1638,7 +1638,7 @@ const HomeDashboard = () => {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-base font-semibold text-[#383838] leading-tight">Internal Assessment Scores</h3>
+                      <h3 className="text-base">Internal Assessment Scores</h3>
                       <span className="px-2.5 py-0.5 text-[10px] font-medium rounded-full bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]">
                         {profile?.semester || 'Semester'}
                       </span>

@@ -354,7 +354,7 @@ h6,
 .font-heading {
   font-family: "Geist Serif", Georgia, serif;
   color: var(--text-primary);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.3;
   letter-spacing: 0.05em;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";

@@ -90,7 +90,7 @@ const HackathonsFeed = () => {
                         >
                             <div className="min-w-0 flex-1">
                                 <h3
-                                    className="text-xs font-semibold text-[#383838] tracking-tight truncate leading-tight group-hover:text-[#0073E6] transition-colors"
+                                    className="text-xs font-semibold text-[#383838] font-sans tracking-tight truncate leading-tight group-hover:text-[#0073E6] transition-colors"
                                     title={item.title}
                                 >
                                     {item.title}

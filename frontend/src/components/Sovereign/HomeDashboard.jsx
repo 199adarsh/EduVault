@@ -1082,7 +1082,7 @@ const HomeDashboard = () => {
                     <span className="w-1.5 h-1.5 rounded-full bg-[#0073E6]" />
                     <span className="text-[9px] font-bold text-[#0073E6] uppercase tracking-wide">Notice</span>
                   </div>
-                  <span className="text-xs font-semibold text-[#383838] leading-snug line-clamp-1 truncate mt-0.5">{latestAnnouncement.title}</span>
+                  <span className="text-xs font-semibold text-[#383838] font-sans leading-snug line-clamp-1 truncate mt-0.5">{latestAnnouncement.title}</span>
                   <span className="text-[10px] text-[#727272] truncate">
                     {latestAnnouncement.type || 'Notice'} • {latestAnnouncement.createdAt ? new Date(latestAnnouncement.createdAt).toLocaleDateString() : 'Recent'}
                   </span>
@@ -1531,7 +1531,7 @@ const HomeDashboard = () => {
                               </span>
                             )}
                           </div>
-                          <h3 className="text-xs font-semibold text-[#383838] group-hover:text-[#0073E6] transition-colors truncate mt-1">
+                          <h3 className="text-xs font-semibold text-[#383838] font-sans group-hover:text-[#0073E6] transition-colors truncate mt-1">
                             {item.title}
                           </h3>
                         </div>
@@ -1585,7 +1585,7 @@ const HomeDashboard = () => {
                           <div key={sub.id || i} className="p-2.5 rounded-lg bg-white border border-[#E2E2E2] hover:border-[#0073E6]/40 transition-colors flex items-center justify-between gap-3">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-semibold text-[#383838] truncate">{sub.name}</span>
+                                <span className="text-xs font-semibold text-[#383838] font-sans truncate">{sub.name}</span>
                                 <span className="text-xs font-bold text-[#383838] tabular-nums ml-2 shrink-0">
                                   {cie > 0 ? cie : '-'} <span className="text-[10px] font-normal text-[#727272]">/ 50</span>
                                 </span>

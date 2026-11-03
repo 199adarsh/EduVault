@@ -40,8 +40,7 @@ const DEFAULT_ANNOUNCEMENTS = [
         description: "The end-semester examination timetable is available. Check the schedule and note your exam dates.",
         tag: "Exam",
         color: "red",
-        postedBy: "Dr. V. R. Ghorpade",
-        authorRole: "Controller of Examinations • Autonomous Cell",
+        postedBy: "Academic Administration",
         createdAt: "2026-10-14T15:33:30.604Z",
         isPinned: true
     },
@@ -51,35 +50,20 @@ const DEFAULT_ANNOUNCEMENTS = [
         description: "All students must complete the registration form for the upcoming industrial visit by 5:00 PM on Friday. Students who fail to register before the deadline may not be included in the final participant list. Contact your class coordinator for further details.",
         tag: "Student Activity",
         color: "blue",
-        postedBy: "Prof. S. R. Kulkarni",
-        authorRole: "Faculty Coordinator • AI & Data Science",
+        postedBy: "Faculty / Department",
         createdAt: "2026-10-16T05:07:54.606Z",
         isPinned: false
     }
 ];
 
-const getFacultyAuthor = (ann) => {
-    let name = ann.postedBy || ann.author;
-    let role = ann.authorRole;
-    
-    if (!name || name === 'Faculty / Department' || name === 'Academic Administration' || name === 'Dean of Academics') {
-        const tag = (ann.tag || ann.type || '').toLowerCase();
-        const title = (ann.title || '').toLowerCase();
-        if (tag.includes('exam') || title.includes('exam') || title.includes('timetable')) {
-            name = 'Dr. V. R. Ghorpade';
-            role = role || 'Controller of Examinations • Autonomous Cell';
-        } else if (tag.includes('activity') || title.includes('visit') || title.includes('registration')) {
-            name = 'Prof. S. R. Kulkarni';
-            role = role || 'Faculty Coordinator • AI & Data Science';
-        } else {
-            name = 'Dr. K. S. Patil';
-            role = role || 'Head of Department • AI & Data Science';
-        }
-    }
-    const cleanInitial = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().charAt(0) || 'F';
+const getAuthorInfo = (ann) => {
+    const rawName = ann.postedBy || ann.author;
+    const name = rawName && rawName.trim() ? rawName.trim() : 'Department Office';
+    const role = ann.authorRole && ann.authorRole.trim() ? ann.authorRole.trim() : null;
+    const cleanInitial = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, '').trim().charAt(0) || 'A';
     return {
         name,
-        role: role || 'Faculty Member • AI & DS Dept',
+        role,
         initial: cleanInitial.toUpperCase()
     };
 };
@@ -125,6 +109,8 @@ const Announcements = () => {
         description: '',
         colorTag: 'blue',
         type: 'Official Notice',
+        postedBy: '',
+        authorRole: '',
         deadline: ''
     });
 
@@ -184,7 +170,8 @@ const Announcements = () => {
                 ...newAnn,
                 tag: newAnn.type,
                 color: newAnn.colorTag,
-                postedBy: 'Faculty / Department',
+                postedBy: (newAnn.postedBy && newAnn.postedBy.trim()) ? newAnn.postedBy.trim() : 'Department Office',
+                authorRole: (newAnn.authorRole && newAnn.authorRole.trim()) ? newAnn.authorRole.trim() : null,
                 deadline: newAnn.deadline || null,
                 createdAt: new Date().toISOString()
             };
@@ -193,7 +180,7 @@ const Announcements = () => {
             });
             toast.success("Notice published successfully");
             setShowCreate(false);
-            setNewAnn({ title: '', description: '', colorTag: 'blue', type: 'Official Notice', deadline: '' });
+            setNewAnn({ title: '', description: '', colorTag: 'blue', type: 'Official Notice', postedBy: '', authorRole: '', deadline: '' });
             fetchAnnouncements();
         } catch (err) {
             toast.error(err.response?.data?.error || "Failed to publish notice");
@@ -208,6 +195,8 @@ const Announcements = () => {
                 ...editingAnn,
                 tag: editingAnn.type || editingAnn.tag,
                 color: editingAnn.colorTag || editingAnn.color,
+                postedBy: (editingAnn.postedBy && editingAnn.postedBy.trim()) ? editingAnn.postedBy.trim() : 'Department Office',
+                authorRole: (editingAnn.authorRole && editingAnn.authorRole.trim()) ? editingAnn.authorRole.trim() : null,
                 deadline: editingAnn.deadline || null
             };
             await axios.put(`${API_BASE}/announcements/${editingAnn.id}`, payload, {
@@ -489,21 +478,23 @@ const Announcements = () => {
                                         </p>
                                     </div>
 
-                                    {/* Card Footer: Verified Faculty Authority + Acknowledge Button */}
+                                    {/* Card Footer: Teacher / Author & Acknowledge */}
                                     {(() => {
-                                        const faculty = getFacultyAuthor(ann);
+                                        const author = getAuthorInfo(ann);
                                         return (
                                             <div className="mt-4 pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <div className="w-7 h-7 rounded-full bg-[#DEEDFC] text-[#0073E6] flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-[#D9ECFF]">
-                                                        {faculty.initial}
+                                                        {author.initial}
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
                                                         <div className="flex items-center gap-1.5 leading-tight">
-                                                            <span className="font-semibold text-xs text-[#383838] truncate">{faculty.name}</span>
-                                                            <CheckmarkBadge01Icon size={13} className="text-[#0073E6] shrink-0" title="Verified Faculty" />
+                                                            <span className="font-semibold text-xs text-[#383838] truncate">{author.name}</span>
+                                                            <CheckmarkBadge01Icon size={13} className="text-[#0073E6] shrink-0" />
                                                         </div>
-                                                        <span className="text-[10px] text-[#727272] truncate mt-0.5">{faculty.role}</span>
+                                                        {author.role && (
+                                                            <span className="text-[10px] text-[#727272] truncate mt-0.5">{author.role}</span>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -685,6 +676,33 @@ const Announcements = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-[#383838] mb-1">
+                                        Teacher / Author Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newAnn.postedBy || ''}
+                                        onChange={e => setNewAnn({ ...newAnn, postedBy: e.target.value })}
+                                        placeholder="e.g. Dr. A. P. Sharma"
+                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
+                                        Designation / Role (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newAnn.authorRole || ''}
+                                        onChange={e => setNewAnn({ ...newAnn, authorRole: e.target.value })}
+                                        placeholder="e.g. Faculty Coordinator"
+                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
                                         Category / Type
                                     </label>
                                     <input
@@ -779,6 +797,33 @@ const Announcements = () => {
                                     onChange={e => setEditingAnn({ ...editingAnn, title: e.target.value })}
                                     className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
+                                        Teacher / Author Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingAnn.postedBy || ''}
+                                        onChange={e => setEditingAnn({ ...editingAnn, postedBy: e.target.value })}
+                                        placeholder="e.g. Dr. A. P. Sharma"
+                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#383838] mb-1">
+                                        Designation / Role (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingAnn.authorRole || ''}
+                                        onChange={e => setEditingAnn({ ...editingAnn, authorRole: e.target.value })}
+                                        placeholder="e.g. Faculty Coordinator"
+                                        className="w-full bg-[#F8F9FA] border border-[#E2E2E2] rounded-lg px-3 py-2 text-xs text-[#383838] outline-none focus:border-[#0073E6] focus:bg-white transition-colors"
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">

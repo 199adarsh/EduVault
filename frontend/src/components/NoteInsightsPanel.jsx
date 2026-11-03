@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const NoteInsightsPanel = ({ noteId, onClose, onDelete }) => {
   const [note, setNote] = useState(null);

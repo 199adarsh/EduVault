@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BookOpen, FileText, Clock, CheckCircle, GraduationCap } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const QuickStatsPanel = () => {
     const [profile, setProfile] = useState(null);

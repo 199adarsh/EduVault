@@ -246,7 +246,9 @@ public class LocalJsonDatabase {
                 if (extractedText.isBlank() && fileStorageService != null) {
                     try {
                         extractedText = fileStorageService.extractText(key);
-                    } catch (Exception ignored) {}
+                    } catch (Exception ex) {
+                        logger.warn("Local text extraction failed for key {}: {}", key, ex.getMessage());
+                    }
                 }
 
                 if (extractedText == null || extractedText.isBlank()
@@ -260,7 +262,9 @@ public class LocalJsonDatabase {
                             if (bytes != null && bytes.length > 0 && fileStorageService != null) {
                                 extractedText = fileStorageService.extractTextFromBytes(bytes, key);
                             }
-                        } catch (Exception ignored) {}
+                        } catch (Exception ex) {
+                            logger.warn("B2 text extraction failed for key {}: {}", key, ex.getMessage());
+                        }
                     }
                 }
 
@@ -340,7 +344,9 @@ public class LocalJsonDatabase {
                                         .build();
                                 pyqRepository.save(pyq);
                             }
-                        } catch (Exception ignored) {}
+                        } catch (Exception ex) {
+                            logger.warn("Could not auto-mirror B2 PYQ note {}: {}", key, ex.getMessage());
+                        }
                     }
                 } else {
                     note.setSubjectId(null);

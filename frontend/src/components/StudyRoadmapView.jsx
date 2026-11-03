@@ -9,7 +9,7 @@ import { Map, BookOpen, FileText, CalendarDays, Loader2, Target, CheckCircle2 } 
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const StudyRoadmapView = () => {
   const [activeTab, setActiveTab] = useState('guide');

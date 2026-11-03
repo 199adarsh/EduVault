@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import axios from 'axios';
 import NotePreviewModal from './NotePreviewModal';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const NotesFeed = ({ notes, onSelectNote, selectedNoteId, loading }) => {
   const [previewNote, setPreviewNote] = useState(null);

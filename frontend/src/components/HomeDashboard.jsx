@@ -25,7 +25,7 @@ const HomeDashboard = () => {
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await fetch('http://localhost:8081/api/announcements/recent');
+      const res = await fetch('/api/announcements/recent');
       if (res.ok) {
         const data = await res.json();
         setAnnouncements(data);

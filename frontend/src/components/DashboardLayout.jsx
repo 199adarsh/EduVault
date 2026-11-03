@@ -12,7 +12,7 @@ import PortalWidget from './PortalWidget';
 import clsx from 'clsx';
 import { Home, BookOpen, Map, UploadCloud, Settings, Hash } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState('dashboard');

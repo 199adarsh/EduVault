@@ -449,14 +449,11 @@ const NoteDetail = () => {
                                 />
                             </div>
                         ) : (
-                            <div className="w-full h-full relative overflow-hidden bg-white">
-                                <iframe
-                                    src={`${blobUrl}#toolbar=0&view=FitH`}
-                                    className="h-full border-none bg-white select-none"
-                                    style={{ width: "calc(100% + 18px)" }}
-                                    title="Document Preview"
-                                />
-                            </div>
+                            <PdfViewer
+                                url={blobUrl || presignedUrl}
+                                title={note.title}
+                                onDownload={handleDownload}
+                            />
                         )
                     ) : isOfficeDoc ? (
                         docLoading ? (

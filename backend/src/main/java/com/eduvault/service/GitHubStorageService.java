@@ -31,7 +31,7 @@ public class GitHubStorageService {
     @Value("${app.github.token:${GITHUB_TOKEN:}}")
     private String token;
 
-    @Value("${app.github.repo:${GITHUB_REPO:199adarsh/EduVault}}")
+    @Value("${app.github.repo:${GITHUB_REPO:199adarsh/CampusAxis}}")
     private String repo;
 
     @Value("${app.github.branch:${GITHUB_BRANCH:main}}")

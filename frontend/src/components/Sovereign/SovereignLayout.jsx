@@ -99,6 +99,55 @@ const SovereignLayout = () => {
 
     const location = useLocation();
 
+    // Dynamic SEO Titles & Meta Descriptions per page
+    useEffect(() => {
+        const routeMeta = {
+            '/': {
+                title: 'CampusAxis | Student Command Center & Academic Portal',
+                desc: 'Unified academic platform with real-time attendance analytics, CIE marks tracking, and course updates.'
+            },
+            '/notes': {
+                title: 'Academic Notes & PYQs | CampusAxis',
+                desc: 'Access syllabus-organized subject notes, chapter materials, and previous semester question papers.'
+            },
+            '/ai-assistant': {
+                title: 'AI Study Tutor & Exam Prep | CampusAxis',
+                desc: 'Curriculum-grounded AI tutor providing instant doubts clearance and syllabus-grounded explanations.'
+            },
+            '/attendance': {
+                title: 'Attendance Analytics & Bunk Planner | CampusAxis',
+                desc: 'Track subject attendance percentages, calculate buffer bunks, and forecast semester exam eligibility.'
+            },
+            '/roadmaps': {
+                title: 'Engineering & Career Roadmaps | CampusAxis',
+                desc: 'Step-by-step verified learning paths for frontend, backend, DSA, and placements with curriculum mapping.'
+            },
+            '/announcements': {
+                title: 'Notices & Circulars | CampusAxis',
+                desc: 'Official college announcements, exam schedules, and department bulletins.'
+            }
+        };
+
+        const current = Object.entries(routeMeta).find(([path]) => {
+            if (path === '/') return location.pathname === '/';
+            return location.pathname.startsWith(path);
+        });
+
+        const meta = current ? current[1] : {
+            title: 'CampusAxis | Student Academic Intelligence',
+            desc: 'The complete student operating system for university academics and placements.'
+        };
+
+        document.title = meta.title;
+        let descTag = document.querySelector('meta[name="description"]');
+        if (!descTag) {
+            descTag = document.createElement('meta');
+            descTag.name = 'description';
+            document.head.appendChild(descTag);
+        }
+        descTag.setAttribute('content', meta.desc);
+    }, [location.pathname]);
+
 
 
     // Context Detection: Identify if we are viewing a specific note

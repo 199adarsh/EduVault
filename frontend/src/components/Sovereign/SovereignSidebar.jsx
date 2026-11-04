@@ -306,6 +306,25 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                         </div>
                     )}
                 </div>
+
+                {!collapsed && (
+                    <div className="pt-2 px-1 flex justify-center">
+                        <a
+                            href="https://scorebadge.com/campusaxis.onrender.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:opacity-85 transition-opacity"
+                            title="CampusAxis Web Performance & AI Readiness Score"
+                        >
+                            <img
+                                src="https://scorebadge.com/badge/campusaxis.onrender.com.svg"
+                                alt="CampusAxis Scorebadge"
+                                className="h-5 w-auto"
+                                loading="lazy"
+                            />
+                        </a>
+                    </div>
+                )}
             </div>
         </aside>
     );

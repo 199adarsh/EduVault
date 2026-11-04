@@ -1971,6 +1971,28 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               )}
+              {/* Platform Footer & ScoreBadge */}
+              <footer className="mt-12 pt-6 pb-8 border-t border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8E8E93]">
+                <div className="flex items-center gap-2">
+                  <span>© 2026 CampusAxis • Academic Intelligence</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://scorebadge.com/campusaxis.onrender.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center hover:opacity-85 transition-opacity"
+                    title="CampusAxis Web Performance, SEO & AI-Readiness"
+                  >
+                    <img
+                      src="https://scorebadge.com/badge/campusaxis.onrender.com.svg"
+                      alt="CampusAxis Scorebadge"
+                      className="h-6 w-auto"
+                      loading="lazy"
+                    />
+                  </a>
+                </div>
+              </footer>
             </div>
           </div>
         </div>

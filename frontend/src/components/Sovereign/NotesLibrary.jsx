@@ -741,6 +741,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                     isOpen={showLmsSync}
                     onClose={() => setShowLmsSync(false)}
                     onSyncComplete={refreshData}
+                    availableSubjects={allKnownSubjects || subjects || []}
                 />
             </main>
         </div>

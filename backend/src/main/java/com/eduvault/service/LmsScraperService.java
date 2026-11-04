@@ -292,8 +292,22 @@ public class LmsScraperService {
         List<LmsSyncResponse.DiscoveredCourseInfo> coursesToProcess = new ArrayList<>();
         if (credentials.getCourseIds() != null && !credentials.getCourseIds().isEmpty()) {
             for (LmsSyncResponse.DiscoveredCourseInfo c : discovered) {
-                if (credentials.getCourseIds().contains(c.getId())) {
+                boolean idMatch = credentials.getCourseIds().stream().anyMatch(cid -> cid != null && cid.equalsIgnoreCase(c.getId()));
+                boolean codeMatch = c.getCode() != null && credentials.getCourseIds().stream().anyMatch(cid -> cid != null && cid.equalsIgnoreCase(c.getCode()));
+                boolean nameMatch = c.getFullname() != null && credentials.getCourseIds().stream().anyMatch(cid -> cid != null && (c.getFullname().equalsIgnoreCase(cid) || c.getFullname().toLowerCase().contains(cid.toLowerCase())));
+                if (idMatch || codeMatch || nameMatch) {
                     coursesToProcess.add(c);
+                }
+            }
+            if (coursesToProcess.isEmpty()) {
+                for (LmsSyncResponse.DiscoveredCourseInfo c : discovered) {
+                    Subject sub = matchSubject(c.getCode(), c.getFullname(), allSubjects);
+                    if (sub != null && credentials.getCourseIds().stream().anyMatch(cid ->
+                            (sub.getId() != null && cid.equalsIgnoreCase(sub.getId())) ||
+                            (sub.getCode() != null && cid.equalsIgnoreCase(sub.getCode())) ||
+                            (sub.getName() != null && cid.equalsIgnoreCase(sub.getName())))) {
+                        coursesToProcess.add(c);
+                    }
                 }
             }
         } else if (credentials.isTestImport()) {

@@ -20,10 +20,12 @@ import { FluidTabs } from '../fluid-tabs';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
-const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
+const LmsSyncModal = ({ isOpen, onClose, onSyncComplete, availableSubjects = [] }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [syncMode, setSyncMode] = useState('all'); // 'test' | 'all'
+    const [syncMode, setSyncMode] = useState('all'); // 'all' | 'single' | 'test'
+    const [selectedSubject, setSelectedSubject] = useState('');
+    const [subjectList, setSubjectList] = useState(availableSubjects);
     const [isLoading, setIsLoading] = useState(false);
     const [syncResult, setSyncResult] = useState(null);
     const [progress, setProgress] = useState(null);
@@ -34,6 +36,18 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
     const pollingRef = useRef(null);
     const logContainerRef = useRef(null);
+
+    useEffect(() => {
+        if (availableSubjects && availableSubjects.length > 0) {
+            setSubjectList(availableSubjects);
+        } else {
+            axios.get(`${API_BASE}/subjects`).then(res => {
+                if (Array.isArray(res.data) && res.data.length > 0) {
+                    setSubjectList(res.data);
+                }
+            }).catch(() => {});
+        }
+    }, [availableSubjects]);
 
     useEffect(() => {
         return () => {
@@ -90,6 +104,11 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
             return;
         }
 
+        if (syncMode === 'single' && !selectedSubject) {
+            toast.error('Please select a subject to scrape.');
+            return;
+        }
+
         setIsLoading(true);
         setSyncResult(null);
         setProgress({
@@ -117,7 +136,8 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
             const payload = {
                 username: username.trim(),
                 password: password.trim(),
-                testImport: syncMode === 'test'
+                testImport: syncMode === 'test',
+                courseIds: syncMode === 'single' && selectedSubject ? [selectedSubject] : undefined
             };
 
             const res = await axios.post(`${API_BASE}/lms/sync`, payload, {
@@ -286,91 +306,124 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                 <div className="flex-1 overflow-y-auto p-6 space-y-5">
                     {activeTab === 'sync' && (
                         <>
-                            {/* Credentials Form */}
-                            <div className="bg-[#FBFBFD] border border-[#E5E5EA] rounded-xl p-4 sm:p-5 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xs font-semibold text-[#1D1D1F] flex items-center gap-2">
-                                        <Lock className="w-3.5 h-3.5 text-[#0071E3]" />
-                                        <span>Authorized Moodle Credentials</span>
-                                    </h3>
-                                    <span className="text-[11px] text-[#8E8E93]">Encrypted session transit</span>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-[#6E6E73]">Username / PRN</label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8E8E93]" />
-                                            <input
-                                                type="text"
-                                                value={username}
-                                                onChange={(e) => setUsername(e.target.value)}
-                                                disabled={isLoading}
-                                                placeholder="e.g. 24uad022"
-                                                className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 pl-9 pr-3 text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
-                                            />
-                                        </div>
+                            {/* Credentials & Scope Form (disappears when syncing or completed) */}
+                            {!isLoading && !syncResult && (
+                                <div className="bg-[#FBFBFD] border border-[#E5E5EA] rounded-xl p-4 sm:p-5 space-y-4 animate-in fade-in duration-150">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                            <Lock className="w-3.5 h-3.5 text-[#0071E3]" />
+                                            <span>Authorized Moodle Credentials</span>
+                                        </h3>
+                                        <span className="text-[11px] text-[#8E8E93]">Encrypted session transit</span>
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-[#6E6E73]">Moodle Password</label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8E8E93]" />
-                                            <input
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                disabled={isLoading}
-                                                placeholder="••••••••"
-                                                className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 pl-9 pr-3 text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {/* Scope of Synchronization */}
-                                <div className="pt-2 border-t border-[#E5E5EA]/70 space-y-2">
-                                    <label className="text-xs font-medium text-[#6E6E73] block">
-                                        Scope of Synchronization
-                                    </label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                        <div
-                                            onClick={() => !isLoading && setSyncMode('all')}
-                                            className={cn(
-                                                "p-3 rounded-lg border cursor-pointer transition text-left",
-                                                syncMode === 'all'
-                                                    ? "border-[#0071E3] bg-[#0071E3]/5 text-[#1D1D1F]"
-                                                    : "border-[#E5E5EA] bg-white text-[#6E6E73] hover:border-[#D2D2D7]"
-                                            )}
-                                        >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-semibold text-[#1D1D1F]">All Enrolled Courses</span>
-                                                {syncMode === 'all' && <Check className="w-3.5 h-3.5 text-[#0071E3]" />}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-[#6E6E73]">Username / PRN</label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8E8E93]" />
+                                                <input
+                                                    type="text"
+                                                    value={username}
+                                                    onChange={(e) => setUsername(e.target.value)}
+                                                    disabled={isLoading}
+                                                    placeholder="e.g. 24uad022"
+                                                    className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 pl-9 pr-3 text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
+                                                />
                                             </div>
-                                            <p className="text-[11px] text-[#6E6E73] leading-snug">
-                                                Scans all semester subjects and downloads verified notes to EduVault.
-                                            </p>
                                         </div>
-
-                                        <div
-                                            onClick={() => !isLoading && setSyncMode('test')}
-                                            className={cn(
-                                                "p-3 rounded-lg border cursor-pointer transition text-left",
-                                                syncMode === 'test'
-                                                    ? "border-[#0071E3] bg-[#0071E3]/5 text-[#1D1D1F]"
-                                                    : "border-[#E5E5EA] bg-white text-[#6E6E73] hover:border-[#D2D2D7]"
-                                            )}
-                                        >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-semibold text-[#1D1D1F]">Single Course Test</span>
-                                                {syncMode === 'test' && <Check className="w-3.5 h-3.5 text-[#0071E3]" />}
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-[#6E6E73]">Moodle Password</label>
+                                            <div className="relative">
+                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8E8E93]" />
+                                                <input
+                                                    type="password"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    disabled={isLoading}
+                                                    placeholder="••••••••"
+                                                    className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 pl-9 pr-3 text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3] transition"
+                                                />
                                             </div>
-                                            <p className="text-[11px] text-[#6E6E73] leading-snug">
-                                                Tests connection and imports notes from 1 course to verify pipeline.
-                                            </p>
                                         </div>
                                     </div>
+
+                                    {/* Scope of Synchronization */}
+                                    <div className="pt-2 border-t border-[#E5E5EA]/70 space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-medium text-[#6E6E73] block">
+                                                Scope of Synchronization
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSyncMode(syncMode === 'test' ? 'all' : 'test')}
+                                                className="text-[11px] text-[#8E8E93] hover:text-[#0071E3] transition cursor-pointer"
+                                            >
+                                                {syncMode === 'test' ? '✓ Test Run Mode Active' : 'Switch to Test Run'}
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                            <div
+                                                onClick={() => !isLoading && setSyncMode('all')}
+                                                className={cn(
+                                                    "p-3 rounded-lg border cursor-pointer transition text-left",
+                                                    syncMode === 'all'
+                                                        ? "border-[#0071E3] bg-[#0071E3]/5 text-[#1D1D1F]"
+                                                        : "border-[#E5E5EA] bg-white text-[#6E6E73] hover:border-[#D2D2D7]"
+                                                )}
+                                            >
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-semibold text-[#1D1D1F]">All Enrolled Courses</span>
+                                                    {syncMode === 'all' && <Check className="w-3.5 h-3.5 text-[#0071E3]" />}
+                                                </div>
+                                                <p className="text-[11px] text-[#6E6E73] leading-snug">
+                                                    Scans all semester subjects and downloads verified notes to EduVault.
+                                                </p>
+                                            </div>
+
+                                            <div
+                                                onClick={() => !isLoading && setSyncMode('single')}
+                                                className={cn(
+                                                    "p-3 rounded-lg border cursor-pointer transition text-left",
+                                                    syncMode === 'single'
+                                                        ? "border-[#0071E3] bg-[#0071E3]/5 text-[#1D1D1F]"
+                                                        : "border-[#E5E5EA] bg-white text-[#6E6E73] hover:border-[#D2D2D7]"
+                                                )}
+                                            >
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-semibold text-[#1D1D1F]">Single Subject Scrape</span>
+                                                    {syncMode === 'single' && <Check className="w-3.5 h-3.5 text-[#0071E3]" />}
+                                                </div>
+                                                <p className="text-[11px] text-[#6E6E73] leading-snug">
+                                                    Scrapes and imports notes for one specific subject of your choice.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {syncMode === 'single' && (
+                                            <div className="pt-2.5 space-y-1.5 animate-in fade-in duration-150">
+                                                <label className="text-xs font-medium text-[#1D1D1F] flex items-center justify-between">
+                                                    <span>Target Subject to Scrape</span>
+                                                    <span className="text-[10px] text-[#0071E3] font-normal">Select subject</span>
+                                                </label>
+                                                <select
+                                                    value={selectedSubject}
+                                                    onChange={(e) => setSelectedSubject(e.target.value)}
+                                                    disabled={isLoading}
+                                                    className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 px-3 text-xs text-[#1D1D1F] focus:outline-none focus:border-[#0071E3] transition cursor-pointer"
+                                                >
+                                                    <option value="">-- Choose Subject to Scrape --</option>
+                                                    {subjectList.map((s, idx) => (
+                                                        <option key={s.id || s.code || idx} value={s.code || s.id || s.name}>
+                                                            {s.name} {s.code ? `(${s.code})` : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Live Ingestion Progress Card */}
                             {isLoading && (
@@ -622,14 +675,24 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
 
                 {/* Footer Controls */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-[#E5E5EA] bg-[#FBFBFD]">
-                    <button
-                        type="button"
-                        onClick={resetState}
-                        disabled={isLoading}
-                        className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] transition cursor-pointer disabled:opacity-40"
-                    >
-                        Close
-                    </button>
+                    {syncResult ? (
+                        <button
+                            type="button"
+                            onClick={() => setSyncResult(null)}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#0071E3] hover:bg-[#0071E3]/5 transition cursor-pointer"
+                        >
+                            ← Scrape Another Subject
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={resetState}
+                            disabled={isLoading}
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] hover:text-[#1D1D1F] transition cursor-pointer disabled:opacity-40"
+                        >
+                            Close
+                        </button>
+                    )}
 
                     <div className="flex items-center gap-2.5">
                         {isLoading && (
@@ -642,7 +705,15 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                             </button>
                         )}
 
-                        {activeTab === 'sync' ? (
+                        {syncResult ? (
+                            <button
+                                type="button"
+                                onClick={resetState}
+                                className="inline-flex items-center justify-center rounded-lg text-xs font-medium bg-[#1D1D1F] hover:bg-black text-white h-9 px-5 shadow-xs transition cursor-pointer"
+                            >
+                                Done
+                            </button>
+                        ) : activeTab === 'sync' ? (
                             <button
                                 type="button"
                                 onClick={handleSync}
@@ -650,7 +721,15 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete }) => {
                                 className="inline-flex items-center justify-center rounded-lg text-xs font-medium bg-[#0071E3] hover:bg-[#005BB5] text-white h-9 px-4 gap-2 shadow-xs transition cursor-pointer disabled:opacity-50"
                             >
                                 <RefreshCw className={cn("w-3.5 h-3.5", isLoading && "animate-spin")} />
-                                <span>{isLoading ? 'Synchronizing...' : syncMode === 'test' ? 'Test Connection' : 'Sync Notes'}</span>
+                                <span>
+                                    {isLoading
+                                        ? 'Synchronizing...'
+                                        : syncMode === 'single'
+                                            ? 'Scrape Subject'
+                                            : syncMode === 'test'
+                                                ? 'Test Connection'
+                                                : 'Sync Notes'}
+                                </span>
                             </button>
                         ) : (
                             <button

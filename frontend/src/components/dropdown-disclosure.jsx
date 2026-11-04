@@ -60,6 +60,8 @@ export const DropdownDisclosure = ({
   onChange,
   title = "Choose Option",
   compact = false,
+  placement = "bottom",
+  align = "left",
   className = "",
 }) => {
   const itemList = items || models || DEFAULT_MODELS;
@@ -125,7 +127,7 @@ export const DropdownDisclosure = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="absolute bottom-full mb-2 left-0 z-50 w-72 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1C1C1E] p-2.5 shadow-xl backdrop-blur-md"
+            className={`absolute z-50 w-64 sm:w-72 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1C1C1E] p-2.5 shadow-xl backdrop-blur-md ${placement === "top" ? "bottom-full mb-2" : "top-full mt-2"} ${align === "right" ? "right-0" : "left-0"}`}
           >
             <div className="mb-2 flex items-center justify-between px-2 pt-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">

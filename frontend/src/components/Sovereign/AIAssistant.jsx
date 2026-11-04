@@ -383,7 +383,7 @@ const AIAssistant = () => {
                 className="flex-1 w-full overflow-y-auto select-text scroll-smooth relative"
                 id="chatStream"
             >
-                <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 flex flex-col gap-6 pt-6 pb-40 min-h-full">
+                <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 flex flex-col gap-6 pt-6 pb-52 md:pb-40 min-h-full">
                     {/* Empty State / Welcome Screen */}
                     {messages.length <= 1 && (
                         <div className="flex flex-col items-center justify-center my-auto py-8 text-center select-none">
@@ -522,7 +522,7 @@ const AIAssistant = () => {
             </main>
 
             {/* Grounding & Chat Input Area (Fixed at bottom like ChatGPT) */}
-            <div className="absolute bottom-0 left-0 right-0 pointer-events-none bg-gradient-to-t from-[#F5F5F7] via-[#F5F5F7]/95 to-transparent dark:from-black dark:via-black/95 pt-8 pb-4 z-10">
+            <div className="absolute bottom-0 left-0 right-0 pointer-events-none bg-gradient-to-t from-[#F5F5F7] via-[#F5F5F7]/95 to-transparent dark:from-black dark:via-black/95 pt-8 pb-20 md:pb-4 z-10">
                 <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pointer-events-auto">
                     <AiMascotInput
                         selectedSubject={selectedSubject}

@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 import { FluidTabs } from '../fluid-tabs';
+import { DropdownDisclosure } from '../dropdown-disclosure';
 import { ROADMAP_CATEGORIES, getRoadmap } from '../../lib/roadmapsData';
 
 // Custom Flow Node honoring roadmap.sh geometry with EduVault tokens
@@ -466,10 +467,14 @@ const Roadmaps = () => {
     });
   }, [currentRoadmap, query]);
 
-  const roadmapTabs = useMemo(() => {
+  const [isRoadmapDropdownOpen, setIsRoadmapDropdownOpen] = useState(false);
+
+  const roadmapDropdownItems = useMemo(() => {
     return ROADMAP_CATEGORIES.map(cat => ({
       id: cat.id,
-      label: cat.name,
+      name: cat.name,
+      description: `${cat.role} • ${cat.topicsCount} topics`,
+      badge: cat.badge,
     }));
   }, []);
 
@@ -520,23 +525,25 @@ const Roadmaps = () => {
         </div>
       </header>
 
-      {/* Unified Control Console: FluidTabs & View Switcher */}
+      {/* Unified Control Console: Roadmap Selector & View Switcher */}
       <section className="bg-white dark:bg-neutral-900 border border-[#E2E2E2] dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Animated Fluid Tabs */}
-        <div className="overflow-x-auto scrollbar-none py-0.5">
-          <FluidTabs
-            tabs={roadmapTabs}
-            value={selectedDomain}
-            onChange={(id) => {
-              setSelectedDomain(id);
+        {/* Roadmap Selector Dropdown */}
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold text-[#727272] uppercase tracking-wider hidden sm:inline">
+            Roadmap:
+          </span>
+          <DropdownDisclosure
+            items={roadmapDropdownItems}
+            selectedId={selectedDomain}
+            onChange={(item) => {
+              setSelectedDomain(item.id);
               setActiveDialogId(null);
             }}
-            size="sm"
-            layoutId="roadmap-fluid-tabs"
-            className="bg-[#DEEDFC]/40 dark:bg-neutral-800/60 border-[#D9ECFF] dark:border-neutral-700/60 shrink-0"
-            activeClassName="font-semibold text-[#0073E6] dark:text-blue-400"
-            inactiveClassName="font-medium text-[#727272] hover:text-[#383838] dark:text-neutral-400 dark:hover:text-neutral-200"
-            indicatorClassName="absolute inset-0 rounded-full border border-[#D9ECFF] dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xs"
+            isOpen={isRoadmapDropdownOpen}
+            onOpenChange={setIsRoadmapDropdownOpen}
+            title="Select Career Roadmap"
+            compact={false}
+            placement="bottom"
           />
         </div>
 

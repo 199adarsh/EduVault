@@ -7,7 +7,19 @@ import { motion } from 'motion/react';
 
 import SovereignSidebar from './SovereignSidebar';
 
-import { Menu, LayoutDashboard, BookOpen, Bell, Compass, CalendarCheck2, Sparkles, X, Upload, LogOut, User } from 'lucide-react';
+import {
+    Menu01Icon,
+    Home01Icon,
+    Book02Icon,
+    Notification01Icon,
+    Compass01Icon,
+    Calendar03Icon,
+    SparklesIcon,
+    Cancel01Icon,
+    Upload01Icon,
+    Logout01Icon,
+    UserIcon,
+} from 'hugeicons-react';
 
 import { DiscreteTabs } from '../watermelon/discrete-tabs';
 
@@ -452,15 +464,15 @@ const SovereignLayout = () => {
 
 
     const navTabs = [
-        { name: 'Home', path: '/', icon: LayoutDashboard },
-        { name: 'Notes', path: '/notes', icon: BookOpen },
-        { name: 'AI Tutor', path: '/ai-assistant', icon: Sparkles },
-        { name: 'Notices', path: '/announcements', icon: Bell },
-        { name: 'Roadmaps', path: '/roadmaps', icon: Compass },
+        { name: 'Home', path: '/', icon: Home01Icon },
+        { name: 'Notes', path: '/notes', icon: Book02Icon },
+        { name: 'AI Tutor', path: '/ai-assistant', icon: SparklesIcon },
+        { name: 'Notices', path: '/announcements', icon: Notification01Icon },
+        { name: 'Roadmaps', path: '/roadmaps', icon: Compass01Icon },
         {
             name: 'Attendance',
             path: '/attendance',
-            icon: CalendarCheck2,
+            icon: Calendar03Icon,
             badge: overallAttendance ? `${overallAttendance}%` : null
         },
     ];
@@ -491,7 +503,7 @@ const SovereignLayout = () => {
 
                 label: t.name,
 
-                icon: <Icon className="w-5 h-5 shrink-0" strokeWidth={activeDockTab === t.path ? 2.2 : 1.8} />,
+                icon: <Icon size={17} className="shrink-0" />,
 
                 badge: t.badge
 
@@ -593,7 +605,7 @@ const SovereignLayout = () => {
 
                                 >
 
-                                    {profile?.name ? profile.name.split(' ').map(n => n[0]).slice(0, 2).join('') : <User className="w-4 h-4 text-[#0073E6]" />}
+                                    {profile?.name ? profile.name.split(' ').map(n => n[0]).slice(0, 2).join('') : <UserIcon size={16} className="text-[#0073E6]" />}
 
                                 </button>
 
@@ -625,7 +637,7 @@ const SovereignLayout = () => {
 
                                         >
 
-                                            <LogOut className="w-4 h-4" />
+                                            <Logout01Icon size={16} />
 
                                             <span>Logout</span>
 
@@ -687,7 +699,7 @@ const SovereignLayout = () => {
 
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
 
-                                        <Upload className="w-4 h-4 text-primary" />
+                                        <Upload01Icon size={16} className="text-[#0071E3]" />
 
                                     </div>
 
@@ -709,7 +721,7 @@ const SovereignLayout = () => {
 
                                 >
 
-                                    <X className="w-5 h-5" />
+                                    <Cancel01Icon size={18} />
 
                                 </button>
 
@@ -748,38 +760,38 @@ const SovereignLayout = () => {
 
 
 
-                {/* Mobile Floating Bottom Navigation Dock (Collapsible, never overlays notes/AI) */}
-                {!mobileMenuOpen && !location.pathname.startsWith('/ai-assistant') && !(location.pathname.startsWith('/notes/') && location.pathname !== '/notes') && (
-                    <div className="fixed bottom-3 inset-x-3 z-30 md:hidden flex justify-center pointer-events-none">
+                {/* Mobile Floating Bottom Navigation Dock (Collapsible, never overlays notes detail) */}
+                {!mobileMenuOpen && !(location.pathname.startsWith('/notes/') && location.pathname !== '/notes') && (
+                    <div className="fixed bottom-3 inset-x-0 z-30 md:hidden flex justify-center pointer-events-none px-3">
                         {isDockMinimized ? (
                             <button
                                 type="button"
                                 onClick={() => setIsDockMinimized(false)}
-                                className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full px-4 py-2 shadow-lg flex items-center gap-2 text-xs font-semibold text-[#1D1D1F] dark:text-white cursor-pointer active:scale-95 transition-all shadow-black/10"
+                                className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full px-3.5 py-1.5 shadow-lg flex items-center gap-1.5 text-xs font-semibold text-[#1D1D1F] dark:text-white cursor-pointer active:scale-95 transition-all shadow-black/10"
                                 title="Expand navigation"
                             >
-                                <Compass className="w-4 h-4 text-[#0071E3]" />
+                                <Compass01Icon size={16} className="text-[#0071E3]" />
                                 <span>Menu</span>
                             </button>
                         ) : (
                             <nav
                                 aria-label="Mobile Navigation"
-                                className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full p-1.5 shadow-lg shadow-black/8 w-full max-w-md mx-auto flex items-center justify-between gap-1"
+                                className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full p-1 shadow-lg shadow-black/8 w-auto max-w-[330px] mx-auto flex items-center justify-between gap-0.5"
                             >
                                 <DiscreteTabs
                                     tabs={discreteTabItems}
                                     activeTab={activeDockTab}
                                     onTabChange={(path) => navigate(path)}
-                                    className="h-11 py-0 px-1 flex-1 justify-between"
-                                    itemClassName="h-9 px-2"
+                                    className="h-9 py-0 px-0.5 flex-1 justify-between gap-0.5"
+                                    itemClassName="h-8 px-1.5"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setIsDockMinimized(true)}
-                                    className="w-7 h-7 rounded-full text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center shrink-0 mr-1 cursor-pointer transition-colors"
+                                    className="w-6 h-6 rounded-full text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center shrink-0 ml-0.5 mr-0.5 cursor-pointer transition-colors"
                                     title="Minimize navigation bar"
                                 >
-                                    <X className="w-3.5 h-3.5" />
+                                    <Cancel01Icon size={13} />
                                 </button>
                             </nav>
                         )}

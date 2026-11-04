@@ -17,6 +17,7 @@ import DocumentLoadingBar from '../DocumentLoadingBar';
 import LmsSyncModal from './LmsSyncModal';
 import PYQsDatabase from './PYQsDatabase';
 import { FluidTabs } from '../fluid-tabs';
+import { DropdownDisclosure } from '../dropdown-disclosure';
 import { isLinkNote, getNoteBadge, isSubjectNameMatch, getCleanTitle } from '../../lib/noteUtils';
 
 const normalizeDept = (dept) => {
@@ -104,6 +105,10 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
     const [pyqSearch, setPyqSearch] = useState('');
     const [pyqSubject, setPyqSubject] = useState('');
     const [pyqExam, setPyqExam] = useState('');
+    const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+    const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
+    const [isPyqExamDropdownOpen, setIsPyqExamDropdownOpen] = useState(false);
+    const [isPyqSubjectDropdownOpen, setIsPyqSubjectDropdownOpen] = useState(false);
 
     const userRole = localStorage.getItem('eduvault_user_role') || (profile?.dob === 'TEACHER' ? 'teacher' : 'student');
     const isTeacher = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin';
@@ -281,6 +286,45 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         return availableSubjects.find(s => s.id === activeSubjectId) || null;
     }, [availableSubjects, activeSubjectId]);
 
+    const subjectDropdownItems = useMemo(() => {
+        return (availableSubjects || []).map(s => ({
+            id: s.id,
+            name: s.name,
+            description: s.code ? `Course Code: ${s.code}` : undefined,
+        }));
+    }, [availableSubjects]);
+
+    const unitDropdownItems = useMemo(() => [
+        { id: 'all', name: 'All Units' },
+        { id: 'UNIT 01', name: 'Unit 1' },
+        { id: 'UNIT 02', name: 'Unit 2' },
+        { id: 'UNIT 03', name: 'Unit 3' },
+        { id: 'UNIT 04', name: 'Unit 4' },
+        { id: 'UNIT 05', name: 'Unit 5' },
+        { id: 'UNIT 06', name: 'Unit 6' },
+        { id: 'cat:Lab Manual', name: 'Lab Manual' },
+        { id: 'cat:Other', name: 'Other Files' },
+    ], []);
+
+    const pyqExamDropdownItems = useMemo(() => [
+        { id: '', name: 'All Exams' },
+        { id: 'ESE', name: 'End Semester (ESE)' },
+        { id: 'MSE', name: 'Mid Semester (MSE)' },
+        { id: 'ISE', name: 'In-Sem (ISE)' },
+        { id: 'UT-1', name: 'Unit Test 1 (UT-1)' },
+        { id: 'UT-2', name: 'Unit Test 2 (UT-2)' },
+        { id: 'Backlog', name: 'Backlog Exam' },
+    ], []);
+
+    const pyqSubjectDropdownItems = useMemo(() => [
+        { id: '', name: 'All Subjects' },
+        ...(allKnownSubjects || availableSubjects || []).map(s => ({
+            id: s.id,
+            name: s.name,
+            description: s.code ? `Code: ${s.code}` : undefined,
+        }))
+    ], [allKnownSubjects, availableSubjects]);
+
     // Filter notes: ONLY display notes that match the selected subject. Other notes should not be visible.
     const displayNotes = useMemo(() => {
         if (!activeSubjectId) return [];
@@ -435,23 +479,18 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         className="w-full pl-8 pr-3 py-1.5 text-xs text-[#383838] placeholder-[#727272] bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white transition-all"
                                     />
                                 </div>
-                                <div className="relative shrink-0 w-28 sm:w-32">
-                                    <select
-                                        value={selectedUnit}
-                                        onChange={(e) => setSelectedUnit(e.target.value)}
-                                        className="w-full bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg py-1.5 pl-3 pr-7 text-xs font-medium text-[#383838] focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white appearance-none cursor-pointer"
-                                    >
-                                        <option value="all">All</option>
-                                        <option value="UNIT 01">Unit 1</option>
-                                        <option value="UNIT 02">Unit 2</option>
-                                        <option value="UNIT 03">Unit 3</option>
-                                        <option value="UNIT 04">Unit 4</option>
-                                        <option value="UNIT 05">Unit 5</option>
-                                        <option value="UNIT 06">Unit 6</option>
-                                        <option value="cat:Lab Manual">Lab</option>
-                                        <option value="cat:Other">Other</option>
-                                    </select>
-                                    <ArrowDown01Icon size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8E8E93] pointer-events-none" />
+                                <div className="shrink-0">
+                                    <DropdownDisclosure
+                                        items={unitDropdownItems}
+                                        selectedId={selectedUnit}
+                                        onChange={(item) => setSelectedUnit(item.id)}
+                                        isOpen={isUnitDropdownOpen}
+                                        onOpenChange={setIsUnitDropdownOpen}
+                                        title="Filter by Unit"
+                                        compact
+                                        placement="bottom"
+                                        align="right"
+                                    />
                                 </div>
                             </div>
                         ) : (
@@ -466,68 +505,57 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         className="w-full pl-8 pr-3 py-1.5 text-xs text-[#383838] placeholder-[#727272] bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white transition-all"
                                     />
                                 </div>
-                                <div className="relative shrink-0 w-36">
-                                    <select
-                                        value={pyqExam}
-                                        onChange={(e) => setPyqExam(e.target.value)}
-                                        className="w-full bg-[#F2F7FC] border border-[#E2E2E2] rounded-lg py-1.5 pl-3 pr-7 text-xs font-medium text-[#383838] focus:outline-none focus:ring-1 focus:ring-[#0073E6] focus:bg-white appearance-none cursor-pointer"
-                                    >
-                                        <option value="">All Exams</option>
-                                        <option value="ESE">End Semester (ESE)</option>
-                                        <option value="MSE">Mid Semester (MSE)</option>
-                                        <option value="ISE">In-Sem (ISE)</option>
-                                        <option value="UT-1">Unit Test 1 (UT-1)</option>
-                                        <option value="UT-2">Unit Test 2 (UT-2)</option>
-                                        <option value="Backlog">Backlog Exam</option>
-                                    </select>
-                                    <ArrowDown01Icon size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8E8E93] pointer-events-none" />
+                                <div className="shrink-0">
+                                    <DropdownDisclosure
+                                        items={pyqExamDropdownItems}
+                                        selectedId={pyqExam}
+                                        onChange={(item) => setPyqExam(item.id)}
+                                        isOpen={isPyqExamDropdownOpen}
+                                        onOpenChange={setIsPyqExamDropdownOpen}
+                                        title="Filter by Exam"
+                                        compact
+                                        placement="bottom"
+                                        align="right"
+                                    />
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Integrated Subject Pills Row */}
-                    <div className="pt-2.5 border-t border-[#E2E2E2] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                        <span className="text-[10px] font-bold text-[#727272] uppercase tracking-wider mr-1 shrink-0">
-                            Subject:
-                        </span>
-                        {activeTab === 'notes' ? (
-                            availableSubjects.map(sub => (
-                                <button
-                                    key={sub.id}
-                                    onClick={() => setSelectedSubject(sub.id)}
-                                    className={cn(
-                                        "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
-                                        activeSubjectId === sub.id ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
-                                    )}
-                                >
-                                    {sub.name} {sub.code ? `(${sub.code})` : ''} {sub.isUnresolved ? '(Unresolved)' : ''}
-                                </button>
-                            ))
-                        ) : (
-                            <>
-                                <button
-                                    onClick={() => setPyqSubject('')}
-                                    className={cn(
-                                        "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
-                                        !pyqSubject ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
-                                    )}
-                                >
-                                    All Subjects
-                                </button>
-                                {allKnownSubjects.map(sub => (
-                                    <button
-                                        key={sub.id}
-                                        onClick={() => setPyqSubject(sub.id === pyqSubject ? '' : sub.id)}
-                                        className={cn(
-                                            "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0",
-                                            pyqSubject === sub.id ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
-                                        )}
-                                    >
-                                        {sub.name} {sub.code ? `(${sub.code})` : ''}
-                                    </button>
-                                ))}
-                            </>
+                    {/* Integrated Subject Disclosure Row */}
+                    <div className="pt-2.5 border-t border-[#E2E2E2] flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold text-[#727272] uppercase tracking-wider shrink-0">
+                                Subject:
+                            </span>
+                            {activeTab === 'notes' ? (
+                                <DropdownDisclosure
+                                    items={subjectDropdownItems}
+                                    selectedId={activeSubjectId}
+                                    onChange={(item) => setSelectedSubject(item.id)}
+                                    isOpen={isSubjectDropdownOpen}
+                                    onOpenChange={setIsSubjectDropdownOpen}
+                                    title="Choose Subject"
+                                    compact={false}
+                                    placement="bottom"
+                                />
+                            ) : (
+                                <DropdownDisclosure
+                                    items={pyqSubjectDropdownItems}
+                                    selectedId={pyqSubject}
+                                    onChange={(item) => setPyqSubject(item.id)}
+                                    isOpen={isPyqSubjectDropdownOpen}
+                                    onOpenChange={setIsPyqSubjectDropdownOpen}
+                                    title="Choose Subject"
+                                    compact={false}
+                                    placement="bottom"
+                                />
+                            )}
+                        </div>
+                        {activeSubjectObj?.code && (
+                            <span className="text-xs text-[#8E8E93] font-mono hidden sm:inline">
+                                {activeSubjectObj.code}
+                            </span>
                         )}
                     </div>
                 </section>

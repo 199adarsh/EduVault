@@ -46,7 +46,8 @@ const NoteDetail = () => {
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [presignedUrl, setPresignedUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
-        const [docxHtml, setDocxHtml] = useState(null);
+    const [pdfData, setPdfData] = useState(null);
+    const [docxHtml, setDocxHtml] = useState(null);
     const [docLoading, setDocLoading] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
@@ -184,6 +185,13 @@ const NoteDetail = () => {
                         if (!cancelled) setDocxHtml(html);
                     } catch (e) {
                         console.warn('DOCX parse error:', e);
+                    }
+                } else if (ext === 'pdf') {
+                    try {
+                        const arrayBuffer = await blob.arrayBuffer();
+                        if (!cancelled) setPdfData(new Uint8Array(arrayBuffer));
+                    } catch (e) {
+                        console.warn('PDF arrayBuffer read error:', e);
                     }
                 }
             }
@@ -477,6 +485,8 @@ const NoteDetail = () => {
                         ) : (
                             <PdfViewer
                                 url={blobUrl || presignedUrl}
+                                data={pdfData}
+                                presignedUrl={presignedUrl}
                                 title={note.title}
                                 onDownload={handleDownload}
                             />

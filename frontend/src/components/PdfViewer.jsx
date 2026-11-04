@@ -7,16 +7,12 @@ import {
     ArrowRight01Icon, 
     ZoomInAreaIcon, 
     ZoomOutAreaIcon, 
-    Download01Icon,
-    AlertCircleIcon
+    Download01Icon
 } from 'hugeicons-react';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-export default function PdfViewer({ url, title, onDownload }) {
+export default function PdfViewer({ url, data, presignedUrl, title, onDownload }) {
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [scale, setScale] = useState(1.0);
@@ -102,37 +98,18 @@ export default function PdfViewer({ url, title, onDownload }) {
     );
 
     if (loadError) {
+        const viewerTarget = presignedUrl || url;
+        const embedUrl = viewerTarget && viewerTarget.startsWith('http')
+            ? `https://docs.google.com/viewer?url=${encodeURIComponent(viewerTarget)}&embedded=true`
+            : viewerTarget;
+
         return (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-[#F5F5F7] dark:bg-black min-h-[300px]">
-                <div className="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-2xl p-6 max-w-sm mx-auto shadow-xs flex flex-col items-center">
-                    <AlertCircleIcon size={32} className="text-amber-500 mb-3" />
-                    <h4 className="text-sm font-semibold text-[#1D1D1F] dark:text-white">Mobile PDF Display</h4>
-                    <p className="text-xs text-[#6E6E73] dark:text-[#AEAEB2] mt-1.5 mb-4">
-                        Unable to render PDF inline on this device browser. You can open or download the document directly.
-                    </p>
-                    <div className="flex gap-2 w-full">
-                        {url && (
-                            <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 py-2 px-3 text-xs font-semibold rounded-xl bg-[#0071E3] text-white text-center hover:bg-[#0077ED] transition-colors"
-                            >
-                                Open File
-                            </a>
-                        )}
-                        {onDownload && (
-                            <button
-                                type="button"
-                                onClick={onDownload}
-                                className="flex-1 py-2 px-3 text-xs font-semibold rounded-xl border border-[#E5E5EA] dark:border-[#2C2C2E] text-[#1D1D1F] dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                <Download01Icon size={14} />
-                                <span>Download</span>
-                            </button>
-                        )}
-                    </div>
-                </div>
+            <div className="w-full h-full flex flex-col bg-[#F5F5F7]">
+                <iframe
+                    src={embedUrl}
+                    className="w-full h-full border-0 flex-1"
+                    title={title || "PDF Document"}
+                />
             </div>
         );
     }
@@ -144,7 +121,7 @@ export default function PdfViewer({ url, title, onDownload }) {
             {pageNav}
             <div className="flex-1 overflow-y-auto overflow-x-auto flex justify-center p-3 sm:p-6 min-h-0">
                 <Document
-                    file={url}
+                    file={data ? { data } : url}
                     onLoadSuccess={onDocumentLoadSuccess}
                     onLoadError={onDocumentLoadError}
                     loading={
@@ -160,7 +137,7 @@ export default function PdfViewer({ url, title, onDownload }) {
                         width={calculatedWidth}
                         className="shadow-sm rounded-lg overflow-hidden border border-[#E5E5EA] dark:border-[#2C2C2E] bg-white"
                         renderAnnotationLayer={false}
-                        renderTextLayer={true}
+                        renderTextLayer={false}
                     />
                 </Document>
             </div>

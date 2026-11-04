@@ -1,18 +1,17 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useOutletContext, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-    Search,
-    Upload,
-    BookOpen,
-    FileText,
-    ArrowUpRight,
-    RefreshCw,
-    Inbox,
-    ChevronDown,
-    GraduationCap,
-    Download,
-    Sparkles
-} from 'lucide-react';
+    Search01Icon,
+    Upload01Icon,
+    Book02Icon,
+    File02Icon,
+    ArrowUpRight01Icon,
+    RefreshIcon,
+    InboxIcon,
+    ArrowDown01Icon,
+    Mortarboard01Icon,
+    Download01Icon
+} from 'hugeicons-react';
 import { cn } from '../../lib/utils';
 import DocumentLoadingBar from '../DocumentLoadingBar';
 import LmsSyncModal from './LmsSyncModal';
@@ -351,38 +350,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         });
     }, [notes, activeSubjectId, activeSubjectObj, selectedUnit, selectedCategory, searchQuery, resolveSubjectId]);
 
-    const renderOkfBadge = (status) => {
-        if (status === 'PROCESSED') {
-            return (
-                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold" title="Compiled for fast AI query serving">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    OKF Ready
-                </span>
-            );
-        }
-        if (status === 'PROCESSING') {
-            return (
-                <span className="inline-flex items-center gap-1 text-sky-700 font-semibold" title="Currently compiling OKF Markdown">
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-                    Compiling...
-                </span>
-            );
-        }
-        if (status === 'FAILED') {
-            return (
-                <span className="inline-flex items-center gap-1 text-rose-700 font-semibold" title="Overnight extraction failed - using raw PDF">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                    Extraction Failed
-                </span>
-            );
-        }
-        return (
-            <span className="inline-flex items-center gap-1 text-amber-700 font-semibold" title="Queued for overnight Markdown compilation">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                Batch Pending
-            </span>
-        );
-    };
+
 
     return (
         <div className="flex-1 flex flex-col min-h-screen bg-background text-slate-900 antialiased overflow-y-auto">
@@ -422,7 +390,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] transition cursor-pointer"
                                 title="Teacher access: Sync latest materials from Moodle LMS"
                             >
-                                <RefreshCw className="w-3.5 h-3.5 text-[#0071E3]" />
+                                <RefreshIcon size={14} className="text-[#0071E3]" />
                                 <span>Sync Moodle</span>
                             </button>
                         )}
@@ -430,7 +398,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                             onClick={() => setShowUpload(true)}
                             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] transition-all cursor-pointer shadow-2xs"
                         >
-                            <Upload className="w-3.5 h-3.5" />
+                            <Upload01Icon size={14} />
                             <span>Upload Material</span>
                         </button>
                     </div>
@@ -463,12 +431,12 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                             </span>
                                         </span>
                                     ),
-                                    icon: <BookOpen className="w-3.5 h-3.5" />
+                                    icon: <Book02Icon size={14} />
                                 },
                                 {
                                     id: 'pyqs',
                                     label: 'Previous Year Questions (PYQs)',
-                                    icon: <GraduationCap className="w-3.5 h-3.5" />
+                                    icon: <Mortarboard01Icon size={14} />
                                 }
                             ]}
                         />
@@ -477,7 +445,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                         {activeTab === 'notes' ? (
                             <div className="flex items-center gap-2 flex-1 lg:max-w-md w-full">
                                 <div className="relative flex-1">
-                                    <Search className="w-3.5 h-3.5 text-[#727272] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <Search01Icon size={14} className="text-[#8E8E93] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                     <input
                                         type="text"
                                         value={searchQuery}
@@ -502,13 +470,13 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         <option value="cat:Lab Manual">Lab</option>
                                         <option value="cat:Other">Other</option>
                                     </select>
-                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-[#727272] pointer-events-none w-3.5 h-3.5" />
+                                    <ArrowDown01Icon size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8E8E93] pointer-events-none" />
                                 </div>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2 flex-1 lg:max-w-lg w-full">
                                 <div className="relative flex-1">
-                                    <Search className="w-3.5 h-3.5 text-[#727272] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    <Search01Icon size={14} className="text-[#8E8E93] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                     <input
                                         type="text"
                                         value={pyqSearch}
@@ -531,7 +499,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         <option value="UT-2">Unit Test 2 (UT-2)</option>
                                         <option value="Backlog">Backlog Exam</option>
                                     </select>
-                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-[#727272] pointer-events-none w-3.5 h-3.5" />
+                                    <ArrowDown01Icon size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8E8E93] pointer-events-none" />
                                 </div>
                             </div>
                         )}
@@ -595,36 +563,27 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                     />
                 ) : (
                     <>
-                        {/* Subject Vault Header with OKF AI Deep-Link */}
+                        {/* Subject Vault Header (Clean, minimal, content-first) */}
                         {activeSubjectObj && (
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gradient-to-r from-blue-50/90 via-slate-50/70 to-indigo-50/60 border border-[#D9ECFF] rounded-xl shadow-2xs">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-[#DEEDFC] flex items-center justify-center text-[#0073E6] shrink-0">
-                                        <BookOpen className="w-4 h-4" />
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-2xl shadow-xs">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-10 h-10 rounded-xl bg-[#F5F5F7] dark:bg-[#2C2C2E] flex items-center justify-center text-[#1D1D1F] dark:text-white shrink-0">
+                                        <Book02Icon size={20} />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h2 className="text-sm font-bold text-[#383838]">{activeSubjectObj.name}</h2>
+                                            <h2 className="text-sm font-semibold text-[#1D1D1F] dark:text-white">{activeSubjectObj.name}</h2>
                                             {activeSubjectObj.code && (
-                                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-[#0073E6] border border-[#D9ECFF] font-semibold">
+                                                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#AEAEB2] border border-[#E5E5EA] dark:border-[#2C2C2E]">
                                                     {activeSubjectObj.code}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-[#727272]">
-                                            {displayNotes.length} materials in this subject vault
+                                        <p className="text-xs text-[#6E6E73] dark:text-[#AEAEB2] mt-0.5">
+                                            {displayNotes.length} materials in this vault
                                         </p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => navigate(`/ai-assistant?subjectId=${activeSubjectObj.id}`)}
-                                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] transition-all shadow-2xs cursor-pointer w-fit shrink-0 group"
-                                    title="Ask AI questions using pre-generated OKF subject knowledge"
-                                    id={`askAiSubjectBtn-${activeSubjectObj.id}`}
-                                >
-                                    <Sparkles className="w-3.5 h-3.5 text-yellow-300 group-hover:scale-110 transition-transform" />
-                                    <span>Ask AI about this Subject</span>
-                                </button>
                             </div>
                         )}
 
@@ -634,83 +593,60 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                 {displayNotes.map((note) => {
                                     const rId = resolveSubjectId(note);
                                     const sub = allKnownSubjects.find(s => s.id === rId);
-                                                                        const badgeLabel = getNoteBadge(note);
+                                    const badgeLabel = getNoteBadge(note);
                                     const displayTitle = getCleanTitle(note.title);
-                                    const categoryLabel = note.category || 'Notes';
 
                                     return (
                                         <div
                                             key={note.id}
                                             onClick={() => handleOpenNote(note)}
-                                            className="bg-[linear-gradient(180deg,#FFFFFF_0px,#F2F7FC_120px)] border border-[#E2E2E2] hover:border-[#0073E6]/40 rounded-xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-xs"
+                                            className="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] hover:border-[#D2D2D7] dark:hover:border-[#3A3A3C] rounded-2xl p-5 transition-all duration-150 cursor-pointer flex flex-col justify-between group shadow-xs hover:shadow-sm"
                                         >
-                                            <div className="space-y-3">
-                                                {/* Top Row: Icon, File Type, Category, Unit */}
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-[#DEEDFC] text-[#0073E6] group-hover:bg-[#0073E6] group-hover:text-white shrink-0">
-                                                            <FileText className="w-4 h-4" />
-                                                        </div>
-                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF] uppercase tracking-wider">
-                                                            {badgeLabel}
-                                                        </span>
-                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-[#727272] border border-[#E2E2E2]">
-                                                            {categoryLabel}
-                                                        </span>
+                                            <div>
+                                                {/* Top Row: Icon, Format Badge, Unit & Action Indicator */}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] dark:bg-[#2C2C2E] flex items-center justify-center text-[#1D1D1F] dark:text-white shrink-0">
+                                                        <File02Icon size={18} />
                                                     </div>
 
-                                                    <div className="flex items-center gap-1.5 shrink-0">
-                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#D9ECFF]/50 text-[#0073E6] border border-[#0073E6]/20">
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <span className="text-xs font-medium text-[#6E6E73] dark:text-[#AEAEB2] bg-[#F5F5F7] dark:bg-[#2C2C2E] px-2.5 py-1 rounded-lg">
                                                             {note.unit || "Unit 1"}
                                                         </span>
-                                                        <ArrowUpRight className="w-3.5 h-3.5 text-[#727272] group-hover:text-[#0073E6] transition-colors" />
+                                                        <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                            {badgeLabel}
+                                                        </span>
+                                                        <ArrowUpRight01Icon size={16} className="text-[#8E8E93] group-hover:text-[#0071E3] transition-colors" />
                                                     </div>
                                                 </div>
 
-                                                {/* Title & Metadata */}
-                                                <div>
-                                                    <h3 className="font-semibold text-xs text-[#383838] line-clamp-2 leading-snug group-hover:text-[#0073E6] transition-colors">
+                                                {/* Title & Subject */}
+                                                <div className="mt-4">
+                                                    <h3 className="font-semibold text-sm text-[#1D1D1F] dark:text-white line-clamp-2 leading-relaxed group-hover:text-[#0071E3] transition-colors">
                                                         {displayTitle}
                                                     </h3>
-                                                    <p className="text-[11px] text-[#727272] mt-0.5 truncate">
+                                                    <p className="text-xs text-[#6E6E73] dark:text-[#AEAEB2] mt-1.5 truncate">
                                                         {sub?.name || 'Study Material'}
                                                     </p>
-                                                    
                                                 </div>
                                             </div>
 
-                                            {/* Bottom Row: Date & Status */}
-                                            <div className="pt-3 mt-3 border-t border-[#E2E2E2] flex items-center justify-between text-[10px] text-[#727272]">
+                                            {/* Bottom Row: Date & Direct Download */}
+                                            <div className="pt-4 mt-4 border-t border-[#E5E5EA] dark:border-[#2C2C2E] flex items-center justify-between text-xs text-[#8E8E93]">
                                                 <span>
                                                     {note.createdAt
                                                         ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
                                                         : 'Recent'}
                                                 </span>
 
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            const targetSubId = rId || note.subjectId || activeSubjectId;
-                                                            navigate(`/ai-assistant?subjectId=${targetSubId}`);
-                                                        }}
-                                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold text-[#0073E6] hover:bg-[#DEEDFC] transition-colors cursor-pointer"
-                                                        title="Ask AI about this Subject"
-                                                        type="button"
-                                                    >
-                                                        <Sparkles className="w-3 h-3 text-[#0073E6]" />
-                                                        <span>Ask AI</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => handleDownloadNote(e, note)}
-                                                        className="p-1 rounded text-[#727272] hover:text-[#0073E6] hover:bg-[#DEEDFC] transition-colors cursor-pointer"
-                                                        title="Download Note Document"
-                                                        type="button"
-                                                    >
-                                                        <Download className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    {renderOkfBadge(note.okfStatus)}
-                                                </div>
+                                                <button
+                                                    onClick={(e) => handleDownloadNote(e, note)}
+                                                    className="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                                                    title="Download Document"
+                                                    type="button"
+                                                >
+                                                    <Download01Icon size={16} />
+                                                </button>
                                             </div>
                                         </div>
                                     );
@@ -719,7 +655,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                         ) : (
                             <div className="py-24 bg-white border border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-center p-6 shadow-xs">
                                 <div className="w-12 h-12 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 text-slate-400">
-                                    <Inbox className="w-6 h-6" />
+                                    <InboxIcon size={24} className="text-[#8E8E93]" />
                                 </div>
                                 <h3 className="text-sm font-bold text-slate-800">
                                     {activeSubjectObj
@@ -730,15 +666,6 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                     No study notes match your filters. Upload new notes to expand your repository.
                                 </p>
                                 <div className="flex items-center gap-3">
-                                    {activeSubjectObj && (
-                                        <button
-                                            onClick={() => navigate(`/ai-assistant?subjectId=${activeSubjectObj.id}`)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#0073E6] bg-[#DEEDFC] hover:bg-[#D9ECFF] transition cursor-pointer"
-                                        >
-                                            <Sparkles className="w-3.5 h-3.5 text-[#0073E6]" />
-                                            <span>Ask AI about this Subject</span>
-                                        </button>
-                                    )}
                                     {isTeacher && (
                                         <button
                                             onClick={() => setShowLmsSync(true)}

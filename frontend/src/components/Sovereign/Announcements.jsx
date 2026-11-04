@@ -131,7 +131,7 @@ const Announcements = () => {
 
     const fetchAnnouncements = async () => {
         try {
-            const res = await axios.get(`${API_BASE}/announcements`, { 
+            const res = await axios.get(`${API_BASE}/announcements`, {
                 headers: { 'X-User-Role': userRole }
             });
             const data = Array.isArray(res.data) && res.data.length > 0 ? res.data : DEFAULT_ANNOUNCEMENTS;
@@ -233,7 +233,7 @@ const Announcements = () => {
         return announcements.filter(item => {
             const query = searchQuery.trim().toLowerCase();
             const tagStr = (item.tag || item.type || '').toLowerCase();
-            const matchesSearch = !query || 
+            const matchesSearch = !query ||
                 (item.title || '').toLowerCase().includes(query) ||
                 (item.description || '').toLowerCase().includes(query) ||
                 (item.postedBy || item.author || '').toLowerCase().includes(query);
@@ -301,11 +301,10 @@ const Announcements = () => {
                                 setCalendarAnchor('top');
                                 setShowCalendarPopup(prev => (calendarAnchor === 'top' ? !prev : true));
                             }}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-                                showCalendarPopup && calendarAnchor === 'top'
-                                    ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
-                                    : 'bg-white border-[#E2E2E2] hover:bg-[#DEEDFC]/40 text-[#383838]'
-                            }`}
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${showCalendarPopup && calendarAnchor === 'top'
+                                ? 'bg-[#D9ECFF] border-[#0073E6] text-[#0073E6]'
+                                : 'bg-white border-[#E2E2E2] hover:bg-[#DEEDFC]/40 text-[#383838]'
+                                }`}
                             title="View Deadlines Calendar"
                         >
                             <Calendar03Icon size={14} className="text-[#0073E6]" />
@@ -416,8 +415,8 @@ const Announcements = () => {
                                                     isUrgent
                                                         ? "bg-rose-50 text-[#E11D48] border border-rose-200"
                                                         : isOfficial
-                                                        ? "bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]"
-                                                        : "bg-slate-100 text-[#174073] border border-slate-200"
+                                                            ? "bg-[#DEEDFC] text-[#0073E6] border border-[#D9ECFF]"
+                                                            : "bg-slate-100 text-[#174073] border border-slate-200"
                                                 )}>
                                                     {tagLabel}
                                                 </span>
@@ -499,20 +498,7 @@ const Announcements = () => {
                                                     </div>
                                                 </div>
 
-                                                {isAck ? (
-                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[11px] font-semibold shrink-0 self-start sm:self-auto">
-                                                        <Tick02Icon size={13} className="text-emerald-600" />
-                                                        <span>Acknowledged</span>
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handleAcknowledge(ann.id)}
-                                                        className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#DEEDFC] text-[#0073E6] hover:bg-[#0073E6] hover:text-white border border-[#D9ECFF] text-xs font-semibold transition-all cursor-pointer shrink-0 self-start sm:self-auto shadow-2xs"
-                                                    >
-                                                        <CheckmarkCircle02Icon size={14} />
-                                                        <span>Acknowledge Notice</span>
-                                                    </button>
-                                                )}
+
                                             </div>
                                         );
                                     })()}
@@ -609,36 +595,7 @@ const Announcements = () => {
                         </div>
                     </section>
 
-                    {/* Section 2: Department Desk Summary */}
-                    <section className="bg-white rounded-xl p-5 border border-[#E2E2E2] shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-                        <div className="flex items-center gap-2 pb-3 border-b border-[#E2E2E2]">
-                            <div className="w-7 h-7 rounded-lg bg-[#D9ECFF] text-[#0073E6] flex items-center justify-center shrink-0">
-                                <CheckmarkBadge01Icon size={16} />
-                            </div>
-                            <h3 className="text-xs font-bold text-[#383838] uppercase tracking-wider">
-                                Compliance &amp; Verification
-                            </h3>
-                        </div>
-                        <div className="mt-3 text-xs text-[#555555] space-y-2.5 leading-relaxed">
-                            <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F9FA] border border-[#EAEAEA]">
-                                <span className="text-[#727272]">Total Bulletins</span>
-                                <span className="font-bold text-[#383838] tabular-nums">{announcements.length}</span>
-                            </div>
-                            <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F9FA] border border-[#EAEAEA]">
-                                <span className="text-[#727272]">Acknowledged by You</span>
-                                <span className="font-bold text-emerald-700 tabular-nums">{acknowledgedCount}</span>
-                            </div>
-                            <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F9FA] border border-[#EAEAEA]">
-                                <span className="text-[#727272]">Pending Action</span>
-                                <span className="font-bold text-[#0073E6] tabular-nums">
-                                    {Math.max(0, announcements.length - acknowledgedCount)}
-                                </span>
-                            </div>
-                            <p className="text-[11px] text-[#727272] pt-1">
-                                Official notifications are digitally authorized by the Department Academic Committee.
-                            </p>
-                        </div>
-                    </section>
+
                 </div>
             </div>
 

@@ -590,8 +590,8 @@ const AttendanceAnalytics = () => {
     const [isOptMinimized, setIsOptMinimized] = useState(() => {
         try {
             const val = localStorage.getItem('eduvault_opt_minimized');
-            return val !== null ? JSON.parse(val) : false;
-        } catch { return false; }
+            return val !== null ? JSON.parse(val) : true;
+        } catch { return true; }
     });
     const [optTarget, setOptTarget] = useState(() => {
         try {
@@ -1604,8 +1604,6 @@ const AttendanceAnalytics = () => {
                     <>
                         {/* Desktop View (Traditional Full Sovereign Layout) */}
                         <div className="hidden lg:block space-y-6 w-full min-w-0">
-                            {renderOptimizationPanel()}
-
                             {/* Main Two-Column Area */}
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                                 {/* Left Column: Primary Subject Attendance Table */}
@@ -1840,7 +1838,7 @@ const AttendanceAnalytics = () => {
                                 )}
                             </section>
 
-                            {/* 2. Minimizable Attendance Optimization & Strategy Panel on Mobile */}
+                            {/* Attendance Calculator & Planner at bottom of Desktop */}
                             {renderOptimizationPanel()}
 
                             {/* 3. Mobile Attendance Heatmap */}

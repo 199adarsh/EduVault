@@ -38,6 +38,7 @@ const SovereignLayout = () => {
     const [subjects, setSubjects] = useState([]);
 
     const [catalogSubjects, setCatalogSubjects] = useState([]);
+    const [isDockMinimized, setIsDockMinimized] = useState(false);
 
     const [notes, setNotes] = useState([]);
 
@@ -451,27 +452,17 @@ const SovereignLayout = () => {
 
 
     const navTabs = [
-
         { name: 'Home', path: '/', icon: LayoutDashboard },
-
         { name: 'Notes', path: '/notes', icon: BookOpen },
-
+        { name: 'AI Tutor', path: '/ai-assistant', icon: Sparkles },
         { name: 'Notices', path: '/announcements', icon: Bell },
-
         { name: 'Roadmaps', path: '/roadmaps', icon: Compass },
-
         {
-
             name: 'Attendance',
-
             path: '/attendance',
-
             icon: CalendarCheck2,
-
             badge: overallAttendance ? `${overallAttendance}%` : null
-
         },
-
     ];
 
 
@@ -757,38 +748,42 @@ const SovereignLayout = () => {
 
 
 
-                {/* Mobile Floating Bottom Navigation Dock (Rounded Discrete Tabs) */}
-
-                {!mobileMenuOpen && (
-
+                {/* Mobile Floating Bottom Navigation Dock (Collapsible, never overlays notes/AI) */}
+                {!mobileMenuOpen && !location.pathname.startsWith('/ai-assistant') && !(location.pathname.startsWith('/notes/') && location.pathname !== '/notes') && (
                     <div className="fixed bottom-3 inset-x-3 z-30 md:hidden flex justify-center pointer-events-none">
-
-                        <nav
-
-                            aria-label="Mobile Navigation"
-
-                            className="pointer-events-auto bg-white/95 backdrop-blur-md border border-[#E2E2E2] rounded-full p-1.5 shadow-lg shadow-black/8 w-full max-w-sm mx-auto flex items-center"
-
-                        >
-
-                            <DiscreteTabs
-
-                                tabs={discreteTabItems}
-
-                                activeTab={activeDockTab}
-
-                                onTabChange={(path) => navigate(path)}
-
-                                className="h-11 py-0 px-1 w-full justify-between"
-
-                                itemClassName="h-9 px-3"
-
-                            />
-
-                        </nav>
-
+                        {isDockMinimized ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsDockMinimized(false)}
+                                className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full px-4 py-2 shadow-lg flex items-center gap-2 text-xs font-semibold text-[#1D1D1F] dark:text-white cursor-pointer active:scale-95 transition-all shadow-black/10"
+                                title="Expand navigation"
+                            >
+                                <Compass className="w-4 h-4 text-[#0071E3]" />
+                                <span>Menu</span>
+                            </button>
+                        ) : (
+                            <nav
+                                aria-label="Mobile Navigation"
+                                className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full p-1.5 shadow-lg shadow-black/8 w-full max-w-md mx-auto flex items-center justify-between gap-1"
+                            >
+                                <DiscreteTabs
+                                    tabs={discreteTabItems}
+                                    activeTab={activeDockTab}
+                                    onTabChange={(path) => navigate(path)}
+                                    className="h-11 py-0 px-1 flex-1 justify-between"
+                                    itemClassName="h-9 px-2"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setIsDockMinimized(true)}
+                                    className="w-7 h-7 rounded-full text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center shrink-0 mr-1 cursor-pointer transition-colors"
+                                    title="Minimize navigation bar"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            </nav>
+                        )}
                     </div>
-
                 )}
 
             </main>

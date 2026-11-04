@@ -221,26 +221,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
     const [downloadProgress, setDownloadProgress] = useState(0);
 
     const handleOpenNote = (note) => {
-        setOpeningNote(note);
-        setOpenProgress(12);
-
-        const interval = setInterval(() => {
-            setOpenProgress(p => {
-                if (p >= 92) {
-                    clearInterval(interval);
-                    return 95;
-                }
-                return p + Math.floor(Math.random() * 18 + 12);
-            });
-        }, 90);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            setOpenProgress(100);
-            setTimeout(() => {
-                navigate(`/notes/${note.id}`);
-            }, 250);
-        }, 550);
+        navigate(`/notes/${note.id}`);
     };
 
     const handleDownloadNote = (e, note) => {

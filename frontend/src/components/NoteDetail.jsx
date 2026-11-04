@@ -25,15 +25,21 @@ import { cn } from '@/lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
+// In-memory instant caches for rapid note reopening
+const presignedCache = new Map();
+const blobCache = new Map();
+const doubtsCache = new Map();
+
 const NoteDetail = () => {
     const { id: noteId } = useParams();
-    const { profile, sidebarCollapsed, setSidebarCollapsed } = useOutletContext() || {};
+    const { profile, sidebarCollapsed, setSidebarCollapsed, notes = [] } = useOutletContext() || {};
     const navigate = useNavigate();
 
-    const [note, setNote] = useState(null);
-    const [doubts, setDoubts] = useState([]);
+    const cachedNote = (notes || []).find(n => String(n.id) === String(noteId));
+    const [note, setNote] = useState(() => cachedNote || null);
+    const [doubts, setDoubts] = useState(() => doubtsCache.get(noteId) || []);
     const [activeTab, setActiveTab] = useState('ai');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => !cachedNote);
     const [doubtQuery, setDoubtQuery] = useState('');
     const [aiQuery, setAiQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,56 +97,75 @@ const NoteDetail = () => {
     };
 
     useEffect(() => {
+        if (!noteId) return;
+
+        // Populate from cache immediately if present
+        if (presignedCache.has(noteId)) {
+            setPresignedUrl(presignedCache.get(noteId));
+        }
+        if (blobCache.has(noteId)) {
+            setBlobUrl(blobCache.get(noteId));
+        }
+
         const fetchNoteData = async () => {
             try {
-                const [noteRes, doubtsRes, fileRes] = await Promise.all([
+                const requests = [
                     axios.get(`${API_BASE}/notes/${noteId}`),
-                    axios.get(`${API_BASE}/notes/${noteId}/doubts`),
-                    axios.get(`${API_BASE}/files/${noteId}/presigned`)
-                ]);
+                    axios.get(`${API_BASE}/notes/${noteId}/doubts`)
+                ];
+                if (!presignedCache.has(noteId)) {
+                    requests.push(axios.get(`${API_BASE}/files/${noteId}/presigned`));
+                }
+
+                const [noteRes, doubtsRes, fileRes] = await Promise.all(requests);
                 setNote(noteRes.data);
-                setDoubts(doubtsRes.data || []);
-                if (fileRes.data?.url) setPresignedUrl(fileRes.data.url);
+                const freshDoubts = doubtsRes.data || [];
+                setDoubts(freshDoubts);
+                doubtsCache.set(noteId, freshDoubts);
+
+                if (fileRes?.data?.url) {
+                    presignedCache.set(noteId, fileRes.data.url);
+                    setPresignedUrl(fileRes.data.url);
+                }
             } catch (err) {
                 console.error('Error fetching note details:', err);
-                toast.error('Failed to load note data.');
-                navigate('/notes');
             } finally {
                 setLoading(false);
             }
         };
 
-        if (noteId) fetchNoteData();
-    }, [noteId, navigate]);
+        fetchNoteData();
+    }, [noteId]);
 
     useEffect(() => {
         if (!presignedUrl && !note?.fileUrl) return;
-        let cancelled = false;
+        if (blobCache.has(noteId)) {
+            setBlobUrl(blobCache.get(noteId));
+            return;
+        }
 
+        let cancelled = false;
         const loadBlob = async () => {
             setDocLoading(true);
             let blob = null;
 
-            if (note?.fileUrl) {
+            // 1. Fetch from fast B2 CDN presigned URL first
+            if (presignedUrl) {
                 try {
-                    const fallbackUrl = `${API_BASE}/files/raw/${note.fileUrl}`;
-                    const res = await fetch(fallbackUrl);
-                    if (res.ok) {
-                        blob = await res.blob();
-                    }
-                } catch (err) {
-                    console.warn('Local raw fetch error:', err);
+                    const res = await fetch(presignedUrl);
+                    if (res.ok) blob = await res.blob();
+                } catch (e) {
+                    console.warn('Presigned fetch failed, falling back:', e);
                 }
             }
 
-            if (!blob && presignedUrl) {
+            // 2. Fallback to local raw if presigned not working
+            if (!blob && note?.fileUrl) {
                 try {
-                    const res = await fetch(presignedUrl);
-                    if (res.ok) {
-                        blob = await res.blob();
-                    }
-                } catch (e) {
-                    console.warn('Presigned fetch failed:', e);
+                    const res = await fetch(`${API_BASE}/files/raw/${note.fileUrl}`);
+                    if (res.ok) blob = await res.blob();
+                } catch (err) {
+                    console.warn('Local raw fetch error:', err);
                 }
             }
 
@@ -148,6 +173,7 @@ const NoteDetail = () => {
 
             if (blob) {
                 const bUrl = URL.createObjectURL(blob);
+                blobCache.set(noteId, bUrl);
                 setBlobUrl(bUrl);
 
                 const ext = note?.fileUrl ? note.fileUrl.split('.').pop().toLowerCase() : '';
@@ -168,7 +194,7 @@ const NoteDetail = () => {
         return () => {
             cancelled = true;
         };
-    }, [presignedUrl, note?.fileUrl]);
+    }, [presignedUrl, note?.fileUrl, noteId]);
 
     const handlePostDoubt = async () => {
         if (!doubtQuery.trim()) return;
@@ -440,7 +466,7 @@ const NoteDetail = () => {
                         : "flex-1 w-full"
                 )}>
                     {isPdf ? (
-                        (docLoading || !blobUrl) ? (
+                        (!blobUrl && !presignedUrl) ? (
                             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F5F5F7]">
                                 <DocumentLoadingBar
                                     inline

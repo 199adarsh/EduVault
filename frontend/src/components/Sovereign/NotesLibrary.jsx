@@ -217,12 +217,9 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         return null;
     }, [allKnownSubjects]);
 
-    // Check if a subject has notes available (s.noteCount > 0 or has at least 1 note in notes array)
+    // Check if a subject has notes available (has at least 1 note in loaded notes array)
     const subjectHasNotes = useCallback((s) => {
-        if (!s) return false;
-        if (typeof s.noteCount === 'number' && s.noteCount > 0) return true;
-        if (s.noteCount && Number(s.noteCount) > 0) return true;
-        if (!notes || notes.length === 0) return false;
+        if (!s || !notes || notes.length === 0) return false;
         return notes.some(note => {
             const resolvedId = resolveSubjectId(note);
             if (resolvedId && resolvedId === s.id) return true;
@@ -272,15 +269,8 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
             }
         }
 
-        // Strictly show only current sem subjects that match student attendance
-        if (!isTeacher) {
-            const enrolled = subjects || [];
-            // Order resolved subjects first, unresolved separate
-            const resolved = enrolled.filter(s => s.id && !s.isUnresolved);
-            const unresolved = enrolled.filter(s => s.isUnresolved || !s.id);
-            return [...resolved, ...unresolved];
-        }
-        return baseList.filter(s => subjectHasNotes(s));
+        const candidateList = (!isTeacher && subjects && subjects.length > 0) ? subjects : baseList;
+        return candidateList.filter(s => subjectHasNotes(s));
     }, [isTeacher, subjects, allKnownSubjects, profile, studentDept, studentSem, subjectHasNotes]);
 
     // Animated dummy loading states for opening and downloading notes

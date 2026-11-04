@@ -435,7 +435,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                 },
                                 {
                                     id: 'pyqs',
-                                    label: 'Previous Year Questions (PYQs)',
+                                    label: 'Previous Year Questions',
                                     icon: <Mortarboard01Icon size={14} />
                                 }
                             ]}
@@ -552,8 +552,8 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                 </section>
 
                 {activeTab === 'pyqs' ? (
-                    <PYQsDatabase 
-                        embedded={true} 
+                    <PYQsDatabase
+                        embedded={true}
                         searchQuery={pyqSearch}
                         setSearchQuery={setPyqSearch}
                         filterSubject={pyqSubject}

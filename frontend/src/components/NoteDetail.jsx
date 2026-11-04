@@ -20,6 +20,7 @@ import {
     ArrowUp02Icon
 } from 'hugeicons-react';
 import DocumentLoadingBar from './DocumentLoadingBar';
+import PdfViewer from './PdfViewer';
 import { cn } from '@/lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
@@ -36,7 +37,7 @@ const NoteDetail = () => {
     const [doubtQuery, setDoubtQuery] = useState('');
     const [aiQuery, setAiQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isPanelOpen, setIsPanelOpen] = useState(true);
+    const [isPanelOpen, setIsPanelOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : false);
     const [presignedUrl, setPresignedUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
         const [docxHtml, setDocxHtml] = useState(null);

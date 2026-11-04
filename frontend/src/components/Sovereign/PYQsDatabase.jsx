@@ -256,6 +256,14 @@ const PYQsDatabase = ({
                     (s.code && (
                         (q.fileUrl && q.fileUrl.toUpperCase().includes(s.code.toUpperCase())) ||
                         (q.tags && q.tags.toUpperCase().includes(s.code.toUpperCase()))
+                    )) ||
+                    (s.canonicalCode && (
+                        (q.fileUrl && q.fileUrl.toUpperCase().includes(s.canonicalCode.toUpperCase())) ||
+                        (q.tags && q.tags.toUpperCase().includes(s.canonicalCode.toUpperCase()))
+                    )) ||
+                    (s.name && (
+                        (q.subjectName && isSubjectNameMatch(s.name, q.subjectName)) ||
+                        (q.fileUrl && isSubjectNameMatch(s.name, q.fileUrl))
                     ))
                 );
                 if (!belongsToStudent) return false;

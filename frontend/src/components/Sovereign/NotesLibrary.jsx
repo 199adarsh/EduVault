@@ -373,11 +373,23 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         return (notes || []).filter(note => {
             const resolvedId = resolveSubjectId(note);
 
-            // 1. Match selected subject by canonical ID first, then canonical subject code
+            // 1. Match selected subject by canonical ID, subject code, or resilient subject name
             const isMatch = resolvedId === activeSubjectId || note.subjectId === activeSubjectId ||
-                (activeSubjectObj?.code && (
-                    (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
-                    (note.fileUrl && note.fileUrl.toUpperCase().includes(activeSubjectObj.code.toUpperCase()))
+                (activeSubjectObj && (
+                    (activeSubjectObj.code && (
+                        (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
+                        (note.fileUrl && note.fileUrl.toUpperCase().includes(activeSubjectObj.code.toUpperCase()))
+                    )) ||
+                    (activeSubjectObj.canonicalCode && (
+                        (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(activeSubjectObj.canonicalCode.toUpperCase())) ||
+                        (note.fileUrl && note.fileUrl.toUpperCase().includes(activeSubjectObj.canonicalCode.toUpperCase()))
+                    )) ||
+                    (activeSubjectObj.name && (
+                        (note.subjectName && isSubjectNameMatch(note.subjectName, activeSubjectObj.name)) ||
+                        (note.title && isSubjectNameMatch(note.title, activeSubjectObj.name)) ||
+                        (note.fileUrl && isSubjectNameMatch(note.fileUrl, activeSubjectObj.name)) ||
+                        (note.b2ObjectKey && isSubjectNameMatch(note.b2ObjectKey, activeSubjectObj.name))
+                    ))
                 ));
             if (!isMatch) return false;
 

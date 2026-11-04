@@ -270,7 +270,16 @@ public class AcademicNormalizer {
                 if (nameMatches.size() == 1) {
                     return nameMatches.get(0);
                 } else if (nameMatches.size() > 1) {
-                    // Ambiguous match on name - reject
+                    // Check if all matches represent identical duplicate courses in the catalog
+                    boolean allSameCourse = nameMatches.stream().allMatch(s ->
+                            AcademicNormalizer.isDepartmentMatch(s.getDepartment(), nameMatches.get(0).getDepartment()) &&
+                            AcademicNormalizer.isSemesterMatch(s.getSemester(), nameMatches.get(0).getSemester()));
+                    if (allSameCourse) {
+                        return nameMatches.stream()
+                                .max(java.util.Comparator.comparingInt(s -> s.getNoteCount() != null ? s.getNoteCount() : 0))
+                                .orElse(nameMatches.get(0));
+                    }
+                    // Truly ambiguous across different departments/semesters -> reject
                     return null;
                 }
             }

@@ -123,7 +123,13 @@ const SovereignLayout = () => {
                             const normCsName = cs.name.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/[^a-zA-Z0-9\s]/g, ' ').trim().replace(/\s+/g, ' ').toLowerCase();
                             return normLsName && normCsName && normLsName === normCsName;
                         });
-                        if (nameMatches.length === 1) match = nameMatches[0];
+                        if (nameMatches.length === 1) {
+                            match = nameMatches[0];
+                        } else if (nameMatches.length > 1) {
+                            const deptMatches = nameMatches.filter(cs => normDept(cs.department) === normDept(currentProfile?.department));
+                            const pool = deptMatches.length > 0 ? deptMatches : nameMatches;
+                            match = pool.reduce((best, cur) => ((cur.noteCount || 0) > (best.noteCount || 0) ? cur : best), pool[0]);
+                        }
                     }
 
                     const canonicalId = match ? match.id : (ls.id || null);

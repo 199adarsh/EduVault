@@ -132,22 +132,22 @@ const SovereignLayout = () => {
                         id: canonicalId,
                         canonicalCode: match?.code || ls.code || null,
                         isUnresolved: !canonicalId,
-                        department: match?.department || ls.department || currentProfile?.department || 'B.Tech-UAD',
-                        semester: match?.semester || ls.semester || currentProfile?.semester || 'SEM 04'
+                        department: match?.department || ls.department || currentProfile?.department || 'GENERAL',
+                        semester: match?.semester || ls.semester || currentProfile?.semester || 'SEM 01'
                     };
                 });
                 localStorage.setItem('eduvault_subjects', JSON.stringify(enrolledSubjects));
                 setSubjects(enrolledSubjects);
             } else if (currentProfile?.department && currentProfile?.semester) {
                 const normDept = (d) => {
-                    if (!d) return 'AIDS';
+                    if (!d) return 'GENERAL';
                     const u = d.toUpperCase();
                     if (u.includes('UAD') || u.includes('AIDS') || u.includes('AI&DS') || u.includes('AI & DS') || u.includes('ARTIFICIAL')) return 'AIDS';
                     if (u.includes('CSE') || u.includes('COMPUTER')) return 'CSE';
                     return u.replace(/[^A-Z0-9]/g, '');
                 };
                 const normSem = (s) => {
-                    if (!s) return 'S05';
+                    if (!s) return 'S01';
                     const m = s.toString().match(/(?:sem|semester|s)?\s*0?([1-8])/i);
                     return m ? `S0${m[1]}` : s.toString().toUpperCase().trim();
                 };

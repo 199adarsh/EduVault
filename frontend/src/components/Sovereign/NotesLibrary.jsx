@@ -19,7 +19,7 @@ import PYQsDatabase from './PYQsDatabase';
 import { FluidTabs } from '../fluid-tabs';
 
 const normalizeDept = (dept) => {
-    if (!dept) return 'AIDS';
+    if (!dept) return 'GENERAL';
     const upper = dept.toUpperCase();
     if (upper.includes('UAD') || upper.includes('AIDS') || upper.includes('AI&DS') || upper.includes('AI & DS') || upper.includes('ARTIFICIAL')) return 'AIDS';
     if (upper.includes('CSE') || upper.includes('COMPUTER')) return 'CSE';
@@ -30,7 +30,7 @@ const normalizeDept = (dept) => {
 };
 
 const normalizeSem = (sem) => {
-    if (!sem) return 'S05';
+    if (!sem) return 'S01';
     const m = sem.toString().match(/(?:sem|semester|s)?\s*0?([1-8])/i);
     return m ? `S0${m[1]}` : sem.toString().toUpperCase().trim();
 };
@@ -262,7 +262,8 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                 const catalogMatch = allKnownSubjects.filter(s => {
                     const d = normalizeDept(s.department);
                     const sem = normalizeSem(s.semester);
-                    const deptOk = d === studentDept || (studentDept === 'AIDS' && d === 'CSE') || (studentDept === 'CSE' && d === 'AIDS');
+                    const csAllied = new Set(['AIDS', 'CSE', 'AIML']);
+                    const deptOk = d === studentDept || (csAllied.has(studentDept) && csAllied.has(d));
                     return deptOk && sem === studentSem;
                 });
                 baseList = catalogMatch.length > 0 ? catalogMatch : (subjects || []);

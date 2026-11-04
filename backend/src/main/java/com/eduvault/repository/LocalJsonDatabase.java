@@ -702,21 +702,11 @@ public class LocalJsonDatabase {
                     .id("c502-cse-softeng")
                     .name("Software Engineering")
                     .code("01CS502")
-                    .department("B.Tech-UAD")
-                    .semester("SEM 04")
+                    .department("CSE")
+                    .semester("SEM 05")
                     .createdAt("2026-05-01")
                     .noteCount(0)
                     .build());
-        }
-        // Normalize any Software Engineering subjects to student's semester and department
-        for (Subject s : subjectRepository.findAll()) {
-            if (s.getName() != null && AcademicNormalizer.cleanCourseName(s.getName()).equalsIgnoreCase("Software Engineering")) {
-                if (!"SEM 04".equalsIgnoreCase(s.getSemester()) || !"B.Tech-UAD".equalsIgnoreCase(s.getDepartment())) {
-                    s.setDepartment("B.Tech-UAD");
-                    s.setSemester("SEM 04");
-                    subjectRepository.save(s);
-                }
-            }
         }
         if (!subjectRepository.existsById("c503-cse-ai")) {
             subjectRepository.save(Subject.builder()
@@ -835,45 +825,16 @@ public class LocalJsonDatabase {
         Subject fromContent = findSubjectFromContent(combined, subjects);
         if (fromContent != null) return fromContent;
 
-        // Semantic subject matching
-        for (Subject s : subjects) {
-            String sName = (s.getName() != null ? s.getName() : "").toUpperCase();
-            boolean isLab = sName.contains("LAB") || (s.getCode() != null && s.getCode().toUpperCase().contains("P"));
-            if (isLab) continue;
-
-            if (sName.contains("DATABASE") && (combined.contains("DATABASE") || combined.contains("DBMS") || combined.contains("TRANSACTION") || combined.contains("ACID"))) {
-                return s;
-            }
-            if (sName.contains("MACHINE LEARNING") && (combined.contains("ARTIFICIAL INTELLIGENCE") || combined.contains("MACHINE LEARNING") || combined.contains("HEURISTIC") || combined.contains("SEARCHING") || combined.contains("AGENT"))) {
-                return s;
-            }
-            if ((sName.contains("ALGORITHM") || sName.contains("DAA")) && (combined.contains("ALGORITHM") || combined.contains("DIVIDE AND CONQUER") || combined.contains("NP HARD") || combined.contains("FUNDAMENTALS OF ALGORITHMS"))) {
-                return s;
-            }
-            if (sName.contains("WEB") && (combined.contains("JAVASCRIPT") || combined.contains("NODE") || combined.contains("ANGULAR") || combined.contains("EXPRESS"))) {
-                return s;
-            }
-            if (sName.contains("FEATURE") && combined.contains("FEATURE")) {
-                return s;
-            }
-            if (sName.contains("IOT") && combined.contains("RASPBERRY")) {
-                return s;
-            }
-            if (sName.contains("ENTREPRENEURSHIP") && (combined.contains("STARTUP") || combined.contains("ENTREPRENEURSHIP"))) {
-                return s;
-            }
+        // Strict matching using verified AcademicNormalizer to prevent false-positive classifications
+        if (note.getTitle() != null && !note.getTitle().isBlank()) {
+            Subject s = AcademicNormalizer.resolveSubject(note.getTitle(), null, null, subjects);
+            if (s != null) return s;
         }
 
-        String tags = note.getTags() != null ? String.join(" ", note.getTags()).toUpperCase() : "";
-        String title = note.getTitle() != null ? note.getTitle().toUpperCase() : "";
-
-        for (Subject s : subjects) {
-            String sName = s.getName() != null ? s.getName().toUpperCase() : "";
-            if (s.getCode() != null && !s.getCode().isEmpty() && tags.contains(s.getCode().toUpperCase())) {
-                return s;
-            }
-            if (!sName.isEmpty() && (title.contains(sName) || tags.contains(sName))) {
-                return s;
+        if (note.getTags() != null) {
+            for (String tag : note.getTags()) {
+                Subject s = AcademicNormalizer.resolveSubject(tag, null, null, subjects);
+                if (s != null) return s;
             }
         }
         return null;

@@ -138,7 +138,7 @@ public class AcademicNormalizer {
         if (combined.contains("UCE") || combined.contains("01CE") || combined.contains("CIVIL")) {
             return "CIVIL";
         }
-        return "B.Tech-UAD";
+        return "GENERAL";
     }
 
     /**
@@ -177,7 +177,7 @@ public class AcademicNormalizer {
             }
         }
 
-        return "SEM 05";
+        return "SEM 01";
     }
 
     public static String cleanCourseName(String raw) {

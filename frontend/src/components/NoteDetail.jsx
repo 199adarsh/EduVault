@@ -37,7 +37,7 @@ const NoteDetail = () => {
     const [doubtQuery, setDoubtQuery] = useState('');
     const [aiQuery, setAiQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isPanelOpen, setIsPanelOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : false);
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [presignedUrl, setPresignedUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
         const [docxHtml, setDocxHtml] = useState(null);

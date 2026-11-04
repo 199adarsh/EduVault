@@ -76,13 +76,14 @@ export const cleanSubjectName = (str) => {
     if (!str) return '';
     return str.toLowerCase()
         .replace(/\([a-z0-9\s_-]+\)/gi, '')
+        .replace(/^[0-9]{1,2}[a-z]{2,6}[0-9]{2,4}[a-z]?\s*/gi, '')
         .replace(/[0-9]{2}[a-z]{2,6}[0-9]{3,4}[a-z]?/gi, '')
+        .replace(/\b(ai\s*&\s*ds|ai\s+and\s+ds|aids)\b/gi, 'artificial intelligence and data science')
+        .replace(/\b(laboratory|practical)\b/gi, 'lab')
         .replace(/[^a-z0-9]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 };
-
-const STOP_WORDS = new Set(['and', 'for', 'the', 'of', 'in', 'to', 'with', 'on', 'at', 'by', 'an', 'a']);
 
 export const isSubjectNameMatch = (nameA, nameB) => {
     if (!nameA || !nameB) return false;
@@ -90,18 +91,10 @@ export const isSubjectNameMatch = (nameA, nameB) => {
     const cb = cleanSubjectName(nameB);
     if (!ca || !cb) return false;
 
-    const isLabA = /\b(lab|practical|laboratory)\b/.test(ca);
-    const isLabB = /\b(lab|practical|laboratory)\b/.test(cb);
+    const isLabA = /\b(lab)\b/.test(ca);
+    const isLabB = /\b(lab)\b/.test(cb);
     if (isLabA !== isLabB) return false;
-    if (ca === cb) return true;
-
-    const wa = ca.split(' ').filter(w => w.length > 2 && !STOP_WORDS.has(w));
-    const wb = cb.split(' ').filter(w => w.length > 2 && !STOP_WORDS.has(w));
-    if (wa.length === 0 || wb.length === 0) return false;
-
-    const common = wa.filter(w => wb.includes(w)).length;
-    const minWords = Math.min(wa.length, wb.length);
-    return common >= (minWords >= 3 ? minWords - 1 : minWords);
+    return ca === cb;
 };
 
 export const getCleanTitle = (title) => {

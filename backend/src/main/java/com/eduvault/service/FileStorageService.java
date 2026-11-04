@@ -4,6 +4,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.fontbox.ttf.TTFParser;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xslf.usermodel.XSLFShape;
@@ -47,6 +48,9 @@ public class FileStorageService {
             
             // Optimize font loading to prevent repeated cache building
             System.setProperty("pdfbox.fontcache", "true");
+            
+            // Allow highly compressed graphics/slides in PPTX and DOCX without triggering zip bomb detection
+            ZipSecureFile.setMinInflateRatio(0.001);
             
             // Suppress font warnings to reduce log noise
             java.util.logging.Logger.getLogger("org.apache.pdfbox").setLevel(java.util.logging.Level.WARNING);

@@ -5,37 +5,89 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import mammoth from 'mammoth';
 import {
-    ArrowLeft, Download, MessageSquare, Bot, X,
-    FileText, User, Calendar, CheckCircle2, Send, Inbox, Loader2
-} from 'lucide-react';
+    ArrowLeft02Icon,
+    Download01Icon,
+    Message01Icon,
+    AiChat02Icon,
+    Cancel01Icon,
+    File01Icon,
+    Tick02Icon,
+    Copy01Icon,
+    RefreshIcon,
+    Search01Icon,
+    Loading01Icon,
+    SparklesIcon,
+    ArrowUp02Icon
+} from 'hugeicons-react';
 import DocumentLoadingBar from './DocumentLoadingBar';
-import { FluidTabs } from './fluid-tabs';
+import { cn } from '@/lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const NoteDetail = () => {
     const { id: noteId } = useParams();
-    const { profile } = useOutletContext();
+    const { profile, sidebarCollapsed, setSidebarCollapsed } = useOutletContext() || {};
     const navigate = useNavigate();
-    
+
     const [note, setNote] = useState(null);
     const [doubts, setDoubts] = useState([]);
-    const [activeTab, setActiveTab] = useState('doubts');
+    const [activeTab, setActiveTab] = useState('ai');
     const [loading, setLoading] = useState(true);
-    const [query, setQuery] = useState('');
+    const [doubtQuery, setDoubtQuery] = useState('');
+    const [aiQuery, setAiQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [isPanelOpen, setIsPanelOpen] = useState(true);
     const [presignedUrl, setPresignedUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
-    const [docxHtml, setDocxHtml] = useState(null);
+        const [docxHtml, setDocxHtml] = useState(null);
     const [docLoading, setDocLoading] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [chatMessages, setChatMessages] = useState([
-        { role: 'assistant', text: "Hello! I'm your AI academic assistant. Ask me anything about this document." }
+        {
+            role: 'assistant',
+            text: "Hello! I am Caxie, your study assistant for this document. Ask any question, request key summaries, or clarify difficult topics."
+        }
     ]);
-
+    const [copiedIndex, setCopiedIndex] = useState(null);
     const scrollRef = useRef(null);
+    const textareaRef = useRef(null);
+
+    // Minimize sidebar when side panel is open so notes and AI chat stay side-by-side
+    useEffect(() => {
+        if (isPanelOpen) {
+            setSidebarCollapsed?.(true);
+        } else {
+            setSidebarCollapsed?.(false);
+        }
+        return () => {
+            setSidebarCollapsed?.(false);
+        };
+    }, [isPanelOpen, setSidebarCollapsed]);
+
+    // Auto-scroll chat stream
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [chatMessages, isSubmitting]);
+
+    const handleCopyMessage = (text, idx) => {
+        navigator.clipboard.writeText(text);
+        setCopiedIndex(idx);
+        toast.success("Copied to clipboard");
+        setTimeout(() => setCopiedIndex(null), 2000);
+    };
+
+    const handleClearNoteChat = () => {
+        setChatMessages([
+            {
+                role: 'assistant',
+                text: "Chat cleared. What would you like to explore in this document?"
+            }
+        ]);
+        toast.success("Chat cleared");
+    };
 
     useEffect(() => {
         const fetchNoteData = async () => {
@@ -46,7 +98,7 @@ const NoteDetail = () => {
                     axios.get(`${API_BASE}/files/${noteId}/presigned`)
                 ]);
                 setNote(noteRes.data);
-                setDoubts(doubtsRes.data);
+                setDoubts(doubtsRes.data || []);
                 if (fileRes.data?.url) setPresignedUrl(fileRes.data.url);
             } catch (err) {
                 console.error('Error fetching note details:', err);
@@ -101,47 +153,33 @@ const NoteDetail = () => {
                 if (ext === 'docx') {
                     try {
                         const arrayBuffer = await blob.arrayBuffer();
-                        const bytes = new Uint8Array(arrayBuffer.slice(0, 4));
-                        const isZip = bytes[0] === 0x50 && bytes[1] === 0x4B;
-                        if (isZip && typeof mammoth !== 'undefined' && mammoth?.convertToHtml) {
-                            const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
-                            if (html && html.trim().length > 0 && !cancelled) {
-                                setDocxHtml(html);
-                            }
-                        }
-                    } catch (mErr) {
-                        console.warn('Docx preview fallback:', mErr?.message || mErr);
+                        const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
+                        if (!cancelled) setDocxHtml(html);
+                    } catch (e) {
+                        console.warn('DOCX parse error:', e);
                     }
                 }
             }
-            setDocLoading(false);
+            if (!cancelled) setDocLoading(false);
         };
 
         loadBlob();
-        return () => { cancelled = true; };
-    }, [presignedUrl, note]);
-
-    useEffect(() => {
-        return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
-    }, [blobUrl]);
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [doubts, chatMessages, activeTab, isPanelOpen]);
+        return () => {
+            cancelled = true;
+        };
+    }, [presignedUrl, note?.fileUrl]);
 
     const handlePostDoubt = async () => {
-        if (!query.trim()) return;
+        if (!doubtQuery.trim()) return;
         setIsSubmitting(true);
         try {
             const res = await axios.post(`${API_BASE}/notes/${noteId}/doubts`, {
-                studentName: profile?.name || 'Anonymous',
-                question: query.trim()
+                studentName: profile?.name || 'Anonymous Student',
+                question: doubtQuery.trim()
             });
-            setDoubts([...doubts, res.data]);
-            setQuery('');
-            toast.success('Doubt posted! Instructors will be notified.');
+            setDoubts(prev => [res.data, ...prev]);
+            setDoubtQuery('');
+            toast.success('Doubt posted to instructor & classmates.');
         } catch {
             toast.error('Failed to post doubt.');
         } finally {
@@ -149,22 +187,24 @@ const NoteDetail = () => {
         }
     };
 
-    const handleAIChat = async () => {
-        if (!query.trim()) return;
-        const userMsg = { role: 'user', text: query.trim() };
+    const handleAIChat = async (overridePrompt) => {
+        const queryText = (overridePrompt || aiQuery).trim();
+        if (!queryText) return;
+
+        const userMsg = { role: 'user', text: queryText };
         setChatMessages(prev => [...prev, userMsg]);
-        setQuery('');
+        setAiQuery('');
         setIsSubmitting(true);
-        
+
         try {
             const customApiKey = localStorage.getItem('eduvault_custom_gemini_key') || localStorage.getItem('eduvault_gemini_api_key');
             const response = await fetch(`${API_BASE}/ai/chat`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     ...(customApiKey ? { 'X-Gemini-Api-Key': customApiKey } : {})
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     question: userMsg.text,
                     noteId: noteId,
                     customApiKey: customApiKey || undefined,
@@ -191,7 +231,7 @@ const NoteDetail = () => {
                     try {
                         const parsed = JSON.parse(clean);
                         if (parsed.answer) answer = parsed.answer;
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
 
@@ -202,10 +242,10 @@ const NoteDetail = () => {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ 
-                                parts: [{ 
-                                    text: `You are an AI study tutor for the chapter "${note.title}". Answer the student's question concisely using the chapter content:\n\n=== CONTENT ===\n${note.extractedText.slice(0, 4000)}\n\n=== QUESTION ===\n${userMsg.text}` 
-                                }] 
+                            contents: [{
+                                parts: [{
+                                    text: `You are an academic study tutor for the document "${note.title}". Answer concisely using the chapter content:\n\n=== CONTENT ===\n${note.extractedText.slice(0, 4000)}\n\n=== QUESTION ===\n${userMsg.text}`
+                                }]
                             }]
                         })
                     });
@@ -218,17 +258,18 @@ const NoteDetail = () => {
                 }
             }
 
-            if (!answer) throw new Error("AI Logic Engine offline");
+            if (!answer) throw new Error("AI service temporarily unavailable");
 
-            setChatMessages(prev => [...prev, { 
-                role: 'assistant', 
-                text: answer 
+            setChatMessages(prev => [...prev, {
+                role: 'assistant',
+                text: answer
             }]);
         } catch (err) {
             toast.error(err.message);
-            setChatMessages(prev => [...prev, { 
-                role: 'assistant', 
-                text: "Error: " + err.message 
+            setChatMessages(prev => [...prev, {
+                role: 'assistant',
+                text: "Error: " + err.message,
+                isError: true
             }]);
         } finally {
             setIsSubmitting(false);
@@ -273,19 +314,13 @@ const NoteDetail = () => {
         }, 650);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (activeTab === 'doubts') handlePostDoubt();
-        else handleAIChat();
-    };
-
     if (loading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-[#F2F7FC] min-h-screen p-6">
-                <DocumentLoadingBar 
-                    inline 
-                    message="Loading document..." 
-                    submessage="Fetching document metadata and study discussions..." 
+            <div className="flex-1 flex items-center justify-center bg-[#F5F5F7] min-h-screen p-6">
+                <DocumentLoadingBar
+                    inline
+                    message="Opening document..."
+                    submessage="Fetching document metadata and discussions..."
                 />
             </div>
         );
@@ -299,310 +334,434 @@ const NoteDetail = () => {
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
 
     return (
-        <div className="relative flex-1 flex flex-col bg-[#F2F7FC] overflow-hidden antialiased h-full w-full">
+        <div className="relative flex-1 flex flex-col bg-[#F5F5F7] overflow-hidden antialiased h-full w-full font-sans text-[#1D1D1F]">
             {/* Global Overlay while downloading */}
             {downloading && (
-                <DocumentLoadingBar 
-                    progress={downloadProgress} 
-                    message="Downloading document..." 
-                    submessage={note.title} 
+                <DocumentLoadingBar
+                    progress={downloadProgress}
+                    message="Downloading document..."
+                    submessage={note.title}
                 />
             )}
 
-            {/* Header - Slim, Unstop Theme Top Bar */}
-            <div className="h-14 px-4 sm:px-6 bg-white border-b border-[#E2E2E2] flex items-center justify-between shrink-0 z-20">
+            {/* Top Navigation Bar */}
+            <header className="h-14 px-4 sm:px-6 bg-[#FFFFFF] border-b border-[#E5E5EA] flex items-center justify-between shrink-0 z-20">
                 <div className="flex items-center gap-3 min-w-0">
-                    <button 
-                        onClick={() => navigate('/notes')} 
-                        className="p-2 bg-[#F2F7FC] hover:bg-[#DEEDFC] border border-[#E2E2E2] rounded-xl text-[#383838] transition-colors cursor-pointer shrink-0"
+                    <button
+                        onClick={() => navigate('/notes')}
+                        className="p-2 bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] rounded-xl transition-colors cursor-pointer shrink-0 border border-[#E5E5EA]"
                         title="Back to Notes"
                     >
-                        <ArrowLeft className="w-4 h-4" />
+                        <ArrowLeft02Icon size={16} />
                     </button>
                     <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-4 h-4 text-[#0073E6] shrink-0" />
-                        <h2 className="text-xs sm:text-sm font-bold text-[#383838] truncate max-w-[200px] sm:max-w-[450px]">{note.title}</h2>
+                        <File01Icon size={16} className="text-[#0071E3] shrink-0" />
+                        <h1 className="text-xs sm:text-sm font-semibold text-[#1D1D1F] truncate max-w-[200px] sm:max-w-[360px] md:max-w-[480px]">
+                            {note.title}
+                        </h1>
                         {note.unit && (
-                            <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full bg-[#DEEDFC] text-[10px] font-semibold text-[#174073] border border-[#D9ECFF] shrink-0">
+                            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#F5F5F7] text-[11px] font-medium text-[#6E6E73] border border-[#E5E5EA] shrink-0">
                                 {note.unit}
                             </span>
                         )}
                     </div>
                 </div>
-                
+
+                {/* Header Action Controls */}
                 <div className="flex items-center gap-2 shrink-0">
-                    <button 
-                        onClick={() => setIsPanelOpen(true)}
-                        className="px-3 py-1.5 bg-[#F2F7FC] hover:bg-[#DEEDFC] border border-[#E2E2E2] rounded-xl text-[#383838] transition-colors flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
-                        title="Open Doubts & Discussions"
+                    <button
+                        onClick={() => {
+                            if (isPanelOpen && activeTab === 'ai') {
+                                setIsPanelOpen(false);
+                            } else {
+                                setActiveTab('ai');
+                                setIsPanelOpen(true);
+                            }
+                        }}
+                        className={cn(
+                            "px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95",
+                            isPanelOpen && activeTab === 'ai'
+                                ? "bg-[#0071E3] text-white shadow-xs"
+                                : "bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] border border-[#E5E5EA]"
+                        )}
                     >
-                        <MessageSquare className="w-3.5 h-3.5 text-[#0073E6]" />
+                        <AiChat02Icon size={16} />
+                        <span>Ask AI</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (isPanelOpen && activeTab === 'doubts') {
+                                setIsPanelOpen(false);
+                            } else {
+                                setActiveTab('doubts');
+                                setIsPanelOpen(true);
+                            }
+                        }}
+                        className={cn(
+                            "px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95",
+                            isPanelOpen && activeTab === 'doubts'
+                                ? "bg-[#0071E3] text-white shadow-xs"
+                                : "bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] border border-[#E5E5EA]"
+                        )}
+                    >
+                        <Message01Icon size={16} />
                         <span className="hidden sm:inline">Doubts</span>
                         {doubts.length > 0 && (
-                            <span className="px-1.5 py-0.2 rounded-full bg-[#0073E6] text-white text-[10px] font-bold">
+                            <span className={cn(
+                                "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
+                                isPanelOpen && activeTab === 'doubts' ? "bg-white text-[#0071E3]" : "bg-[#0071E3] text-white"
+                            )}>
                                 {doubts.length}
                             </span>
                         )}
                     </button>
-                    <button 
+
+                    <button
                         onClick={handleDownload}
-                        className="px-3.5 py-1.5 bg-[#0073E6] hover:bg-[#0060c0] rounded-xl text-white transition-colors flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-xs" 
+                        className="px-3.5 py-1.5 bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] text-[#1D1D1F] rounded-xl transition-colors flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
                         title="Download Document"
                     >
-                        <Download className="w-3.5 h-3.5" />
+                        <Download01Icon size={16} />
                         <span className="hidden sm:inline">Download</span>
                     </button>
                 </div>
-            </div>
+            </header>
 
-            {/* Document Viewer Area */}
-            <div className="flex-1 w-full h-[calc(100%-3.5rem)] min-h-0 bg-[#F2F7FC] relative flex flex-col overflow-hidden">
-                {isPdf ? (
-                    (docLoading || !blobUrl) ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
-                            <DocumentLoadingBar 
-                                inline 
-                                message="Loading document..." 
-                                submessage={note.title || "Preparing PDF viewer and caching streams..."} 
-                            />
-                        </div>
-                    ) : (
-                        <iframe 
-                            src={`${blobUrl}#toolbar=0`} 
-                            className="w-full h-full border-none bg-white"
-                            title="Document Preview"
-                        />
-                    )
-                ) : isOfficeDoc ? (
-                    docLoading ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
-                            <DocumentLoadingBar 
-                                inline 
-                                message="Loading document..." 
-                                submessage="Parsing document layout and generating inline preview..." 
-                            />
-                        </div>
-                    ) : docxHtml ? (
-                        <div className="flex-1 w-full h-full overflow-y-auto bg-[#F2F7FC] p-4 sm:p-6 md:p-8 text-[#383838]">
-                            <div className="max-w-4xl mx-auto bg-white border border-[#E2E2E2] rounded-2xl p-6 sm:p-10 shadow-xs">
-                                <div 
-                                    className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#383838] prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed prose-table:border prose-td:border prose-td:p-2 prose-th:border prose-th:p-2 prose-th:bg-[#F2F7FC] [&_p]:mb-4 [&_h1]:mb-4 [&_h2]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                                    dangerouslySetInnerHTML={{ __html: docxHtml }} 
+            {/* Side-by-Side Content Canvas */}
+            <div className="flex-1 w-full h-[calc(100%-3.5rem)] min-h-0 flex flex-col md:flex-row overflow-hidden relative">
+
+                {/* LEFT: Notes Document Preview Area */}
+                <div className={cn(
+                    "h-full min-h-0 bg-[#F5F5F7] relative flex flex-col overflow-hidden transition-all duration-200",
+                    isPanelOpen
+                        ? "hidden md:flex flex-1 min-w-0 border-r border-[#E5E5EA]"
+                        : "flex-1 w-full"
+                )}>
+                    {isPdf ? (
+                        (docLoading || !blobUrl) ? (
+                            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F5F5F7]">
+                                <DocumentLoadingBar
+                                    inline
+                                    message="Loading document..."
+                                    submessage={note.title || "Preparing PDF viewer..."}
                                 />
                             </div>
+                        ) : (
+                            <div className="w-full h-full relative overflow-hidden bg-white">
+                                <iframe
+                                    src={`${blobUrl}#toolbar=0&view=FitH`}
+                                    className="h-full border-none bg-white select-none"
+                                    style={{ width: "calc(100% + 18px)" }}
+                                    title="Document Preview"
+                                />
+                            </div>
+                        )
+                    ) : isOfficeDoc ? (
+                        docLoading ? (
+                            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F5F5F7]">
+                                <DocumentLoadingBar
+                                    inline
+                                    message="Parsing document..."
+                                    submessage="Preparing layout preview..."
+                                />
+                            </div>
+                        ) : docxHtml ? (
+                            <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
+                                <div className="max-w-4xl mx-auto bg-white border border-[#E5E5EA] rounded-2xl p-6 sm:p-8 shadow-xs">
+                                    <div
+                                        className="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-[#1D1D1F] prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: docxHtml }}
+                                    />
+                                </div>
+                            </div>
+                        ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
+                            <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
+                                <div className="max-w-4xl mx-auto bg-white border border-[#E5E5EA] rounded-2xl p-6 sm:p-8 shadow-xs">
+                                    <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1D1D1F]">
+                                        {note.extractedText}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F5F5F7]">
+                                <div className="bg-white border border-[#E5E5EA] rounded-2xl p-8 max-w-md mx-auto text-center shadow-xs">
+                                    <File01Icon size={36} className="text-[#0071E3] mx-auto mb-3" />
+                                    <h3 className="text-base font-semibold text-[#1D1D1F]">Word Document</h3>
+                                    <p className="text-xs text-[#6E6E73] mt-1.5 mb-5">Download original file to view with full fidelity.</p>
+                                    <button
+                                        onClick={handleDownload}
+                                        className="px-4 py-2 bg-[#0071E3] hover:bg-[#005BB5] rounded-xl text-xs font-semibold text-white inline-flex items-center gap-2 transition-colors cursor-pointer"
+                                    >
+                                        <Download01Icon size={16} />
+                                        <span>Download File</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    ) : isImage ? (
+                        <div className="flex-1 flex items-center justify-center p-4 bg-[#F5F5F7]">
+                            <img
+                                src={blobUrl || 'about:blank'}
+                                alt={note.title}
+                                className="max-w-full max-h-full object-contain rounded-2xl border border-[#E5E5EA] bg-white shadow-xs"
+                            />
                         </div>
                     ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
-                        <div className="flex-1 w-full h-full overflow-y-auto bg-[#F2F7FC] p-4 sm:p-6 md:p-8 text-[#383838]">
-                            <div className="max-w-4xl mx-auto bg-white border border-[#E2E2E2] rounded-2xl p-6 sm:p-10 shadow-xs">
-                                <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#383838]">
+                        <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
+                            <div className="max-w-4xl mx-auto bg-white border border-[#E5E5EA] rounded-2xl p-6 sm:p-8 shadow-xs">
+                                <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1D1D1F]">
                                     {note.extractedText}
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
-                            <div className="bg-white border border-[#E2E2E2] rounded-2xl p-8 max-w-md mx-auto text-center shadow-xs">
-                                <FileText className="w-12 h-12 text-[#0073E6] mx-auto mb-4" />
-                                <h3 className="text-base font-bold text-[#383838] tracking-tight">Word Document</h3>
-                                <p className="text-xs text-[#727272] mt-2">No preview could be parsed automatically. Download original file below.</p>
-                                <button 
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F5F5F7]">
+                            <div className="bg-white border border-[#E5E5EA] rounded-2xl p-8 max-w-md mx-auto text-center shadow-xs">
+                                <File01Icon size={36} className="text-[#8E8E93] mx-auto mb-3" />
+                                <h3 className="text-base font-semibold text-[#1D1D1F]">Preview Unavailable</h3>
+                                <p className="text-xs text-[#6E6E73] mt-1.5 mb-5">Please download the file directly to view its contents.</p>
+                                <button
                                     onClick={handleDownload}
-                                    className="mt-6 px-5 py-2.5 bg-[#0073E6] hover:bg-[#0060c0] rounded-xl transition-all text-xs font-semibold text-white cursor-pointer inline-flex items-center gap-2"
+                                    className="px-4 py-2 bg-[#0071E3] hover:bg-[#005BB5] rounded-xl text-xs font-semibold text-white inline-flex items-center gap-2 transition-colors cursor-pointer"
                                 >
-                                    <Download className="w-4 h-4" />
-                                    <span>Download Document</span>
+                                    <Download01Icon size={16} />
+                                    <span>Download File</span>
                                 </button>
                             </div>
                         </div>
-                    )
-                ) : isImage ? (
-                    <div className="flex-1 flex items-center justify-center p-4 bg-[#F2F7FC]">
-                        <img 
-                            src={blobUrl || 'about:blank'} 
-                            alt={note.title}
-                            className="max-w-full max-h-full object-contain rounded-xl border border-[#E2E2E2] bg-white shadow-xs"
-                        />
-                    </div>
-                ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
-                    <div className="flex-1 w-full h-full overflow-y-auto bg-[#F2F7FC] p-4 sm:p-6 md:p-8 text-[#383838]">
-                        <div className="max-w-4xl mx-auto bg-white border border-[#E2E2E2] rounded-2xl p-6 sm:p-10 shadow-xs">
-                            <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#383838]">
-                                {note.extractedText}
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F2F7FC]">
-                        <div className="bg-white border border-[#E2E2E2] rounded-2xl p-8 max-w-md mx-auto text-center shadow-xs">
-                            <FileText className="w-12 h-12 text-[#727272] mx-auto mb-4" />
-                            <h3 className="text-base font-bold text-[#383838] tracking-tight">Preview Unavailable</h3>
-                            <p className="text-xs text-[#727272] mt-2">This file cannot be previewed in browser. Please download to view.</p>
-                            <button 
-                                onClick={handleDownload}
-                                className="mt-6 px-5 py-2.5 bg-[#0073E6] hover:bg-[#0060c0] rounded-xl transition-all text-xs font-semibold text-white cursor-pointer inline-flex items-center gap-2"
-                            >
-                                <Download className="w-4 h-4" />
-                                <span>Download File</span>
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Slide-out Overlay */}
-            {isPanelOpen && (
-                <div 
-                    className="absolute inset-0 z-30 bg-black/25 backdrop-blur-2xs transition-opacity duration-300"
-                    onClick={() => setIsPanelOpen(false)}
-                />
-            )}
-
-            {/* Slide-out Panel */}
-            <div className={`absolute top-0 right-0 h-full w-full sm:w-[450px] bg-white border-l border-[#E2E2E2] shadow-2xl transition-transform duration-300 ease-out z-40 flex flex-col ${isPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                {/* Panel Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#E2E2E2]">
-                    <div>
-                        <h3 className="text-base font-bold text-[#383838] tracking-tight">Questions &amp; Discussion</h3>
-                        <p className="text-[11px] font-semibold text-[#0073E6] mt-0.5">AI Study Helper &amp; Discussion</p>
-                    </div>
-                    <button 
-                        onClick={() => setIsPanelOpen(false)} 
-                        className="p-1.5 text-[#727272] hover:text-[#383838] hover:bg-[#F2F7FC] rounded-lg transition-all border border-transparent hover:border-[#E2E2E2]"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Metadata Section */}
-                <div className="px-6 py-4 border-b border-[#E2E2E2] bg-[#F2F7FC]">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-0.5 bg-white text-[#174073] text-[10px] font-semibold rounded-md border border-[#E2E2E2]">
-                            {note.unit || 'General'}
-                        </span>
-                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-md border border-emerald-200 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Notes
-                        </span>
-                    </div>
-                    <h4 className="text-xs font-bold text-[#383838] mb-2 leading-snug">{note.title}</h4>
-                    <div className="flex items-center gap-4 text-[11px] text-[#727272]">
-                        <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5"/> {note.uploadedBy || 'System'}</div>
-                        <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5"/> {new Date(note.createdAt).toLocaleDateString()}</div>
-                    </div>
-                </div>
-
-                {/* Panel Tabs */}
-                <div className="p-3 border-b border-[#E2E2E2] bg-white flex justify-center">
-                    <FluidTabs
-                        value={activeTab}
-                        onChange={setActiveTab}
-                        size="sm"
-                        layoutId="note-detail-panel-tabs"
-                        className="w-full bg-[#F2F7FC] border-[#E2E2E2]"
-                        tabClassName="flex-1"
-                        activeClassName="font-bold text-[#0073E6]"
-                        inactiveClassName="font-semibold text-[#727272] hover:text-[#383838]"
-                        indicatorClassName="absolute inset-0 rounded-full border border-[#D9ECFF] bg-white shadow-xs"
-                        tabs={[
-                            {
-                                id: 'doubts',
-                                label: `Doubts (${doubts.length})`,
-                                icon: <MessageSquare className="w-3.5 h-3.5 mr-1" />
-                            },
-                            {
-                                id: 'ai',
-                                label: 'AI Note Helper',
-                                icon: <Bot className="w-3.5 h-3.5 mr-1 text-[#0073E6]" />
-                            }
-                        ]}
-                    />
-                </div>
-
-                {/* Content Area */}
-                <div 
-                    ref={scrollRef} 
-                    className="flex-1 overflow-y-auto p-5 space-y-4 bg-white scroll-smooth"
-                >
-                    {activeTab === 'doubts' ? (
-                        doubts.length > 0 ? (
-                            doubts.map((doubt, i) => (
-                                <div key={i} className="space-y-2.5 p-3.5 rounded-xl border border-[#E2E2E2] bg-[#F2F7FC]">
-                                    <div className="flex gap-3">
-                                        <div className="shrink-0 w-8 h-8 rounded-lg bg-white border border-[#E2E2E2] flex items-center justify-center text-[10px] font-bold text-[#174073]">
-                                            {doubt.studentName?.substring(0, 2).toUpperCase() || 'AN'}
-                                        </div>
-                                        <div className="space-y-1 flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-[#383838] truncate">{doubt.studentName}</span>
-                                                <span className="text-[10px] text-[#727272]">{new Date(doubt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                            </div>
-                                            <p className="text-xs text-[#383838] leading-relaxed">{doubt.question}</p>
-                                        </div>
-                                    </div>
-                                    {doubt.answer && (
-                                        <div className="ml-11 bg-emerald-50 border-l-2 border-emerald-500 pl-3 py-2 rounded-r-lg">
-                                            <span className="text-[10px] font-bold text-emerald-700 block mb-1">Instructor Response</span>
-                                            <p className="text-xs text-[#383838] leading-relaxed">{doubt.answer}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center py-12 text-center">
-                                <Inbox className="w-10 h-10 text-[#727272] mb-3" />
-                                <p className="text-xs font-medium text-[#727272]">No questions posted yet</p>
-                            </div>
-                        )
-                    ) : (
-                        chatMessages.map((msg, i) => (
-                            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${msg.role === 'user' ? 'bg-[#0073E6] text-white rounded-br-xs' : 'bg-[#F2F7FC] text-[#383838] border border-[#E2E2E2] rounded-bl-xs'}`}>
-                                    {msg.role === 'assistant' ? (
-                                        <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-[#383838]">
-                                            <ReactMarkdown>{msg.text}</ReactMarkdown>
-                                        </div>
-                                    ) : (
-                                        msg.text
-                                    )}
-                                </div>
-                            </div>
-                        ))
                     )}
                 </div>
 
-                {/* Input Area */}
-                <div className="p-4 border-t border-[#E2E2E2] bg-[#F2F7FC]">
-                    <form onSubmit={handleSubmit} className="flex gap-2 items-end">
-                        <div className="flex-1 bg-white border border-[#E2E2E2] rounded-xl overflow-hidden focus-within:border-[#0073E6] focus-within:ring-1 focus-within:ring-[#0073E6]/20 transition-all">
-                            <textarea 
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSubmit(e);
-                                    }
-                                }}
-                                className="w-full bg-transparent border-none focus:ring-0 text-xs text-[#383838] resize-none py-2.5 px-3.5 placeholder:text-[#727272] outline-none min-h-[42px] max-h-32" 
-                                placeholder={activeTab === 'doubts' ? "Ask a question to teachers or classmates..." : "Ask AI about this document..."} 
-                                rows={1}
-                            />
+                {/* RIGHT: Side-by-Side ChatGPT-style AI Assistant Panel */}
+                {isPanelOpen && (
+                    <aside className="w-full md:w-[440px] lg:w-[480px] xl:w-[520px] shrink-0 h-full min-h-0 bg-[#FFFFFF] flex flex-col border-l border-[#E5E5EA] z-30 transition-all duration-200">
+                        {/* Panel Header */}
+                        <div className="h-12 px-4 border-b border-[#E5E5EA] bg-[#FFFFFF] flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <AiChat02Icon size={18} className="text-[#0071E3] shrink-0" />
+                                <span className="text-xs font-semibold text-[#1D1D1F] truncate">
+                                    {activeTab === 'ai' ? 'Study Assistant' : 'Doubts & Discussion'}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                {activeTab === 'ai' && (
+                                    <button
+                                        type="button"
+                                        onClick={handleClearNoteChat}
+                                        className="p-1.5 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-colors cursor-pointer"
+                                        title="Clear conversation"
+                                    >
+                                        <RefreshIcon size={16} />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setIsPanelOpen(false)}
+                                    className="p-1.5 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-colors cursor-pointer"
+                                    title="Close panel"
+                                >
+                                    <Cancel01Icon size={16} />
+                                </button>
+                            </div>
                         </div>
-                        <button 
-                            type="submit"
-                            disabled={!query.trim() || isSubmitting}
-                            className="w-10 h-10 flex items-center justify-center bg-[#0073E6] text-white rounded-xl hover:bg-[#0060c0] active:scale-95 transition-all shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+
+                        {/* Stream / Messages History - Clean ChatGPT Flow */}
+                        <div
+                            ref={scrollRef}
+                            className="flex-1 overflow-y-auto px-4 py-5 space-y-5 bg-white scroll-smooth min-h-0"
                         >
-                            {isSubmitting ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            {activeTab === 'doubts' ? (
+                                doubts.length > 0 ? (
+                                    doubts.map((doubt, i) => (
+                                        <div key={i} className="space-y-2 p-3.5 rounded-2xl border border-[#E5E5EA] bg-[#F9F9FB]">
+                                            <div className="flex gap-2.5">
+                                                <div className="shrink-0 w-7 h-7 rounded-full bg-[#E5E5EA] flex items-center justify-center text-[10px] font-semibold text-[#1D1D1F]">
+                                                    {doubt.studentName?.substring(0, 2).toUpperCase() || 'ST'}
+                                                </div>
+                                                <div className="space-y-1 flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-xs font-semibold text-[#1D1D1F] truncate">{doubt.studentName}</span>
+                                                        <span className="text-[10px] text-[#8E8E93]">
+                                                            {new Date(doubt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-[#1D1D1F] leading-relaxed">{doubt.question}</p>
+                                                </div>
+                                            </div>
+                                            {doubt.answer && (
+                                                <div className="ml-9 bg-white border-l-2 border-[#0071E3] pl-3 py-2 rounded-r-xl border border-[#E5E5EA]">
+                                                    <span className="text-[10px] font-semibold text-[#0071E3] block mb-0.5">Instructor Response</span>
+                                                    <p className="text-xs text-[#1D1D1F] leading-relaxed">{doubt.answer}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center py-16 text-center">
+                                        <Message01Icon size={32} className="text-[#8E8E93] mb-2" />
+                                        <p className="text-xs font-medium text-[#6E6E73]">No doubts posted yet</p>
+                                    </div>
+                                )
                             ) : (
-                                activeTab === 'ai' ? <Bot className="w-4 h-4" /> : <Send className="w-4 h-4" />
+                                <div className="flex flex-col gap-5">
+                                    {/* Messages - Exact ChatGPT Style Stream */}
+                                    {chatMessages.map((msg, i) => {
+                                        const isUser = msg.role === 'user';
+                                        return (
+                                            <div key={i} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-1 w-full`}>
+                                                {isUser ? (
+                                                    <div className="max-w-[85%] bg-[#F4F4F4] text-[#1D1D1F] px-4 py-2.5 rounded-2xl rounded-tr-sm text-xs leading-relaxed">
+                                                        {msg.text}
+                                                    </div>
+                                                ) : (
+                                                    /* Assistant Response (Clean markdown, no boxed headers, no filenames) */
+                                                    <div className="w-full space-y-1.5 group">
+                                                        <div className="prose prose-sm max-w-none text-[#1D1D1F] leading-relaxed text-xs">
+                                                            <ReactMarkdown children={typeof msg.text === "string" ? msg.text : String(msg.text || "")} />
+                                                        </div>
+                                                        <div className="flex items-center gap-2 pt-1 opacity-60 hover:opacity-100 transition-opacity">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleCopyMessage(msg.text, i)}
+                                                                className="p-1 text-[#8E8E93] hover:text-[#1D1D1F] rounded transition-colors cursor-pointer"
+                                                                title="Copy response"
+                                                            >
+                                                                {copiedIndex === i ? (
+                                                                    <Tick02Icon size={14} className="text-[#34C759]" />
+                                                                ) : (
+                                                                    <Copy01Icon size={14} />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Clean, Simple ChatGPT-style Loading State */}
+                                    {isSubmitting && (
+                                        <div className="flex items-center gap-2 py-2 text-xs text-[#6E6E73]">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="w-2 h-2 rounded-full bg-[#0071E3] animate-pulse" />
+                                                <span className="w-2 h-2 rounded-full bg-[#0071E3] animate-pulse [animation-delay:200ms]" />
+                                                <span className="w-2 h-2 rounded-full bg-[#0071E3] animate-pulse [animation-delay:400ms]" />
+                                            </div>
+                                            <span className="text-[12px] font-medium text-[#8E8E93] ml-1">
+                                                Searching knowledge...
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Suggested Starters on initial conversation */}
+
+                                </div>
                             )}
-                        </button>
-                    </form>
-                    <p className="text-[10px] text-[#727272] mt-2.5 text-center font-medium">
-                        {activeTab === 'doubts' ? 'Questions are visible to classmates and teachers' : 'AI answers based on this document'}
-                    </p>
-                </div>
+                        </div>
+
+                        {/* ChatGPT-style Minimalist Capsule Composer */}
+                        <div className="p-3 bg-white border-t border-[#E5E5EA] shrink-0">
+                            {activeTab === 'ai' ? (
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (!aiQuery.trim() || isSubmitting) return;
+                                        handleAIChat();
+                                    }}
+                                    className="flex flex-col bg-[#F4F4F4] focus-within:bg-white rounded-3xl border border-[#E5E5EA] focus-within:border-[#D1D1D6] focus-within:shadow-xs px-3.5 py-2 transition-all"
+                                >
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={aiQuery}
+                                        onChange={(e) => setAiQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                if (aiQuery.trim() && !isSubmitting) {
+                                                    handleAIChat();
+                                                }
+                                            }
+                                        }}
+                                        rows={2}
+                                        placeholder="Message study assistant..."
+                                        style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                        className="w-full bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 shadow-none resize-none text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] leading-relaxed p-1"
+                                    />
+
+                                    <div className="flex items-center justify-between pt-1">
+                                        <span className="text-[10px] text-[#8E8E93] pl-1 select-none">
+                                            Grounded in document
+                                        </span>
+
+                                        <button
+                                            type="submit"
+                                            disabled={!aiQuery.trim() || isSubmitting}
+                                            aria-label="Send message"
+                                            className={cn(
+                                                "w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0",
+                                                aiQuery.trim() && !isSubmitting
+                                                    ? "bg-[#1D1D1F] hover:bg-black text-white active:scale-95 shadow-xs"
+                                                    : "bg-[#E5E5EA] text-[#8E8E93] cursor-not-allowed opacity-60"
+                                            )}
+                                        >
+                                            {isSubmitting ? (
+                                                <Loading01Icon size={14} className="animate-spin" />
+                                            ) : (
+                                                <ArrowUp02Icon size={15} />
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (doubtQuery.trim() && !isSubmitting) handlePostDoubt();
+                                    }}
+                                    className="flex flex-col bg-[#F4F4F4] focus-within:bg-white rounded-3xl border border-[#E5E5EA] focus-within:border-[#D1D1D6] focus-within:shadow-xs px-3.5 py-2 transition-all"
+                                >
+                                    <textarea
+                                        value={doubtQuery}
+                                        onChange={(e) => setDoubtQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                if (doubtQuery.trim() && !isSubmitting) handlePostDoubt();
+                                            }
+                                        }}
+                                        rows={2}
+                                        placeholder="Post a doubt for teachers & classmates..."
+                                        style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                                        className="w-full bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 shadow-none resize-none text-xs text-[#1D1D1F] placeholder:text-[#8E8E93] leading-relaxed p-1"
+                                    />
+                                    <div className="flex items-center justify-between pt-1">
+                                        <span className="text-[10px] text-[#8E8E93] pl-1 select-none">
+                                            Notifies enrolled class
+                                        </span>
+                                        <button
+                                            type="submit"
+                                            disabled={!doubtQuery.trim() || isSubmitting}
+                                            aria-label="Post doubt"
+                                            className={cn(
+                                                "w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0",
+                                                doubtQuery.trim() && !isSubmitting
+                                                    ? "bg-[#1D1D1F] hover:bg-black text-white active:scale-95 shadow-xs"
+                                                    : "bg-[#E5E5EA] text-[#8E8E93] cursor-not-allowed opacity-60"
+                                            )}
+                                        >
+                                            {isSubmitting ? (
+                                                <Loading01Icon size={14} className="animate-spin" />
+                                            ) : (
+                                                <ArrowUp02Icon size={15} />
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </aside>
+                )}
             </div>
         </div>
     );

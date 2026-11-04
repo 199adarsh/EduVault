@@ -48,4 +48,13 @@ public interface NoteRepository extends JpaRepository<Note, String> {
     List<Note> findByImportBatchId(String importBatchId);
 
     void deleteByUploadedBy(String uploadedBy);
+
+    List<Note> findByOkfStatus(String okfStatus);
+
+    List<Note> findBySubjectIdAndOkfStatus(String subjectId, String okfStatus);
+
+    long countByOkfStatus(String okfStatus);
+
+    @Query("SELECT n FROM Note n WHERE (:subjectId IS NULL OR :subjectId = '' OR n.subjectId = :subjectId) AND (n.okfStatus IS NULL OR n.okfStatus = 'PENDING' OR n.okfStatus = 'FAILED')")
+    List<Note> findPendingOrFailedOkfNotes(@Param("subjectId") String subjectId);
 }

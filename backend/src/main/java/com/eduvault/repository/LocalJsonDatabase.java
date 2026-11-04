@@ -81,6 +81,16 @@ public class LocalJsonDatabase {
             } catch (Exception e) {
                 logger.warn("Could not alter announcements table for deadline column: {}", e.getMessage());
             }
+
+            try (java.sql.Connection conn = dataSource.getConnection();
+                 java.sql.Statement stmt = conn.createStatement()) {
+                stmt.execute("ALTER TABLE notes ADD COLUMN IF NOT EXISTS okf_status VARCHAR(50) DEFAULT 'PENDING'");
+                stmt.execute("ALTER TABLE notes ADD COLUMN IF NOT EXISTS okf_file_path VARCHAR(500)");
+                stmt.execute("ALTER TABLE notes ADD COLUMN IF NOT EXISTS okf_compiled_at VARCHAR(50)");
+                stmt.execute("UPDATE notes SET okf_status = 'PENDING' WHERE okf_status IS NULL");
+            } catch (Exception e) {
+                logger.warn("Could not alter notes table for OKF columns: {}", e.getMessage());
+            }
         }
 
         Thread seedThread = new Thread(() -> {

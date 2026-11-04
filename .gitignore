@@ -75,3 +75,6 @@ backend/data/*.php
 backend/data/*.doc
 
 backend/data/*.py
+
+# Runtime data
+data/

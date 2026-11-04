@@ -1,416 +1,805 @@
+import { cn } from '../../lib/utils';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+
 import { Outlet } from 'react-router-dom';
+
 import { motion } from 'motion/react';
+
 import SovereignSidebar from './SovereignSidebar';
+
 import { Menu, LayoutDashboard, BookOpen, Bell, Compass, CalendarCheck2, Sparkles, X, Upload, LogOut, User } from 'lucide-react';
+
 import { DiscreteTabs } from '../watermelon/discrete-tabs';
 
+
+
 import axios from 'axios';
+
 import { toast } from 'sonner';
+
 import UploadNotesView from '../UploadNotesView';
+
+
 
 import { useLocation, matchPath, Navigate, useNavigate } from 'react-router-dom';
 
+
+
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
+
+
 const SovereignLayout = () => {
+
     const navigate = useNavigate();
+
     const [profile, setProfile] = useState(null);
+
     const [subjects, setSubjects] = useState([]);
+
     const [catalogSubjects, setCatalogSubjects] = useState([]);
+
     const [notes, setNotes] = useState([]);
+
     const [loading, setLoading] = useState(true);
+
     const [showUpload, setShowUpload] = useState(false);
+
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     const [showLogoutMenu, setShowLogoutMenu] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
     const userMenuRef = useRef(null);
 
+
+
     useEffect(() => {
+
         const handleClickOutside = (e) => {
+
             if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+
                 setShowLogoutMenu(false);
+
             }
+
         };
+
         if (showLogoutMenu) {
+
             document.addEventListener('mousedown', handleClickOutside);
+
             document.addEventListener('touchstart', handleClickOutside);
+
         }
+
         return () => {
+
             document.removeEventListener('mousedown', handleClickOutside);
+
             document.removeEventListener('touchstart', handleClickOutside);
+
         };
+
     }, [showLogoutMenu]);
+
     const location = useLocation();
 
+
+
     // Context Detection: Identify if we are viewing a specific note
+
     const match = matchPath({ path: "/notes/:id" }, location.pathname);
+
     const activeNoteId = match?.params?.id;
 
+
+
     const fetchData = async (overrideProfile, overrideSubjects) => {
+
         try {
+
             // 1. Read isolated user session from localStorage
+
             let currentProfile = overrideProfile;
+
             let currentSubjects = overrideSubjects;
 
+
+
             if (currentProfile === undefined) {
+
                 try {
+
                     const saved = localStorage.getItem('eduvault_profile');
+
                     currentProfile = saved ? JSON.parse(saved) : null;
+
                 } catch (e) {
+
                     currentProfile = null;
+
                 }
+
             }
 
+
+
             if (currentSubjects === undefined) {
+
                 try {
+
                     const savedSubs = localStorage.getItem('eduvault_subjects');
+
                     currentSubjects = savedSubs ? JSON.parse(savedSubs) : [];
+
                 } catch (e) {
+
                     currentSubjects = [];
+
                 }
+
             }
+
+
 
             setProfile(currentProfile);
 
+
+
             // 2. Fetch full catalog subjects from backend
+
             const subsRes = await axios.get(`${API_BASE}/subjects`);
+
             const catalogSubs = Array.isArray(subsRes.data) ? subsRes.data : [];
+
             setCatalogSubjects(catalogSubs);
 
+
+
             // 3. Set enrolled subjects using canonical IDs from backend catalog
+
             const role = localStorage.getItem('eduvault_user_role') || (currentProfile?.dob === 'TEACHER' ? 'teacher' : 'student');
+
             const isTeacher = role === 'teacher' || role === 'faculty' || role === 'admin';
+
             let enrolledSubjects = [];
 
+
+
             if (isTeacher) {
+
                 const savedTeacherSubs = localStorage.getItem('eduvault_teacher_subjects');
+
                 if (savedTeacherSubs) {
+
                     try {
+
                         const parsed = JSON.parse(savedTeacherSubs);
+
                         if (Array.isArray(parsed) && parsed.length > 0) {
+
                             const filtered = catalogSubs.filter(cs =>
+
                                 parsed.includes(cs.name) || parsed.includes(cs.id) || parsed.some(p => p === cs.name || p === cs.id)
+
                             );
+
                             enrolledSubjects = filtered.length > 0 ? filtered : catalogSubs;
+
                         } else {
+
                             enrolledSubjects = catalogSubs;
+
                         }
+
                     } catch (e) {
+
                         enrolledSubjects = catalogSubs;
+
                     }
+
                 } else {
+
                     enrolledSubjects = catalogSubs;
+
                 }
+
                 setSubjects(enrolledSubjects);
+
             } else if (currentSubjects && currentSubjects.length > 0) {
+
                 // Strict 3-tier canonical matching: Exact code first, canonical ID second, normalized exact name third.
+
                 // Never generate detached subject IDs; preserve unresolved subjects explicitly.
+
                 enrolledSubjects = currentSubjects.map(ls => {
+
                     let match = null;
+
                     if (ls.code && ls.code.trim()) {
+
                         const cleanCode = ls.code.trim().toUpperCase();
+
                         const codeMatches = catalogSubs.filter(cs => cs.code && cs.code.trim().toUpperCase() === cleanCode);
+
                         if (codeMatches.length === 1) match = codeMatches[0];
+
                     }
+
                     if (!match && ls.id && ls.id.trim()) {
+
                         const idMatches = catalogSubs.filter(cs => cs.id && cs.id.toLowerCase() === ls.id.trim().toLowerCase());
+
                         if (idMatches.length === 1) match = idMatches[0];
+
                     }
+
                     if (!match && ls.name && ls.name.trim()) {
+
                         const normLsName = ls.name.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/[^a-zA-Z0-9\s]/g, ' ').trim().replace(/\s+/g, ' ').toLowerCase();
+
                         const nameMatches = catalogSubs.filter(cs => {
+
                             if (!cs.name) return false;
+
                             const normCsName = cs.name.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/[^a-zA-Z0-9\s]/g, ' ').trim().replace(/\s+/g, ' ').toLowerCase();
+
                             return normLsName && normCsName && normLsName === normCsName;
+
                         });
+
                         if (nameMatches.length === 1) {
+
                             match = nameMatches[0];
+
                         } else if (nameMatches.length > 1) {
+
                             const deptMatches = nameMatches.filter(cs => normDept(cs.department) === normDept(currentProfile?.department));
+
                             const pool = deptMatches.length > 0 ? deptMatches : nameMatches;
+
                             match = pool.reduce((best, cur) => ((cur.noteCount || 0) > (best.noteCount || 0) ? cur : best), pool[0]);
+
                         }
+
                     }
+
+
 
                     const canonicalId = match ? match.id : (ls.id || null);
+
                     return {
+
                         ...ls,
+
                         id: canonicalId,
+
                         canonicalCode: match?.code || ls.code || null,
+
                         isUnresolved: !canonicalId,
+
                         department: match?.department || ls.department || currentProfile?.department || 'GENERAL',
+
                         semester: match?.semester || ls.semester || currentProfile?.semester || 'SEM 01'
+
                     };
+
                 });
+
                 localStorage.setItem('eduvault_subjects', JSON.stringify(enrolledSubjects));
+
                 setSubjects(enrolledSubjects);
+
             } else if (currentProfile?.department && currentProfile?.semester) {
+
                 const normDept = (d) => {
+
                     if (!d) return 'GENERAL';
+
                     const u = d.toUpperCase();
+
                     if (u.includes('UAD') || u.includes('AIDS') || u.includes('AI&DS') || u.includes('AI & DS') || u.includes('ARTIFICIAL')) return 'AIDS';
+
                     if (u.includes('CSE') || u.includes('COMPUTER')) return 'CSE';
+
                     return u.replace(/[^A-Z0-9]/g, '');
+
                 };
+
                 const normSem = (s) => {
+
                     if (!s) return 'S01';
+
                     const m = s.toString().match(/(?:sem|semester|s)?\s*0?([1-8])/i);
+
                     return m ? `S0${m[1]}` : s.toString().toUpperCase().trim();
+
                 };
+
                 const scoped = catalogSubs.filter(cs =>
+
                     normDept(cs.department) === normDept(currentProfile.department) &&
+
                     normSem(cs.semester) === normSem(currentProfile.semester)
+
                 );
+
                 enrolledSubjects = scoped.length > 0 ? scoped : catalogSubs;
+
                 setSubjects(enrolledSubjects);
+
             } else {
+
                 enrolledSubjects = catalogSubs;
+
                 setSubjects(enrolledSubjects);
+
             }
 
+
+
             // 4. Fetch notes from server scoped to PRN, role, and canonical enrolled subjects
+
             const enrolledIds = (enrolledSubjects || []).map(s => s.id).filter(Boolean);
-            const notesUrl = (currentProfile?.prn && !isTeacher) 
-                ? `${API_BASE}/notes?prn=${encodeURIComponent(currentProfile.prn)}` 
+
+            const notesUrl = (currentProfile?.prn && !isTeacher)
+
+                ? `${API_BASE}/notes?prn=${encodeURIComponent(currentProfile.prn)}`
+
                 : `${API_BASE}/notes`;
+
             const notesRes = await axios.get(notesUrl, {
-                headers: { 
-                    'X-User-Role': role, 
+
+                headers: {
+
+                    'X-User-Role': role,
+
                     'X-Student-PRN': currentProfile?.prn || '',
+
                     'X-Student-Subjects': enrolledIds.join(',')
+
                 }
+
             });
+
             const fetchedNotes = Array.isArray(notesRes.data) ? notesRes.data : [];
+
             setNotes(fetchedNotes);
+
         } catch (err) {
+
             console.error('Error fetching data:', err);
+
         } finally {
+
             setLoading(false);
+
         }
+
     };
+
+
 
     useEffect(() => {
+
         fetchData();
+
     }, []);
 
+
+
     const overallAttendance = useMemo(() => {
+
         if (!subjects || subjects.length === 0) return null;
+
         const saved = localStorage.getItem('eduvault_excluded_subjects');
+
         const excludedIds = saved ? JSON.parse(saved) : [];
+
         const active = subjects.filter(s => !excludedIds.includes(s.id));
+
         if (active.length === 0) return null;
 
+
+
         let totalAttended = 0;
+
         let totalConducted = 0;
+
         active.forEach(s => {
+
             const cond = s.totalConducted > 0 ? s.totalConducted : (s.detailedAttendance?.length || 0);
+
             const att = s.totalAttended > 0 ? s.totalAttended : (s.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+
             totalConducted += cond;
+
             totalAttended += att;
+
         });
+
         if (totalConducted > 0) {
+
             return ((totalAttended / totalConducted) * 100).toFixed(1);
+
         }
+
         return null;
+
     }, [subjects]);
 
+
+
     const handleLogout = () => {
+
         localStorage.clear();
+
         sessionStorage.clear();
+
         setProfile(null);
+
         setSubjects([]);
+
         window.location.replace('/');
+
         window.location.reload();
+
     };
 
+
+
     const navTabs = [
+
         { name: 'Home', path: '/', icon: LayoutDashboard },
+
         { name: 'Notes', path: '/notes', icon: BookOpen },
+
         { name: 'Notices', path: '/announcements', icon: Bell },
+
         { name: 'Roadmaps', path: '/roadmaps', icon: Compass },
-        { 
-            name: 'Attendance', 
-            path: '/attendance', 
-            icon: CalendarCheck2, 
-            badge: overallAttendance ? `${overallAttendance}%` : null 
+
+        {
+
+            name: 'Attendance',
+
+            path: '/attendance',
+
+            icon: CalendarCheck2,
+
+            badge: overallAttendance ? `${overallAttendance}%` : null
+
         },
+
     ];
 
+
+
     const activeDockTab = useMemo(() => {
+
         if (location.pathname === '/') return '/';
+
         const found = navTabs.find(t => t.path !== '/' && location.pathname.startsWith(t.path));
+
         return found ? found.path : '/';
+
     }, [location.pathname, navTabs]);
 
+
+
     const discreteTabItems = useMemo(() => {
+
         return navTabs.map(t => {
+
             const Icon = t.icon;
+
             return {
+
                 id: t.path,
+
                 label: t.name,
+
                 icon: <Icon className="w-5 h-5 shrink-0" strokeWidth={activeDockTab === t.path ? 2.2 : 1.8} />,
+
                 badge: t.badge
+
             };
+
         });
+
     }, [navTabs, activeDockTab]);
 
+
+
     return (
+
         <div className="flex h-screen w-full max-w-full overflow-hidden bg-canvas-bg text-text-primary font-sans antialiased selection:bg-primary/20">
+
             {/* Sidebar */}
-            <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} onLogout={handleLogout} />
+
+            <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} onLogout={handleLogout} collapsed={sidebarCollapsed} />
+
+
 
             {/* Mobile Overlay */}
+
             {mobileMenuOpen && (
-                <div 
+
+                <div
+
                     className="fixed inset-0 bg-black/40 z-[45] md:hidden backdrop-blur-xs transition-opacity"
+
                     onClick={() => setMobileMenuOpen(false)}
+
                 />
+
             )}
 
+
+
             {/* Content Area */}
-            <main className="flex-1 md:pl-64 flex flex-col min-w-0 w-full max-w-full h-full overflow-hidden relative">
+
+            <main className={cn("flex-1 flex flex-col min-w-0 w-full max-w-full h-full overflow-hidden relative transition-all duration-300", sidebarCollapsed ? "md:pl-16" : "md:pl-64")}>
+
                 {/* Mobile Header (Single Clean App Header) */}
+
                 <header className="md:hidden sticky top-0 inset-x-0 z-40 bg-surface-card/95 backdrop-blur-md border-b border-border-subtle pt-safe shrink-0">
+
                     <div className="h-14 px-3.5 flex items-center justify-between gap-2">
+
                         <div className="flex items-center gap-2.5 min-w-0">
+
                             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-xs font-black text-xs tracking-tight shrink-0">CA</div>
+
                             <div className="flex flex-col min-w-0">
+
                                 <div className="flex items-center gap-1.5 leading-none">
+
                                     <span className="font-bold text-[15px] tracking-tight text-text-primary leading-tight">Campusaxis</span>
+
                                     <span className="px-1 py-0.2 text-[8px] font-bold bg-blue-50 text-primary rounded border border-blue-100">Portal</span>
+
                                 </div>
+
                                 <span className="text-[10px] font-medium text-text-secondary truncate mt-0.5">
+
                                     {profile?.department || 'Student Dashboard'}
+
                                 </span>
+
                             </div>
+
                         </div>
+
                         <div className="flex items-center gap-1 shrink-0">
+
                             <button
+
                                 onClick={() => navigate('/announcements')}
+
                                 aria-label="Notifications"
+
                                 className="relative w-9 h-9 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary active:bg-slate-100 transition-colors"
+
                             >
+
                                 <Bell className="w-5 h-5 text-text-secondary" strokeWidth={1.8} />
+
                                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+
                             </button>
+
                             <div className="relative" ref={userMenuRef}>
+
                                 <button
+
                                     onClick={() => setShowLogoutMenu(!showLogoutMenu)}
+
                                     className="w-8 h-8 rounded-full bg-[#DEEDFC] border border-[#D9ECFF] flex items-center justify-center text-[#0073E6] font-bold text-xs ml-0.5 cursor-pointer shadow-2xs active:scale-95 transition-transform"
+
                                     aria-label="Profile actions"
+
                                 >
-                                    {profile?.name ? profile.name.split(' ').map(n=>n[0]).slice(0,2).join('') : <User className="w-4 h-4 text-[#0073E6]" />}
+
+                                    {profile?.name ? profile.name.split(' ').map(n => n[0]).slice(0, 2).join('') : <User className="w-4 h-4 text-[#0073E6]" />}
+
                                 </button>
+
+
 
                                 {showLogoutMenu && (
+
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#E2E2E2] rounded-xl shadow-lg p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+
                                         <div className="px-2.5 py-1.5 border-b border-[#E2E2E2] mb-1">
+
                                             <p className="text-xs font-bold text-[#383838] truncate">{profile?.name || 'Student'}</p>
+
                                             <p className="text-[10px] text-[#727272] truncate">{profile?.prn || profile?.rollNo || 'Academic Vault'}</p>
+
                                         </div>
+
                                         <button
+
                                             onClick={() => {
+
                                                 setShowLogoutMenu(false);
+
                                                 handleLogout();
+
                                             }}
+
                                             className="w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+
                                         >
+
                                             <LogOut className="w-4 h-4" />
+
                                             <span>Logout</span>
+
                                         </button>
+
                                     </div>
+
                                 )}
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </header>
 
+
+
                 {/* Page Content */}
+
                 <div className={`flex-1 w-full max-w-full min-w-0 relative ${location.pathname === '/ai-assistant' ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-24 md:pb-0'}`}>
+
                     {loading ? (
+
                         <div className="h-full flex flex-col items-center justify-center gap-4 opacity-40">
+
                             <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+
                             <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">Loading CampusAxis...</p>
+
                         </div>
+
                     ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' && location.pathname !== '/settings' ? (
+
                         <Navigate to="/" replace />
+
                     ) : (
-                        <Outlet context={{ profile, subjects, catalogSubjects, notes, refreshData: fetchData, setShowUpload }} />
+
+                        <Outlet context={{ profile, subjects, catalogSubjects, notes, refreshData: fetchData, setShowUpload, sidebarCollapsed, setSidebarCollapsed }} />
+
                     )}
+
                 </div>
 
+
+
                 {/* Upload Modal Overlay */}
+
                 {showUpload && (
+
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+
                         <div className="bg-white  rounded-2xl border border-border-subtle max-w-4xl w-full shadow-2xl relative overflow-hidden">
+
                             <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">
+
                                 <div className="flex items-center gap-2.5">
+
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+
                                         <Upload className="w-4 h-4 text-primary" />
+
                                     </div>
+
                                     <div>
+
                                         <h2 className="text-sm sm:text-base font-bold text-text-primary leading-tight">Upload Notes</h2>
+
                                         <span className="text-[11px] font-medium text-text-secondary">Share notes and study material with your class</span>
+
                                     </div>
+
                                 </div>
-                                <button 
+
+                                <button
+
                                     onClick={() => setShowUpload(false)}
+
                                     className="w-8 h-8 rounded-lg hover:bg-slate-100  text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
+
                                 >
+
                                     <X className="w-5 h-5" />
+
                                 </button>
+
                             </div>
+
                             <div className="p-6 max-h-[80vh] overflow-y-auto">
-                                <UploadNotesView 
-                                    profile={profile} 
-                                    subjects={catalogSubjects.length > 0 ? catalogSubjects : subjects} 
+
+                                <UploadNotesView
+
+                                    profile={profile}
+
+                                    subjects={catalogSubjects.length > 0 ? catalogSubjects : subjects}
+
                                     onSuccess={() => {
+
                                         fetchData();
+
                                         setShowUpload(false);
-                                    }} 
+
+                                    }}
+
                                 />
+
                             </div>
+
                         </div>
+
                     </div>
+
                 )}
+
+
 
                 {/* Floating AI Assistant Quick Access (Adjusted fixed positioning and clearance) */}
-                {location.pathname !== '/ai-assistant' && !location.pathname.startsWith('/notes') && (
-                    <button
-                        onClick={() => navigate('/ai-assistant')}
-                        className="fixed bottom-[4.25rem] md:bottom-4 right-3.5 md:right-5 z-40 flex items-center gap-1.5 p-2 sm:px-3.5 sm:py-2 rounded-full bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-lg shadow-primary/25 border border-primary/30 transition-all duration-200 active:scale-95 cursor-pointer"
-                        title="Ask AI Study Assistant"
-                        aria-label="Ask AI Assistant"
-                    >
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-                        </span>
-                        <Sparkles className="w-4 h-4" />
-                        <span className="hidden sm:inline">Ask AI</span>
-                    </button>
-                )}
+
+
+
 
                 {/* Mobile Floating Bottom Navigation Dock (Rounded Discrete Tabs) */}
+
                 {!mobileMenuOpen && (
+
                     <div className="fixed bottom-3 inset-x-3 z-30 md:hidden flex justify-center pointer-events-none">
-                        <nav 
-                            aria-label="Mobile Navigation" 
+
+                        <nav
+
+                            aria-label="Mobile Navigation"
+
                             className="pointer-events-auto bg-white/95 backdrop-blur-md border border-[#E2E2E2] rounded-full p-1.5 shadow-lg shadow-black/8 w-full max-w-sm mx-auto flex items-center"
+
                         >
+
                             <DiscreteTabs
+
                                 tabs={discreteTabItems}
+
                                 activeTab={activeDockTab}
+
                                 onTabChange={(path) => navigate(path)}
+
                                 className="h-11 py-0 px-1 w-full justify-between"
+
                                 itemClassName="h-9 px-3"
+
                             />
+
                         </nav>
+
                     </div>
+
                 )}
-                </main>
+
+            </main>
+
         </div>
+
     );
+
 };
 
+
+
 export default SovereignLayout;
+

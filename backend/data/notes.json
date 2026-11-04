@@ -1,1 +1,24 @@
-﻿[]
+[
+  {
+    "id": "note-c502-se-unit-01",
+    "title": "Unit I: Software Engineering & Process Models",
+    "subjectId": "c502-cse-softeng",
+    "department": "CSE",
+    "semester": "SEM 05",
+    "unit": "UNIT 01",
+    "category": "Notes",
+    "status": "APPROVED",
+    "okfStatus": "PROCESSED",
+    "uploadedBy": "Course Coordinator",
+    "createdAt": "2026-11-04",
+    "fileUrl": "se_unit_1_process_models.pdf",
+    "tags": [
+      "Software Engineering",
+      "Process Models",
+      "Waterfall",
+      "Agile",
+      "Unified Process"
+    ],
+    "extractedText": "Course Outcomes:\nCO 01: Explain fundamental software engineering concepts.\nCO 02: Apply software engineering techniques to develop software solutions for given problems.\nCO 03: Analyze software requirements using appropriate requirement engineering techniques for preparing SRS documents.\nCO 04: Evaluate quality of code snippets through various testing strategies.\nCO 05: Design software solutions for real-world problems using software engineering concepts.\n\nUnit I: Introduction to Software Engineering and Software Process Models (7 Hours)\nSoftware Engineering Fundamentals: Introduction to software engineering, The Nature of Software, Defining Software, Software Engineering Practice.\nSoftware Process: A Generic Process Model defining a Framework Activity, Identifying a Task Set, Process Patterns, Process Assessment and Improvement, Prescriptive Process Models, The Waterfall Model, Incremental Process Models, Evolutionary Process Models, Concurrent Models, A Final Word on Evolutionary Processes.\nUnified Process, Agile software development: Agile methods, plan driven and agile development."
+  }
+]

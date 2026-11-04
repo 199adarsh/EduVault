@@ -70,10 +70,23 @@ public class Note {
     @Column(name = "extracted_text", columnDefinition = "TEXT")
     private String extractedText;
 
+    @Column(name = "okf_status")
+    private String okfStatus = "PENDING";
+
+    @Column(name = "okf_file_path")
+    private String okfFilePath;
+
+    @Column(name = "okf_compiled_at")
+    private String okfCompiledAt;
+
     public Note() {
     }
 
     public Note(String id, String title, String subjectId, String department, String semester, String unit, String examType, String fileUrl, String b2ObjectKey, String originalFilename, String importBatchId, String uploadedBy, String createdAt, String status, String category, String moodleId, String sourceUrl, List<String> tags, List<String> aiImportantTopics, List<Question> aiGeneratedQuestions, String extractedText) {
+        this(id, title, subjectId, department, semester, unit, examType, fileUrl, b2ObjectKey, originalFilename, importBatchId, uploadedBy, createdAt, status, category, moodleId, sourceUrl, tags, aiImportantTopics, aiGeneratedQuestions, extractedText, "PENDING", null, null);
+    }
+
+    public Note(String id, String title, String subjectId, String department, String semester, String unit, String examType, String fileUrl, String b2ObjectKey, String originalFilename, String importBatchId, String uploadedBy, String createdAt, String status, String category, String moodleId, String sourceUrl, List<String> tags, List<String> aiImportantTopics, List<Question> aiGeneratedQuestions, String extractedText, String okfStatus, String okfFilePath, String okfCompiledAt) {
         this.id = id;
         this.title = title;
         this.subjectId = subjectId;
@@ -95,6 +108,9 @@ public class Note {
         this.aiImportantTopics = aiImportantTopics;
         this.aiGeneratedQuestions = aiGeneratedQuestions;
         this.extractedText = extractedText;
+        this.okfStatus = (okfStatus != null) ? okfStatus : "PENDING";
+        this.okfFilePath = okfFilePath;
+        this.okfCompiledAt = okfCompiledAt;
     }
 
     public static NoteBuilder builder() {
@@ -123,6 +139,9 @@ public class Note {
         private List<String> aiImportantTopics;
         private List<Question> aiGeneratedQuestions;
         private String extractedText;
+        private String okfStatus = "PENDING";
+        private String okfFilePath;
+        private String okfCompiledAt;
 
         public NoteBuilder id(String id) { this.id = id; return this; }
         public NoteBuilder title(String title) { this.title = title; return this; }
@@ -145,9 +164,12 @@ public class Note {
         public NoteBuilder aiImportantTopics(List<String> aiImportantTopics) { this.aiImportantTopics = aiImportantTopics; return this; }
         public NoteBuilder aiGeneratedQuestions(List<Question> aiGeneratedQuestions) { this.aiGeneratedQuestions = aiGeneratedQuestions; return this; }
         public NoteBuilder extractedText(String extractedText) { this.extractedText = extractedText; return this; }
+        public NoteBuilder okfStatus(String okfStatus) { this.okfStatus = okfStatus; return this; }
+        public NoteBuilder okfFilePath(String okfFilePath) { this.okfFilePath = okfFilePath; return this; }
+        public NoteBuilder okfCompiledAt(String okfCompiledAt) { this.okfCompiledAt = okfCompiledAt; return this; }
 
         public Note build() {
-            return new Note(id, title, subjectId, department, semester, unit, examType, fileUrl, b2ObjectKey, originalFilename, importBatchId, uploadedBy, createdAt, status, category, moodleId, sourceUrl, tags, aiImportantTopics, aiGeneratedQuestions, extractedText);
+            return new Note(id, title, subjectId, department, semester, unit, examType, fileUrl, b2ObjectKey, originalFilename, importBatchId, uploadedBy, createdAt, status, category, moodleId, sourceUrl, tags, aiImportantTopics, aiGeneratedQuestions, extractedText, okfStatus, okfFilePath, okfCompiledAt);
         }
     }
 

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import DocumentLoadingBar from '../DocumentLoadingBar';
-import { isSubjectNameMatch } from './NotesLibrary';
+import { isSubjectNameMatch } from '../../lib/noteUtils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 

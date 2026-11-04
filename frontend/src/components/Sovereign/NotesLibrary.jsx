@@ -10,13 +10,15 @@ import {
     Inbox,
     ChevronDown,
     GraduationCap,
-    Download
+    Download,
+    Sparkles
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import DocumentLoadingBar from '../DocumentLoadingBar';
 import LmsSyncModal from './LmsSyncModal';
 import PYQsDatabase from './PYQsDatabase';
 import { FluidTabs } from '../fluid-tabs';
+import { isLinkNote, getNoteBadge, isSubjectNameMatch, getCleanTitle } from '../../lib/noteUtils';
 
 const normalizeDept = (dept) => {
     if (!dept) return 'GENERAL';
@@ -47,66 +49,6 @@ const CORE_CATEGORIES = [
     { id: 'Lab Manual', label: 'Lab Manual' },
     { id: 'Lecture Plan', label: 'Lecture Plan' },
 ];
-
-
-
-
-
-export const isLinkNote = (note) => {
-    if (!note) return false;
-    const raw = (note.fileUrl || note.sourceUrl || '').trim();
-    if (!raw) return (note.category || '').toLowerCase() === 'link';
-    const hasDocExt = raw.match(/\.(pdf|docx?|pptx?|xlsx?|txt|zip)(\?.*)?$/i);
-    if (hasDocExt) return false;
-    return raw.startsWith('http') || raw.includes('/') || (note.category || '').toLowerCase() === 'link';
-};
-
-export const getNoteBadge = (note) => {
-    if (isLinkNote(note)) return 'LINK';
-    const raw = note.fileUrl || '';
-    const parts = raw.split('.');
-    if (parts.length > 1) {
-        const ext = parts.pop().split(/[?#]/)[0].toUpperCase();
-        if (ext.length <= 5) return ext;
-    }
-    return 'PDF';
-};
-
-export const cleanSubjectName = (str) => {
-    if (!str) return '';
-    return str.toLowerCase()
-        .replace(/\([a-z0-9\s_-]+\)/gi, '')
-        .replace(/^[0-9]{1,2}[a-z]{2,6}[0-9]{2,4}[a-z]?\s*/gi, '')
-        .replace(/[0-9]{2}[a-z]{2,6}[0-9]{3,4}[a-z]?/gi, '')
-        .replace(/\b(ai\s*&\s*ds|ai\s+and\s+ds|aids)\b/gi, 'artificial intelligence and data science')
-        .replace(/\b(laboratory|practical)\b/gi, 'lab')
-        .replace(/[^a-z0-9]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-};
-
-export const isSubjectNameMatch = (nameA, nameB) => {
-    if (!nameA || !nameB) return false;
-    const ca = cleanSubjectName(nameA);
-    const cb = cleanSubjectName(nameB);
-    if (!ca || !cb) return false;
-
-    const isLabA = /\b(lab)\b/.test(ca);
-    const isLabB = /\b(lab)\b/.test(cb);
-    if (isLabA !== isLabB) return false;
-    return ca === cb;
-};
-
-export const getCleanTitle = (title) => {
-    if (!title) return 'Study Material';
-    if (title.includes('/') && !title.includes(' ')) {
-        const last = title.split('/').filter(Boolean).pop();
-        if (last) {
-            return last.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        }
-    }
-    return title;
-};
 
 const matchesCategory = (note, cat) => {
     if (!cat || cat === 'All') return true;
@@ -157,7 +99,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
     const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || defaultTab);
     const [showLmsSync, setShowLmsSync] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedCategory] = useState('All');
     const [selectedUnit, setSelectedUnit] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [pyqSearch, setPyqSearch] = useState('');
@@ -271,7 +213,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
         const candidateList = (!isTeacher && subjects && subjects.length > 0) ? subjects : baseList;
         return candidateList.filter(s => subjectHasNotes(s));
-    }, [isTeacher, subjects, allKnownSubjects, profile, studentDept, studentSem, subjectHasNotes]);
+    }, [isTeacher, subjects, allKnownSubjects, studentDept, studentSem, subjectHasNotes]);
 
     // Animated dummy loading states for opening and downloading notes
     const [openingNote, setOpeningNote] = useState(null);
@@ -407,9 +349,40 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
             return true;
         });
-    }, [notes, activeSubjectId, selectedUnit, selectedCategory, searchQuery, resolveSubjectId]);
+    }, [notes, activeSubjectId, activeSubjectObj, selectedUnit, selectedCategory, searchQuery, resolveSubjectId]);
 
-    const units = ['UNIT 01', 'UNIT 02', 'UNIT 03', 'UNIT 04', 'UNIT 05', 'UNIT 06'];
+    const renderOkfBadge = (status) => {
+        if (status === 'PROCESSED') {
+            return (
+                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold" title="Compiled for fast AI query serving">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    OKF Ready
+                </span>
+            );
+        }
+        if (status === 'PROCESSING') {
+            return (
+                <span className="inline-flex items-center gap-1 text-sky-700 font-semibold" title="Currently compiling OKF Markdown">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                    Compiling...
+                </span>
+            );
+        }
+        if (status === 'FAILED') {
+            return (
+                <span className="inline-flex items-center gap-1 text-rose-700 font-semibold" title="Overnight extraction failed - using raw PDF">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    Extraction Failed
+                </span>
+            );
+        }
+        return (
+            <span className="inline-flex items-center gap-1 text-amber-700 font-semibold" title="Queued for overnight Markdown compilation">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                Batch Pending
+            </span>
+        );
+    };
 
     return (
         <div className="flex-1 flex flex-col min-h-screen bg-background text-slate-900 antialiased overflow-y-auto">
@@ -622,6 +595,39 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                     />
                 ) : (
                     <>
+                        {/* Subject Vault Header with OKF AI Deep-Link */}
+                        {activeSubjectObj && (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-gradient-to-r from-blue-50/90 via-slate-50/70 to-indigo-50/60 border border-[#D9ECFF] rounded-xl shadow-2xs">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-[#DEEDFC] flex items-center justify-center text-[#0073E6] shrink-0">
+                                        <BookOpen className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h2 className="text-sm font-bold text-[#383838]">{activeSubjectObj.name}</h2>
+                                            {activeSubjectObj.code && (
+                                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-[#0073E6] border border-[#D9ECFF] font-semibold">
+                                                    {activeSubjectObj.code}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-[11px] text-[#727272]">
+                                            {displayNotes.length} materials in this subject vault
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/ai-assistant?subjectId=${activeSubjectObj.id}`)}
+                                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-[#0073E6] hover:bg-[#174073] transition-all shadow-2xs cursor-pointer w-fit shrink-0 group"
+                                    title="Ask AI questions using pre-generated OKF subject knowledge"
+                                    id={`askAiSubjectBtn-${activeSubjectObj.id}`}
+                                >
+                                    <Sparkles className="w-3.5 h-3.5 text-yellow-300 group-hover:scale-110 transition-transform" />
+                                    <span>Ask AI about this Subject</span>
+                                </button>
+                            </div>
+                        )}
+
                         {/* Direct Notes List Grid */}
                         {displayNotes.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-16">
@@ -683,6 +689,19 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
                                                 <div className="flex items-center gap-2">
                                                     <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const targetSubId = rId || note.subjectId || activeSubjectId;
+                                                            navigate(`/ai-assistant?subjectId=${targetSubId}`);
+                                                        }}
+                                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold text-[#0073E6] hover:bg-[#DEEDFC] transition-colors cursor-pointer"
+                                                        title="Ask AI about this Subject"
+                                                        type="button"
+                                                    >
+                                                        <Sparkles className="w-3 h-3 text-[#0073E6]" />
+                                                        <span>Ask AI</span>
+                                                    </button>
+                                                    <button
                                                         onClick={(e) => handleDownloadNote(e, note)}
                                                         className="p-1 rounded text-[#727272] hover:text-[#0073E6] hover:bg-[#DEEDFC] transition-colors cursor-pointer"
                                                         title="Download Note Document"
@@ -690,10 +709,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                                     >
                                                         <Download className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                        Ready
-                                                    </span>
+                                                    {renderOkfBadge(note.okfStatus)}
                                                 </div>
                                             </div>
                                         </div>
@@ -714,6 +730,15 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                     No study notes match your filters. Upload new notes to expand your repository.
                                 </p>
                                 <div className="flex items-center gap-3">
+                                    {activeSubjectObj && (
+                                        <button
+                                            onClick={() => navigate(`/ai-assistant?subjectId=${activeSubjectObj.id}`)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#0073E6] bg-[#DEEDFC] hover:bg-[#D9ECFF] transition cursor-pointer"
+                                        >
+                                            <Sparkles className="w-3.5 h-3.5 text-[#0073E6]" />
+                                            <span>Ask AI about this Subject</span>
+                                        </button>
+                                    )}
                                     {isTeacher && (
                                         <button
                                             onClick={() => setShowLmsSync(true)}

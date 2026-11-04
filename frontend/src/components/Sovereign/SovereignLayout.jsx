@@ -72,24 +72,16 @@ const SovereignLayout = () => {
 
             setProfile(currentProfile);
 
-            // 2. Fetch notes from server scoped to PRN/role if available
-            const role = localStorage.getItem('eduvault_user_role') || (currentProfile?.dob === 'TEACHER' ? 'teacher' : 'student');
-            const isTeacher = role === 'teacher' || role === 'faculty' || role === 'admin';
-            const notesUrl = (currentProfile?.prn && !isTeacher) 
-                ? `${API_BASE}/notes?prn=${encodeURIComponent(currentProfile.prn)}` 
-                : `${API_BASE}/notes`;
-            const notesRes = await axios.get(notesUrl, {
-                headers: { 'X-User-Role': role, 'X-Student-PRN': currentProfile?.prn || '' }
-            });
-            const fetchedNotes = Array.isArray(notesRes.data) ? notesRes.data : [];
-            setNotes(fetchedNotes);
-
-            // 3. Fetch full catalog subjects from backend
+            // 2. Fetch full catalog subjects from backend
             const subsRes = await axios.get(`${API_BASE}/subjects`);
             const catalogSubs = Array.isArray(subsRes.data) ? subsRes.data : [];
             setCatalogSubjects(catalogSubs);
 
-            // 4. Set enrolled subjects: maintain student attendance/CIE integrity
+            // 3. Set enrolled subjects using canonical IDs from backend catalog
+            const role = localStorage.getItem('eduvault_user_role') || (currentProfile?.dob === 'TEACHER' ? 'teacher' : 'student');
+            const isTeacher = role === 'teacher' || role === 'faculty' || role === 'admin';
+            let enrolledSubjects = [];
+
             if (isTeacher) {
                 const savedTeacherSubs = localStorage.getItem('eduvault_teacher_subjects');
                 if (savedTeacherSubs) {
@@ -99,33 +91,53 @@ const SovereignLayout = () => {
                             const filtered = catalogSubs.filter(cs =>
                                 parsed.includes(cs.name) || parsed.includes(cs.id) || parsed.some(p => p === cs.name || p === cs.id)
                             );
-                            setSubjects(filtered.length > 0 ? filtered : catalogSubs);
+                            enrolledSubjects = filtered.length > 0 ? filtered : catalogSubs;
                         } else {
-                            setSubjects(catalogSubs);
+                            enrolledSubjects = catalogSubs;
                         }
                     } catch (e) {
-                        setSubjects(catalogSubs);
+                        enrolledSubjects = catalogSubs;
                     }
                 } else {
-                    setSubjects(catalogSubs);
+                    enrolledSubjects = catalogSubs;
                 }
+                setSubjects(enrolledSubjects);
             } else if (currentSubjects && currentSubjects.length > 0) {
-                // Student has portal-scraped subjects: reconcile and guarantee id, department, and semester
-                const repairedLocal = currentSubjects.map(ls => {
-                    const match = catalogSubs.find(cs =>
-                        (ls.id && cs.id === ls.id) ||
-                        (ls.code && cs.code && ls.code.toLowerCase() === cs.code.toLowerCase()) ||
-                        (ls.name && cs.name && ls.name.toLowerCase() === cs.name.toLowerCase())
-                    );
+                // Strict 3-tier canonical matching: Exact code first, canonical ID second, normalized exact name third.
+                // Never generate detached subject IDs; preserve unresolved subjects explicitly.
+                enrolledSubjects = currentSubjects.map(ls => {
+                    let match = null;
+                    if (ls.code && ls.code.trim()) {
+                        const cleanCode = ls.code.trim().toUpperCase();
+                        const codeMatches = catalogSubs.filter(cs => cs.code && cs.code.trim().toUpperCase() === cleanCode);
+                        if (codeMatches.length === 1) match = codeMatches[0];
+                    }
+                    if (!match && ls.id && ls.id.trim()) {
+                        const idMatches = catalogSubs.filter(cs => cs.id && cs.id.toLowerCase() === ls.id.trim().toLowerCase());
+                        if (idMatches.length === 1) match = idMatches[0];
+                    }
+                    if (!match && ls.name && ls.name.trim()) {
+                        const normLsName = ls.name.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/[^a-zA-Z0-9\s]/g, ' ').trim().replace(/\s+/g, ' ').toLowerCase();
+                        const nameMatches = catalogSubs.filter(cs => {
+                            if (!cs.name) return false;
+                            const normCsName = cs.name.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/[^a-zA-Z0-9\s]/g, ' ').trim().replace(/\s+/g, ' ').toLowerCase();
+                            return normLsName && normCsName && normLsName === normCsName;
+                        });
+                        if (nameMatches.length === 1) match = nameMatches[0];
+                    }
+
+                    const canonicalId = match ? match.id : (ls.id || null);
                     return {
                         ...ls,
-                        id: match?.id || ls.id || (ls.code ? `sub-${ls.code.toLowerCase()}` : `sub-${ls.name?.toLowerCase().replace(/\s+/g, '-')}`),
+                        id: canonicalId,
+                        canonicalCode: match?.code || ls.code || null,
+                        isUnresolved: !canonicalId,
                         department: match?.department || ls.department || currentProfile?.department || 'B.Tech-UAD',
-                        semester: match?.semester || ls.semester || currentProfile?.semester || 'SEM 05'
+                        semester: match?.semester || ls.semester || currentProfile?.semester || 'SEM 04'
                     };
                 });
-                localStorage.setItem('eduvault_subjects', JSON.stringify(repairedLocal));
-                setSubjects(repairedLocal);
+                localStorage.setItem('eduvault_subjects', JSON.stringify(enrolledSubjects));
+                setSubjects(enrolledSubjects);
             } else if (currentProfile?.department && currentProfile?.semester) {
                 const normDept = (d) => {
                     if (!d) return 'AIDS';
@@ -143,10 +155,27 @@ const SovereignLayout = () => {
                     normDept(cs.department) === normDept(currentProfile.department) &&
                     normSem(cs.semester) === normSem(currentProfile.semester)
                 );
-                setSubjects(scoped.length > 0 ? scoped : catalogSubs);
+                enrolledSubjects = scoped.length > 0 ? scoped : catalogSubs;
+                setSubjects(enrolledSubjects);
             } else {
-                setSubjects(catalogSubs);
+                enrolledSubjects = catalogSubs;
+                setSubjects(enrolledSubjects);
             }
+
+            // 4. Fetch notes from server scoped to PRN, role, and canonical enrolled subjects
+            const enrolledIds = (enrolledSubjects || []).map(s => s.id).filter(Boolean);
+            const notesUrl = (currentProfile?.prn && !isTeacher) 
+                ? `${API_BASE}/notes?prn=${encodeURIComponent(currentProfile.prn)}` 
+                : `${API_BASE}/notes`;
+            const notesRes = await axios.get(notesUrl, {
+                headers: { 
+                    'X-User-Role': role, 
+                    'X-Student-PRN': currentProfile?.prn || '',
+                    'X-Student-Subjects': enrolledIds.join(',')
+                }
+            });
+            const fetchedNotes = Array.isArray(notesRes.data) ? notesRes.data : [];
+            setNotes(fetchedNotes);
         } catch (err) {
             console.error('Error fetching data:', err);
         } finally {

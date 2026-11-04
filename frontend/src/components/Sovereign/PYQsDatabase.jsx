@@ -249,18 +249,18 @@ const PYQsDatabase = ({
     // Filter by client search query and enrolled student subjects
     const filteredPyqs = useMemo(() => {
         return pyqs.filter(q => {
-            // Students only see question papers matching their enrolled subjects
+            // Students only see question papers matching their canonical enrolled subjects
             if (!isTeacher && subjects.length > 0) {
                 const belongsToStudent = subjects.some(s =>
-                    s.id === q.subjectId ||
-                    isSubjectNameMatch(q.subjectName, s.name) ||
-                    isSubjectNameMatch(q.fileUrl, s.name) ||
-                    isSubjectNameMatch(q.tags, s.name) ||
-                    (s.code && q.fileUrl && q.fileUrl.toUpperCase().includes(s.code.toUpperCase()))
+                    (s.id && s.id === q.subjectId) ||
+                    (s.code && (
+                        (q.fileUrl && q.fileUrl.toUpperCase().includes(s.code.toUpperCase())) ||
+                        (q.tags && q.tags.toUpperCase().includes(s.code.toUpperCase()))
+                    ))
                 );
                 if (!belongsToStudent) return false;
             }
-            const subject = subjects.find(s => s.id === q.subjectId || isSubjectNameMatch(q.subjectName, s.name));
+            const subject = subjects.find(s => s.id && s.id === q.subjectId);
             const subjectName = (subject?.name || q.subjectName || '').toLowerCase();
             const term = searchQuery.toLowerCase().trim();
             if (!term) return true;

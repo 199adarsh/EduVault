@@ -155,6 +155,21 @@ public class ApiController {
         return ResponseEntity.ok(database.addSubject(subject));
     }
 
+    public ResponseEntity<List<Note>> getNotes(
+            String subjectId,
+            String semester,
+            String examType,
+            String keyword,
+            String search,
+            String department,
+            String unit,
+            String folder,
+            String prn,
+            String headerPrn,
+            String roleHeader) {
+        return getNotes(subjectId, semester, examType, keyword, search, department, unit, folder, prn, headerPrn, roleHeader, null);
+    }
+
     @GetMapping("/notes")
     public ResponseEntity<List<Note>> getNotes(
             @RequestParam(required = false) String subjectId,
@@ -167,11 +182,20 @@ public class ApiController {
             @RequestParam(required = false) String folder,
             @RequestParam(required = false) String prn,
             @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn,
-            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestHeader(value = "X-Student-Subjects", required = false) String studentSubjectsHeader) {
 
         boolean isTeacher = roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin"));
         String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
         StudentProfile profile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
+
+        java.util.Set<String> enrolledSubjectIds = new java.util.HashSet<>();
+        if (studentSubjectsHeader != null && !studentSubjectsHeader.isBlank()) {
+            for (String sid : studentSubjectsHeader.split(",")) {
+                String clean = sid.trim();
+                if (!clean.isEmpty()) enrolledSubjectIds.add(clean);
+            }
+        }
 
         String queryDept = department;
         String querySem = semester;
@@ -181,7 +205,7 @@ public class ApiController {
             querySem = parts[1];
         }
 
-        // Students must ONLY see notes matching their academic profile
+        // Students must ONLY see notes matching their academic profile or enrolled subjects
         if (!isTeacher) {
             if (profile != null) {
                 String profDept = profile.getDepartment();
@@ -211,6 +235,7 @@ public class ApiController {
         final String finalSem = querySem;
         final String finalSubjectId = subjectId;
         final String finalUnit = unit;
+        final String explicitSemester = semester;
         final String finalSearch = (search != null && !search.isBlank()) ? search.toLowerCase() : ((keyword != null && !keyword.isBlank()) ? keyword.toLowerCase() : null);
 
         Map<String, Subject> subjectMap = database.getAllSubjects().stream()
@@ -219,13 +244,29 @@ public class ApiController {
 
         List<Note> filtered = allNotes.stream()
                 .filter(n -> {
+                    // 1. Never publish unmapped or draft notes to students
+                    if (!isTeacher) {
+                        if (n.getSubjectId() == null || n.getSubjectId().isBlank()) return false;
+                        if ("UNRESOLVED".equalsIgnoreCase(n.getStatus()) || "PENDING_MAPPING".equalsIgnoreCase(n.getStatus())) {
+                            return false;
+                        }
+                    }
+
+                    // 2. Specific Subject ID requested
                     if (finalSubjectId != null && !finalSubjectId.isBlank() && !finalSubjectId.equalsIgnoreCase(n.getSubjectId())) {
                         return false;
                     }
+
+                    // 3. Unit filter
                     if (finalUnit != null && !finalUnit.isBlank() && (n.getUnit() == null || !n.getUnit().equalsIgnoreCase(finalUnit))) {
                         return false;
                     }
-                    if (finalDept != null && !finalDept.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank())) {
+
+                    // 4. Access condition: If student is enrolled in this subject, authorize immediately
+                    boolean isEnrolled = enrolledSubjectIds.contains(n.getSubjectId());
+
+                    // Department scoping (bypassed if student is enrolled in the course)
+                    if (finalDept != null && !finalDept.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank()) && !isEnrolled) {
                         String noteDept = n.getDepartment();
                         if ((noteDept == null || noteDept.isBlank()) && n.getSubjectId() != null) {
                             Subject s = subjectMap.get(n.getSubjectId());
@@ -235,7 +276,23 @@ public class ApiController {
                             return false;
                         }
                     }
-                    if (finalSem != null && !finalSem.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank())) {
+
+                    // Semester metadata filter:
+                    // If caller explicitly queried ?semester=... or requested an explicit virtual folder, filter by semester
+                    String requiredSem = (explicitSemester != null && !explicitSemester.isBlank()) ? explicitSemester
+                            : ((folder != null && folder.contains("-")) ? finalSem : null);
+
+                    if (requiredSem != null && !requiredSem.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank())) {
+                        String noteSem = n.getSemester();
+                        if ((noteSem == null || noteSem.isBlank()) && n.getSubjectId() != null) {
+                            Subject s = subjectMap.get(n.getSubjectId());
+                            if (s != null) noteSem = s.getSemester();
+                        }
+                        if (noteSem == null || !AcademicNormalizer.isSemesterMatch(noteSem, requiredSem)) {
+                            return false;
+                        }
+                    } else if (!isTeacher && enrolledSubjectIds.isEmpty() && finalSem != null && !finalSem.isBlank() && (finalSubjectId == null || finalSubjectId.isBlank())) {
+                        // Fallback when no enrolled subjects were supplied (e.g. initial login before sync or unit tests)
                         String noteSem = n.getSemester();
                         if ((noteSem == null || noteSem.isBlank()) && n.getSubjectId() != null) {
                             Subject s = subjectMap.get(n.getSubjectId());
@@ -245,6 +302,8 @@ public class ApiController {
                             return false;
                         }
                     }
+
+                    // 5. Search keyword
                     if (finalSearch != null) {
                         String title = n.getTitle() != null ? n.getTitle().toLowerCase() : "";
                         String text = n.getExtractedText() != null ? n.getExtractedText().toLowerCase() : "";

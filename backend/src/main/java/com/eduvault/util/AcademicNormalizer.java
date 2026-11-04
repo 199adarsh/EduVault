@@ -1,5 +1,7 @@
 package com.eduvault.util;
 
+import com.eduvault.model.Subject;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -185,6 +187,96 @@ public class AcademicNormalizer {
                       .replaceAll("\\s+", " ")
                       .trim();
         return s.isEmpty() ? raw.trim() : s;
+    }
+
+    /**
+     * Normalizes a subject name for exact matching:
+     * Removes parenthetical / bracketed text (e.g. course codes like (01CS502)),
+     * removes non-alphanumeric punctuation, collapses internal spaces, and lowercases.
+     */
+    public static String normalizeSubjectName(String name) {
+        if (name == null || name.isBlank()) return "";
+        String stripped = name.replaceAll("\\s*\\([^)]*\\)\\s*", " ")
+                              .replaceAll("\\s*\\[[^]]*\\]\\s*", " ")
+                              .replaceAll("[^a-zA-Z0-9\\s]", " ")
+                              .trim()
+                              .replaceAll("\\s+", " ")
+                              .toLowerCase();
+        return stripped;
+    }
+
+    /**
+     * Extracts a course code from text (e.g., "01CS502", "01ADL201", "02ADL204").
+     */
+    public static String extractCourseCode(String text) {
+        if (text == null || text.isBlank()) return null;
+        Matcher m = Pattern.compile("([0-9]{2}[A-Za-z]{2,6}[0-9]{3,4}[A-Za-z]?)").matcher(text);
+        if (m.find()) return m.group(1).toUpperCase();
+        return null;
+    }
+
+    /**
+     * Resolves a subject from a catalog using the strict 3-tier matching rule:
+     * 1. Exact subject code match first
+     * 2. Canonical ID match second
+     * 3. Normalized exact name match third
+     * 
+     * Rejects ambiguous matches (> 1 match) and never uses fuzzy guessing.
+     */
+    public static Subject resolveSubject(String identifierOrName, String targetCode, String targetId, List<Subject> catalog) {
+        if (catalog == null || catalog.isEmpty()) return null;
+
+        // Extract code if not explicitly given
+        String codeToMatch = targetCode;
+        if ((codeToMatch == null || codeToMatch.isBlank()) && identifierOrName != null) {
+            codeToMatch = extractCourseCode(identifierOrName);
+        }
+
+        // Tier 1: Match by exact subject code
+        if (codeToMatch != null && !codeToMatch.isBlank()) {
+            final String code = codeToMatch.trim();
+            List<Subject> codeMatches = catalog.stream()
+                    .filter(s -> s.getCode() != null && s.getCode().equalsIgnoreCase(code))
+                    .collect(java.util.stream.Collectors.toList());
+            if (codeMatches.size() == 1) {
+                return codeMatches.get(0);
+            } else if (codeMatches.size() > 1) {
+                // Ambiguous match on code - reject automatic resolution
+                return null;
+            }
+        }
+
+        // Tier 2: Match by exact canonical ID
+        if (targetId != null && !targetId.isBlank()) {
+            final String id = targetId.trim();
+            List<Subject> idMatches = catalog.stream()
+                    .filter(s -> s.getId() != null && s.getId().equalsIgnoreCase(id))
+                    .collect(java.util.stream.Collectors.toList());
+            if (idMatches.size() == 1) {
+                return idMatches.get(0);
+            } else if (idMatches.size() > 1) {
+                // Ambiguous match on ID - reject
+                return null;
+            }
+        }
+
+        // Tier 3: Match by normalized exact name
+        if (identifierOrName != null && !identifierOrName.isBlank()) {
+            String normTarget = normalizeSubjectName(identifierOrName);
+            if (!normTarget.isBlank()) {
+                List<Subject> nameMatches = catalog.stream()
+                        .filter(s -> s.getName() != null && normalizeSubjectName(s.getName()).equalsIgnoreCase(normTarget))
+                        .collect(java.util.stream.Collectors.toList());
+                if (nameMatches.size() == 1) {
+                    return nameMatches.get(0);
+                } else if (nameMatches.size() > 1) {
+                    // Ambiguous match on name - reject
+                    return null;
+                }
+            }
+        }
+
+        return null;
     }
 }
 

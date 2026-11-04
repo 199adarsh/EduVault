@@ -178,6 +178,9 @@ public class LocalJsonDatabase {
                             note.setUnit(extractUnitFromContent(info.unit));
                         }
                         repaired++;
+                    } else if (note.getSubjectId() == null || !validSubject) {
+                        note.setSubjectId(null);
+                        note.setStatus("UNRESOLVED");
                     }
                 }
             }
@@ -202,13 +205,16 @@ public class LocalJsonDatabase {
             List<software.amazon.awssdk.services.s3.model.S3Object> objects = backblazeStorageService.listAllObjects();
             if (objects.isEmpty()) return 0;
 
-            java.util.Set<String> existingFileUrls = noteRepository.findAll().stream()
-                    .map(Note::getFileUrl)
-                    .filter(java.util.Objects::nonNull)
-                    .collect(java.util.stream.Collectors.toSet());
+            java.util.Map<String, Note> existingByB2Key = new java.util.HashMap<>();
+            java.util.Map<String, Note> existingByFileUrl = new java.util.HashMap<>();
+            for (Note n : noteRepository.findAll()) {
+                if (n.getB2ObjectKey() != null) existingByB2Key.put(n.getB2ObjectKey(), n);
+                if (n.getFileUrl() != null) existingByFileUrl.put(n.getFileUrl(), n);
+            }
 
             List<Subject> subjects = subjectRepository.findAll();
-            List<Note> newNotes = new java.util.ArrayList<>();
+            List<Note> notesToSave = new java.util.ArrayList<>();
+            int countNewOrUpdated = 0;
 
             // Load cached notes from notes.json to preserve pre-extracted text
             java.util.Map<String, Note> cachedNotesByKey = new java.util.HashMap<>();
@@ -230,33 +236,45 @@ public class LocalJsonDatabase {
             for (software.amazon.awssdk.services.s3.model.S3Object obj : objects) {
                 String key = obj.key();
                 if (key.endsWith(".json") || key.endsWith("/") || key.startsWith(".")) continue;
-                if (existingFileUrls.contains(key)) continue;
 
+                String filenameOnly = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
                 String ext = key.contains(".") ? key.substring(key.lastIndexOf('.')) : "";
 
+                Note note = existingByB2Key.get(key);
+                if (note == null) {
+                    note = existingByFileUrl.get(key);
+                }
+                boolean isNew = (note == null);
+                if (isNew) {
+                    note = Note.builder()
+                            .id(java.util.UUID.randomUUID().toString())
+                            .uploadedBy("Backblaze B2")
+                            .createdAt(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE))
+                            .build();
+                }
+
+                note.setFileUrl(filenameOnly);
+                note.setB2ObjectKey(key);
+
                 // Attempt text extraction for reliable metadata and course code mapping
-                String extractedText = "";
-                if (cachedNotesByKey.containsKey(key)) {
-                    Note cached = cachedNotesByKey.get(key);
-                    if (cached.getExtractedText() != null && !cached.getExtractedText().isBlank()) {
-                        extractedText = cached.getExtractedText();
+                String extractedText = note.getExtractedText();
+                if (extractedText == null || extractedText.isBlank()) {
+                    if (cachedNotesByKey.containsKey(key)) {
+                        Note cached = cachedNotesByKey.get(key);
+                        if (cached.getExtractedText() != null && !cached.getExtractedText().isBlank()) {
+                            extractedText = cached.getExtractedText();
+                        }
                     }
-                }
 
-                if (extractedText.isBlank() && fileStorageService != null) {
-                    try {
-                        extractedText = fileStorageService.extractText(key);
-                    } catch (Exception ex) {
-                        logger.warn("Local text extraction failed for key {}: {}", key, ex.getMessage());
+                    if ((extractedText == null || extractedText.isBlank()) && fileStorageService != null) {
+                        try {
+                            extractedText = fileStorageService.extractText(key);
+                        } catch (Exception ex) {
+                            logger.warn("Local text extraction failed for key {}: {}", key, ex.getMessage());
+                        }
                     }
-                }
 
-                if (extractedText == null || extractedText.isBlank()
-                        || extractedText.startsWith("File not found")
-                        || extractedText.startsWith("Failed to extract")
-                        || extractedText.startsWith("Text extraction only")) {
-                    extractedText = "";
-                    if (backblazeStorageService != null) {
+                    if ((extractedText == null || extractedText.isBlank()) && backblazeStorageService != null) {
                         try {
                             byte[] bytes = backblazeStorageService.getObjectBytes(key);
                             if (bytes != null && bytes.length > 0 && fileStorageService != null) {
@@ -266,60 +284,39 @@ public class LocalJsonDatabase {
                             logger.warn("B2 text extraction failed for key {}: {}", key, ex.getMessage());
                         }
                     }
+
+                    if (extractedText != null && !extractedText.startsWith("File not found") && !extractedText.startsWith("Failed to extract")) {
+                        note.setExtractedText(extractedText.length() > 5000 ? extractedText.substring(0, 5000) : extractedText);
+                    }
                 }
 
-                if (extractedText == null
-                        || extractedText.startsWith("File not found")
-                        || extractedText.startsWith("Failed to extract")
-                        || extractedText.startsWith("Text extraction only")) {
-                    extractedText = "";
-                }
-
-                // Robust hierarchy extraction: <DEPT>/<SUBJECT>/<UNIT>/<FILE> or <SUBJECT>/<UNIT>/<FILE> or <SUBJECT>/<FILE>
                 FolderInfo folderInfo = extractFolderInfoFromKey(key);
                 Subject matched = findSubjectFromFolderOrKey(folderInfo.subject, key, subjects);
-                if (matched == null) {
-                    matched = findSubjectFromContent(extractedText, subjects);
-                }
-                String title = extractTitleFromContent(extractedText, key, ext);
-                if (matched == null && title != null) {
-                    matched = findSubjectFromContent(title, subjects);
-                }
+
+                String title = extractTitleFromContent(note.getExtractedText(), key, ext);
+                note.setTitle(title);
 
                 String unit = (folderInfo.unit != null && !folderInfo.unit.equalsIgnoreCase("General")) 
                         ? extractUnitFromContent(folderInfo.unit)
-                        : extractUnitFromContent(extractedText);
+                        : extractUnitFromContent(note.getExtractedText());
+                note.setUnit(unit);
 
-                String filenameOnly = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
                 String lowerKey = key.toLowerCase();
-                String lowerText = extractedText != null ? extractedText.toLowerCase() : "";
                 String category = "Notes";
                 String examType = "mid-sem";
 
-                if (lowerKey.contains("pyq") || lowerKey.contains("question paper") || lowerKey.contains("ese") || lowerKey.contains("see")
-                        || lowerText.contains("previous year question") || lowerText.contains("question paper")) {
+                if (lowerKey.contains("pyq") || lowerKey.contains("question paper") || lowerKey.contains("ese") || lowerKey.contains("see")) {
                     category = "PYQ";
                     examType = "end-sem";
-                } else if (lowerKey.contains("syllabus") || lowerText.contains("course outcomes and syllabus")) {
+                } else if (lowerKey.contains("syllabus")) {
                     category = "Syllabus";
-                } else if (lowerKey.contains("lab") || lowerKey.contains("manual") || lowerKey.contains("experiment")) {
+                } else if (lowerKey.contains("lab") || lowerKey.contains("manual")) {
                     category = "Lab Manual";
                 } else if (lowerKey.contains("lecture") || lowerKey.contains("plan")) {
                     category = "Lecture Plan";
                 }
-
-                Note note = Note.builder()
-                        .id(java.util.UUID.randomUUID().toString())
-                        .title(title)
-                        .fileUrl(filenameOnly)
-                        .b2ObjectKey(key)
-                        .unit(unit)
-                        .category(category)
-                        .examType(examType)
-                        .uploadedBy("Backblaze B2")
-                        .createdAt(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE))
-                        .extractedText(extractedText != null && extractedText.length() > 5000 ? extractedText.substring(0, 5000) : extractedText)
-                        .build();
+                note.setCategory(category);
+                note.setExamType(examType);
 
                 if (matched != null) {
                     note.setSubjectId(matched.getId());
@@ -345,30 +342,29 @@ public class LocalJsonDatabase {
                                 pyqRepository.save(pyq);
                             }
                         } catch (Exception ex) {
-                            logger.warn("Could not auto-mirror B2 PYQ note {}: {}", key, ex.getMessage());
+                            logger.warn("Failed to mirror PYQ for key {}: {}", key, ex.getMessage());
                         }
                     }
                 } else {
-                    note.setSubjectId(null);
-                    note.setStatus("PENDING_MAPPING");
+                    // Unresolved subject mapping: never publish to students!
+                    // Do not overwrite existing valid subject mapping if sync failed to match!
+                    String currentSubId = note.getSubjectId();
+                    if (currentSubId == null || subjects.stream().noneMatch(s -> s.getId().equals(currentSubId))) {
+                        note.setSubjectId(null);
+                        note.setStatus("UNRESOLVED");
+                    }
                 }
 
-                newNotes.add(note);
-                existingFileUrls.add(key);
-                noteRepository.save(note);
-                if (newNotes.size() % 10 == 0) {
-                    updateSubjectCounts();
-                    logger.info("Progress: synced {} notes from B2", newNotes.size());
-                }
+                notesToSave.add(note);
+                countNewOrUpdated++;
             }
 
-            if (!newNotes.isEmpty()) {
-                long mappedCount = newNotes.stream().filter(n -> n.getSubjectId() != null).count();
-                logger.info("Synced {} notes from B2 ({} mapped to subjects, {} marked PENDING_MAPPING)", 
-                        newNotes.size(), mappedCount, newNotes.size() - mappedCount);
+            if (!notesToSave.isEmpty()) {
+                noteRepository.saveAll(notesToSave);
                 updateSubjectCounts();
-                return newNotes.size();
+                logger.info("Sync completed: {} notes processed idempotently (new/updated)", countNewOrUpdated);
             }
+            return countNewOrUpdated;
         } catch (Exception e) {
             logger.error("Error during Backblaze B2 note synchronization: {}", e.getMessage(), e);
         }
@@ -433,63 +429,36 @@ public class LocalJsonDatabase {
     }
 
     private Subject findSubjectFromFolderOrKey(String folderSubject, String fullKey, List<Subject> subjects) {
-        if (subjects == null) return null;
+        if (subjects == null || subjects.isEmpty()) return null;
 
-        if (folderSubject != null && !folderSubject.isBlank()) {
-            for (Subject s : subjects) {
-                if (s.getName() != null && s.getName().equalsIgnoreCase(folderSubject)) return s;
-                if (s.getCode() != null && s.getCode().equalsIgnoreCase(folderSubject)) return s;
-            }
-            String cleanFolder = AcademicNormalizer.cleanCourseName(folderSubject).toUpperCase();
-            for (Subject s : subjects) {
-                if (s.getCode() != null && !s.getCode().isBlank() && folderSubject.toUpperCase().contains(s.getCode().toUpperCase())) {
-                    return s;
-                }
-                if (s.getName() != null && !s.getName().isBlank()) {
-                    String sName = s.getName().trim().toUpperCase();
-                    if (sName.equals(cleanFolder) || folderSubject.toUpperCase().contains(sName) || cleanFolder.contains(sName)) {
-                        return s;
-                    }
-                }
-            }
+        // Extract potential course code from folder or key
+        String code = AcademicNormalizer.extractCourseCode(folderSubject);
+        if (code == null && fullKey != null) {
+            code = AcademicNormalizer.extractCourseCode(fullKey);
         }
 
+        // Tier 1 & Tier 3: Resolve using canonical 3-tier matcher (exact code, canonical ID, normalized exact name)
+        if (folderSubject != null && !folderSubject.isBlank()) {
+            Subject s = AcademicNormalizer.resolveSubject(folderSubject, code, null, subjects);
+            if (s != null) return s;
+        }
+
+        // Try code match alone
+        if (code != null) {
+            Subject s = AcademicNormalizer.resolveSubject(null, code, null, subjects);
+            if (s != null) return s;
+        }
+
+        // Try key segments
         if (fullKey != null && !fullKey.isBlank()) {
-            String upperKey = fullKey.toUpperCase();
-            for (Subject s : subjects) {
-                if (s.getCode() != null && !s.getCode().isBlank() && upperKey.contains(s.getCode().toUpperCase())) {
-                    return s;
-                }
-                if (s.getName() != null && !s.getName().isBlank() && upperKey.contains(s.getName().toUpperCase())) {
-                    return s;
-                }
+            String[] segments = fullKey.split("/");
+            for (String seg : segments) {
+                Subject s = AcademicNormalizer.resolveSubject(seg, null, null, subjects);
+                if (s != null) return s;
             }
         }
 
-        // Auto-create missing catalog subject from folder/key to guarantee notes are never unlinked
-        if (folderSubject != null && !folderSubject.isBlank()) {
-            String cleanName = AcademicNormalizer.cleanCourseName(folderSubject);
-            if (cleanName.length() >= 3 && !cleanName.equalsIgnoreCase("General") && !cleanName.equalsIgnoreCase("Lab") && !cleanName.toUpperCase().startsWith("UNIT")) {
-                String code = extractCourseCode(folderSubject, fullKey);
-                String dept = AcademicNormalizer.inferDepartmentFromCourse(code, folderSubject);
-                String sem = AcademicNormalizer.inferSemesterFromCourse(code, folderSubject);
-
-                Subject newSub = Subject.builder()
-                        .id(java.util.UUID.randomUUID().toString())
-                        .name(cleanName)
-                        .code(code)
-                        .department(dept)
-                        .semester(sem)
-                        .createdAt(java.time.LocalDate.now().toString())
-                        .noteCount(0)
-                        .build();
-                subjectRepository.save(newSub);
-                subjects.add(newSub);
-                logger.info("Auto-created missing catalog subject: {} [{}] ({})", cleanName, code, sem);
-                return newSub;
-            }
-        }
-
+        // Never generate detached subject IDs or fuzzy guesses! Return null if unresolved.
         return null;
     }
 
@@ -620,20 +589,11 @@ public class LocalJsonDatabase {
     public synchronized void registerSubjectsCatalog(List<DashboardSubject> dashboardSubjects, String dept, String sem) {
         if (dashboardSubjects == null || dashboardSubjects.isEmpty()) return;
         List<Subject> existing = subjectRepository.findAll();
-        java.util.Map<String, Subject> nameOrCodeMap = new java.util.HashMap<>();
-        for (Subject s : existing) {
-            if (s.getName() != null) nameOrCodeMap.put(s.getName().trim().toLowerCase(), s);
-            if (s.getCode() != null) nameOrCodeMap.put(s.getCode().trim().toLowerCase(), s);
-        }
 
         List<Subject> toSave = new java.util.ArrayList<>();
         for (DashboardSubject ds : dashboardSubjects) {
-            String nameKey = ds.getName() != null ? ds.getName().trim().toLowerCase() : "";
-            String codeKey = ds.getCode() != null ? ds.getCode().trim().toLowerCase() : "";
-            Subject matched = nameOrCodeMap.get(nameKey);
-            if (matched == null && !codeKey.isEmpty()) {
-                matched = nameOrCodeMap.get(codeKey);
-            }
+            // Strict 3-tier matching: Exact code first, canonical ID second, normalized exact name third. Reject ambiguous.
+            Subject matched = AcademicNormalizer.resolveSubject(ds.getName(), ds.getCode(), ds.getId(), existing);
 
             if (matched == null) {
                 Subject newSub = Subject.builder()
@@ -645,11 +605,15 @@ public class LocalJsonDatabase {
                         .createdAt(java.time.LocalDate.now().toString())
                         .build();
                 toSave.add(newSub);
-                nameOrCodeMap.put(nameKey, newSub);
-                if (!codeKey.isEmpty()) nameOrCodeMap.put(codeKey, newSub);
+                existing.add(newSub);
                 ds.setId(newSub.getId());
             } else {
                 ds.setId(matched.getId());
+                // Update code on catalog if missing
+                if ((matched.getCode() == null || matched.getCode().isBlank()) && ds.getCode() != null && !ds.getCode().isBlank()) {
+                    matched.setCode(ds.getCode().trim());
+                    toSave.add(matched);
+                }
             }
         }
         if (!toSave.isEmpty()) {
@@ -738,11 +702,21 @@ public class LocalJsonDatabase {
                     .id("c502-cse-softeng")
                     .name("Software Engineering")
                     .code("01CS502")
-                    .department("CSE")
-                    .semester("SEM 05")
+                    .department("B.Tech-UAD")
+                    .semester("SEM 04")
                     .createdAt("2026-05-01")
                     .noteCount(0)
                     .build());
+        }
+        // Normalize any Software Engineering subjects to student's semester and department
+        for (Subject s : subjectRepository.findAll()) {
+            if (s.getName() != null && AcademicNormalizer.cleanCourseName(s.getName()).equalsIgnoreCase("Software Engineering")) {
+                if (!"SEM 04".equalsIgnoreCase(s.getSemester()) || !"B.Tech-UAD".equalsIgnoreCase(s.getDepartment())) {
+                    s.setDepartment("B.Tech-UAD");
+                    s.setSemester("SEM 04");
+                    subjectRepository.save(s);
+                }
+            }
         }
         if (!subjectRepository.existsById("c503-cse-ai")) {
             subjectRepository.save(Subject.builder()

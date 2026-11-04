@@ -271,7 +271,11 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
 
         // Strictly show only current sem subjects that match student attendance
         if (!isTeacher) {
-            return subjects || [];
+            const enrolled = subjects || [];
+            // Order resolved subjects first, unresolved separate
+            const resolved = enrolled.filter(s => s.id && !s.isUnresolved);
+            const unresolved = enrolled.filter(s => s.isUnresolved || !s.id);
+            return [...resolved, ...unresolved];
         }
         return baseList.filter(s => subjectHasNotes(s));
     }, [isTeacher, subjects, allKnownSubjects, profile, studentDept, studentSem, subjectHasNotes]);
@@ -368,18 +372,11 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         return (notes || []).filter(note => {
             const resolvedId = resolveSubjectId(note);
 
-            // 1. Match selected subject: by ID, code, or fuzzy subject name (case/spelling/code resilient)
+            // 1. Match selected subject by canonical ID first, then canonical subject code
             const isMatch = resolvedId === activeSubjectId || note.subjectId === activeSubjectId ||
-                (activeSubjectObj && (
-                    (note.subjectName && isSubjectNameMatch(note.subjectName, activeSubjectObj.name)) ||
-                    (note.title && isSubjectNameMatch(note.title, activeSubjectObj.name)) ||
-                    (note.fileUrl && isSubjectNameMatch(note.fileUrl, activeSubjectObj.name)) ||
-                    (note.b2ObjectKey && isSubjectNameMatch(note.b2ObjectKey, activeSubjectObj.name)) ||
-                    (activeSubjectObj.code && (
-                        (note.title && note.title.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
-                        (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
-                        (note.subjectId && note.subjectId.toUpperCase().includes(activeSubjectObj.code.toUpperCase()))
-                    ))
+                (activeSubjectObj?.code && (
+                    (note.b2ObjectKey && note.b2ObjectKey.toUpperCase().includes(activeSubjectObj.code.toUpperCase())) ||
+                    (note.fileUrl && note.fileUrl.toUpperCase().includes(activeSubjectObj.code.toUpperCase()))
                 ));
             if (!isMatch) return false;
 
@@ -581,7 +578,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         activeSubjectId === sub.id ? "bg-[#0073E6] text-white shadow-xs" : "bg-[#F2F7FC] border border-[#E2E2E2] text-[#383838] hover:bg-[#DEEDFC]/40 hover:border-[#0073E6]/40"
                                     )}
                                 >
-                                    {sub.name} {sub.code ? `(${sub.code})` : ''}
+                                    {sub.name} {sub.code ? `(${sub.code})` : ''} {sub.isUnresolved ? '(Unresolved)' : ''}
                                 </button>
                             ))
                         ) : (

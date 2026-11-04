@@ -122,3 +122,4 @@ public class SeoController {
                 .body(ROBOTS_CONTENT);
     }
 }
+

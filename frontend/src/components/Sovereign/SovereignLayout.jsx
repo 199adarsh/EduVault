@@ -636,7 +636,7 @@ const SovereignLayout = () => {
 
                             >
 
-                                <Bell className="w-5 h-5 text-text-secondary" strokeWidth={1.8} />
+                                <Notification01Icon size={20} className="text-[#8E8E93]" />
 
                                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white"></span>
 

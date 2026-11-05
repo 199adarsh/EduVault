@@ -1005,3 +1005,62 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =========================================================
+   DOCX RENDERED DOCUMENT & TABLE STYLES
+========================================================= */
+
+.docx-content {
+  color: #1D1D1F;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.docx-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+}
+
+.docx-content th,
+.docx-content td {
+  border: 1px solid #E5E7EB;
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.docx-content th {
+  background-color: #F8FAFC;
+  font-weight: 600;
+  color: #0F172A;
+  border-bottom: 2px solid #CBD5E1;
+}
+
+.docx-content tr:nth-child(even) td {
+  background-color: #F9FAFB;
+}
+
+.docx-content p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.docx-content h1, .docx-content h2, .docx-content h3 {
+  color: #0F172A;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.docx-content ul, .docx-content ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.docx-content li {
+  margin-bottom: 0.35rem;
+}

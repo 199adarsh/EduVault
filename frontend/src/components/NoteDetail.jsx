@@ -163,7 +163,20 @@ const NoteDetail = () => {
                 console.warn('IDB read error:', e);
             }
 
-            // 1. Fetch from fast B2 CDN presigned URL if not in local cache
+            // 1. Direct Backend Note Raw Proxy (Guaranteed same-origin, bypasses B2 CORS)
+            if (!blob && noteId) {
+                try {
+                    const res = await fetch(`${API_BASE}/files/${noteId}/raw`);
+                    if (res.ok) {
+                        blob = await res.blob();
+                        setCachedNoteBlob(noteId, blob);
+                    }
+                } catch (e) {
+                    console.warn('Direct backend raw fetch failed, trying presigned:', e);
+                }
+            }
+
+            // 2. Fetch from fast B2 CDN presigned URL if not in local cache
             if (!blob && presignedUrl) {
                 try {
                     const res = await fetch(presignedUrl);
@@ -176,10 +189,10 @@ const NoteDetail = () => {
                 }
             }
 
-            // 2. Fallback to local raw if presigned not working
+            // 3. Fallback to local raw if presigned not working
             if (!blob && note?.fileUrl) {
                 try {
-                    const res = await fetch(`${API_BASE}/files/raw/${note.fileUrl}`);
+                    const res = await fetch(`${API_BASE}/files/raw/${encodeURIComponent(note.fileUrl)}`);
                     if (res.ok) {
                         blob = await res.blob();
                         setCachedNoteBlob(noteId, blob);
@@ -524,7 +537,7 @@ const NoteDetail = () => {
                             <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
                                 <div className="max-w-4xl mx-auto bg-white border border-[#E5E5EA] rounded-2xl p-6 sm:p-8 shadow-xs">
                                     <div
-                                        className="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-[#1D1D1F] prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed"
+                                        className="docx-content prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-[#1D1D1F] prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed"
                                         dangerouslySetInnerHTML={{ __html: docxHtml }}
                                     />
                                 </div>
@@ -532,6 +545,9 @@ const NoteDetail = () => {
                         ) : note?.extractedText && note.extractedText.trim().length > 10 ? (
                             <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
                                 <div className="max-w-4xl mx-auto bg-white border border-[#E5E5EA] rounded-2xl p-6 sm:p-8 shadow-xs">
+                                    <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                                        <span>Document layout preview unavailable. Showing extracted text.</span>
+                                    </div>
                                     <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1D1D1F]">
                                         {note.extractedText}
                                     </div>

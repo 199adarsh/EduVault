@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -401,6 +403,75 @@ public class ApiController {
                     "url", "/api/files/raw/" + fileUrl
             ));
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/files/{noteId}/raw")
+    public ResponseEntity<Resource> getNoteRawById(@PathVariable String noteId) {
+        Optional<Note> noteOpt = database.getNoteById(noteId);
+        if (noteOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Note note = noteOpt.get();
+        String fileName = note.getFileUrl();
+        if (fileName == null || fileName.isBlank()) {
+            fileName = note.getTitle() != null ? note.getTitle() : "document";
+        }
+
+        // 1. Try local storage
+        if (note.getFileUrl() != null) {
+            Path path = fileStorageService.getFilePath(note.getFileUrl());
+            if (!Files.exists(path)) {
+                path = Paths.get("./data").resolve(note.getFileUrl());
+            }
+            if (!Files.exists(path)) {
+                path = Paths.get("./backend/data").resolve(note.getFileUrl());
+            }
+            if (Files.exists(path)) {
+                try {
+                    Resource resource = new UrlResource(path.toUri());
+                    String contentType = Files.probeContentType(path);
+                    if (contentType == null) contentType = resolveContentType(note.getFileUrl());
+                    return ResponseEntity.ok()
+                            .contentType(MediaType.parseMediaType(contentType))
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + path.getFileName().toString() + "\"")
+                            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                            .body(resource);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        // 2. Try Backblaze B2 by B2ObjectKey or fileUrl
+        if (backblazeStorageService != null) {
+            String b2Key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
+            if (b2Key != null && !b2Key.isBlank()) {
+                try {
+                    byte[] bytes = backblazeStorageService.getObjectBytes(b2Key);
+                    if (bytes != null && bytes.length > 0) {
+                        String contentType = resolveContentType(fileName);
+                        return ResponseEntity.ok()
+                                .contentType(MediaType.parseMediaType(contentType))
+                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                                .body(new ByteArrayResource(bytes));
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    private String resolveContentType(String fileName) {
+        if (fileName == null) return "application/octet-stream";
+        String lower = fileName.toLowerCase();
+        if (lower.endsWith(".pdf")) return "application/pdf";
+        if (lower.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        if (lower.endsWith(".doc")) return "application/msword";
+        if (lower.endsWith(".pptx")) return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        if (lower.endsWith(".ppt")) return "application/vnd.ms-powerpoint";
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        return "application/octet-stream";
     }
 
     @GetMapping("/files/raw/{fileName}")

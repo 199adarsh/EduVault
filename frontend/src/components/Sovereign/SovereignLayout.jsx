@@ -137,6 +137,7 @@ const SovereignLayout = () => {
     const [showLogoutMenu, setShowLogoutMenu] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [showDeveloperModal, setShowDeveloperModal] = useState(false);
+    const handleOpenDeveloper = React.useCallback(() => setShowDeveloperModal(true), []);
 
     const userMenuRef = useRef(null);
 
@@ -642,7 +643,17 @@ const SovereignLayout = () => {
 
     }, [navTabs, activeDockTab]);
 
-
+    const outletContextValue = useMemo(() => ({
+        profile,
+        subjects,
+        catalogSubjects,
+        notes,
+        refreshData: fetchData,
+        setShowUpload,
+        sidebarCollapsed,
+        setSidebarCollapsed,
+        onOpenDeveloper: handleOpenDeveloper
+    }), [profile, subjects, catalogSubjects, notes, sidebarCollapsed, handleOpenDeveloper]);
 
     return (
 
@@ -650,7 +661,7 @@ const SovereignLayout = () => {
 
             {/* Sidebar */}
 
-            <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} onLogout={handleLogout} collapsed={sidebarCollapsed} onOpenDeveloper={() => setShowDeveloperModal(true)} />
+            <SovereignSidebar profile={profile} attendance={overallAttendance} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} onLogout={handleLogout} collapsed={sidebarCollapsed} onOpenDeveloper={handleOpenDeveloper} />
 
 
 
@@ -806,7 +817,7 @@ const SovereignLayout = () => {
 
                     ) : (
 
-                        <Outlet context={{ profile, subjects, catalogSubjects, notes, refreshData: fetchData, setShowUpload, sidebarCollapsed, setSidebarCollapsed, onOpenDeveloper: () => setShowDeveloperModal(true) }} />
+                        <Outlet context={outletContextValue} />
 
                     )}
 

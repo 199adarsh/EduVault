@@ -10,7 +10,10 @@ import {
     Download01Icon
 } from 'hugeicons-react';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url
+).toString();
 
 export default function PdfViewer({ url, data, presignedUrl, title, onDownload }) {
     const [numPages, setNumPages] = useState(null);

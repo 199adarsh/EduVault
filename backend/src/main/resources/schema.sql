@@ -137,3 +137,16 @@ CREATE TABLE IF NOT EXISTS nc_notifications (
     created_at VARCHAR(255),
     read BOOLEAN DEFAULT FALSE
 );
+
+-- Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_notes_subject_id ON notes(subject_id);
+CREATE INDEX IF NOT EXISTS idx_notes_dept_sem ON notes(department, semester);
+CREATE INDEX IF NOT EXISTS idx_notes_status ON notes(status);
+CREATE INDEX IF NOT EXISTS idx_notes_unit ON notes(unit);
+CREATE INDEX IF NOT EXISTS idx_notes_okf_status ON notes(okf_status);
+CREATE INDEX IF NOT EXISTS idx_pyqs_subject_exam ON pyqs(subject_id, exam_type);
+CREATE INDEX IF NOT EXISTS idx_nc_requests_student ON nc_requests(student_prn, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nc_requests_status ON nc_requests(status);
+CREATE INDEX IF NOT EXISTS idx_doubts_note_id ON doubts(note_id);
+CREATE INDEX IF NOT EXISTS idx_nc_notifications_recipient ON nc_notifications(recipient_prn, read);
+CREATE INDEX IF NOT EXISTS idx_subjects_dept_sem ON subjects(department, semester);

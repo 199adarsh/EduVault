@@ -65,7 +65,6 @@ public class ApiController {
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String semester,
             @RequestParam(required = false) String prn) {
-        database.relinkOrphanNotes();
         List<Subject> all = database.getAllSubjects();
         
         // Scope to department and semester if provided
@@ -315,7 +314,20 @@ public class ApiController {
                 })
                 .collect(java.util.stream.Collectors.toList());
 
-        return ResponseEntity.ok(filtered);
+        // Strip heavy extractedText on list view to reduce JSON payload by >90%
+        List<Note> summaries = filtered.stream().map(n -> {
+            if (n.getExtractedText() == null) return n;
+            Note copy = new Note(
+                n.getId(), n.getTitle(), n.getSubjectId(), n.getDepartment(), n.getSemester(),
+                n.getUnit(), n.getExamType(), n.getFileUrl(), n.getB2ObjectKey(), n.getOriginalFilename(),
+                n.getImportBatchId(), n.getUploadedBy(), n.getCreatedAt(), n.getStatus(), n.getCategory(),
+                n.getMoodleId(), n.getSourceUrl(), n.getTags(), n.getAiImportantTopics(),
+                n.getAiGeneratedQuestions(), null, n.getOkfStatus(), n.getOkfFilePath(), n.getOkfCompiledAt()
+            );
+            return copy;
+        }).collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(summaries);
     }
 
     @RequestMapping(value = "/notes/sync-b2", method = {RequestMethod.GET, RequestMethod.POST})

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -90,6 +92,23 @@ public class LocalJsonDatabase {
                 stmt.execute("UPDATE notes SET okf_status = 'PENDING' WHERE okf_status IS NULL");
             } catch (Exception e) {
                 logger.warn("Could not alter notes table for OKF columns: {}", e.getMessage());
+            }
+
+            try (java.sql.Connection conn = dataSource.getConnection();
+                 java.sql.Statement stmt = conn.createStatement()) {
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_notes_subject_id ON notes(subject_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_notes_dept_sem ON notes(department, semester)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_notes_status ON notes(status)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_notes_unit ON notes(unit)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_notes_okf_status ON notes(okf_status)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_pyqs_subject_exam ON pyqs(subject_id, exam_type)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_nc_requests_student ON nc_requests(student_prn, created_at DESC)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_nc_requests_status ON nc_requests(status)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_doubts_note_id ON doubts(note_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_nc_notifications_recipient ON nc_notifications(recipient_prn, read)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_subjects_dept_sem ON subjects(department, semester)");
+            } catch (Exception e) {
+                logger.warn("Could not ensure database indexes: {}", e.getMessage());
             }
         }
 
@@ -632,6 +651,7 @@ public class LocalJsonDatabase {
         }
     }
 
+    @CacheEvict(value = "allSubjects", allEntries = true)
     private void updateSubjectCounts() {
         relinkOrphanNotes();
         List<Subject> subjects = subjectRepository.findAll();
@@ -850,6 +870,7 @@ public class LocalJsonDatabase {
         return null;
     }
 
+    @CacheEvict(value = "allSubjects", allEntries = true)
     public synchronized void setSubjects(List<Subject> newSubjects) {
         List<Subject> existing = subjectRepository.findAll();
         java.util.Map<String, String> nameToId = new java.util.HashMap<>();
@@ -871,6 +892,7 @@ public class LocalJsonDatabase {
         updateSubjectCounts();
     }
 
+    @Cacheable("allSubjects")
     public List<Subject> getAllSubjects() {
         return subjectRepository.findAll();
     }
@@ -991,6 +1013,7 @@ public class LocalJsonDatabase {
         return announcementRepository.findById(id);
     }
 
+    @CacheEvict(value = "recentAnnouncements", allEntries = true)
     public synchronized Announcement addAnnouncement(Announcement announcement) {
         if (announcement.getId() == null || announcement.getId().isBlank()) {
             announcement.setId(java.util.UUID.randomUUID().toString());
@@ -1044,10 +1067,12 @@ public class LocalJsonDatabase {
         }
     }
 
+    @Cacheable("recentAnnouncements")
     public List<Announcement> getRecentAnnouncements(int count) {
         return announcementRepository.findAll().stream().limit(count).toList();
     }
 
+    @Cacheable("allRoadmaps")
     public List<PredefinedRoadmap> getAllRoadmaps() {
         return predefinedRoadmapRepository.findAll();
     }
@@ -1056,10 +1081,12 @@ public class LocalJsonDatabase {
         return predefinedRoadmapRepository.findById(id);
     }
 
+    @Cacheable("allTimeline")
     public List<TimelineEvent> getAllTimelineEvents() {
         return timelineEventRepository.findAll();
     }
 
+    @CacheEvict(value = "allTimeline", allEntries = true)
     public synchronized void addTimelineEvent(TimelineEvent event) {
         timelineEventRepository.save(event);
     }

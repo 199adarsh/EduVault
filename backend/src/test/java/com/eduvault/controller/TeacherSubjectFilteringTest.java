@@ -64,4 +64,32 @@ public class TeacherSubjectFilteringTest {
 
         assertFalse(TeacherSubjectMatcher.matchesAnySubject(teacherSubs, "sub_diff", "Database Systems", "CS302"));
     }
+
+    @Test
+    public void testEmptySelectedSubjectsReturnsFalse() {
+        Set<String> empty = Set.of();
+        assertFalse(TeacherSubjectMatcher.matchesAnySubject(empty, "sub_ml_101", "Artificial Intelligence", "AI"));
+        assertFalse(TeacherSubjectMatcher.matchesAnySubject(null, "sub_ml_101"));
+    }
+
+    @Test
+    public void testCaseInsensitiveAndWhitespaceTrim() {
+        Set<String> teacherSubs = Set.of("  machine learning  ");
+        assertTrue(TeacherSubjectMatcher.matchesAnySubject(teacherSubs, "MACHINE LEARNING"));
+        assertTrue(TeacherSubjectMatcher.matchesAnySubject(teacherSubs, "Machine Learning (ML)"));
+    }
+
+    @Test
+    public void testMissedSubjectMatchingLogic() {
+        Set<String> teacherSubs = Set.of("Cloud Computing", "sub_ds_200");
+
+        // Missed subject 1: Cloud Computing (match by name)
+        assertTrue(TeacherSubjectMatcher.matchesAnySubject(teacherSubs, "sub_cc_01", "Cloud Computing", "CC-301"));
+
+        // Missed subject 2: Data Structures (match by ID)
+        assertTrue(TeacherSubjectMatcher.matchesAnySubject(teacherSubs, "sub_ds_200", "Data Structures", "CS-201"));
+
+        // Missed subject 3: Unselected subject
+        assertFalse(TeacherSubjectMatcher.matchesAnySubject(teacherSubs, "sub_os_999", "Operating Systems", "CS-401"));
+    }
 }

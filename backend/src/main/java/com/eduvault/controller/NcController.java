@@ -196,6 +196,7 @@ public class NcController {
     public ResponseEntity<?> getAllRequests(
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
             @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn,
             @RequestParam(required = false) String teacherSubjects,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String teacherPrn,
@@ -206,24 +207,25 @@ public class NcController {
     ) {
         List<NcRequest> all = database.getAllNcRequests();
 
+        String effectivePrn = (teacherPrn != null && !teacherPrn.isBlank()) ? teacherPrn.trim() : (headerPrn != null ? headerPrn.trim() : null);
+        StudentProfile teacherProfile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
+
         boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
-                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")));
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")))
+                || (teacherProfile != null && ("TEACHER".equalsIgnoreCase(teacherProfile.getDob()) || "TEACHER".equalsIgnoreCase(teacherProfile.getRole())));
 
         if (isTeacher) {
             Set<String> teacherSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
 
-            if (teacherPrn != null && !teacherPrn.isBlank()) {
-                StudentProfile teacherProfile = database.getProfile(teacherPrn.trim());
-                if (teacherProfile != null) {
-                    if (teacherProfile.getSelectedSubjects() != null) {
-                        for (String s : teacherProfile.getSelectedSubjects()) {
-                            TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
-                        }
+            if (teacherProfile != null) {
+                if (teacherProfile.getSelectedSubjects() != null) {
+                    for (String s : teacherProfile.getSelectedSubjects()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
                     }
-                    if (teacherProfile.getSubjectIds() != null) {
-                        for (String s : teacherProfile.getSubjectIds()) {
-                            TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
-                        }
+                }
+                if (teacherProfile.getSubjectIds() != null) {
+                    for (String s : teacherProfile.getSubjectIds()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
                     }
                 }
             }
@@ -296,6 +298,10 @@ public class NcController {
     public ResponseEntity<?> reviewNcRequest(
             @PathVariable String id,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn,
+            @RequestParam(required = false) String teacherSubjects,
+            @RequestParam(required = false) String teacherPrn,
             @RequestBody Map<String, String> payload
     ) {
         String newStatus = payload.get("status");
@@ -312,6 +318,37 @@ public class NcController {
         }
 
         NcRequest req = opt.get();
+
+        String effectivePrn = (teacherPrn != null && !teacherPrn.isBlank()) ? teacherPrn.trim() : (headerPrn != null ? headerPrn.trim() : null);
+        StudentProfile teacherProfile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
+        boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
+                || (teacherProfile != null && ("TEACHER".equalsIgnoreCase(teacherProfile.getDob()) || "TEACHER".equalsIgnoreCase(teacherProfile.getRole())));
+
+        if (isTeacher) {
+            Set<String> teacherSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
+            if (teacherProfile != null) {
+                if (teacherProfile.getSelectedSubjects() != null) {
+                    for (String s : teacherProfile.getSelectedSubjects()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
+                    }
+                }
+                if (teacherProfile.getSubjectIds() != null) {
+                    for (String s : teacherProfile.getSubjectIds()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
+                    }
+                }
+            }
+
+            if (!teacherSubs.isEmpty()) {
+                boolean matches = req.getMissedSubjects() != null && req.getMissedSubjects().stream().anyMatch(ms ->
+                        TeacherSubjectMatcher.matchesAnySubject(teacherSubs, ms.getSubjectId(), ms.getSubjectName(), ms.getSubjectCode())
+                );
+                if (!matches) {
+                    return ResponseEntity.status(403).body(Map.of("error", "You can only review NC requests for subjects you teach."));
+                }
+            }
+        }
+
         req.setStatus(newStatus.toUpperCase());
         req.setReviewComment(comment);
         req.setReviewedBy(reviewerName != null ? reviewerName : "Faculty");

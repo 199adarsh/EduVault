@@ -30,6 +30,8 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import com.eduvault.util.TeacherSubjectMatcher;
+import java.util.HashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -108,7 +110,8 @@ public class ApiController {
         if (profile == null) {
             return ResponseEntity.ok(null);
         }
-        // Redact plaintext DOB credential to prevent IDOR credential harvesting
+        // Redact plaintext DOB credential to prevent IDOR credential harvesting, but preserve TEACHER role marker
+        boolean isTeacherUser = "TEACHER".equalsIgnoreCase(profile.getDob()) || "TEACHER".equalsIgnoreCase(profile.getRole());
         StudentProfile sanitized = new StudentProfile(
                 profile.getPrn(),
                 profile.getName(),
@@ -118,10 +121,10 @@ public class ApiController {
                 profile.getDepartment(),
                 profile.getSemester(),
                 profile.getSection(),
-                null,
+                isTeacherUser ? "TEACHER" : null,
                 profile.getSelectedSubjects(),
                 profile.getSubjectIds(),
-                profile.getRole()
+                isTeacherUser ? "TEACHER" : profile.getRole()
         );
         return ResponseEntity.ok(sanitized);
     }
@@ -676,8 +679,12 @@ public class ApiController {
             @RequestParam(required = false) String prn,
             @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn) {
 
+        String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
+        StudentProfile callerProfile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
+
         boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
-                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")));
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")))
+                || (callerProfile != null && ("TEACHER".equalsIgnoreCase(callerProfile.getDob()) || "TEACHER".equalsIgnoreCase(callerProfile.getRole())));
 
         if (isTeacher) {
             Optional<Note> noteOpt = database.getNoteById(id);
@@ -689,27 +696,20 @@ public class ApiController {
 
             Set<String> selectedSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
 
-            String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
-            if (effectivePrn != null && !effectivePrn.isBlank()) {
-                StudentProfile profile = database.getProfile(effectivePrn);
-                if (profile != null) {
-                    if ("TEACHER".equalsIgnoreCase(profile.getDob()) || "TEACHER".equalsIgnoreCase(profile.getRole())) {
-                        isTeacher = true;
+            if (callerProfile != null) {
+                if (callerProfile.getSelectedSubjects() != null) {
+                    for (String s : callerProfile.getSelectedSubjects()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
                     }
-                    if (profile.getSelectedSubjects() != null) {
-                        for (String s : profile.getSelectedSubjects()) {
-                            TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
-                        }
-                    }
-                    if (profile.getSubjectIds() != null) {
-                        for (String s : profile.getSubjectIds()) {
-                            TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
-                        }
+                }
+                if (callerProfile.getSubjectIds() != null) {
+                    for (String s : callerProfile.getSubjectIds()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
                     }
                 }
             }
 
-            // If teacher has not selected this note's subject, return empty doubts list
+            // If teacher has not selected any subjects, return empty doubts list
             if (selectedSubs.isEmpty()) {
                 return ResponseEntity.ok(java.util.Collections.emptyList());
             }
@@ -738,24 +738,39 @@ public class ApiController {
     public ResponseEntity<List<Doubt>> getAllDoubts(
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
             @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String teacherSubjects,
+            @RequestParam(required = false) String prn,
             @RequestParam(required = false) String noteId) {
 
         if (noteId != null && !noteId.isBlank()) {
-            return getDoubts(noteId, roleHeader, teacherSubjectsHeader, role, teacherSubjects, null, null);
+            return getDoubts(noteId, roleHeader, teacherSubjectsHeader, role, teacherSubjects, prn, headerPrn);
         }
 
+        String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
+        StudentProfile callerProfile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
+
         boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
-                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")));
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")))
+                || (callerProfile != null && ("TEACHER".equalsIgnoreCase(callerProfile.getDob()) || "TEACHER".equalsIgnoreCase(callerProfile.getRole())));
 
         List<Note> allNotes = database.getAllNotes();
-        java.util.Map<String, Note> noteMap = new java.util.HashMap<>();
-        allNotes.forEach(n -> noteMap.put(n.getId(), n));
-
         Set<String> selectedSubs = new HashSet<>();
         if (isTeacher) {
             selectedSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
+            if (callerProfile != null) {
+                if (callerProfile.getSelectedSubjects() != null) {
+                    for (String s : callerProfile.getSelectedSubjects()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
+                    }
+                }
+                if (callerProfile.getSubjectIds() != null) {
+                    for (String s : callerProfile.getSubjectIds()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
+                    }
+                }
+            }
             if (selectedSubs.isEmpty()) {
                 return ResponseEntity.ok(java.util.Collections.emptyList());
             }
@@ -803,6 +818,78 @@ public class ApiController {
                 .build();
 
         database.addDoubt(doubt);
+        return ResponseEntity.ok(doubt);
+    }
+
+    @PutMapping("/doubts/{doubtId}/answer")
+    public ResponseEntity<?> answerDoubt(
+            @PathVariable String doubtId,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String prn,
+            @RequestParam(required = false) String teacherSubjects,
+            @RequestBody Map<String, String> payload) {
+
+        String answer = payload.get("answer");
+        if (answer == null || answer.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Answer cannot be empty"));
+        }
+
+        Optional<Doubt> doubtOpt = database.getAllNotes().stream()
+                .flatMap(n -> database.getDoubtsByNoteId(n.getId()).stream())
+                .filter(d -> d.getId().equals(doubtId))
+                .findFirst();
+
+        if (doubtOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Doubt doubt = doubtOpt.get();
+        Note note = database.getNoteById(doubt.getNoteId()).orElse(null);
+
+        String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
+        StudentProfile callerProfile = (effectivePrn != null && !effectivePrn.isBlank()) ? database.getProfile(effectivePrn) : null;
+        boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")))
+                || (callerProfile != null && ("TEACHER".equalsIgnoreCase(callerProfile.getDob()) || "TEACHER".equalsIgnoreCase(callerProfile.getRole())));
+
+        if (isTeacher && note != null) {
+            Set<String> selectedSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
+            if (callerProfile != null) {
+                if (callerProfile.getSelectedSubjects() != null) {
+                    for (String s : callerProfile.getSelectedSubjects()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
+                    }
+                }
+                if (callerProfile.getSubjectIds() != null) {
+                    for (String s : callerProfile.getSubjectIds()) {
+                        TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
+                    }
+                }
+            }
+
+            String noteSubId = note.getSubjectId();
+            String noteSubjectName = null;
+            String noteSubjectCode = null;
+            if (noteSubId != null && !noteSubId.isBlank()) {
+                Optional<Subject> subOpt = database.getSubjectById(noteSubId);
+                if (subOpt.isPresent()) {
+                    noteSubjectName = subOpt.get().getName();
+                    noteSubjectCode = subOpt.get().getCode();
+                }
+            }
+
+            boolean matches = TeacherSubjectMatcher.matchesAnySubject(selectedSubs, noteSubId, noteSubjectName, noteSubjectCode, note.getTitle());
+            if (!matches) {
+                return ResponseEntity.status(403).body(Map.of("error", "You can only answer doubts for subjects you have selected."));
+            }
+        }
+
+        doubt.setAnswer(answer.trim());
+        doubt.setStatus("answered");
+        database.updateDoubt(doubt);
         return ResponseEntity.ok(doubt);
     }
 

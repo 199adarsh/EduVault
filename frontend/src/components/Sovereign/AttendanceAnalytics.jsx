@@ -1190,9 +1190,9 @@ const AttendanceAnalytics = () => {
                         </div>
                     </section>
                 ) : (
-                    <section className="hidden lg:grid grid-cols-1 md:grid-cols-12 gap-4" data-purpose="summary-ribbon">
+                    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 sm:gap-4" data-purpose="summary-ribbon">
                         {/* Master Attendance Card (Apple Minimal) */}
-                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                        <div className="col-span-1 sm:col-span-1 lg:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
                             <div>
                                 <div className="flex items-center justify-between gap-1">
                                     <span className="text-xs font-semibold text-[#6E6E73] font-sans">
@@ -1262,7 +1262,7 @@ const AttendanceAnalytics = () => {
                         </div>
 
                         {/* Activity Overview Heatmap (Wider Layout: 6 Cols) */}
-                        <div className="md:col-span-6 bg-white border border-[#E5E5EA] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                        <div className="col-span-1 sm:col-span-2 lg:col-span-6 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all order-3 lg:order-2 overflow-hidden">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-[#6E6E73] font-sans">
                                     Activity Overview
@@ -1277,13 +1277,13 @@ const AttendanceAnalytics = () => {
                             </div>
 
                             {/* Weekly Matrix Representation with Abbreviation Hover */}
-                            <div className="my-auto py-2">
+                            <div className="my-auto py-2 overflow-x-auto no-scrollbar">
                                 <SharedAttendanceHeatmap subjects={activeSubjects} weeksCount={18} />
                             </div>
                         </div>
 
                         {/* Risk Nodes Summary */}
-                        <div className="md:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
+                        <div className="col-span-1 sm:col-span-1 lg:col-span-3 bg-white border border-[#E5E5EA] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all order-2 lg:order-3">
                             <div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-xs font-semibold text-[#6E6E73] font-sans">
@@ -1601,297 +1601,39 @@ const AttendanceAnalytics = () => {
                         )}
                     </div>
                 ) : (
-                    <>
-                        {/* Desktop View (Traditional Full Sovereign Layout) */}
-                        <div className="hidden lg:block space-y-6 w-full min-w-0">
-                            {/* Main Two-Column Area */}
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                                {/* Left Column: Primary Subject Attendance Table */}
-                                <section className="lg:col-span-8 bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden">
-                                    {/* Filter Bar */}
-                                    <div className="px-6 py-4 border-b border-[#E2E2E2] flex flex-wrap items-center justify-between gap-3">
-                                        <FluidTabs
-                                            value={filterTab}
-                                            onChange={setFilterTab}
-                                            size="xs"
-                                            layoutId="attendance-filter-tabs-desktop"
-                                            tabs={[
-                                                { id: 'all', label: `All Subjects (${activeSubjects.length})` },
-                                                { id: 'attention', label: `Needs Attention (${riskSubjects.length})` },
-                                                { id: 'safe', label: `Safe (${safeSubjects.length})` }
-                                            ]}
-                                        />
-
-
-                                        <span className="text-xs text-[#727272] font-medium">Minimum Threshold: 75.0%</span>
-                                    </div>
-
-                                    {/* Subject Rows List */}
-                                    <div className="divide-y divide-[#E2E2E2]">
-                                        {displayedSubjects.map(sub => {
-                                            const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
-                                            const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-                                            const pct = getPrecisePct(sub);
-                                            const isSafe = pct >= 75;
-                                            const isLab = getCategory(sub) === 'LAB';
-
-                                            // Skips vs Recovery
-                                            const SkipsAvailable = Math.max(0, Math.floor((attended - 0.75 * conducted) / 0.75));
-                                            const sessionsNeeded = Math.max(0, Math.ceil((0.75 * conducted - attended) / 0.25));
-
-                                            return (
-                                                <div
-                                                    key={sub.id}
-                                                    onClick={() => {
-                                                        setSelectedSubject(sub);
-                                                        setShowDetailModal(true);
-                                                        setModalTab('presence');
-                                                        fetchSubjectNcRequests(sub);
-                                                        setSelectedNcDates([]);
-                                                        setReviewingReq(null);
-                                                    }}
-                                                    className={`p-4 sm:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer ${!isSafe ? 'bg-amber-50/20' : ''
-                                                        }`}
-                                                >
-                                                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                        <div className={`p-2 rounded-lg mt-0.5 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
-                                                            }`}>
-                                                            {isLab ? <ComputerProgramming01Icon size={18} /> : <Quiz03Icon size={18} />}
-                                                        </div>
-
-                                                        <div className="flex-1 min-w-0">
-                                                            <h3 className="text-sm font-semibold text-[#383838] truncate">
-                                                                {sub.name}
-                                                            </h3>
-                                                            <div className="flex items-center gap-2 text-xs text-[#727272] mt-1 flex-wrap">
-                                                                <span>{attended} / {conducted} sessions</span>
-
-                                                                {sub.faculty && (
-                                                                    <>
-                                                                        <span className="text-[#E2E2E2]">•</span>
-                                                                        <span className="text-[#727272] truncate">{sub.faculty}</span>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                            {/* Minimal Progress Bar */}
-                                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                                                                <div
-                                                                    className={`h-1.5 rounded-full ${isSafe ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                                                                    style={{ width: `${Math.min(100, pct)}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-1.5">
-                                                        <div className="text-right">
-                                                            <span className={`text-base font-bold ${isSafe ? 'text-[#383838]' : 'text-amber-600'}`}>
-                                                                {pct}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            {isSafe ? (
-                                                                <span className="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                                                                    {SkipsAvailable} {SkipsAvailable === 1 ? 'Skip' : 'Skips'} Available
-                                                                </span>
-                                                            ) : (
-                                                                <span className="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                                                                    Attend {sessionsNeeded} More
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </section>
-
-                                {/* Right Column: Session Audit Rail */}
-                                <section className="lg:col-span-4 space-y-4">
-                                    <div className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs p-5">
-                                        <div className="flex items-center justify-between pb-4 border-b border-[#E2E2E2]">
-                                            <div>
-                                                <h2 className="text-sm font-bold text-[#383838]">Recent Classes</h2>
-                                                <p className="text-[11px] text-[#727272]">Recent attendance records</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Log timeline list */}
-                                        <div className="py-2 space-y-2.5 max-h-[500px] overflow-y-auto no-scrollbar">
-                                            {sessionLogs.length > 0 ? (
-                                                sessionLogs.map((log, idx) => {
-                                                    const isPresent = log.status === 'Present';
-                                                    return (
-                                                        <div
-                                                            key={idx}
-                                                            className={`p-3 rounded-lg border transition ${isPresent
-                                                                ? 'border-[#E2E2E2] bg-slate-50/50 hover:bg-slate-50'
-                                                                : 'border-rose-100 bg-rose-50/30 hover:bg-rose-50/50'
-                                                                }`}
-                                                        >
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <span className="text-[11px] font-sans text-[#727272]">
-                                                                    {log.date} {log.time ? `• ${log.time}` : ''}
-                                                                </span>
-                                                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isPresent
-                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                                                                    : 'bg-rose-50 text-[#E11D48] border-rose-200/80'
-                                                                    }`}>
-                                                                    {isPresent ? <PresentBadgeIcon size={13} className="text-emerald-600 shrink-0" /> : <AbsentBadgeIcon size={13} className="text-[#E11D48] shrink-0" />}
-                                                                    <span>{log.status.toUpperCase()}</span>
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-xs font-semibold text-[#383838] truncate">
-                                                                {log.subjectName}
-                                                            </p>
-                                                        </div>
-                                                    );
-                                                })
-                                            ) : (
-                                                <div className="py-8 text-center text-xs text-[#727272]">
-                                                    No recent attendance records found
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Regulatory Policy Notice Footer */}
-                                        <div className="mt-3 pt-3 border-t border-[#E2E2E2] text-[11px] text-[#727272] leading-relaxed bg-slate-50/80 p-3 rounded-lg">
-                                            <div className="flex items-center gap-1.5 font-semibold text-[#383838] mb-1">
-                                                <InformationCircleIcon size={15} className="text-[#0073E6]" />
-                                                <span>College Attendance Policy</span>
-                                            </div>
-                                            75% minimum physical presence is mandatory for End-Semester Examination eligibility. Medical condonation forms must be submitted within 7 calendar days of recovery.
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-
-                        {/* Mobile View (Clean Stitch Mobile-First Layout) */}
-                        <div className="lg:hidden flex flex-col gap-4 w-full min-w-0">
-                            {/* 1. Master Attendance Hero Card */}
-                            <section className="rounded-2xl bg-white border border-[#E2E2E2] p-4 shadow-xs flex flex-col gap-3.5 w-full min-w-0">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-[#727272] uppercase tracking-wider">
-                                            Overall Attendance
-                                        </span>
-                                        <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
-                                            <span className="text-3xl font-extrabold text-[#0073E6] tracking-tight">
-                                                {overallPercentage}%
-                                            </span>
-                                            <span className="text-xs font-semibold text-[#727272] font-sans">
-                                                ({totalAttended}/{totalConducted})
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 border ${parseFloat(overallPercentage) >= 75
-                                        ? 'bg-[#DEEDFC] text-[#174073] border-[#D9ECFF]'
-                                        : 'bg-rose-50 text-rose-700 border-rose-200'
-                                        }`}>
-                                        <span className="material-symbols-outlined text-[15px]">
-                                            {parseFloat(overallPercentage) >= 75 ? 'verified' : 'warning'}
-                                        </span>
-                                        <span>{parseFloat(overallPercentage) >= 75 ? 'Above 75%' : 'Below 75%'}</span>
-                                    </div>
-                                </div>
-
-                                {/* Ratio Breakdown Pills */}
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            <Quiz03Icon size={17} className="text-[#0073E6] shrink-0" />
-                                            <span className="text-xs font-semibold text-[#383838] truncate">Lectures</span>
-                                        </div>
-                                        <span className="text-xs font-bold text-[#0073E6] shrink-0">{theoryPercentage}%</span>
-                                    </div>
-                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-[#E2E2E2] flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            <ComputerProgramming01Icon size={17} className="text-[#383838] shrink-0" />
-                                            <span className="text-xs font-semibold text-[#383838] truncate">Labs</span>
-                                        </div>
-                                        <span className="text-xs font-bold text-[#383838] shrink-0">{labPercentage}%</span>
-                                    </div>
-                                </div>
-
-                                {/* Risk Nodes Alert if any */}
-                                {riskSubjects.length > 0 && (
-                                    <div className="rounded-xl bg-rose-50/80 border border-rose-200/80 p-3 flex flex-col gap-1.5 text-rose-900">
-                                        <div className="flex items-center gap-1.5">
-                                            <AlertCircleIcon size={17} className="text-rose-600 shrink-0" />
-                                            <span className="text-xs font-bold tracking-wide text-rose-700">
-                                                {riskSubjects.length} {riskSubjects.length === 1 ? 'Subject' : 'Subjects'} below 75% Cutoff
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1">
-                                            {riskSubjects.map(sub => (
-                                                <span
-                                                    key={sub.id}
-                                                    className="px-2 py-0.5 rounded-md bg-white border border-rose-200 text-rose-700 text-[10px] font-semibold"
-                                                >
-                                                    {sub.name}: {getPrecisePct(sub)}%
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </section>
-
-                            {/* Attendance Calculator & Planner at bottom of Desktop */}
-                            {renderOptimizationPanel()}
-
-                            {/* 3. Mobile Attendance Heatmap */}
-                            <section className="rounded-2xl bg-white border border-[#E2E2E2] p-3.5 shadow-xs flex flex-col gap-2">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-[#727272] uppercase tracking-wider">
-                                        Attendance Heatmap
-                                    </span>
-                                    <div className="flex items-center gap-2 text-[10px] text-[#727272]">
-                                        <div className="flex items-center gap-1">
-                                            <span className="w-2 h-2 rounded-[2px] bg-[#30a14e]" />
-                                            <span>Present</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <span className="w-2 h-2 rounded-[2px] bg-[#f85149]" />
-                                            <span>Absent</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <SharedAttendanceHeatmap subjects={activeSubjects} weeksCount={14} />
-                            </section>
-
-                            {/* 3. Mobile Subject Ledger */}
-                            <section className="rounded-2xl bg-white border border-[#E2E2E2] shadow-xs flex flex-col gap-3 p-3.5 w-full min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                    <h3 className="text-xs font-bold text-[#383838] tracking-tight">Subject Attendance</h3>
-                                    <span className="text-[11px] font-semibold text-[#727272] bg-slate-100 px-2 py-0.5 rounded-full">
-                                        {activeSubjects.length} Courses
-                                    </span>
-                                </div>
-
-                                <div className="overflow-x-auto no-scrollbar">
+                    <div className="space-y-6 w-full min-w-0">
+                        {/* Main Two-Column Responsive Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                            {/* Left Column: Primary Subject Attendance Table */}
+                            <section className="lg:col-span-8 bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden">
+                                {/* Filter Bar */}
+                                <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-[#E2E2E2] flex flex-wrap items-center justify-between gap-3">
                                     <FluidTabs
                                         value={filterTab}
                                         onChange={setFilterTab}
                                         size="xs"
-                                        layoutId="attendance-filter-tabs-mobile"
+                                        layoutId="attendance-filter-tabs-desktop"
                                         tabs={[
-                                            { id: 'all', label: `All (${activeSubjects.length})` },
-                                            { id: 'attention', label: `Attention (${riskSubjects.length})` },
+                                            { id: 'all', label: `All Subjects (${activeSubjects.length})` },
+                                            { id: 'attention', label: `Needs Attention (${riskSubjects.length})` },
                                             { id: 'safe', label: `Safe (${safeSubjects.length})` }
                                         ]}
                                     />
+
+                                    <span className="text-xs text-[#727272] font-medium hidden sm:inline">Minimum Threshold: 75.0%</span>
                                 </div>
 
-                                <div className="flex flex-col gap-2">
+                                {/* Subject Rows List */}
+                                <div className="divide-y divide-[#E2E2E2]">
                                     {displayedSubjects.map(sub => {
                                         const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
                                         const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
                                         const pct = getPrecisePct(sub);
                                         const isSafe = pct >= 75;
                                         const isLab = getCategory(sub) === 'LAB';
-                                        const skipsAvailable = Math.max(0, Math.floor((attended - 0.75 * conducted) / 0.75));
+
+                                        // Skips vs Recovery
+                                        const SkipsAvailable = Math.max(0, Math.floor((attended - 0.75 * conducted) / 0.75));
                                         const sessionsNeeded = Math.max(0, Math.ceil((0.75 * conducted - attended) / 0.25));
 
                                         return (
@@ -1905,43 +1647,56 @@ const AttendanceAnalytics = () => {
                                                     setSelectedNcDates([]);
                                                     setReviewingReq(null);
                                                 }}
-                                                className="p-3 rounded-xl border border-[#E2E2E2] hover:border-blue-300 transition-all flex flex-col gap-2 cursor-pointer bg-white"
+                                                className={`p-3.5 sm:px-6 sm:py-4 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 cursor-pointer ${!isSafe ? 'bg-amber-50/20' : ''
+                                                    }`}
                                             >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex items-start gap-2 min-w-0">
-                                                        <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${isSafe ? 'bg-[#0073E6]' : 'bg-rose-500'}`} />
-                                                        <div className="flex flex-col min-w-0">
-                                                            <h4 className="text-xs font-bold text-[#383838] truncate" title={sub.name}>
-                                                                {sub.name}
-                                                            </h4>
-                                                            <span className="text-[10px] text-[#727272] mt-0.5">
-                                                                {isLab ? 'Lab' : 'Theory'} • {attended}/{conducted} sessions
-                                                            </span>
+                                                <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                    <div className={`p-2 rounded-lg mt-0.5 shrink-0 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
+                                                        }`}>
+                                                        {isLab ? <ComputerProgramming01Icon size={18} /> : <Quiz03Icon size={18} />}
+                                                    </div>
+
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-sm font-semibold text-[#383838] truncate">
+                                                            {sub.name}
+                                                        </h3>
+                                                        <div className="flex items-center gap-2 text-xs text-[#727272] mt-0.5 flex-wrap">
+                                                            <span>{attended} / {conducted} sessions</span>
+
+                                                            {sub.faculty && (
+                                                                <>
+                                                                    <span className="text-[#E2E2E2]">•</span>
+                                                                    <span className="text-[#727272] truncate">{sub.faculty}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                        {/* Minimal Progress Bar */}
+                                                        <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                                                            <div
+                                                                className={`h-1.5 rounded-full ${isSafe ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                                                style={{ width: `${Math.min(100, pct)}%` }}
+                                                            />
                                                         </div>
                                                     </div>
-                                                    <span className={`text-sm font-extrabold shrink-0 ${isSafe ? 'text-[#383838]' : 'text-rose-600'}`}>
-                                                        {pct}%
-                                                    </span>
                                                 </div>
 
-                                                <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                                                    <div
-                                                        className={`h-1.5 rounded-full ${isSafe ? 'bg-[#0073E6]' : 'bg-rose-500'}`}
-                                                        style={{ width: `${Math.min(100, pct)}%` }}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between text-[10px] pt-0.5">
-                                                    <span className="text-[#727272]">Target: 75%</span>
-                                                    {isSafe ? (
-                                                        <span className="text-[#174073] font-semibold bg-[#DEEDFC] px-2 py-0.5 rounded">
-                                                            {skipsAvailable} {skipsAvailable === 1 ? 'Skip' : 'Skips'} Safe
+                                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-1.5 pt-1 sm:pt-0">
+                                                    <div className="text-right">
+                                                        <span className={`text-base font-bold ${isSafe ? 'text-[#383838]' : 'text-amber-600'}`}>
+                                                            {pct}%
                                                         </span>
-                                                    ) : (
-                                                        <span className="text-rose-700 font-semibold bg-rose-50 px-2 py-0.5 rounded">
-                                                            Attend {sessionsNeeded} More
-                                                        </span>
-                                                    )}
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {isSafe ? (
+                                                            <span className="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                                                {SkipsAvailable} {SkipsAvailable === 1 ? 'Skip' : 'Skips'} Available
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                                Attend {sessionsNeeded} More
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -1949,51 +1704,68 @@ const AttendanceAnalytics = () => {
                                 </div>
                             </section>
 
-                            {/* 4. Minimal & Clean Present/Absent Log on Mobile */}
-                            <section className="rounded-2xl bg-white border border-[#E2E2E2] p-3.5 shadow-xs flex flex-col gap-2.5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                        <Clock01Icon size={16} className="text-[#0073E6]" />
-                                        <h3 className="text-xs font-bold text-[#383838]">Recent Classes</h3>
-                                    </div>
-                                    <span className="text-[10px] text-[#727272] font-medium">{sessionLogs.length} records</span>
-                                </div>
+                            {/* Right Column: Calculator & Session Audit Rail */}
+                            <section className="lg:col-span-4 space-y-4">
+                                {renderOptimizationPanel()}
 
-                                <div className="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto no-scrollbar">
-                                    {sessionLogs.slice(0, 8).map((log, idx) => {
-                                        const isPresent = log.status === 'Present';
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className="p-2 rounded-xl bg-slate-50/70 border border-[#E2E2E2] flex items-center justify-between gap-2 text-xs"
-                                            >
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    <span className={`w-2 h-2 rounded-full shrink-0 ${isPresent ? 'bg-[#0073E6]' : 'bg-rose-500'}`} />
-                                                    <span className="text-xs font-semibold text-[#383838] truncate" title={log.subjectName}>
-                                                        {log.subjectName}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <span className="text-[10px] text-[#727272]">{log.date}</span>
-                                                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${isPresent
-                                                        ? 'bg-[#DEEDFC] text-[#174073] border border-[#D9ECFF]/60'
-                                                        : 'bg-rose-50 text-rose-700 border border-rose-200/60'
-                                                        }`}>
-                                                        {log.status.toUpperCase()}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {sessionLogs.length === 0 && (
-                                        <div className="p-3 text-center text-xs text-[#727272]">
-                                            No recent attendance records
+                                <div className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs p-4 sm:p-5">
+                                    <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#E2E2E2]">
+                                        <div>
+                                            <h2 className="text-sm font-bold text-[#383838]">Recent Classes</h2>
+                                            <p className="text-[11px] text-[#727272]">Recent attendance records</p>
                                         </div>
-                                    )}
+                                    </div>
+
+                                    {/* Log timeline list */}
+                                    <div className="py-2 space-y-2 max-h-[400px] sm:max-h-[500px] overflow-y-auto no-scrollbar">
+                                        {sessionLogs.length > 0 ? (
+                                            sessionLogs.map((log, idx) => {
+                                                const isPresent = log.status === 'Present';
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className={`p-2.5 sm:p-3 rounded-lg border transition ${isPresent
+                                                            ? 'border-[#E2E2E2] bg-slate-50/50 hover:bg-slate-50'
+                                                            : 'border-rose-100 bg-rose-50/30 hover:bg-rose-50/50'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-[11px] font-sans text-[#727272]">
+                                                                {log.date} {log.time ? `• ${log.time}` : ''}
+                                                            </span>
+                                                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${isPresent
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                                                                : 'bg-rose-50 text-[#E11D48] border-rose-200/80'
+                                                                }`}>
+                                                                {isPresent ? <PresentBadgeIcon size={13} className="text-emerald-600 shrink-0" /> : <AbsentBadgeIcon size={13} className="text-[#E11D48] shrink-0" />}
+                                                                <span>{log.status.toUpperCase()}</span>
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs font-semibold text-[#383838] truncate">
+                                                            {log.subjectName}
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="py-8 text-center text-xs text-[#727272]">
+                                                No recent attendance records found
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Regulatory Policy Notice Footer */}
+                                    <div className="mt-3 pt-3 border-t border-[#E2E2E2] text-[11px] text-[#727272] leading-relaxed bg-slate-50/80 p-3 rounded-lg">
+                                        <div className="flex items-center gap-1.5 font-semibold text-[#383838] mb-1">
+                                            <InformationCircleIcon size={15} className="text-[#0073E6]" />
+                                            <span>College Attendance Policy</span>
+                                        </div>
+                                        75% minimum physical presence is mandatory for End-Semester Examination eligibility. Medical condonation forms must be submitted within 7 calendar days of recovery.
+                                    </div>
                                 </div>
                             </section>
                         </div>
-                    </>
+                    </div>
                 )}
             </div>
 

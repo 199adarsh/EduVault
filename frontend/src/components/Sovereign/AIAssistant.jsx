@@ -176,16 +176,37 @@ const AIAssistant = () => {
 
     const hasCompiledOkf = compiledCount > 0;
 
-    const [messages, setMessages] = useState([
-        {
-            role: "ai",
-            content: `Hello ${profile?.name ? formatName(profile.name) : "Scholar"}. I am your academic study assistant, grounded in your syllabus, course notes, and exam archives. How can I assist your study session today?`,
-            time: new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            }),
-        },
-    ]);
+    const defaultInitialMessage = {
+        role: "ai",
+        content: `Hello ${profile?.name ? formatName(profile.name) : "Scholar"}. I am your academic study assistant, grounded in your syllabus, course notes, and exam archives. How can I assist your study session today?`,
+        time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        }),
+    };
+
+    const [messages, setMessages] = useState(() => {
+        try {
+            const saved = localStorage.getItem('eduvault_ai_tutor_messages');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch (e) {
+            console.error('Failed to parse saved ai chat:', e);
+        }
+        return [defaultInitialMessage];
+    });
+
+    useEffect(() => {
+        try {
+            if (messages && messages.length > 0) {
+                localStorage.setItem('eduvault_ai_tutor_messages', JSON.stringify(messages));
+            }
+        } catch (e) {
+            console.error('Failed to save ai chat:', e);
+        }
+    }, [messages]);
 
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -198,7 +219,7 @@ const AIAssistant = () => {
     }, [messages, isTyping]);
 
     const handleClearChat = () => {
-        setMessages([
+        const fresh = [
             {
                 role: "ai",
                 content: "Chat cleared. Ask any question about your courses, syllabus, or past exams.",
@@ -207,7 +228,9 @@ const AIAssistant = () => {
                     minute: "2-digit",
                 }),
             },
-        ]);
+        ];
+        setMessages(fresh);
+        localStorage.setItem('eduvault_ai_tutor_messages', JSON.stringify(fresh));
         toast.success("Chat history cleared");
     };
 

@@ -99,6 +99,11 @@ const SovereignLayout = () => {
 
     const location = useLocation();
 
+    // Auto-minimize dock whenever route changes
+    useEffect(() => {
+        setIsDockMinimized(true);
+    }, [location.pathname]);
+
     // Dynamic SEO Titles & Meta Descriptions per page
     useEffect(() => {
         const routeMeta = {
@@ -830,7 +835,10 @@ const SovereignLayout = () => {
                                 <DiscreteTabs
                                     tabs={discreteTabItems}
                                     activeTab={activeDockTab}
-                                    onTabChange={(path) => navigate(path)}
+                                    onTabChange={(path) => {
+                                        navigate(path);
+                                        setIsDockMinimized(true);
+                                    }}
                                     className="h-9 py-0 px-0.5 flex-1 justify-between gap-0.5"
                                     itemClassName="h-8 px-1.5"
                                 />

@@ -283,6 +283,7 @@ const [isListening, setIsListening] = useState(false);
               <>
                 <DropdownDisclosure
                   compact
+                  placement="top"
                   title="Choose Subject"
                   items={subjectItems}
                   isOpen={isSubjectOpen}
@@ -294,6 +295,7 @@ const [isListening, setIsListening] = useState(false);
                 {selectedSubject !== "all" && setSelectedUnit && (
                   <DropdownDisclosure
                     compact
+                    placement="top"
                     title="Choose Unit"
                     items={unitItems}
                     isOpen={isUnitOpen}

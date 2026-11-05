@@ -248,8 +248,30 @@ const HomeDashboard = () => {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
 
-  const [loginPrn, setLoginPrn] = useState('');
-  const [loginDob, setLoginDob] = useState('');
+  const [saveCredentials, setSaveCredentials] = useState(() => {
+    return localStorage.getItem('eduvault_save_creds') === 'true';
+  });
+
+  const [loginPrn, setLoginPrn] = useState(() => {
+    try {
+      const saved = localStorage.getItem('eduvault_saved_creds');
+      if (saved) {
+        const decoded = JSON.parse(atob(saved));
+        return decoded?.prn || '';
+      }
+    } catch (e) {}
+    return '';
+  });
+  const [loginDob, setLoginDob] = useState(() => {
+    try {
+      const saved = localStorage.getItem('eduvault_saved_creds');
+      if (saved) {
+        const decoded = JSON.parse(atob(saved));
+        return decoded?.dob || '';
+      }
+    } catch (e) {}
+    return '';
+  });
   const [syncing, setSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [syncStage, setSyncStage] = useState('');
@@ -389,6 +411,14 @@ const HomeDashboard = () => {
       localStorage.setItem('eduvault_profile', JSON.stringify(studentProfile));
       localStorage.setItem('eduvault_subjects', JSON.stringify(studentSubjects));
       localStorage.setItem('eduvault_last_synced', Date.now().toString());
+
+      if (saveCredentials) {
+        localStorage.setItem('eduvault_saved_creds', btoa(JSON.stringify({ prn: loginPrn, dob: loginDob })));
+        localStorage.setItem('eduvault_save_creds', 'true');
+      } else {
+        localStorage.removeItem('eduvault_saved_creds');
+        localStorage.setItem('eduvault_save_creds', 'false');
+      }
 
       clearInterval(fetchInterval);
       setSyncStep(5);
@@ -655,12 +685,12 @@ const HomeDashboard = () => {
     const code = (sub?.code || '').toLowerCase();
     const name = (sub?.name || '').toLowerCase();
     const isPractical = code.endsWith('-p') ||
-                        code.includes('-p') ||
-                        name.includes(' lab') ||
-                        name.includes('practical') ||
-                        name.includes('mini-project') ||
-                        name.includes('mini project') ||
-                        name.includes('project');
+      code.includes('-p') ||
+      name.includes(' lab') ||
+      name.includes('practical') ||
+      name.includes('mini-project') ||
+      name.includes('mini project') ||
+      name.includes('project');
 
     if (isPractical) return 50;
 
@@ -910,6 +940,18 @@ const HomeDashboard = () => {
                   required
                 />
                 <span className="text-[10px] text-text-secondary block">Format: DD-MM-YYYY (Day-Month-Year)</span>
+              </div>
+
+              <div className="flex items-center justify-between pt-0.5">
+                <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-[#6E6E73] hover:text-[#1D1D1F] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={saveCredentials}
+                    onChange={(e) => setSaveCredentials(e.target.checked)}
+                    className="w-4 h-4 rounded border-[#D2D2D7] text-[#0071E3] focus:ring-[#0071E3]/20 accent-[#0071E3] cursor-pointer"
+                  />
+                  <span>Save PRN and Password</span>
+                </label>
               </div>
 
               <button
@@ -1354,182 +1396,182 @@ const HomeDashboard = () => {
                         const isPending = req.status === 'PENDING';
 
                         return (
-                        <div
-                          key={req.id}
-                          className="p-4 rounded-xl border border-[#E5E5EA] bg-white text-xs space-y-3 hover:border-[#D2D2D7] transition shadow-xs"
-                        >
-                          {/* Student Header */}
-                          <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center text-[10px] font-semibold text-[#1D1D1F] shrink-0">
-                                {getInitials(req.studentName)}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold text-sm text-[#1D1D1F] truncate">{formatName(req.studentName)}</span>
-                                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#F5F5F7] text-[#6E6E73] border border-[#E5E5EA]">
-                                    {req.studentPrn}
-                                  </span>
+                          <div
+                            key={req.id}
+                            className="p-4 rounded-xl border border-[#E5E5EA] bg-white text-xs space-y-3 hover:border-[#D2D2D7] transition shadow-xs"
+                          >
+                            {/* Student Header */}
+                            <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-full bg-[#F5F5F7] border border-[#E5E5EA] flex items-center justify-center text-[10px] font-semibold text-[#1D1D1F] shrink-0">
+                                  {getInitials(req.studentName)}
                                 </div>
-                                <p className="text-[11px] text-[#6E6E73] truncate mt-0.5">
-                                  {courseDisplay || 'Course Absence'}
-                                </p>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-semibold text-sm text-[#1D1D1F] truncate">{formatName(req.studentName)}</span>
+                                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#F5F5F7] text-[#6E6E73] border border-[#E5E5EA]">
+                                      {req.studentPrn}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-[#6E6E73] truncate mt-0.5">
+                                    {courseDisplay || 'Course Absence'}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                            <span className={cn(
-                              "px-2.5 py-0.5 rounded-full text-[10px] font-medium border shrink-0",
-                              isApproved ? 'bg-[#EAF9EE] text-[#1B7F37] border-[#C6EFD2]' :
-                              isRejected ? 'bg-[#FDF2F2] text-[#D32F2F] border-[#F8C8C8]' :
-                              'bg-[#FFF8E6] text-[#B25E00] border-[#FFE29A]'
-                            )}>
-                              {isApproved ? 'Approved' : isRejected ? 'Declined' : 'Pending Review'}
-                            </span>
-                          </div>
-
-                          {/* Request Details */}
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-2 pt-1 border-t border-[#E5E5EA]/60">
-                            <div className="md:col-span-8 space-y-1">
-                              <div className="flex items-center gap-2 text-xs flex-wrap">
-                                <span className="font-medium text-[#1D1D1F]">{req.reason}</span>
-                                <span className="text-[#D2D2D7]">•</span>
-                                <span className="text-[#6E6E73] font-mono text-[11px]">{(req.absentDates || []).join(', ')}</span>
-                              </div>
-                              {req.description && (
-                                <p className="text-[11px] text-[#6E6E73] italic">"{req.description}"</p>
-                              )}
-                              {req.reviewComment && (
-                                <p className="text-[10px] text-[#6E6E73] flex items-center gap-1.5 pt-0.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#1B7F37] shrink-0" />
-                                  <span>
-                                    <strong className="font-medium text-[#1D1D1F]">{req.reviewedBy || 'Faculty'}:</strong> "{req.reviewComment}"
-                                  </span>
-                                </p>
-                              )}
+                              <span className={cn(
+                                "px-2.5 py-0.5 rounded-full text-[10px] font-medium border shrink-0",
+                                isApproved ? 'bg-[#EAF9EE] text-[#1B7F37] border-[#C6EFD2]' :
+                                  isRejected ? 'bg-[#FDF2F2] text-[#D32F2F] border-[#F8C8C8]' :
+                                    'bg-[#FFF8E6] text-[#B25E00] border-[#FFE29A]'
+                              )}>
+                                {isApproved ? 'Approved' : isRejected ? 'Declined' : 'Pending Review'}
+                              </span>
                             </div>
 
-                            {/* Actions */}
-                            <div className="md:col-span-4 flex items-center justify-start md:justify-end gap-2 shrink-0 self-center">
-                              {req.proofFileName && (
+                            {/* Request Details */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-2 pt-1 border-t border-[#E5E5EA]/60">
+                              <div className="md:col-span-8 space-y-1">
+                                <div className="flex items-center gap-2 text-xs flex-wrap">
+                                  <span className="font-medium text-[#1D1D1F]">{req.reason}</span>
+                                  <span className="text-[#D2D2D7]">•</span>
+                                  <span className="text-[#6E6E73] font-mono text-[11px]">{(req.absentDates || []).join(', ')}</span>
+                                </div>
+                                {req.description && (
+                                  <p className="text-[11px] text-[#6E6E73] italic">"{req.description}"</p>
+                                )}
+                                {req.reviewComment && (
+                                  <p className="text-[10px] text-[#6E6E73] flex items-center gap-1.5 pt-0.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#1B7F37] shrink-0" />
+                                    <span>
+                                      <strong className="font-medium text-[#1D1D1F]">{req.reviewedBy || 'Faculty'}:</strong> "{req.reviewComment}"
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Actions */}
+                              <div className="md:col-span-4 flex items-center justify-start md:justify-end gap-2 shrink-0 self-center">
+                                {req.proofFileName && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setDocPreviewUrl(getNcProofUrl(req));
+                                      setDocPreviewName(req.proofFileName);
+                                    }}
+                                    className="text-[#1D1D1F] hover:text-[#0071E3] font-medium inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] transition cursor-pointer"
+                                  >
+                                    <File01Icon size={13} />
+                                    <span>Proof</span>
+                                  </button>
+                                )}
+
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setDocPreviewUrl(getNcProofUrl(req));
-                                    setDocPreviewName(req.proofFileName);
+                                    setReviewingReq(req);
+                                    setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
+                                    setReviewComment(req.reviewComment || '');
                                   }}
-                                  className="text-[#1D1D1F] hover:text-[#0071E3] font-medium inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] transition cursor-pointer"
+                                  className={cn(
+                                    "px-3 py-1 rounded-lg font-medium text-[11px] transition cursor-pointer",
+                                    isPending
+                                      ? "bg-[#0071E3] hover:bg-[#005BB5] text-white shadow-xs"
+                                      : "bg-white hover:bg-[#F5F5F7] text-[#6E6E73] hover:text-[#1D1D1F] border border-[#E5E5EA]"
+                                  )}
                                 >
-                                  <File01Icon size={13} />
-                                  <span>Proof</span>
+                                  {isPending ? 'Review' : 'Update'}
                                 </button>
-                              )}
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setReviewingReq(req);
-                                  setReviewDecision(req.status === 'REJECTED' ? 'REJECTED' : 'APPROVED');
-                                  setReviewComment(req.reviewComment || '');
-                                }}
-                                className={cn(
-                                  "px-3 py-1 rounded-lg font-medium text-[11px] transition cursor-pointer",
-                                  isPending
-                                    ? "bg-[#0071E3] hover:bg-[#005BB5] text-white shadow-xs"
-                                    : "bg-white hover:bg-[#F5F5F7] text-[#6E6E73] hover:text-[#1D1D1F] border border-[#E5E5EA]"
-                                )}
-                              >
-                                {isPending ? 'Review' : 'Update'}
-                              </button>
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Inline Review Drawer */}
-                          {reviewingReq && reviewingReq.id === req.id && (
-                            <div className="mt-2.5 p-3.5 rounded-xl bg-[#FBFBFD] border border-[#E5E5EA] space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="font-semibold text-xs text-[#1D1D1F]">Record Faculty Decision</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setReviewingReq(null)}
-                                  className="text-[#8E8E93] hover:text-[#1D1D1F] p-0.5 rounded"
-                                >
-                                  <Cancel01Icon size={14} />
-                                </button>
-                              </div>
-
-                              {/* Decision Toggle */}
-                              <div className="grid grid-cols-2 gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setReviewDecision('APPROVED')}
-                                  className={cn(
-                                    "py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 border",
-                                    reviewDecision === 'APPROVED'
-                                      ? "bg-[#1B7F37] text-white border-[#1B7F37] shadow-xs"
-                                      : "bg-white text-[#1D1D1F] border-[#E5E5EA] hover:bg-[#F5F5F7]"
-                                  )}
-                                >
-                                  <CheckmarkCircle01Icon size={13} />
-                                  <span>Approve Request</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setReviewDecision('REJECTED')}
-                                  className={cn(
-                                    "py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 border",
-                                    reviewDecision === 'REJECTED'
-                                      ? "bg-[#D32F2F] text-white border-[#D32F2F] shadow-xs"
-                                      : "bg-white text-[#1D1D1F] border-[#E5E5EA] hover:bg-[#F5F5F7]"
-                                  )}
-                                >
-                                  <Cancel01Icon size={13} />
-                                  <span>Reject Request</span>
-                                </button>
-                              </div>
-
-                              {/* Quick Comment Chips */}
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {QUICK_NC_COMMENTS.map((qc, qidx) => (
+                            {/* Inline Review Drawer */}
+                            {reviewingReq && reviewingReq.id === req.id && (
+                              <div className="mt-2.5 p-3.5 rounded-xl bg-[#FBFBFD] border border-[#E5E5EA] space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-xs text-[#1D1D1F]">Record Faculty Decision</span>
                                   <button
-                                    key={qidx}
                                     type="button"
-                                    onClick={() => setReviewComment(qc)}
-                                    className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#E5E5EA] text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7] transition cursor-pointer"
+                                    onClick={() => setReviewingReq(null)}
+                                    className="text-[#8E8E93] hover:text-[#1D1D1F] p-0.5 rounded"
                                   >
-                                    {qc}
+                                    <Cancel01Icon size={14} />
                                   </button>
-                                ))}
-                              </div>
+                                </div>
 
-                              <input
-                                type="text"
-                                value={reviewComment}
-                                onChange={(e) => setReviewComment(e.target.value)}
-                                placeholder="Faculty feedback or reason for student..."
-                                className="w-full text-xs px-2.5 py-1.5 bg-white border border-[#E5E5EA] rounded-lg text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3]"
-                              />
+                                {/* Decision Toggle */}
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setReviewDecision('APPROVED')}
+                                    className={cn(
+                                      "py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 border",
+                                      reviewDecision === 'APPROVED'
+                                        ? "bg-[#1B7F37] text-white border-[#1B7F37] shadow-xs"
+                                        : "bg-white text-[#1D1D1F] border-[#E5E5EA] hover:bg-[#F5F5F7]"
+                                    )}
+                                  >
+                                    <CheckmarkCircle01Icon size={13} />
+                                    <span>Approve Request</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setReviewDecision('REJECTED')}
+                                    className={cn(
+                                      "py-1.5 px-3 rounded-lg text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 border",
+                                      reviewDecision === 'REJECTED'
+                                        ? "bg-[#D32F2F] text-white border-[#D32F2F] shadow-xs"
+                                        : "bg-white text-[#1D1D1F] border-[#E5E5EA] hover:bg-[#F5F5F7]"
+                                    )}
+                                  >
+                                    <Cancel01Icon size={13} />
+                                    <span>Reject Request</span>
+                                  </button>
+                                </div>
 
-                              <div className="flex justify-end gap-2 pt-0.5">
-                                <button
-                                  type="button"
-                                  onClick={() => setReviewingReq(null)}
-                                  className="px-3 py-1 text-xs text-[#6E6E73] hover:text-[#1D1D1F] transition rounded-lg"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleTeacherReview}
-                                  disabled={isSubmittingReview}
-                                  className="px-3.5 py-1 rounded-lg bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium transition disabled:opacity-50 shadow-xs cursor-pointer"
-                                >
-                                  {isSubmittingReview ? 'Saving...' : 'Save Decision'}
-                                </button>
+                                {/* Quick Comment Chips */}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {QUICK_NC_COMMENTS.map((qc, qidx) => (
+                                    <button
+                                      key={qidx}
+                                      type="button"
+                                      onClick={() => setReviewComment(qc)}
+                                      className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#E5E5EA] text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7] transition cursor-pointer"
+                                    >
+                                      {qc}
+                                    </button>
+                                  ))}
+                                </div>
+
+                                <input
+                                  type="text"
+                                  value={reviewComment}
+                                  onChange={(e) => setReviewComment(e.target.value)}
+                                  placeholder="Faculty feedback or reason for student..."
+                                  className="w-full text-xs px-2.5 py-1.5 bg-white border border-[#E5E5EA] rounded-lg text-[#1D1D1F] placeholder:text-[#8E8E93] focus:outline-none focus:border-[#0071E3]"
+                                />
+
+                                <div className="flex justify-end gap-2 pt-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setReviewingReq(null)}
+                                    className="px-3 py-1 text-xs text-[#6E6E73] hover:text-[#1D1D1F] transition rounded-lg"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleTeacherReview}
+                                    disabled={isSubmittingReview}
+                                    className="px-3.5 py-1 rounded-lg bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium transition disabled:opacity-50 shadow-xs cursor-pointer"
+                                  >
+                                    {isSubmittingReview ? 'Saving...' : 'Save Decision'}
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
+                            )}
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </section>
@@ -1929,10 +1971,10 @@ const HomeDashboard = () => {
                         const tagColor = pending
                           ? "text-slate-600 bg-slate-100 border-slate-200"
                           : pct >= 80
-                          ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                          : pct >= 60
-                          ? "text-[#0073E6] bg-[#D9ECFF] border-[#0073E6]/20"
-                          : "text-amber-700 bg-amber-50 border-amber-200";
+                            ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                            : pct >= 60
+                              ? "text-[#0073E6] bg-[#D9ECFF] border-[#0073E6]/20"
+                              : "text-amber-700 bg-amber-50 border-amber-200";
                         const statusLabel = pending ? "Pending" : pct >= 80 ? "Excellent" : pct >= 60 ? "Good" : "Needs Imp.";
 
                         return (
@@ -1971,28 +2013,7 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               )}
-              {/* Platform Footer & ScoreBadge */}
-              <footer className="mt-12 pt-6 pb-8 border-t border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8E8E93]">
-                <div className="flex items-center gap-2">
-                  <span>© 2026 CampusAxis • Academic Intelligence</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <a
-                    href="https://scorebadge.com/campusaxis.onrender.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center hover:opacity-85 transition-opacity"
-                    title="CampusAxis Web Performance, SEO & AI-Readiness"
-                  >
-                    <img
-                      src="https://scorebadge.com/badge/campusaxis.onrender.com.svg"
-                      alt="CampusAxis Scorebadge"
-                      className="h-6 w-auto"
-                      loading="lazy"
-                    />
-                  </a>
-                </div>
-              </footer>
+
             </div>
           </div>
         </div>

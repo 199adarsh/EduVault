@@ -223,10 +223,14 @@ const NoteDetail = () => {
                 }
             }
 
-            // 2. Fetch from fast B2 CDN presigned URL if not in local cache
+            // 2. Fetch from presigned URL (use backend proxy if presigned is external to avoid B2 CORS error)
             if (!blob && presignedUrl) {
                 try {
-                    const res = await fetch(presignedUrl);
+                    const fetchUrl = (presignedUrl.startsWith('http://') || presignedUrl.startsWith('https://')) &&
+                        !presignedUrl.includes(window.location.host)
+                            ? `${API_BASE}/files/${noteId}/raw`
+                            : presignedUrl;
+                    const res = await fetch(fetchUrl);
                     if (res.ok) {
                         blob = await res.blob();
                         setCachedNoteBlob(noteId, blob);
@@ -446,7 +450,7 @@ const NoteDetail = () => {
     const isPdf = fileExt === 'pdf';
     const isOfficeDoc = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(fileExt);
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
-    const resolvedPdfUrl = blobUrl || presignedUrl || (note?.fileUrl ? (note.fileUrl.startsWith('http') ? note.fileUrl : `${API_BASE}/files/raw/${note.fileUrl}`) : null);
+    const resolvedPdfUrl = blobUrl || (presignedUrl && !presignedUrl.startsWith('http') ? presignedUrl : `${API_BASE}/files/${noteId}/raw`);
 
     return (
         <div className="relative flex-1 flex flex-col bg-[#F5F5F7] overflow-hidden antialiased h-full w-full font-sans text-[#1D1D1F]">

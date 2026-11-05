@@ -32,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import com.eduvault.util.TeacherSubjectMatcher;
 import java.util.HashSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -443,23 +444,46 @@ public class ApiController {
                             .contentType(MediaType.parseMediaType(contentType))
                             .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + path.getFileName().toString() + "\"")
                             .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
                             .body(resource);
                 } catch (Exception ignored) {}
             }
         }
 
-        // 2. Try Backblaze B2 by B2ObjectKey or fileUrl
+        // 2. Try Backblaze B2 with multi-key candidates
         if (backblazeStorageService != null) {
-            String b2Key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
-            if (b2Key != null && !b2Key.isBlank()) {
+            LinkedHashSet<String> candidates = new LinkedHashSet<>();
+            if (note.getB2ObjectKey() != null && !note.getB2ObjectKey().isBlank()) {
+                candidates.add(note.getB2ObjectKey().trim());
+                if (note.getB2ObjectKey().contains("/")) {
+                    candidates.add(note.getB2ObjectKey().substring(note.getB2ObjectKey().lastIndexOf('/') + 1).trim());
+                }
+            }
+            if (note.getFileUrl() != null && !note.getFileUrl().isBlank() && !note.getFileUrl().startsWith("http")) {
+                candidates.add(note.getFileUrl().trim());
+                if (note.getFileUrl().contains("/")) {
+                    candidates.add(note.getFileUrl().substring(note.getFileUrl().lastIndexOf('/') + 1).trim());
+                }
+            }
+            if (note.getOriginalFilename() != null && !note.getOriginalFilename().isBlank()) {
+                candidates.add(note.getOriginalFilename().trim());
+                if (note.getImportBatchId() != null && !note.getImportBatchId().isBlank()) {
+                    candidates.add(note.getImportBatchId().trim() + "/" + note.getOriginalFilename().trim());
+                }
+            }
+
+            for (String key : candidates) {
                 try {
-                    byte[] bytes = backblazeStorageService.getObjectBytes(b2Key);
+                    byte[] bytes = backblazeStorageService.getObjectBytes(key);
                     if (bytes != null && bytes.length > 0) {
                         String contentType = resolveContentType(fileName);
                         return ResponseEntity.ok()
                                 .contentType(MediaType.parseMediaType(contentType))
                                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
                                 .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
                                 .body(new ByteArrayResource(bytes));
                     }
                 } catch (Exception ignored) {}
@@ -500,6 +524,7 @@ public class ApiController {
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                        .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
                         .body(resource);
             } catch (Exception e) {
                 // fall through
@@ -508,28 +533,34 @@ public class ApiController {
 
         // Fallback: Stream directly from Backblaze B2 if available
         try {
-            String b2Key = fileName;
-            // Check if fileName is part of a known note's full B2 key path (e.g., folder/subfolder/file.docx)
-            Optional<Note> matchingNote = database.getAllNotes().stream()
-                    .filter(n -> fileName.equals(n.getFileUrl()) ||
-                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(fileName) || n.getB2ObjectKey().endsWith("/" + fileName))))
-                    .findFirst();
-            if (matchingNote.isPresent() && matchingNote.get().getB2ObjectKey() != null) {
-                b2Key = matchingNote.get().getB2ObjectKey();
+            LinkedHashSet<String> b2KeyCandidates = new LinkedHashSet<>();
+            b2KeyCandidates.add(fileName);
+            if (fileName.contains("/")) {
+                b2KeyCandidates.add(fileName.substring(fileName.lastIndexOf('/') + 1));
             }
+            database.getAllNotes().stream()
+                    .filter(n -> fileName.equals(n.getFileUrl()) ||
+                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(fileName) || n.getB2ObjectKey().endsWith("/" + fileName))) ||
+                            fileName.equals(n.getOriginalFilename()))
+                    .findFirst()
+                    .ifPresent(n -> {
+                        if (n.getB2ObjectKey() != null) b2KeyCandidates.add(n.getB2ObjectKey());
+                        if (n.getFileUrl() != null) b2KeyCandidates.add(n.getFileUrl());
+                        if (n.getOriginalFilename() != null) b2KeyCandidates.add(n.getOriginalFilename());
+                    });
 
-            byte[] bytes = backblazeStorageService.getObjectBytes(b2Key);
-            if (bytes != null && bytes.length > 0) {
-                String ext = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
-                String contentType = "application/octet-stream";
-                if (ext.equalsIgnoreCase(".pdf")) contentType = "application/pdf";
-                else if (ext.equalsIgnoreCase(".docx")) contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                else if (ext.equalsIgnoreCase(".doc")) contentType = "application/msword";
-
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
-                        .body(new org.springframework.core.io.ByteArrayResource(bytes));
+            for (String key : b2KeyCandidates) {
+                byte[] bytes = backblazeStorageService.getObjectBytes(key);
+                if (bytes != null && bytes.length > 0) {
+                    String contentType = resolveContentType(fileName);
+                    return ResponseEntity.ok()
+                            .contentType(MediaType.parseMediaType(contentType))
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                            .body(new org.springframework.core.io.ByteArrayResource(bytes));
+                }
             }
         } catch (Exception ignored) {}
 
@@ -542,23 +573,10 @@ public class ApiController {
     @GetMapping("/files/{noteId}/presigned")
     public ResponseEntity<Map<String, String>> getPresignedUrl(@PathVariable String noteId) {
         return database.getNoteById(noteId).map(note -> {
-            String b2Key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
-            if (backblazeStorageService != null && b2Key != null && !b2Key.startsWith("http")) {
-                try {
-                    String presigned = backblazeStorageService.generatePresignedUrl(b2Key);
-                    if (presigned != null && !presigned.isBlank()) {
-                        return ResponseEntity.ok(Map.of("noteId", noteId, "url", presigned));
-                    }
-                } catch (Exception ignored) {}
-            }
-            String fileUrl = note.getFileUrl();
-            if (fileUrl != null && fileUrl.startsWith("http")) {
-                return ResponseEntity.ok(Map.of("noteId", noteId, "url", fileUrl));
-            }
-            String rawFilename = fileUrl != null && fileUrl.contains("/") ? fileUrl.substring(fileUrl.lastIndexOf('/') + 1) : fileUrl;
+            // Return same-origin proxy to ensure browser fetches, pdfjs, and mobile views never hit B2 CORS
             return ResponseEntity.ok(Map.of(
                     "noteId", noteId,
-                    "url", "/api/files/raw/" + rawFilename
+                    "url", "/api/files/" + noteId + "/raw"
             ));
         }).orElse(ResponseEntity.notFound().build());
     }

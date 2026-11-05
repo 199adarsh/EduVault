@@ -42,3 +42,4 @@ export default function IconFolderDemo(props: Partial<typeof settings>) {
     </div>
   );
 }
+

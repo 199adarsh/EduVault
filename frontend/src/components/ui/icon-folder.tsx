@@ -346,3 +346,4 @@ export function IconFolder(props: IconFolderProps) {
 }
 
 export default IconFolder;
+

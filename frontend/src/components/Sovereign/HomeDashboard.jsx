@@ -260,7 +260,7 @@ const HomeDashboard = () => {
         const decoded = JSON.parse(atob(saved));
         return decoded?.prn || '';
       }
-    } catch (e) {}
+    } catch (e) { }
     return '';
   });
   const [loginDob, setLoginDob] = useState(() => {
@@ -270,7 +270,7 @@ const HomeDashboard = () => {
         const decoded = JSON.parse(atob(saved));
         return decoded?.dob || '';
       }
-    } catch (e) {}
+    } catch (e) { }
     return '';
   });
   const [syncing, setSyncing] = useState(false);

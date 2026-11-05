@@ -103,8 +103,12 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
     const fetchFacultyRequests = async () => {
         setLoading(true);
         try {
+            const subjectHeader = (teacherSubjects || []).map(s => typeof s === 'string' ? s : s?.name || s?.id || '').join(',');
             const res = await axios.get(`${API_BASE}/nc/requests`, {
-                headers: { 'X-User-Role': 'teacher' }
+                headers: {
+                    'X-User-Role': 'teacher',
+                    'X-Teacher-Subjects': subjectHeader
+                }
             });
             setAllRequests(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
@@ -117,7 +121,7 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
 
     useEffect(() => {
         fetchFacultyRequests();
-    }, []);
+    }, [teacherSubjects]);
 
     const getProofUrl = (req) => {
         if (!req) return '';
@@ -158,12 +162,17 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
         }
     };
 
-    // Scoped requests for this faculty member
+    // Scoped requests strictly for this faculty member's assigned subjects
     const teacherBaseRequests = useMemo(() => {
-        if (!teacherSubjects || teacherSubjects.length === 0) return allRequests;
-        const normalized = teacherSubjects.map(s => (typeof s === 'string' ? s : s?.name || '').toLowerCase());
+        if (!teacherSubjects || teacherSubjects.length === 0) return [];
+        const normalized = teacherSubjects.map(s => (typeof s === 'string' ? s : s?.name || s?.id || '').toLowerCase().trim());
         return allRequests.filter(req =>
-            (req.missedSubjects || []).some(ms => ms.subjectName && normalized.includes(ms.subjectName.toLowerCase()))
+            (req.missedSubjects || []).some(ms => {
+                const subName = (ms.subjectName || '').toLowerCase().trim();
+                const subId = (ms.subjectId || '').toLowerCase().trim();
+                const subCode = (ms.subjectCode || '').toLowerCase().trim();
+                return normalized.some(s => s && (s === subName || s === subId || s === subCode || (subName.length > 3 && (subName.includes(s) || s.includes(subName)))));
+            })
         );
     }, [allRequests, teacherSubjects]);
 
@@ -174,33 +183,22 @@ const FacultyAttendance = ({ profile, subjects = [], onRefresh }) => {
             const name = typeof s === 'string' ? s : s?.name;
             if (name) set.add(name);
         });
-        if (set.size === 0) {
-            allRequests.forEach(req => {
-                (req.missedSubjects || []).forEach(ms => {
-                    if (ms.subjectName) set.add(ms.subjectName);
-                });
-            });
-        }
         return Array.from(set).sort();
-    }, [teacherSubjects, allRequests]);
+    }, [teacherSubjects]);
 
     // Statistics based on current view
     const stats = useMemo(() => {
-        const pool = (subjectFilter === 'ALL_DEPT' || (!teacherSubjects || teacherSubjects.length === 0))
-            ? allRequests
-            : teacherBaseRequests;
+        const pool = teacherBaseRequests;
         const total = pool.length;
         const pending = pool.filter(r => r.status === 'PENDING').length;
         const approved = pool.filter(r => r.status === 'APPROVED').length;
         const rejected = pool.filter(r => r.status === 'REJECTED').length;
         return { total, pending, approved, rejected };
-    }, [allRequests, teacherBaseRequests, subjectFilter, teacherSubjects]);
+    }, [teacherBaseRequests]);
 
     // Filtered requests list
     const filteredRequests = useMemo(() => {
-        const basePool = (subjectFilter === 'ALL_DEPT' || (!teacherSubjects || teacherSubjects.length === 0))
-            ? allRequests
-            : teacherBaseRequests;
+        const basePool = teacherBaseRequests;
 
         return basePool.filter(req => {
             if (statusFilter !== 'ALL' && req.status !== statusFilter) {

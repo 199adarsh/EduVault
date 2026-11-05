@@ -463,6 +463,20 @@ const HomeDashboard = () => {
   }, []);
 
   const isTeacher = (localStorage.getItem('eduvault_user_role') === 'teacher' || profile?.dob === 'TEACHER');
+  
+  const teacherSubjects = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('eduvault_teacher_subjects');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to parse teacher subjects', e);
+    }
+    return profile?.selectedSubjects || profile?.subjectIds || [];
+  }, [profile]);
+
   const [facultyNcRequests, setFacultyNcRequests] = useState([]);
   const [facultyNcLoading, setFacultyNcLoading] = useState(false);
   const [ncFilterStatus, setNcFilterStatus] = useState('ALL');
@@ -478,10 +492,28 @@ const HomeDashboard = () => {
     if (!isTeacher) return;
     setFacultyNcLoading(true);
     try {
+      const subjectHeader = (teacherSubjects || []).map(s => typeof s === 'string' ? s : s?.name || s?.id || '').join(',');
       const res = await axios.get(`${API_BASE}/nc/requests`, {
-        headers: { 'X-User-Role': 'teacher' }
+        headers: {
+          'X-User-Role': 'teacher',
+          'X-Teacher-Subjects': subjectHeader
+        }
       });
-      setFacultyNcRequests(Array.isArray(res.data) ? res.data : []);
+      const data = Array.isArray(res.data) ? res.data : [];
+      if (!teacherSubjects || teacherSubjects.length === 0) {
+        setFacultyNcRequests([]);
+      } else {
+        const normalized = teacherSubjects.map(s => (typeof s === 'string' ? s : s?.name || s?.id || '').toLowerCase().trim());
+        const scoped = data.filter(req =>
+          (req.missedSubjects || []).some(ms => {
+            const subName = (ms.subjectName || '').toLowerCase().trim();
+            const subId = (ms.subjectId || '').toLowerCase().trim();
+            const subCode = (ms.subjectCode || '').toLowerCase().trim();
+            return normalized.some(s => s && (s === subName || s === subId || s === subCode || (subName.length > 3 && (subName.includes(s) || s.includes(subName)))));
+          })
+        );
+        setFacultyNcRequests(scoped);
+      }
     } catch (err) {
       console.error('Failed to load NC requests for faculty', err);
     } finally {
@@ -493,7 +525,7 @@ const HomeDashboard = () => {
     if (isTeacher) {
       fetchFacultyNc();
     }
-  }, [isTeacher]);
+  }, [isTeacher, teacherSubjects]);
 
   const getNcProofUrl = (req) => {
     if (!req) return '';

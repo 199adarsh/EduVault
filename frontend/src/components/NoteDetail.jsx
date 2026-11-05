@@ -20,8 +20,10 @@ import {
     SparklesIcon,
     ArrowUp02Icon
 } from 'hugeicons-react';
+import { Maximize2 } from 'lucide-react';
 import DocumentLoadingBar from './DocumentLoadingBar';
 import PdfViewer from './PdfViewer';
+import FullScreenNoteViewer from './FullScreenNoteViewer';
 import { cn } from '@/lib/utils';
 import { getCachedNoteBlob, setCachedNoteBlob } from '@/lib/pdfCache';
 
@@ -34,8 +36,23 @@ const doubtsCache = new Map();
 
 const NoteDetail = () => {
     const { id: noteId } = useParams();
-    const { profile, sidebarCollapsed, setSidebarCollapsed, notes = [] } = useOutletContext() || {};
+    const { profile, setSidebarCollapsed, notes = [], catalogSubjects = [] } = useOutletContext() || {};
     const navigate = useNavigate();
+
+    // Teacher role and subjects detection
+    const userRole = localStorage.getItem('eduvault_user_role') || (profile?.dob === 'TEACHER' ? 'teacher' : 'student');
+    const isTeacher = userRole === 'teacher' || userRole === 'faculty' || userRole === 'admin' || profile?.dob === 'TEACHER' || profile?.role === 'TEACHER';
+
+    const teacherSubjects = React.useMemo(() => {
+        try {
+            const saved = localStorage.getItem('eduvault_teacher_subjects');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch { /* ignore */ }
+        return profile?.selectedSubjects || profile?.subjectIds || [];
+    }, [profile]);
 
     const cachedNote = (notes || []).find(n => String(n.id) === String(noteId));
     const [note, setNote] = useState(() => cachedNote || null);
@@ -43,6 +60,31 @@ const NoteDetail = () => {
     const [activeTab, setActiveTab] = useState('ai');
     const [loading, setLoading] = useState(() => !cachedNote);
     const [doubtQuery, setDoubtQuery] = useState('');
+    const [isFullScreen, setIsFullScreen] = useState(false);
+
+    // Doubts access check: only teachers who selected this note's subject (and all students)
+    const canViewDoubts = React.useMemo(() => {
+        if (!isTeacher) return true;
+        if (!teacherSubjects || teacherSubjects.length === 0) return false;
+        const norm = teacherSubjects.map(s => (typeof s === 'string' ? s : s?.name || s?.id || '').toLowerCase().trim());
+        const noteSubId = (note?.subjectId || '').toLowerCase().trim();
+        const noteTitle = (note?.title || '').toLowerCase().trim();
+
+        // Check catalog subjects for subject name and code matching
+        const matchedCatalogSub = (notes || []).find(n => n.id === note?.id)?.subject ||
+            (catalogSubjects || []).find(s => s.id?.toLowerCase() === noteSubId || s.name?.toLowerCase() === noteSubId);
+        const subName = (matchedCatalogSub?.name || '').toLowerCase().trim();
+        const subCode = (matchedCatalogSub?.code || '').toLowerCase().trim();
+
+        return norm.some(s => s && (
+            s === noteSubId ||
+            noteSubId.includes(s) ||
+            s.includes(noteSubId) ||
+            (subName && (subName === s || subName.includes(s) || s.includes(subName))) ||
+            (subCode && subCode === s) ||
+            (noteTitle && (noteTitle.includes(s) || s.includes(noteTitle)))
+        ));
+    }, [isTeacher, teacherSubjects, note, catalogSubjects, notes]);
     const [aiQuery, setAiQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -112,9 +154,13 @@ const NoteDetail = () => {
 
         const fetchNoteData = async () => {
             try {
+                const doubtHeaders = {
+                    'X-User-Role': isTeacher ? 'teacher' : 'student',
+                    'X-Teacher-Subjects': (teacherSubjects || []).map(s => typeof s === 'string' ? s : s?.name || s?.id || '').join(',')
+                };
                 const requests = [
                     axios.get(`${API_BASE}/notes/${noteId}`),
-                    axios.get(`${API_BASE}/notes/${noteId}/doubts`).catch(() => ({ data: [] }))
+                    axios.get(`${API_BASE}/notes/${noteId}/doubts`, { headers: doubtHeaders }).catch(() => ({ data: [] }))
                 ];
                 if (!presignedCache.has(noteId)) {
                     requests.push(axios.get(`${API_BASE}/files/${noteId}/presigned`).catch(() => null));
@@ -458,33 +504,47 @@ const NoteDetail = () => {
                         <span>Ask AI</span>
                     </button>
 
-                    <button
-                        onClick={() => {
-                            if (isPanelOpen && activeTab === 'doubts') {
-                                setIsPanelOpen(false);
-                            } else {
-                                setActiveTab('doubts');
-                                setIsPanelOpen(true);
-                            }
-                        }}
-                        className={cn(
-                            "px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95",
-                            isPanelOpen && activeTab === 'doubts'
-                                ? "bg-[#0071E3] text-white shadow-xs"
-                                : "bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] border border-[#E5E5EA]"
-                        )}
-                    >
-                        <Message01Icon size={16} />
-                        <span className="hidden sm:inline">Doubts</span>
-                        {doubts.length > 0 && (
-                            <span className={cn(
-                                "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
-                                isPanelOpen && activeTab === 'doubts' ? "bg-white text-[#0071E3]" : "bg-[#0071E3] text-white"
-                            )}>
-                                {doubts.length}
-                            </span>
-                        )}
-                    </button>
+                    {canViewDoubts && (
+                        <button
+                            onClick={() => {
+                                if (isPanelOpen && activeTab === 'doubts') {
+                                    setIsPanelOpen(false);
+                                } else {
+                                    setActiveTab('doubts');
+                                    setIsPanelOpen(true);
+                                }
+                            }}
+                            className={cn(
+                                "px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95",
+                                isPanelOpen && activeTab === 'doubts'
+                                    ? "bg-[#0071E3] text-white shadow-xs"
+                                    : "bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] border border-[#E5E5EA]"
+                            )}
+                        >
+                            <Message01Icon size={16} />
+                            <span className="hidden sm:inline">Doubts</span>
+                            {doubts.length > 0 && (
+                                <span className={cn(
+                                    "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
+                                    isPanelOpen && activeTab === 'doubts' ? "bg-white text-[#0071E3]" : "bg-[#0071E3] text-white"
+                                    )}>
+                                    {doubts.length}
+                                </span>
+                            )}
+                        </button>
+                    )}
+
+                    {isTeacher && (
+                        <button
+                            onClick={() => setIsFullScreen(true)}
+                            className="px-3.5 py-1.5 bg-[#0071E3] hover:bg-[#0077ED] text-white rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-xs active:scale-95"
+                            title="Open Full Screen Note Annotator"
+                        >
+                            <Maximize2 size={14} />
+                            <span className="hidden sm:inline">Open in Full Screen</span>
+                            <span className="sm:hidden">Full Screen</span>
+                        </button>
+                    )}
 
                     <button
                         onClick={handleDownload}
@@ -643,7 +703,23 @@ const NoteDetail = () => {
                             className="flex-1 overflow-y-auto px-4 py-5 space-y-5 bg-white scroll-smooth min-h-0"
                         >
                             {activeTab === 'doubts' ? (
-                                doubts.length > 0 ? (
+                                !canViewDoubts ? (
+                                    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                                        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 mb-3 mx-auto">
+                                            <Message01Icon size={24} />
+                                        </div>
+                                        <h3 className="text-sm font-semibold text-[#1D1D1F]">Subject Not Assigned</h3>
+                                        <p className="text-xs text-[#6E6E73] max-w-xs mt-1.5 leading-relaxed">
+                                            Doubts are only shown to teachers who have selected this subject ({note?.subjectId || 'this subject'}).
+                                        </p>
+                                        <button
+                                            onClick={() => navigate('/settings')}
+                                            className="mt-4 px-3.5 py-1.5 bg-[#0071E3] hover:bg-[#005BB5] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                                        >
+                                            Assign Subject in Settings
+                                        </button>
+                                    </div>
+                                ) : doubts.length > 0 ? (
                                     doubts.map((doubt, i) => (
                                         <div key={i} className="space-y-2 p-3.5 rounded-2xl border border-[#E5E5EA] bg-[#F9F9FB]">
                                             <div className="flex gap-2.5">
@@ -800,6 +876,12 @@ const NoteDetail = () => {
                                         </button>
                                     </div>
                                 </form>
+                            ) : !canViewDoubts ? (
+                                <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-2xl text-center">
+                                    <p className="text-xs font-medium text-amber-800">
+                                        You are not assigned to this subject. Doubts are only available to teachers who have selected it.
+                                    </p>
+                                </div>
                             ) : (
                                 <form
                                     onSubmit={(e) => {
@@ -850,6 +932,19 @@ const NoteDetail = () => {
                     </aside>
                 )}
             </div>
+
+            {/* Full-Screen Annotator Overlay (Active only when teacher opens full screen, resets on exit) */}
+            {isFullScreen && (
+                <FullScreenNoteViewer
+                    note={note}
+                    isPdf={isPdf}
+                    resolvedPdfUrl={resolvedPdfUrl}
+                    pdfData={pdfData}
+                    docxHtml={docxHtml}
+                    blobUrl={blobUrl}
+                    onClose={() => setIsFullScreen(false)}
+                />
+            )}
         </div>
     );
 };

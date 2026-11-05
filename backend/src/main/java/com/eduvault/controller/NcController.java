@@ -6,6 +6,7 @@ import com.eduvault.model.StudentProfile;
 import com.eduvault.model.Subject;
 import com.eduvault.repository.LocalJsonDatabase;
 import com.eduvault.service.NcBackblazeStorageService;
+import com.eduvault.util.TeacherSubjectMatcher;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -194,12 +195,53 @@ public class NcController {
     @GetMapping("/requests")
     public ResponseEntity<?> getAllRequests(
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestParam(required = false) String teacherSubjects,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String teacherPrn,
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String student,
             @RequestParam(required = false) String date,
             @RequestParam(required = false) String status
     ) {
         List<NcRequest> all = database.getAllNcRequests();
+
+        boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")));
+
+        if (isTeacher) {
+            Set<String> teacherSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
+
+            if (teacherPrn != null && !teacherPrn.isBlank()) {
+                StudentProfile teacherProfile = database.getProfile(teacherPrn.trim());
+                if (teacherProfile != null) {
+                    if (teacherProfile.getSelectedSubjects() != null) {
+                        for (String s : teacherProfile.getSelectedSubjects()) {
+                            TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
+                        }
+                    }
+                    if (teacherProfile.getSubjectIds() != null) {
+                        for (String s : teacherProfile.getSubjectIds()) {
+                            TeacherSubjectMatcher.addSubjectsFromString(teacherSubs, s);
+                        }
+                    }
+                }
+            }
+
+            // Show doubts and NC requests only to teachers who have selected the respective subject
+            if (teacherSubs.isEmpty()) {
+                all = Collections.emptyList();
+            } else {
+                all = all.stream().filter(req -> {
+                    if (req.getMissedSubjects() == null || req.getMissedSubjects().isEmpty()) {
+                        return false;
+                    }
+                    return req.getMissedSubjects().stream().anyMatch(ms ->
+                        TeacherSubjectMatcher.matchesAnySubject(teacherSubs, ms.getSubjectId(), ms.getSubjectName(), ms.getSubjectCode())
+                    );
+                }).collect(Collectors.toList());
+            }
+        }
 
         // Filter by status
         if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {

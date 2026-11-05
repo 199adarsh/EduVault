@@ -29,9 +29,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import com.eduvault.util.TeacherSubjectMatcher;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -116,7 +118,10 @@ public class ApiController {
                 profile.getDepartment(),
                 profile.getSemester(),
                 profile.getSection(),
-                null
+                null,
+                profile.getSelectedSubjects(),
+                profile.getSubjectIds(),
+                profile.getRole()
         );
         return ResponseEntity.ok(sanitized);
     }
@@ -662,8 +667,121 @@ public class ApiController {
     }
 
     @GetMapping("/notes/{id}/doubts")
-    public ResponseEntity<List<Doubt>> getDoubts(@PathVariable String id) {
+    public ResponseEntity<List<Doubt>> getDoubts(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String teacherSubjects,
+            @RequestParam(required = false) String prn,
+            @RequestHeader(value = "X-Student-PRN", required = false) String headerPrn) {
+
+        boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")));
+
+        if (isTeacher) {
+            Optional<Note> noteOpt = database.getNoteById(id);
+            if (noteOpt.isEmpty()) {
+                return ResponseEntity.ok(java.util.Collections.emptyList());
+            }
+            Note note = noteOpt.get();
+            String noteSubId = note.getSubjectId();
+
+            Set<String> selectedSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
+
+            String effectivePrn = (prn != null && !prn.isBlank()) ? prn : headerPrn;
+            if (effectivePrn != null && !effectivePrn.isBlank()) {
+                StudentProfile profile = database.getProfile(effectivePrn);
+                if (profile != null) {
+                    if ("TEACHER".equalsIgnoreCase(profile.getDob()) || "TEACHER".equalsIgnoreCase(profile.getRole())) {
+                        isTeacher = true;
+                    }
+                    if (profile.getSelectedSubjects() != null) {
+                        for (String s : profile.getSelectedSubjects()) {
+                            TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
+                        }
+                    }
+                    if (profile.getSubjectIds() != null) {
+                        for (String s : profile.getSubjectIds()) {
+                            TeacherSubjectMatcher.addSubjectsFromString(selectedSubs, s);
+                        }
+                    }
+                }
+            }
+
+            // If teacher has not selected this note's subject, return empty doubts list
+            if (selectedSubs.isEmpty()) {
+                return ResponseEntity.ok(java.util.Collections.emptyList());
+            }
+
+            String noteSubjectName = null;
+            String noteSubjectCode = null;
+            if (noteSubId != null && !noteSubId.isBlank()) {
+                Optional<Subject> subOpt = database.getSubjectById(noteSubId);
+                if (subOpt.isPresent()) {
+                    Subject s = subOpt.get();
+                    noteSubjectName = s.getName();
+                    noteSubjectCode = s.getCode();
+                }
+            }
+
+            boolean matches = TeacherSubjectMatcher.matchesAnySubject(selectedSubs, noteSubId, noteSubjectName, noteSubjectCode, note.getTitle());
+            if (!matches) {
+                return ResponseEntity.ok(java.util.Collections.emptyList());
+            }
+        }
+
         return ResponseEntity.ok(database.getDoubtsByNoteId(id));
+    }
+
+    @GetMapping("/doubts")
+    public ResponseEntity<List<Doubt>> getAllDoubts(
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader,
+            @RequestHeader(value = "X-Teacher-Subjects", required = false) String teacherSubjectsHeader,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String teacherSubjects,
+            @RequestParam(required = false) String noteId) {
+
+        if (noteId != null && !noteId.isBlank()) {
+            return getDoubts(noteId, roleHeader, teacherSubjectsHeader, role, teacherSubjects, null, null);
+        }
+
+        boolean isTeacher = (roleHeader != null && (roleHeader.equalsIgnoreCase("teacher") || roleHeader.equalsIgnoreCase("faculty") || roleHeader.equalsIgnoreCase("admin")))
+                || (role != null && (role.equalsIgnoreCase("teacher") || role.equalsIgnoreCase("faculty") || role.equalsIgnoreCase("admin")));
+
+        List<Note> allNotes = database.getAllNotes();
+        java.util.Map<String, Note> noteMap = new java.util.HashMap<>();
+        allNotes.forEach(n -> noteMap.put(n.getId(), n));
+
+        Set<String> selectedSubs = new HashSet<>();
+        if (isTeacher) {
+            selectedSubs = TeacherSubjectMatcher.parseSubjectList(teacherSubjectsHeader, teacherSubjects);
+            if (selectedSubs.isEmpty()) {
+                return ResponseEntity.ok(java.util.Collections.emptyList());
+            }
+        }
+
+        List<Doubt> allDoubts = new java.util.ArrayList<>();
+        for (Note n : allNotes) {
+            if (isTeacher) {
+                String noteSubId = n.getSubjectId();
+                String noteSubjectName = null;
+                String noteSubjectCode = null;
+                if (noteSubId != null && !noteSubId.isBlank()) {
+                    Optional<Subject> subOpt = database.getSubjectById(noteSubId);
+                    if (subOpt.isPresent()) {
+                        Subject s = subOpt.get();
+                        noteSubjectName = s.getName();
+                        noteSubjectCode = s.getCode();
+                    }
+                }
+                boolean matches = TeacherSubjectMatcher.matchesAnySubject(selectedSubs, noteSubId, noteSubjectName, noteSubjectCode, n.getTitle());
+                if (!matches) continue;
+            }
+            allDoubts.addAll(database.getDoubtsByNoteId(n.getId()));
+        }
+
+        return ResponseEntity.ok(allDoubts);
     }
 
     @PostMapping("/notes/{id}/doubts")

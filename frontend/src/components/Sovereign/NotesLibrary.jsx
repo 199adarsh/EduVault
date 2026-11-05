@@ -316,14 +316,41 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
         { id: 'Backlog', name: 'Backlog Exam' },
     ], []);
 
-    const pyqSubjectDropdownItems = useMemo(() => [
-        { id: '', name: 'All Subjects' },
-        ...(allKnownSubjects || availableSubjects || []).map(s => ({
-            id: s.id,
-            name: s.name,
-            description: s.code ? `Code: ${s.code}` : undefined,
-        }))
-    ], [allKnownSubjects, availableSubjects]);
+    const pyqSubjectDropdownItems = useMemo(() => {
+        let list = [];
+        if (isTeacher) {
+            list = allKnownSubjects || subjects || [];
+        } else {
+            list = (subjects && subjects.length > 0) ? subjects : (availableSubjects || []);
+            if (!list || list.length === 0) {
+                try {
+                    const saved = localStorage.getItem('eduvault_subjects');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
+                    }
+                } catch {
+                    /* ignore */
+                }
+            }
+        }
+        const seen = new Set();
+        const unique = [];
+        (list || []).forEach(s => {
+            if (s && s.id && !seen.has(s.id)) {
+                seen.add(s.id);
+                unique.push(s);
+            }
+        });
+        return [
+            { id: '', name: isTeacher ? 'All Subjects' : 'All My Subjects' },
+            ...unique.map(s => ({
+                id: s.id,
+                name: s.name,
+                description: s.code ? `Code: ${s.code}` : undefined,
+            }))
+        ];
+    }, [isTeacher, allKnownSubjects, subjects, availableSubjects]);
 
     // Filter notes: ONLY display notes that match the selected subject. Other notes should not be visible.
     const displayNotes = useMemo(() => {

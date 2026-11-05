@@ -92,7 +92,19 @@ const PYQsDatabase = ({
         }
 
         // Student: strictly enrolled attendance subjects
-        return currentRaw;
+        if (currentRaw && currentRaw.length > 0) {
+            return currentRaw;
+        }
+        try {
+            const saved = localStorage.getItem('eduvault_subjects');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch {
+            /* ignore */
+        }
+        return [];
     }, [rawSubjects, catalogSubjects, isTeacher]);
 
     const [pyqs, setPyqs] = useState([]);
@@ -164,10 +176,15 @@ const PYQsDatabase = ({
         fetchPyqs();
     }, [fetchPyqs]);
 
-    // Filter subjects dropdown to ONLY show subjects that have at least 1 PYQ document available
+    // Filter subjects dropdown to ONLY show enrolled subjects (deduplicated)
     const subjectsWithPyqs = useMemo(() => {
         if (!subjects || subjects.length === 0) return [];
-        return subjects;
+        const seen = new Set();
+        return subjects.filter(s => {
+            if (!s || !s.id || seen.has(s.id)) return false;
+            seen.add(s.id);
+            return true;
+        });
     }, [subjects]);
 
     // Reset filterSubject if selected subject has no PYQs

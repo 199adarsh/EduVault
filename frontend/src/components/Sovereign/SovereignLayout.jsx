@@ -951,8 +951,8 @@ const SovereignLayout = () => {
 
                             <IconFolder
                                 theme="dark"
-                                title="Meet Developer"
-                                subtitle="Adarsh Patil • Full-Stack Engineer"
+                                title="Adarsh Herwade"
+                                subtitle="Java Developer"
                                 tags={["Java", "Spring Boot", "React", "PostgreSQL"]}
                                 icons={DEVELOPER_TECH_ICONS}
                                 pillIcons={DEVELOPER_SOCIAL_ICONS}

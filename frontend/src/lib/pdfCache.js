@@ -58,3 +58,4 @@ export const setCachedNoteBlob = async (noteId, blob) => {
         return false;
     }
 };
+

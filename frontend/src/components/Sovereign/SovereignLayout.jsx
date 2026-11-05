@@ -12,7 +12,7 @@ import {
     Home01Icon,
     Book02Icon,
     Notification01Icon,
-    Compass01Icon,
+    MapsLocation02Icon,
     Calendar03Icon,
     SparklesIcon,
     Cancel01Icon,
@@ -517,12 +517,12 @@ const SovereignLayout = () => {
         { name: 'Notes', path: '/notes', icon: Book02Icon },
         { name: 'AI Tutor', path: '/ai-assistant', icon: SparklesIcon },
         { name: 'Notices', path: '/announcements', icon: Notification01Icon },
-        { name: 'Roadmaps', path: '/roadmaps', icon: Compass01Icon },
+        { name: 'Roadmaps', path: '/roadmaps', icon: MapsLocation02Icon },
         {
             name: 'Attendance',
             path: '/attendance',
             icon: Calendar03Icon,
-            badge: overallAttendance ? `${overallAttendance}%` : null
+            badge: null
         },
     ];
 
@@ -819,7 +819,7 @@ const SovereignLayout = () => {
                                 className="pointer-events-auto bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-full px-3.5 py-1.5 shadow-lg flex items-center gap-1.5 text-xs font-semibold text-[#1D1D1F] dark:text-white cursor-pointer active:scale-95 transition-all shadow-black/10"
                                 title="Expand navigation"
                             >
-                                <Compass01Icon size={16} className="text-[#0071E3]" />
+                                <Menu01Icon size={16} className="text-[#0071E3]" />
                                 <span>Menu</span>
                             </button>
                         ) : (

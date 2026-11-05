@@ -596,9 +596,9 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                             </div>
                         )}
 
-                        {/* Direct Notes List Grid */}
+                        {/* Direct Notes List Grid - Sleek, Compact & Responsive */}
                         {displayNotes.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-16">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 pb-16">
                                 {displayNotes.map((note) => {
                                     const rId = resolveSubjectId(note);
                                     const sub = allKnownSubjects.find(s => s.id === rId);
@@ -609,52 +609,51 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         <div
                                             key={note.id}
                                             onClick={() => handleOpenNote(note)}
-                                            className="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] hover:border-[#D2D2D7] dark:hover:border-[#3A3A3C] rounded-2xl p-5 transition-all duration-150 cursor-pointer flex flex-col justify-between group shadow-xs hover:shadow-sm"
+                                            className="bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] hover:border-[#0071E3]/50 dark:hover:border-[#0071E3]/60 rounded-xl p-3.5 transition-all duration-150 cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-xs active:scale-[0.99]"
                                         >
                                             <div>
-                                                {/* Top Row: Icon, Format Badge, Unit & Action Indicator */}
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] dark:bg-[#2C2C2E] flex items-center justify-center text-[#1D1D1F] dark:text-white shrink-0">
-                                                        <File02Icon size={18} />
+                                                {/* Header: Icon, Unit Pill, Format */}
+                                                <div className="flex items-center justify-between gap-1.5 mb-2.5">
+                                                    <div className="w-7 h-7 rounded-lg bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#0071E3] flex items-center justify-center shrink-0">
+                                                        <File02Icon size={15} />
                                                     </div>
 
-                                                    <div className="flex items-center gap-2 shrink-0">
-                                                        <span className="text-xs font-medium text-[#6E6E73] dark:text-[#AEAEB2] bg-[#F5F5F7] dark:bg-[#2C2C2E] px-2.5 py-1 rounded-lg">
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <span className="text-[10px] font-semibold text-[#0071E3] dark:text-[#5AC8FA] bg-[#DEEDFC]/70 dark:bg-blue-950/40 px-2 py-0.5 rounded-md">
                                                             {note.unit || "Unit 1"}
                                                         </span>
-                                                        <span className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-wider">
+                                                        <span className="text-[9px] font-bold text-[#8E8E93] uppercase tracking-wider">
                                                             {badgeLabel}
                                                         </span>
-                                                        <ArrowUpRight01Icon size={16} className="text-[#8E8E93] group-hover:text-[#0071E3] transition-colors" />
                                                     </div>
                                                 </div>
 
                                                 {/* Title & Subject */}
-                                                <div className="mt-4">
-                                                    <h3 className="font-semibold text-sm text-[#1D1D1F] dark:text-white line-clamp-2 leading-relaxed group-hover:text-[#0071E3] transition-colors">
+                                                <div>
+                                                    <h3 className="font-semibold text-xs text-[#1D1D1F] dark:text-white line-clamp-2 leading-snug group-hover:text-[#0071E3] transition-colors">
                                                         {displayTitle}
                                                     </h3>
-                                                    <p className="text-xs text-[#6E6E73] dark:text-[#AEAEB2] mt-1.5 truncate">
+                                                    <p className="text-[11px] text-[#8E8E93] mt-1 truncate">
                                                         {sub?.name || 'Study Material'}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {/* Bottom Row: Date & Direct Download */}
-                                            <div className="pt-4 mt-4 border-t border-[#E5E5EA] dark:border-[#2C2C2E] flex items-center justify-between text-xs text-[#8E8E93]">
+                                            {/* Bottom Footer: Date & Download */}
+                                            <div className="pt-2.5 mt-2.5 border-t border-[#F2F2F7] dark:border-[#2C2C2E] flex items-center justify-between text-[10px] text-[#8E8E93]">
                                                 <span>
                                                     {note.createdAt
-                                                        ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                                                        ? new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
                                                         : 'Recent'}
                                                 </span>
 
                                                 <button
                                                     onClick={(e) => handleDownloadNote(e, note)}
-                                                    className="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                                                    className="p-1 rounded-md text-[#8E8E93] hover:text-[#0071E3] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                                                     title="Download Document"
                                                     type="button"
                                                 >
-                                                    <Download01Icon size={16} />
+                                                    <Download01Icon size={14} />
                                                 </button>
                                             </div>
                                         </div>

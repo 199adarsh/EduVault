@@ -587,6 +587,7 @@ const NoteDetail = () => {
                                 presignedUrl={presignedUrl || resolvedPdfUrl}
                                 title={note.title}
                                 onDownload={handleDownload}
+                                extractedText={note.extractedText}
                             />
                         )
                     ) : isOfficeDoc ? (

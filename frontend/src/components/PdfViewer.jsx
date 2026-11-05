@@ -18,7 +18,7 @@ if (typeof window !== 'undefined') {
     pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 }
 
-export default function PdfViewer({ url, data, presignedUrl, title, onDownload }) {
+export default function PdfViewer({ url, data, presignedUrl, title, onDownload, extractedText }) {
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [scale, setScale] = useState(1.0);
@@ -164,49 +164,62 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload }
 
     if (loadError) {
         return (
-            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-[#F5F5F7] dark:bg-black">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#0071E3] flex items-center justify-center mb-3">
-                    <File01Icon size={24} />
-                </div>
-                <h3 className="text-sm font-semibold text-[#1D1D1F] dark:text-white mb-1">
-                    {title || "PDF Document"}
-                </h3>
-                <p className="text-xs text-[#8E8E93] max-w-xs mb-5">
-                    Canvas rendering on this device took too long or was restricted by your browser. Use the native viewer for instant hardware-accelerated reading.
-                </p>
+            <div className="w-full h-full flex flex-col items-center justify-start p-6 bg-[#F5F5F7] dark:bg-black overflow-y-auto">
+                <div className="w-full max-w-3xl flex flex-col items-center text-center my-4">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#0071E3] flex items-center justify-center mb-3">
+                        <File01Icon size={24} />
+                    </div>
+                    <h3 className="text-sm font-semibold text-[#1D1D1F] dark:text-white mb-1">
+                        {title || "PDF Document"}
+                    </h3>
+                    <p className="text-xs text-[#8E8E93] max-w-md mb-4">
+                        Cloud storage bandwidth cap reached or network blocked. You can still read the full extracted notes below or retry download.
+                    </p>
 
-                <div className="flex flex-wrap items-center justify-center gap-2.5">
-                    {directUrl && (
+                    <div className="flex flex-wrap items-center justify-center gap-2.5 mb-6">
+                        {directUrl && (
+                            <button
+                                type="button"
+                                onClick={handleOpenNative}
+                                className="px-4 py-2 bg-[#0071E3] hover:bg-[#0077ED] text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-sm cursor-pointer transition-all active:scale-95"
+                            >
+                                <ViewIcon size={14} />
+                                <span>Open Direct Link</span>
+                            </button>
+                        )}
+                        {onDownload && (
+                            <button
+                                type="button"
+                                onClick={onDownload}
+                                className="px-4 py-2 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] text-[#1D1D1F] dark:text-white text-xs font-semibold rounded-xl flex items-center gap-2 cursor-pointer transition-all hover:bg-black/5 dark:hover:bg-white/5"
+                            >
+                                <Download01Icon size={14} />
+                                <span>Download PDF</span>
+                            </button>
+                        )}
                         <button
                             type="button"
-                            onClick={handleOpenNative}
-                            className="px-4 py-2 bg-[#0071E3] hover:bg-[#0077ED] text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-sm cursor-pointer transition-all active:scale-95"
+                            onClick={() => {
+                                setLoadError(null);
+                                setPageNumber(1);
+                            }}
+                            className="px-3 py-2 text-xs text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white flex items-center gap-1 cursor-pointer"
                         >
-                            <ViewIcon size={14} />
-                            <span>Open in Full / Native Reader</span>
+                            <RefreshIcon size={13} />
+                            <span>Retry</span>
                         </button>
+                    </div>
+
+                    {extractedText && (
+                        <div className="w-full text-left bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-2xl p-6 sm:p-8 shadow-xs">
+                            <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-lg text-xs text-amber-800 dark:text-amber-300">
+                                <span>Showing full extracted document text while storage bandwidth resets.</span>
+                            </div>
+                            <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                {extractedText}
+                            </div>
+                        </div>
                     )}
-                    {onDownload && (
-                        <button
-                            type="button"
-                            onClick={onDownload}
-                            className="px-4 py-2 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] text-[#1D1D1F] dark:text-white text-xs font-semibold rounded-xl flex items-center gap-2 cursor-pointer transition-all hover:bg-black/5 dark:hover:bg-white/5"
-                        >
-                            <Download01Icon size={14} />
-                            <span>Download PDF</span>
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setLoadError(null);
-                            setPageNumber(1);
-                        }}
-                        className="px-3 py-2 text-xs text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white flex items-center gap-1 cursor-pointer"
-                    >
-                        <RefreshIcon size={13} />
-                        <span>Retry</span>
-                    </button>
                 </div>
             </div>
         );

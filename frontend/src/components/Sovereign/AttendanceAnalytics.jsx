@@ -7,6 +7,7 @@ import FacultyAttendance from './FacultyAttendance';
 import { FluidTabs } from '../fluid-tabs';
 import { cn } from '../../lib/utils';
 import { computeEngine, calculateLPW } from '../../lib/optimizationEngine';
+import { TetrisLoader } from '../ui/loader-tetris';
 import {
     Calendar03Icon,
     Clock01Icon,
@@ -1082,8 +1083,8 @@ const AttendanceAnalytics = () => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-[#727272] gap-3 animate-pulse">
-                <RefreshIcon size={32} className="animate-spin text-[#0073E6]" />
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-[#727272] gap-3">
+                <TetrisLoader columns={8} rows={14} cellSize={4} gap={1.5} speed={35} label="Loading Attendance Records..." />
                 <p className="text-xs font-semibold tracking-wider uppercase">Loading Attendance Records...</p>
             </div>
         );

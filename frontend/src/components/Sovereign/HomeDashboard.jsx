@@ -36,6 +36,7 @@ import SharedAttendanceHeatmap from './SharedAttendanceHeatmap';
 import HackathonsFeed from './HackathonsFeed';
 import DeadlinesPopover from './DeadlinesPopover';
 import { FluidTabs } from '../fluid-tabs';
+import { TetrisLoader } from '../ui/loader-tetris';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -758,8 +759,8 @@ const HomeDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[75vh] gap-4 bg-canvas-bg text-text-primary">
-        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center h-[75vh] gap-3 bg-canvas-bg text-text-primary">
+        <TetrisLoader columns={8} rows={14} cellSize={4} gap={1.5} speed={35} label="Loading dashboard..." />
         <span className="text-xs font-semibold text-text-secondary tracking-wide">Loading dashboard...</span>
       </div>
     );

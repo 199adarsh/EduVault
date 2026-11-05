@@ -22,6 +22,7 @@ import {
 } from 'hugeicons-react';
 
 import { DiscreteTabs } from '../watermelon/discrete-tabs';
+import { TetrisLoader } from '../ui/loader-tetris';
 
 
 
@@ -717,11 +718,11 @@ const SovereignLayout = () => {
 
                     {loading ? (
 
-                        <div className="h-full flex flex-col items-center justify-center gap-4 opacity-40">
+                        <div className="h-full min-h-[60vh] flex flex-col items-center justify-center gap-3">
 
-                            <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                            <TetrisLoader columns={8} rows={14} cellSize={4} gap={1.5} speed={35} label="Loading CampusAxis..." />
 
-                            <p className="text-xs font-bold uppercase tracking-widest text-text-secondary">Loading CampusAxis...</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-[#727272]">Loading CampusAxis...</p>
 
                         </div>
 

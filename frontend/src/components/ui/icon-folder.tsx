@@ -16,12 +16,15 @@ export type FolderIcon = {
   /** Tile background behind `node`. */
   background?: string;
   label?: string;
+  href?: string;
 };
 
 export type IconFolderProps = {
   title?: string;
+  subtitle?: string;
   tags?: string[];
   icons?: FolderIcon[];
+  pillIcons?: FolderIcon[];
   theme?: "dark" | "light";
   /** Start spread open (no hover needed). */
   defaultOpen?: boolean;
@@ -87,19 +90,19 @@ const DEFAULTS = {
 const THEMES = {
   dark: {
     ink: "#ffffff",
-    chipBg: "rgba(36,36,36,.7)",
-    chipBorder: "#282828",
-    chipInk: "#9f9f9f",
-    back: "linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008) 60%)",
-    backEdge: "rgba(255,255,255,.07)",
-    front: "linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.015) 55%),rgba(12,12,12,.78)",
-    frontEdge: ["rgba(255,255,255,.38)", "rgba(255,255,255,.1)", "rgba(255,255,255,0)"],
-    glow: "rgba(255,255,255,.10)",
-    pillBg: "rgba(0,0,0,.55)",
-    pillBorder: "rgba(255,255,255,.08)",
-    tileRing: "rgba(255,255,255,.14)",
-    tileShadow: "rgba(0,0,0,.55)",
-    focus: "rgba(255,255,255,.4)",
+    chipBg: "rgba(255,255,255,.07)",
+    chipBorder: "rgba(255,255,255,.14)",
+    chipInk: "#e2e8f0",
+    back: "linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01) 60%)",
+    backEdge: "rgba(255,255,255,.12)",
+    front: "linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.02) 55%),rgba(17,20,24,.94)",
+    frontEdge: ["rgba(255,255,255,.36)", "rgba(255,255,255,.12)", "rgba(255,255,255,0)"],
+    glow: "rgba(255,255,255,.06)",
+    pillBg: "rgba(10,13,18,.88)",
+    pillBorder: "rgba(255,255,255,.16)",
+    tileRing: "rgba(255,255,255,.16)",
+    tileShadow: "rgba(0,0,0,.6)",
+    focus: "rgba(255,255,255,.5)",
   },
   light: {
     ink: "#111111",
@@ -152,7 +155,7 @@ function Tile({ icon, ring, shadow }: { icon: FolderIcon; ring: string; shadow: 
 }
 
 export function IconFolder(props: IconFolderProps) {
-  const { title, tags, icons } = { ...DEFAULTS, ...props };
+  const { title, subtitle, tags, icons, pillIcons } = { ...DEFAULTS, ...props };
   const { theme = "dark", defaultOpen = false, spread = 70, showPill = true, className = "" } = props;
   const t = THEMES[theme];
   const gid = React.useId().replace(/:/g, "");
@@ -307,12 +310,24 @@ export function IconFolder(props: IconFolderProps) {
           <path d={frontD} fill="none" stroke={`url(#edge-${gid})`} strokeWidth="2" />
         </svg>
 
-        <h3 className="m-0 px-[18px] pt-[34px] text-xl font-medium leading-[26px]">{title}</h3>
-        <div className="mx-[18px] mt-3.5 flex flex-wrap gap-1.5">
+        <div className="px-[20px] pt-[26px]">
+          <h3
+            className="m-0 text-[18px] font-semibold tracking-tight !text-white leading-tight"
+            style={{ color: t.ink }}
+          >
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="m-0 mt-0.5 text-[11px] text-white/60 font-medium tracking-normal">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <div className="mx-[20px] mt-2.5 flex flex-wrap gap-1.5">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="h-6 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs leading-5 backdrop-blur-[7px]"
+              className="h-[22px] whitespace-nowrap rounded-md border px-2 text-[11px] font-medium leading-[20px] backdrop-blur-[7px]"
               style={{
                 background: t.chipBg,
                 borderColor: hi !== null && icons[hi]?.label === tag ? t.focus : t.chipBorder,
@@ -326,19 +341,37 @@ export function IconFolder(props: IconFolderProps) {
         </div>
 
         {showPill && (
-          <span
-            className="absolute bottom-3.5 right-3.5 flex h-[34px] items-center gap-1.5 rounded-full border px-1.5"
+          <div
+            className="absolute bottom-3.5 right-3.5 flex h-[34px] items-center gap-1.5 rounded-full border px-1.5 z-20"
             style={{ background: t.pillBg, borderColor: t.pillBorder }}
-            aria-hidden="true"
+            onClick={(e) => e.stopPropagation()}
           >
-            {icons.map((icon, i) => (
-              <span key={i} className="block h-[22px] w-[22px] overflow-hidden rounded-[7px]">
-                <span className="grid h-full w-full place-items-center [&_svg]:h-[60%] [&_svg]:w-[60%]" style={{ background: icon.src ? undefined : icon.background }}>
-                  {icon.src ? <img src={icon.src} alt="" className="h-full w-full object-cover" /> : icon.node}
+            {(pillIcons || icons).map((icon, i) => {
+              const content = (
+                <span className="block h-[22px] w-[22px] overflow-hidden rounded-[7px] transition-transform hover:scale-115 active:scale-95 cursor-pointer">
+                  <span className="grid h-full w-full place-items-center [&_svg]:h-[58%] [&_svg]:w-[58%]" style={{ background: icon.src ? undefined : icon.background }}>
+                    {icon.src ? <img src={icon.src} alt="" className="h-full w-full object-cover" /> : icon.node}
+                  </span>
                 </span>
-              </span>
-            ))}
-          </span>
+              );
+
+              return icon.href ? (
+                <a
+                  key={i}
+                  href={icon.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={icon.label}
+                  onClick={(e) => e.stopPropagation()}
+                  className="focus:outline-hidden"
+                >
+                  {content}
+                </a>
+              ) : (
+                <span key={i} title={icon.label}>{content}</span>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

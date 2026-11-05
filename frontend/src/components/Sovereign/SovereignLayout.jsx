@@ -25,30 +25,21 @@ import { DiscreteTabs } from '../watermelon/discrete-tabs';
 import { TetrisLoader } from '../ui/loader-tetris';
 import { IconFolder } from '../ui/icon-folder';
 
-const DEVELOPER_ICONS = [
+const DEVELOPER_TECH_ICONS = [
     {
-        label: "GitHub",
-        background: "linear-gradient(135deg,#24292e,#0d1117)",
+        label: "Spring Boot",
+        background: "linear-gradient(135deg,#1b3d22,#0d1f11)",
         node: (
-            <svg viewBox="0 0 24 24" width="52%" height="52%" fill="#fff">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-            </svg>
-        ),
-    },
-    {
-        label: "LinkedIn",
-        background: "linear-gradient(135deg,#0077b5,#005582)",
-        node: (
-            <svg viewBox="0 0 24 24" width="48%" height="48%" fill="#fff">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+            <svg viewBox="0 0 24 24" width="50%" height="50%" fill="#6db33f">
+                <path d="M21.574 8.767a5.53 5.53 0 0 0-3.535-4.707c-2.315-.89-4.832.062-6.195 2.122-1.398-1.536-3.676-2.189-5.756-1.428-2.36.865-3.876 3.125-3.766 5.642.1 2.34 1.625 4.385 3.823 5.117 1.34.447 2.802.26 3.99-.472v2.443c0 2.213 1.794 4.007 4.007 4.007s4.007-1.794 4.007-4.007V15.02c1.348-.99 2.18-2.557 2.278-4.225.078-1.34-.337-2.678-1.127-3.754-.42-.572-.94-1.042-1.542-1.378z" />
             </svg>
         ),
     },
     {
         label: "React",
-        background: "linear-gradient(135deg,#1f242d,#0e1726)",
+        background: "linear-gradient(135deg,#122538,#08131d)",
         node: (
-            <svg viewBox="-11.5 -10.23174 23 20.46348" width="52%" height="52%" fill="#61dafb">
+            <svg viewBox="-11.5 -10.23174 23 20.46348" width="54%" height="54%" fill="#61dafb">
                 <circle cx="0" cy="0" r="2.05" fill="#61dafb" />
                 <g stroke="#61dafb" strokeWidth="1" fill="none">
                     <ellipse rx="11" ry="4.2" />
@@ -59,11 +50,53 @@ const DEVELOPER_ICONS = [
         ),
     },
     {
-        label: "Spring Boot",
-        background: "linear-gradient(135deg,#243b24,#162b16)",
+        label: "Tailwind CSS",
+        background: "linear-gradient(135deg,#0e273c,#061420)",
         node: (
-            <svg viewBox="0 0 24 24" width="48%" height="48%" fill="#6db33f">
-                <path d="M21.574 8.767a5.53 5.53 0 0 0-3.535-4.707c-2.315-.89-4.832.062-6.195 2.122-1.398-1.536-3.676-2.189-5.756-1.428-2.36.865-3.876 3.125-3.766 5.642.1 2.34 1.625 4.385 3.823 5.117 1.34.447 2.802.26 3.99-.472v2.443c0 2.213 1.794 4.007 4.007 4.007s4.007-1.794 4.007-4.007V15.02c1.348-.99 2.18-2.557 2.278-4.225.078-1.34-.337-2.678-1.127-3.754-.42-.572-.94-1.042-1.542-1.378z" />
+            <svg viewBox="0 0 24 24" width="52%" height="52%" fill="#38bdf8">
+                <path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z" />
+            </svg>
+        ),
+    },
+    {
+        label: "PostgreSQL",
+        background: "linear-gradient(135deg,#1a2b42,#0c1724)",
+        node: (
+            <svg viewBox="0 0 24 24" width="52%" height="52%" fill="#60a5fa">
+                <path d="M11.65 0C8.83 0 6.46 1.41 5.3 3.59c-.49-.07-.98-.1-1.48-.1C1.71 3.49 0 5.2 0 7.32c0 1.63 1.02 3.02 2.46 3.58-.04.28-.06.57-.06.86 0 4.23 3.62 7.78 8.42 8.35.33.68.75 1.3 1.25 1.84L12 24l-.07-.05c-.5-.54-.92-1.16-1.25-1.84-4.8-.57-8.42-4.12-8.42-8.35 0-.29.02-.58.06-.86C.88 12.34 0 10.95 0 9.32c0-2.12 1.71-3.83 3.82-3.83.5 0 .99.03 1.48.1C6.46 3.41 8.83 2 11.65 2c2.6 0 4.82 1.2 6.06 3.01.5-.2 1.05-.31 1.63-.31 2.39 0 4.34 1.95 4.34 4.34 0 1.76-1.05 3.27-2.55 3.94.04.34.06.68.06 1.02 0 4.97-4.25 9-9.5 9-2.82 0-5.36-1.16-7.1-3.04l1.45-1.38c1.37 1.48 3.36 2.42 5.65 2.42 4.14 0 7.5-3.13 7.5-7 0-.27-.02-.54-.05-.8-.11-.94.4-1.87 1.27-2.3 1.02-.5 1.73-1.54 1.73-2.75 0-1.66-1.34-3-3-3-.41 0-.8.08-1.16.23-.9.37-1.92.05-2.45-.77-.96-1.48-2.6-2.46-4.48-2.46z"/>
+            </svg>
+        ),
+    }
+];
+
+const DEVELOPER_SOCIAL_ICONS = [
+    {
+        label: "GitHub",
+        href: "https://github.com/199adarsh",
+        background: "linear-gradient(135deg,#24292e,#111518)",
+        node: (
+            <svg viewBox="0 0 24 24" width="56%" height="56%" fill="#fff">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+        ),
+    },
+    {
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/in/adarsh-herwade-344445250",
+        background: "linear-gradient(135deg,#0077b5,#005582)",
+        node: (
+            <svg viewBox="0 0 24 24" width="52%" height="52%" fill="#fff">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+            </svg>
+        ),
+    },
+    {
+        label: "Email",
+        href: "mailto:raosahebherwade123@gmail.com",
+        background: "linear-gradient(135deg,#c5221f,#8c1613)",
+        node: (
+            <svg viewBox="0 0 24 24" width="52%" height="52%" fill="#fff">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
             </svg>
         ),
     }
@@ -905,42 +938,33 @@ const SovereignLayout = () => {
                 {/* Meet Developer Modal */}
                 {showDeveloperModal && (
                     <div
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200"
                         onClick={() => setShowDeveloperModal(false)}
                     >
                         <div
-                            className="relative flex flex-col items-center justify-center p-6 sm:p-8 max-w-lg w-full"
+                            className="relative flex flex-col items-center justify-center p-0 max-w-[420px] w-full"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
                                 type="button"
                                 onClick={() => setShowDeveloperModal(false)}
-                                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/80 dark:bg-[#1C1C1E]/80 border border-black/10 dark:border-white/10 flex items-center justify-center text-[#727272] hover:text-black dark:hover:text-white transition-colors cursor-pointer z-30 shadow-sm"
+                                className="absolute -top-3.5 -right-3.5 w-8 h-8 rounded-full bg-[#1c2026] hover:bg-[#252b33] border border-white/15 flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer z-40 shadow-md"
                                 aria-label="Close"
                             >
-                                <Cancel01Icon size={16} />
+                                <Cancel01Icon size={15} />
                             </button>
 
                             <IconFolder
                                 theme="dark"
                                 title="Meet Developer"
-                                tags={["Adarsh Patil", "Full-Stack", "Spring Boot", "React"]}
-                                icons={DEVELOPER_ICONS}
+                                subtitle="Adarsh Patil • Full-Stack Engineer"
+                                tags={["Spring Boot", "React", "Tailwind", "PostgreSQL"]}
+                                icons={DEVELOPER_TECH_ICONS}
+                                pillIcons={DEVELOPER_SOCIAL_ICONS}
                                 defaultOpen={true}
-                                spread={75}
+                                spread={74}
                                 showPill={true}
                             />
-
-                            <div className="mt-5 flex items-center gap-3 z-10">
-                                <a
-                                    href="https://github.com/199adarsh"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-4 py-2 rounded-full text-xs font-semibold bg-white/95 dark:bg-[#1C1C1E]/95 hover:bg-white text-[#1D1D1F] dark:text-white border border-[#E5E5EA] dark:border-[#2C2C2E] shadow-sm transition-all"
-                                >
-                                    GitHub Profile
-                                </a>
-                            </div>
                         </div>
                     </div>
                 )}

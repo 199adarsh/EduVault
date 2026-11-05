@@ -104,9 +104,9 @@ const AttendanceAnalytics = () => {
     const teacherSubjects = useMemo(() => {
         try {
             const saved = localStorage.getItem('eduvault_teacher_subjects');
-            if (saved) {
+            if (saved !== null) {
                 const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed) && parsed.length > 0) {
+                if (Array.isArray(parsed)) {
                     return parsed;
                 }
             }

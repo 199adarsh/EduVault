@@ -21,7 +21,7 @@ import { cn } from '../../lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
-const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOpen, onLogout, collapsed = false }) => {
+const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOpen, onLogout, collapsed = false, onOpenDeveloper }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const menuRef = useRef(null);
 
@@ -306,6 +306,18 @@ const SovereignSidebar = ({ profile, attendance, mobileMenuOpen, setMobileMenuOp
                         </div>
                     )}
                 </div>
+
+                {!collapsed && (
+                    <div className="pt-2 px-1 text-center">
+                        <button
+                            type="button"
+                            onClick={onOpenDeveloper}
+                            className="text-[11px] font-medium text-[#8E8E93] hover:text-[#0071E3] transition-colors cursor-pointer"
+                        >
+                            Meet Developer
+                        </button>
+                    </div>
+                )}
             </div>
         </aside>
     );

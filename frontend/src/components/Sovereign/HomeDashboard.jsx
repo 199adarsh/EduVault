@@ -151,7 +151,7 @@ function buildHeatmapData(subjects, fallbackWeeks = 18) {
 }
 
 const HomeDashboard = () => {
-  const { profile, subjects, notes, loading, refreshData } = useOutletContext();
+  const { profile, subjects, notes, loading, refreshData, onOpenDeveloper } = useOutletContext() || {};
   const [announcements, setAnnouncements] = useState([]);
   const [timeline, setTimeline] = useState([]);
   const [ciePopupOpen, setCiePopupOpen] = useState(false);
@@ -2014,6 +2014,22 @@ const HomeDashboard = () => {
                   </div>
                 </section>
               )}
+
+              {/* Platform Footer */}
+              <footer className="mt-12 pt-6 pb-8 border-t border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8E8E93]">
+                <div className="flex items-center gap-2">
+                  <span>© 2026 CampusAxis • Academic Intelligence</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={onOpenDeveloper}
+                    className="hover:text-[#0071E3] transition-colors cursor-pointer font-medium"
+                  >
+                    Meet Developer
+                  </button>
+                </div>
+              </footer>
 
             </div>
           </div>

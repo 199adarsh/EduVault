@@ -76,11 +76,71 @@ export default function FullScreenNoteViewer({
     const containerRef = useRef(null);
     const isDrawingRef = useRef(false);
 
+    // Request native browser fullscreen (F11 equivalent) on open, and exit cleanly on close
+    useEffect(() => {
+        const enterBrowserFullscreen = async () => {
+            try {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    const el = document.documentElement;
+                    if (el.requestFullscreen) {
+                        await el.requestFullscreen();
+                    } else if (el.webkitRequestFullscreen) {
+                        await el.webkitRequestFullscreen();
+                    } else if (el.msRequestFullscreen) {
+                        await el.msRequestFullscreen();
+                    }
+                }
+            } catch (err) {
+                // Ignore if browser requires direct user interaction or permissions
+                console.warn('Browser fullscreen request failed:', err);
+            }
+        };
+
+        enterBrowserFullscreen();
+
+        const handleFullscreenChange = () => {
+            // When user exits native fullscreen via Esc or F11, close viewer
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                onClose?.();
+            }
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                try {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen().catch(() => {});
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                } catch { /* ignore */ }
+            }
+        };
+    }, [onClose]);
+
+    const handleClose = useCallback(() => {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            try {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            } catch { /* ignore */ }
+        }
+        onClose?.();
+    }, [onClose]);
+
     // Handle Esc key to close full screen
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') {
-                onClose?.();
+                handleClose();
             } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
                 if (e.shiftKey) {
                     handleRedo();
@@ -93,7 +153,7 @@ export default function FullScreenNoteViewer({
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [strokes, redoStack]);
+    }, [strokes, redoStack, handleClose]);
 
     // Resize canvas to match viewport/container
     const syncCanvasSize = useCallback(() => {
@@ -175,7 +235,7 @@ export default function FullScreenNoteViewer({
                 ctx.lineWidth = item.width;
                 ctx.globalAlpha = 1.0;
                 const { startX, startY, endX, endY } = item;
-                
+
                 // Draw shaft
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
@@ -365,7 +425,7 @@ export default function FullScreenNoteViewer({
             <header className="h-12 px-4 bg-[#18181B]/95 backdrop-blur-md border-b border-[#27272A] flex items-center justify-between shrink-0 z-30">
                 <div className="flex items-center gap-3 min-w-0">
                     <span className="px-2 py-0.5 rounded-md bg-[#27272A] text-[11px] font-mono text-[#A1A1AA] flex items-center gap-1.5">
-                        <Sparkles size={12} className="text-[#0071E3]" />
+
                         <span>Live Whiteboard</span>
                     </span>
                     <span className="text-xs text-[#71717A] hidden md:inline">|</span>
@@ -373,7 +433,7 @@ export default function FullScreenNoteViewer({
                         {note?.title || 'Document Annotation'}
                     </h2>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline">
-                        Temporary &bull; Non-Saveable
+                        CampusAxis Whiteboard
                     </span>
                 </div>
 
@@ -426,7 +486,7 @@ export default function FullScreenNoteViewer({
 
                     {/* Exit Full Screen */}
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="px-3 py-1.5 bg-[#27272A] hover:bg-[#3F3F46] text-[#E4E4E7] hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-[#3F3F46]"
                         title="Close Full Screen (Esc)"
                     >
@@ -503,15 +563,14 @@ export default function FullScreenNoteViewer({
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerUp}
-                    className={`absolute inset-0 z-20 ${
-                        tool === 'select'
-                            ? 'pointer-events-none cursor-default'
-                            : tool === 'eraser'
+                    className={`absolute inset-0 z-20 ${tool === 'select'
+                        ? 'pointer-events-none cursor-default'
+                        : tool === 'eraser'
                             ? 'pointer-events-auto cursor-cell'
                             : tool === 'text'
-                            ? 'pointer-events-auto cursor-text'
-                            : 'pointer-events-auto cursor-crosshair'
-                    }`}
+                                ? 'pointer-events-auto cursor-text'
+                                : 'pointer-events-auto cursor-crosshair'
+                        }`}
                 />
 
                 {/* 3. Committed Text Annotations */}
@@ -573,11 +632,10 @@ export default function FullScreenNoteViewer({
                 {/* Select / Pan Tool */}
                 <button
                     onClick={() => setTool('select')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'select'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'select'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Select & Navigate Document"
                 >
                     <MousePointer size={16} />
@@ -588,11 +646,10 @@ export default function FullScreenNoteViewer({
                 {/* Pen Tool */}
                 <button
                     onClick={() => setTool('pen')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'pen'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'pen'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Pen (Freehand Writing)"
                 >
                     <Pen size={16} />
@@ -601,11 +658,10 @@ export default function FullScreenNoteViewer({
                 {/* Highlighter Tool */}
                 <button
                     onClick={() => setTool('highlighter')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'highlighter'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'highlighter'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Highlighter"
                 >
                     <Highlighter size={16} />
@@ -614,11 +670,10 @@ export default function FullScreenNoteViewer({
                 {/* Eraser Tool */}
                 <button
                     onClick={() => setTool('eraser')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'eraser'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'eraser'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Eraser"
                 >
                     <Eraser size={16} />
@@ -627,11 +682,10 @@ export default function FullScreenNoteViewer({
                 {/* Text Annotation Tool */}
                 <button
                     onClick={() => setTool('text')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'text'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'text'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Text Annotation"
                 >
                     <Type size={16} />
@@ -640,11 +694,10 @@ export default function FullScreenNoteViewer({
                 {/* Rectangle Tool */}
                 <button
                     onClick={() => setTool('rect')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'rect'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'rect'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Rectangle Box"
                 >
                     <Square size={16} />
@@ -653,11 +706,10 @@ export default function FullScreenNoteViewer({
                 {/* Arrow Pointer Tool */}
                 <button
                     onClick={() => setTool('arrow')}
-                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                        tool === 'arrow'
-                            ? 'bg-[#0071E3] text-white shadow-sm'
-                            : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
-                    }`}
+                    className={`p-2 rounded-xl transition-all cursor-pointer ${tool === 'arrow'
+                        ? 'bg-[#0071E3] text-white shadow-sm'
+                        : 'hover:bg-[#27272A] text-[#A1A1AA] hover:text-white'
+                        }`}
                     title="Arrow Pointer"
                 >
                     <ArrowUpRight size={16} />
@@ -671,11 +723,10 @@ export default function FullScreenNoteViewer({
                         <button
                             key={c.id}
                             onClick={() => setColor(c.hex)}
-                            className={`w-4 h-4 rounded-full transition-transform cursor-pointer border ${
-                                color === c.hex
-                                    ? 'scale-125 border-white ring-2 ring-[#0071E3]/50'
-                                    : 'border-white/20 hover:scale-110'
-                            }`}
+                            className={`w-4 h-4 rounded-full transition-transform cursor-pointer border ${color === c.hex
+                                ? 'scale-125 border-white ring-2 ring-[#0071E3]/50'
+                                : 'border-white/20 hover:scale-110'
+                                }`}
                             style={{ backgroundColor: c.hex }}
                             title={c.name}
                         />
@@ -690,11 +741,10 @@ export default function FullScreenNoteViewer({
                         <button
                             key={sw.label}
                             onClick={() => setStrokeWidth(sw.width)}
-                            className={`px-1.5 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
-                                strokeWidth === sw.width
-                                    ? 'bg-[#0071E3] text-white'
-                                    : 'text-[#A1A1AA] hover:text-white'
-                            }`}
+                            className={`px-1.5 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${strokeWidth === sw.width
+                                ? 'bg-[#0071E3] text-white'
+                                : 'text-[#A1A1AA] hover:text-white'
+                                }`}
                         >
                             {sw.label}
                         </button>

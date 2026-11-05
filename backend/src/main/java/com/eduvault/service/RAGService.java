@@ -54,6 +54,9 @@ public class RAGService {
     @Autowired(required = false)
     private BackblazeStorageService backblazeStorageService;
 
+    @Autowired(required = false)
+    private PgVectorService pgVectorService;
+
     private static class CachedAnswer {
         final String json;
         final long timestamp;

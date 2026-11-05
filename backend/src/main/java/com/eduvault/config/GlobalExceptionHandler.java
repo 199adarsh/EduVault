@@ -31,3 +31,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().build();
     }
 }
+

@@ -22,6 +22,7 @@ import {
 import DocumentLoadingBar from './DocumentLoadingBar';
 import PdfViewer from './PdfViewer';
 import { cn } from '@/lib/utils';
+import { getCachedNoteBlob, setCachedNoteBlob } from '@/lib/pdfCache';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -150,11 +151,24 @@ const NoteDetail = () => {
             setDocLoading(true);
             let blob = null;
 
-            // 1. Fetch from fast B2 CDN presigned URL first
-            if (presignedUrl) {
+            // 0. Persistent IndexedDB Cache (0 KB B2 Bandwidth)
+            try {
+                const idbBlob = await getCachedNoteBlob(noteId);
+                if (idbBlob) {
+                    blob = idbBlob;
+                }
+            } catch (e) {
+                console.warn('IDB read error:', e);
+            }
+
+            // 1. Fetch from fast B2 CDN presigned URL if not in local cache
+            if (!blob && presignedUrl) {
                 try {
                     const res = await fetch(presignedUrl);
-                    if (res.ok) blob = await res.blob();
+                    if (res.ok) {
+                        blob = await res.blob();
+                        setCachedNoteBlob(noteId, blob);
+                    }
                 } catch (e) {
                     console.warn('Presigned fetch failed, falling back:', e);
                 }
@@ -164,7 +178,10 @@ const NoteDetail = () => {
             if (!blob && note?.fileUrl) {
                 try {
                     const res = await fetch(`${API_BASE}/files/raw/${note.fileUrl}`);
-                    if (res.ok) blob = await res.blob();
+                    if (res.ok) {
+                        blob = await res.blob();
+                        setCachedNoteBlob(noteId, blob);
+                    }
                 } catch (err) {
                     console.warn('Local raw fetch error:', err);
                 }

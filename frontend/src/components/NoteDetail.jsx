@@ -394,42 +394,56 @@ const NoteDetail = () => {
         }
     };
 
-    const handleDownload = () => {
-        const downloadUrl = presignedUrl || (note?.fileUrl ? `${API_BASE}/files/raw/${note.fileUrl}` : null);
-        if (!downloadUrl) {
-            toast.error('File URL not available for download.');
-            return;
-        }
-
-        setDownloading(true);
-        setDownloadProgress(12);
-
-        const interval = setInterval(() => {
-            setDownloadProgress(p => {
-                if (p >= 92) {
-                    clearInterval(interval);
-                    return 95;
-                }
-                return p + Math.floor(Math.random() * 15 + 10);
-            });
-        }, 110);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            setDownloadProgress(100);
+    const handleDownload = async () => {
+        // 1. If in-memory blob is available, download directly without extra network call
+        if (blobUrl) {
             const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = note?.fileUrl ? note.fileUrl.split('/').pop() : `${note?.title || 'document'}.pdf`;
-            a.target = '_blank';
+            a.href = blobUrl;
+            a.download = note?.originalFilename || (note?.fileUrl ? note.fileUrl.split('/').pop() : `${note?.title || 'document'}.pdf`);
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            toast.success('Document download started');
-            setTimeout(() => {
-                setDownloading(false);
-                setDownloadProgress(0);
-            }, 500);
-        }, 650);
+            toast.success('Document downloaded from cache');
+            return;
+        }
+
+        const downloadUrl = presignedUrl || `${API_BASE}/files/${noteId}/raw`;
+        setDownloading(true);
+        setDownloadProgress(20);
+
+        try {
+            const res = await fetch(downloadUrl);
+            if (!res.ok) {
+                throw new Error(`Download failed with status ${res.status}`);
+            }
+            const blob = await res.blob();
+            const bUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = bUrl;
+            a.download = note?.originalFilename || (note?.fileUrl ? note.fileUrl.split('/').pop() : `${note?.title || 'document'}.pdf`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            toast.success('Document downloaded');
+        } catch (err) {
+            console.warn('Binary download failed, attempting text fallback:', err);
+            if (note?.extractedText && note.extractedText.trim().length > 10) {
+                const textBlob = new Blob([note.extractedText], { type: 'text/plain;charset=utf-8' });
+                const tUrl = URL.createObjectURL(textBlob);
+                const a = document.createElement('a');
+                a.href = tUrl;
+                a.download = `${(note.title || 'document').replace(/[^a-zA-Z0-9_-]/g, '_')}_notes.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                toast.warning('B2 storage daily cap reached. Downloaded extracted note text.');
+            } else {
+                toast.error('Backblaze B2 daily download cap exceeded. Please increase cap in B2 Caps & Alerts.');
+            }
+        } finally {
+            setDownloading(false);
+            setDownloadProgress(0);
+        }
     };
 
     if (loading) {

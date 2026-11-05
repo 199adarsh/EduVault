@@ -9,6 +9,7 @@ import React, {
 import { useOutletContext, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
     SparklesIcon,
     Copy01Icon,
@@ -443,6 +444,7 @@ const AIAssistant = () => {
                                     <div className="flex-1 min-w-0">
                                         <div className="text-sm leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7] select-text">
                                             <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
                                                 components={{
                                                     p: ({ node, ...rest }) => (
                                                         <p className="mb-3 last:mb-0 leading-relaxed" {...rest} />

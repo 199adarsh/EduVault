@@ -3,6 +3,7 @@ import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import mammoth from 'mammoth';
 import {
     ArrowLeft02Icon,
@@ -688,7 +689,23 @@ const NoteDetail = () => {
                                                     /* Assistant Response (Clean markdown, no boxed headers, no filenames) */
                                                     <div className="w-full space-y-1.5 group">
                                                         <div className="prose prose-sm max-w-none text-[#1D1D1F] leading-relaxed text-xs">
-                                                            <ReactMarkdown children={typeof msg.text === "string" ? msg.text : String(msg.text || "")} />
+                                                            <ReactMarkdown
+                                                                remarkPlugins={[remarkGfm]}
+                                                                components={{
+                                                                    table: ({ node, ...rest }) => (
+                                                                        <div className="overflow-x-auto my-2">
+                                                                            <table className="min-w-full divide-y divide-[#E5E5EA] border border-[#E5E5EA] text-xs" {...rest} />
+                                                                        </div>
+                                                                    ),
+                                                                    th: ({ node, ...rest }) => (
+                                                                        <th className="bg-[#F5F5F7] px-2.5 py-1.5 text-left font-semibold text-[#1D1D1F] border-b border-[#E5E5EA]" {...rest} />
+                                                                    ),
+                                                                    td: ({ node, ...rest }) => (
+                                                                        <td className="px-2.5 py-1.5 border-b border-[#E5E5EA] text-[#6E6E73]" {...rest} />
+                                                                    ),
+                                                                }}
+                                                                children={typeof msg.text === "string" ? msg.text : String(msg.text || "")}
+                                                            />
                                                         </div>
                                                         <div className="flex items-center gap-2 pt-1 opacity-60 hover:opacity-100 transition-opacity">
                                                             <button

@@ -799,7 +799,7 @@ const SovereignLayout = () => {
 
                 {/* Page Content */}
 
-                <div className={`flex-1 w-full max-w-full min-w-0 relative ${location.pathname === '/ai-assistant' ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-24 md:pb-0'}`}>
+                <div className={`flex-1 w-full max-w-full min-w-0 relative ${location.pathname === '/ai-assistant' || location.pathname.startsWith('/notes/') ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-24 md:pb-0'}`}>
 
                     {loading ? (
 

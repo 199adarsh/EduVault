@@ -113,15 +113,17 @@ const NoteDetail = () => {
             try {
                 const requests = [
                     axios.get(`${API_BASE}/notes/${noteId}`),
-                    axios.get(`${API_BASE}/notes/${noteId}/doubts`)
+                    axios.get(`${API_BASE}/notes/${noteId}/doubts`).catch(() => ({ data: [] }))
                 ];
                 if (!presignedCache.has(noteId)) {
-                    requests.push(axios.get(`${API_BASE}/files/${noteId}/presigned`));
+                    requests.push(axios.get(`${API_BASE}/files/${noteId}/presigned`).catch(() => null));
                 }
 
                 const [noteRes, doubtsRes, fileRes] = await Promise.all(requests);
-                setNote(noteRes.data);
-                const freshDoubts = doubtsRes.data || [];
+                if (noteRes?.data) {
+                    setNote(noteRes.data);
+                }
+                const freshDoubts = doubtsRes?.data || [];
                 setDoubts(freshDoubts);
                 doubtsCache.set(noteId, freshDoubts);
 
@@ -384,6 +386,7 @@ const NoteDetail = () => {
     const isPdf = fileExt === 'pdf';
     const isOfficeDoc = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(fileExt);
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
+    const resolvedPdfUrl = blobUrl || presignedUrl || (note?.fileUrl ? (note.fileUrl.startsWith('http') ? note.fileUrl : `${API_BASE}/files/raw/${note.fileUrl}`) : null);
 
     return (
         <div className="relative flex-1 flex flex-col bg-[#F5F5F7] overflow-hidden antialiased h-full w-full font-sans text-[#1D1D1F]">
@@ -481,17 +484,17 @@ const NoteDetail = () => {
             </header>
 
             {/* Side-by-Side Content Canvas */}
-            <div className="flex-1 w-full h-[calc(100%-3.5rem)] min-h-0 flex flex-col md:flex-row overflow-hidden relative">
+            <div className="flex-1 w-full h-[calc(100%-3.5rem)] min-h-[450px] flex flex-col md:flex-row overflow-hidden relative">
 
                 {/* LEFT: Notes Document Preview Area */}
                 <div className={cn(
-                    "h-full min-h-0 bg-[#F5F5F7] relative flex flex-col overflow-hidden transition-all duration-200",
+                    "h-full min-h-[450px] bg-[#F5F5F7] relative flex flex-col overflow-hidden transition-all duration-200",
                     isPanelOpen
                         ? "hidden md:flex flex-1 min-w-0 border-r border-[#E5E5EA]"
                         : "flex-1 w-full"
                 )}>
                     {isPdf ? (
-                        (!blobUrl && !presignedUrl) ? (
+                        (!resolvedPdfUrl) ? (
                             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#F5F5F7]">
                                 <DocumentLoadingBar
                                     inline
@@ -501,9 +504,9 @@ const NoteDetail = () => {
                             </div>
                         ) : (
                             <PdfViewer
-                                url={blobUrl || presignedUrl}
+                                url={resolvedPdfUrl}
                                 data={pdfData}
-                                presignedUrl={presignedUrl}
+                                presignedUrl={presignedUrl || resolvedPdfUrl}
                                 title={note.title}
                                 onDownload={handleDownload}
                             />

@@ -599,29 +599,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                     />
                 ) : (
                     <>
-                        {/* Subject Vault Header (Clean, minimal, content-first) */}
-                        {activeSubjectObj && (
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-2xl shadow-xs">
-                                <div className="flex items-center gap-3.5">
-                                    <div className="w-10 h-10 rounded-xl bg-[#F5F5F7] dark:bg-[#2C2C2E] flex items-center justify-center text-[#1D1D1F] dark:text-white shrink-0">
-                                        <Book02Icon size={20} />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h2 className="text-sm font-semibold text-[#1D1D1F] dark:text-white">{activeSubjectObj.name}</h2>
-                                            {activeSubjectObj.code && (
-                                                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#AEAEB2] border border-[#E5E5EA] dark:border-[#2C2C2E]">
-                                                    {activeSubjectObj.code}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-[#6E6E73] dark:text-[#AEAEB2] mt-0.5">
-                                            {displayNotes.length} materials in this vault
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+
 
                         {/* Direct Notes List Grid - Sleek, Compact & Responsive */}
                         {displayNotes.length > 0 ? (

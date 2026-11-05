@@ -211,8 +211,8 @@ export function IconFolder(props: IconFolderProps) {
       className={`relative isolate h-[286px] w-full max-w-[420px] cursor-pointer select-none outline-none [-webkit-tap-highlight-color:transparent] focus-visible:rounded-3xl focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 ${className}`}
       style={{
         color: t.ink,
-        fontFamily: "'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
-        letterSpacing: "-0.05em",
+        fontFamily: "'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        letterSpacing: "-0.02em",
         outlineColor: t.focus,
         zIndex: lift ? 2 : undefined,
         opacity: shown || reduced ? 1 : 0,
@@ -313,12 +313,15 @@ export function IconFolder(props: IconFolderProps) {
         <div className="px-[20px] pt-[26px]">
           <h3
             className="m-0 text-[18px] font-semibold tracking-tight !text-white leading-tight"
-            style={{ color: t.ink }}
+            style={{ color: t.ink, fontFamily: "'DM Sans', sans-serif" }}
           >
             {title}
           </h3>
           {subtitle && (
-            <p className="m-0 mt-0.5 text-[11px] text-white/60 font-medium tracking-normal">
+            <p
+              className="m-0 mt-0.5 text-[11px] text-white/60 font-medium tracking-normal"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
               {subtitle}
             </p>
           )}
@@ -327,8 +330,10 @@ export function IconFolder(props: IconFolderProps) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="h-[22px] whitespace-nowrap rounded-md border px-2 text-[11px] font-medium leading-[20px] backdrop-blur-[7px]"
+              className="h-[22px] whitespace-nowrap rounded-md border px-2 text-[11px] font-bold leading-[20px] backdrop-blur-[7px]"
               style={{
+                fontFamily: "'Courier New', Courier, monospace",
+                fontWeight: "bold",
                 background: t.chipBg,
                 borderColor: hi !== null && icons[hi]?.label === tag ? t.focus : t.chipBorder,
                 color: hi !== null && icons[hi]?.label === tag ? t.ink : t.chipInk,

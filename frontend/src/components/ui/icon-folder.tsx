@@ -353,7 +353,7 @@ export function IconFolder(props: IconFolderProps) {
           >
             {(pillIcons || icons).map((icon, i) => {
               const content = (
-                <span className="block h-[22px] w-[22px] overflow-hidden rounded-[7px] transition-transform hover:scale-115 active:scale-95 cursor-pointer">
+                <span className="block h-[30px] w-[30px] overflow-hidden rounded-[7px] transition-transform hover:scale-115 active:scale-95 cursor-pointer">
                   <span className="grid h-full w-full place-items-center [&_svg]:h-[58%] [&_svg]:w-[58%]" style={{ background: icon.src ? undefined : icon.background }}>
                     {icon.src ? <img src={icon.src} alt="" className="h-full w-full object-cover" /> : icon.node}
                   </span>

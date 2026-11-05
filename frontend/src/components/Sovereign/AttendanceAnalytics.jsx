@@ -1605,109 +1605,118 @@ const AttendanceAnalytics = () => {
                     <div className="space-y-6 w-full min-w-0">
                         {/* Main Two-Column Responsive Layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                            {/* Left Column: Primary Subject Attendance Table */}
-                            <section className="lg:col-span-8 bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden">
-                                {/* Filter Bar */}
-                                <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-[#E2E2E2] flex flex-wrap items-center justify-between gap-3">
-                                    <FluidTabs
-                                        value={filterTab}
-                                        onChange={setFilterTab}
-                                        size="xs"
-                                        layoutId="attendance-filter-tabs-desktop"
-                                        tabs={[
-                                            { id: 'all', label: `All Subjects (${activeSubjects.length})` },
-                                            { id: 'attention', label: `Needs Attention (${riskSubjects.length})` },
-                                            { id: 'safe', label: `Safe (${safeSubjects.length})` }
-                                        ]}
-                                    />
+                            {/* Left Column: Primary Subject Attendance Table & Planner */}
+                            <div className="lg:col-span-8 space-y-6">
+                                <section className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs overflow-hidden">
+                                    {/* Filter Bar */}
+                                    <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-[#E2E2E2] flex flex-wrap items-center justify-between gap-3">
+                                        <FluidTabs
+                                            value={filterTab}
+                                            onChange={setFilterTab}
+                                            size="xs"
+                                            layoutId="attendance-filter-tabs-desktop"
+                                            tabs={[
+                                                { id: 'all', label: `All Subjects (${activeSubjects.length})` },
+                                                { id: 'attention', label: `Needs Attention (${riskSubjects.length})` },
+                                                { id: 'safe', label: `Safe (${safeSubjects.length})` }
+                                            ]}
+                                        />
 
-                                    <span className="text-xs text-[#727272] font-medium hidden sm:inline">Minimum Threshold: 75.0%</span>
-                                </div>
+                                        <span className="text-xs text-[#727272] font-medium hidden sm:inline">Minimum Threshold: 75.0%</span>
+                                    </div>
 
-                                {/* Subject Rows List */}
-                                <div className="divide-y divide-[#E2E2E2]">
-                                    {displayedSubjects.map(sub => {
-                                        const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
-                                        const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
-                                        const pct = getPrecisePct(sub);
-                                        const isSafe = pct >= 75;
-                                        const isLab = getCategory(sub) === 'LAB';
+                                    {/* Subject Rows List */}
+                                    <div className="divide-y divide-[#E2E2E2]">
+                                        {displayedSubjects.map(sub => {
+                                            const conducted = sub.totalConducted > 0 ? sub.totalConducted : (sub.detailedAttendance?.length || 0);
+                                            const attended = sub.totalAttended > 0 ? sub.totalAttended : (sub.detailedAttendance?.filter(r => r.status === 'Present').length || 0);
+                                            const pct = getPrecisePct(sub);
+                                            const isSafe = pct >= 75;
+                                            const isLab = getCategory(sub) === 'LAB';
 
-                                        // Skips vs Recovery
-                                        const SkipsAvailable = Math.max(0, Math.floor((attended - 0.75 * conducted) / 0.75));
-                                        const sessionsNeeded = Math.max(0, Math.ceil((0.75 * conducted - attended) / 0.25));
+                                            // Skips vs Recovery
+                                            const SkipsAvailable = Math.max(0, Math.floor((attended - 0.75 * conducted) / 0.75));
+                                            const sessionsNeeded = Math.max(0, Math.ceil((0.75 * conducted - attended) / 0.25));
 
-                                        return (
-                                            <div
-                                                key={sub.id}
-                                                onClick={() => {
-                                                    setSelectedSubject(sub);
-                                                    setShowDetailModal(true);
-                                                    setModalTab('presence');
-                                                    fetchSubjectNcRequests(sub);
-                                                    setSelectedNcDates([]);
-                                                    setReviewingReq(null);
-                                                }}
-                                                className={`p-3.5 sm:px-6 sm:py-4 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 cursor-pointer ${!isSafe ? 'bg-amber-50/20' : ''
-                                                    }`}
-                                            >
-                                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                    <div className={`p-2 rounded-lg mt-0.5 shrink-0 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
-                                                        }`}>
-                                                        {isLab ? <ComputerProgramming01Icon size={18} /> : <Quiz03Icon size={18} />}
+                                            return (
+                                                <div
+                                                    key={sub.id}
+                                                    onClick={() => {
+                                                        setSelectedSubject(sub);
+                                                        setShowDetailModal(true);
+                                                        setModalTab('presence');
+                                                        fetchSubjectNcRequests(sub);
+                                                        setSelectedNcDates([]);
+                                                        setReviewingReq(null);
+                                                    }}
+                                                    className={`p-3.5 sm:px-6 sm:py-4 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 cursor-pointer ${!isSafe ? 'bg-amber-50/20' : ''
+                                                        }`}
+                                                >
+                                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                        <div className={`p-2 rounded-lg mt-0.5 shrink-0 ${isSafe ? 'bg-[#DEEDFC] text-[#0073E6]' : 'bg-amber-100/60 text-amber-700'
+                                                            }`}>
+                                                            {isLab ? <ComputerProgramming01Icon size={18} /> : <Quiz03Icon size={18} />}
+                                                        </div>
+
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <h3 className="text-sm font-semibold text-[#383838] truncate min-w-0 flex-1">
+                                                                    {sub.name}
+                                                                </h3>
+                                                                <span className={`text-base font-bold sm:hidden shrink-0 tabular-nums ${isSafe ? 'text-[#383838]' : 'text-amber-600'}`}>
+                                                                    {pct}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-xs text-[#727272] mt-0.5 flex-wrap">
+                                                                <span>{attended} / {conducted} sessions</span>
+
+                                                                {sub.faculty && (
+                                                                    <>
+                                                                        <span className="text-[#E2E2E2]">•</span>
+                                                                        <span className="text-[#727272] truncate">{sub.faculty}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                            {/* Minimal Progress Bar */}
+                                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                                                                <div
+                                                                    className={`h-1.5 rounded-full ${isSafe ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                                                    style={{ width: `${Math.min(100, pct)}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
                                                     </div>
 
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="text-sm font-semibold text-[#383838] truncate">
-                                                            {sub.name}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 text-xs text-[#727272] mt-0.5 flex-wrap">
-                                                            <span>{attended} / {conducted} sessions</span>
-
-                                                            {sub.faculty && (
-                                                                <>
-                                                                    <span className="text-[#E2E2E2]">•</span>
-                                                                    <span className="text-[#727272] truncate">{sub.faculty}</span>
-                                                                </>
+                                                    <div className="flex items-center justify-end sm:flex-col sm:items-end sm:justify-center shrink-0 gap-1.5 pt-1 sm:pt-0">
+                                                        <div className="text-right hidden sm:block">
+                                                            <span className={`text-base font-bold ${isSafe ? 'text-[#383838]' : 'text-amber-600'}`}>
+                                                                {pct}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            {isSafe ? (
+                                                                <span className="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                                                    {SkipsAvailable} {SkipsAvailable === 1 ? 'Skip' : 'Skips'} Available
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                                    Attend {sessionsNeeded} More
+                                                                </span>
                                                             )}
                                                         </div>
-                                                        {/* Minimal Progress Bar */}
-                                                        <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                                                            <div
-                                                                className={`h-1.5 rounded-full ${isSafe ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                                                                style={{ width: `${Math.min(100, pct)}%` }}
-                                                            />
-                                                        </div>
                                                     </div>
                                                 </div>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
 
-                                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-1.5 pt-1 sm:pt-0">
-                                                    <div className="text-right">
-                                                        <span className={`text-base font-bold ${isSafe ? 'text-[#383838]' : 'text-amber-600'}`}>
-                                                            {pct}%
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        {isSafe ? (
-                                                            <span className="inline-flex items-center text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                                                                {SkipsAvailable} {SkipsAvailable === 1 ? 'Skip' : 'Skips'} Available
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                                                                Attend {sessionsNeeded} More
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </section>
-
-                            {/* Right Column: Calculator & Session Audit Rail */}
-                            <section className="lg:col-span-4 space-y-4">
+                                {/* Attendance Calculator & Planner below All Attendances */}
                                 {renderOptimizationPanel()}
+                            </div>
+
+                            {/* Right Column: Session Audit Rail */}
+                            <section className="lg:col-span-4 space-y-4">
 
                                 <div className="bg-white border border-[#E2E2E2] rounded-xl shadow-xs p-4 sm:p-5">
                                     <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#E2E2E2]">

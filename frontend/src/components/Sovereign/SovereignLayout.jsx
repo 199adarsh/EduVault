@@ -85,7 +85,7 @@ const DEVELOPER_SOCIAL_ICONS = [
     },
     {
         label: "LinkedIn",
-        href: "https://www.linkedin.com/in/adarsh-herwade-344445250",
+        href: "https://www.linkedin.com/in/adarsh-herwade/",
         background: "linear-gradient(135deg,#0077b5,#005582)",
         node: <Linkedin02Icon size={14} className="text-white" />,
     },

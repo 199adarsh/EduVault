@@ -451,7 +451,7 @@ public class ApiController {
             }
         }
 
-        // 2. Try Backblaze B2 with multi-key candidates
+        // 2. Try S3/R2 storage with multi-key candidates
         if (backblazeStorageService != null) {
             LinkedHashSet<String> candidates = new LinkedHashSet<>();
             if (note.getB2ObjectKey() != null && !note.getB2ObjectKey().isBlank()) {
@@ -473,21 +473,59 @@ public class ApiController {
                 }
             }
 
+            byte[] foundBytes = null;
             for (String key : candidates) {
                 try {
                     byte[] bytes = backblazeStorageService.getObjectBytes(key);
                     if (bytes != null && bytes.length > 0) {
-                        String contentType = resolveContentType(fileName);
-                        return ResponseEntity.ok()
-                                .contentType(MediaType.parseMediaType(contentType))
-                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
-                                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
-                                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
-                                .body(new ByteArrayResource(bytes));
+                        foundBytes = bytes;
+                        break;
                     }
                 } catch (Exception ignored) {}
             }
+
+            // Fuzzy fallback: if exact key not found in bucket, match by original filename or note ID
+            if (foundBytes == null) {
+                try {
+                    String targetName = note.getOriginalFilename();
+                    for (software.amazon.awssdk.services.s3.model.S3Object s3Obj : backblazeStorageService.listAllObjects()) {
+                        String k = s3Obj.key();
+                        if ((targetName != null && !targetName.isBlank() && k.endsWith(targetName)) ||
+                                (note.getId() != null && k.contains(note.getId())) ||
+                                (note.getB2ObjectKey() != null && k.contains(note.getB2ObjectKey()))) {
+                            byte[] bytes = backblazeStorageService.getObjectBytes(k);
+                            if (bytes != null && bytes.length > 0) {
+                                foundBytes = bytes;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            if (foundBytes != null && foundBytes.length > 0) {
+                String contentType = resolveContentType(fileName);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                        .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                        .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                        .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                        .body(new ByteArrayResource(foundBytes));
+            }
+        }
+
+        // 3. Resilient Fallback: If binary not found in storage, return note's extracted text
+        if (note.getExtractedText() != null && !note.getExtractedText().isBlank()) {
+            byte[] textBytes = note.getExtractedText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            String txtFileName = (note.getTitle() != null ? note.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_") : "notes") + ".txt";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + txtFileName + "\"")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
+                    .body(new ByteArrayResource(textBytes));
         }
 
         return ResponseEntity.notFound().build();
@@ -506,8 +544,14 @@ public class ApiController {
         return "application/octet-stream";
     }
 
-    @GetMapping("/files/raw/{fileName}")
+    @GetMapping("/files/raw/{*fileName}")
     public ResponseEntity<Resource> getRawFile(@PathVariable String fileName) {
+        if (fileName == null || fileName.contains("..") || fileName.contains("\\")) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (fileName.startsWith("/")) {
+            fileName = fileName.substring(1);
+        }
         Path path = fileStorageService.getFilePath(fileName);
         if (!java.nio.file.Files.exists(path)) {
             path = Paths.get("./data").resolve(fileName);
@@ -538,10 +582,12 @@ public class ApiController {
             if (fileName.contains("/")) {
                 b2KeyCandidates.add(fileName.substring(fileName.lastIndexOf('/') + 1));
             }
+            String finalName = fileName;
             database.getAllNotes().stream()
-                    .filter(n -> fileName.equals(n.getFileUrl()) ||
-                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(fileName) || n.getB2ObjectKey().endsWith("/" + fileName))) ||
-                            fileName.equals(n.getOriginalFilename()))
+                    .filter(n -> finalName.equals(n.getFileUrl()) ||
+                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(finalName) || n.getB2ObjectKey().endsWith("/" + finalName) || n.getB2ObjectKey().contains(finalName))) ||
+                            finalName.equals(n.getOriginalFilename()) ||
+                            (n.getOriginalFilename() != null && finalName.endsWith(n.getOriginalFilename())))
                     .findFirst()
                     .ifPresent(n -> {
                         if (n.getB2ObjectKey() != null) b2KeyCandidates.add(n.getB2ObjectKey());
@@ -563,6 +609,23 @@ public class ApiController {
                 }
             }
         } catch (Exception ignored) {}
+
+        // Fallback: If not found in storage, check database for extracted text
+        final String lookupTarget = fileName;
+        Optional<Note> matchingNote = database.getAllNotes().stream()
+                .filter(n -> lookupTarget.equals(n.getFileUrl()) ||
+                        (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(lookupTarget) || n.getB2ObjectKey().endsWith("/" + lookupTarget))) ||
+                        lookupTarget.equals(n.getOriginalFilename()))
+                .findFirst();
+        if (matchingNote.isPresent() && matchingNote.get().getExtractedText() != null && !matchingNote.get().getExtractedText().isBlank()) {
+            byte[] textBytes = matchingNote.get().getExtractedText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"extracted_notes.txt\"")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                    .body(new org.springframework.core.io.ByteArrayResource(textBytes));
+        }
 
         return ResponseEntity.notFound().build();
     }
@@ -634,7 +697,8 @@ public class ApiController {
                 : "";
         String courseFolder = (coursePrefix + safeSubject).trim();
         String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document.pdf";
-        String b2Key = courseFolder + "/" + safeUnit + "/" + UUID.randomUUID() + "-" + originalName;
+        String safeOriginalName = originalName.replaceAll("[\\\\/:*?\"<>|#%&{}^~`\\[\\]]", "_").trim();
+        String b2Key = courseFolder + "/" + safeUnit + "/" + UUID.randomUUID() + "-" + safeOriginalName;
 
         String savedFileName = backblazeStorageService.uploadFile(file, b2Key);
         

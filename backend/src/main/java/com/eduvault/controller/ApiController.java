@@ -636,11 +636,24 @@ public class ApiController {
     @GetMapping("/files/{noteId}/presigned")
     public ResponseEntity<Map<String, String>> getPresignedUrl(@PathVariable String noteId) {
         return database.getNoteById(noteId).map(note -> {
-            // Return same-origin proxy to ensure browser fetches, pdfjs, and mobile views never hit B2 CORS
-            return ResponseEntity.ok(Map.of(
-                    "noteId", noteId,
-                    "url", "/api/files/" + noteId + "/raw"
-            ));
+            String direct = null;
+            if (backblazeStorageService != null) {
+                String key = note.getB2ObjectKey() != null ? note.getB2ObjectKey() : note.getFileUrl();
+                if (key != null && !key.isBlank() && !key.startsWith("http")) {
+                    try {
+                        direct = backblazeStorageService.generatePresignedUrl(key);
+                    } catch (Exception e) {
+                        logger.warn("Failed to generate presigned direct url for note {}: {}", noteId, e.getMessage());
+                    }
+                }
+            }
+            Map<String, String> body = new java.util.HashMap<>();
+            body.put("noteId", noteId);
+            body.put("url", "/api/files/" + noteId + "/raw");
+            if (direct != null && !direct.isBlank()) {
+                body.put("directUrl", direct);
+            }
+            return ResponseEntity.ok(body);
         }).orElse(ResponseEntity.notFound().build());
     }
 

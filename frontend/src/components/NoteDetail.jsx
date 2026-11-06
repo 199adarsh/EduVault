@@ -89,6 +89,7 @@ const NoteDetail = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [presignedUrl, setPresignedUrl] = useState(null);
+    const [directUrl, setDirectUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
     const [pdfData, setPdfData] = useState(null);
     const [docxHtml, setDocxHtml] = useState(null);
@@ -174,9 +175,14 @@ const NoteDetail = () => {
                 setDoubts(freshDoubts);
                 doubtsCache.set(noteId, freshDoubts);
 
-                if (fileRes?.data?.url) {
-                    presignedCache.set(noteId, fileRes.data.url);
-                    setPresignedUrl(fileRes.data.url);
+                if (fileRes?.data) {
+                    if (fileRes.data.url) {
+                        presignedCache.set(noteId, fileRes.data.url);
+                        setPresignedUrl(fileRes.data.url);
+                    }
+                    if (fileRes.data.directUrl) {
+                        setDirectUrl(fileRes.data.directUrl);
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching note details:', err);
@@ -472,6 +478,13 @@ const NoteDetail = () => {
         !note.extractedText.startsWith("Text extraction only supported") &&
         !note.extractedText.startsWith("Failed to extract text")
     );
+    const publicGdocUrl = (directUrl && directUrl.startsWith('http'))
+        ? directUrl
+        : (note.fileUrl && note.fileUrl.startsWith('http')
+            ? note.fileUrl
+            : (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+                ? `${window.location.origin}${API_BASE}/files/${noteId}/raw`
+                : null));
 
     return (
         <div className="relative flex-1 flex flex-col bg-[#F5F5F7] overflow-hidden antialiased h-full w-full font-sans text-[#1D1D1F]">
@@ -628,6 +641,36 @@ const NoteDetail = () => {
                                         dangerouslySetInnerHTML={{ __html: docxHtml }}
                                     />
                                 </div>
+                            </div>
+                        ) : publicGdocUrl ? (
+                            <div className="flex-1 w-full h-full flex flex-col bg-white">
+                                <div className="px-4 py-2 border-b border-[#E5E5EA] flex items-center justify-between text-xs bg-[#F5F5F7]">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium text-[#1D1D1F]">Document Preview (Google Docs)</span>
+                                        <span className="text-[10px] text-[#6E6E73] font-mono uppercase bg-[#E5E5EA] px-1.5 py-0.5 rounded font-semibold">{fileExt}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleDownload}
+                                            className="px-2.5 py-1 bg-white hover:bg-black/5 border border-[#E5E5EA] text-[#1D1D1F] rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                                        >
+                                            <Download01Icon size={13} />
+                                            <span>Download</span>
+                                        </button>
+                                        <button
+                                            onClick={() => window.open(publicGdocUrl, '_blank', 'noopener,noreferrer')}
+                                            className="px-2.5 py-1 bg-[#0071E3] hover:bg-[#0077ED] text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                                        >
+                                            <ViewIcon size={13} />
+                                            <span>Full View</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <iframe
+                                    src={`https://docs.google.com/gview?url=${encodeURIComponent(publicGdocUrl)}&embedded=true`}
+                                    className="w-full flex-1 border-0 min-h-[500px]"
+                                    title="Google Docs Document Preview"
+                                />
                             </div>
                         ) : hasValidExtractedText ? (
                             <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">

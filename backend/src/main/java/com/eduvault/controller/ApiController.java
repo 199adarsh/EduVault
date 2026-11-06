@@ -515,6 +515,19 @@ public class ApiController {
             }
         }
 
+        // 3. Resilient Fallback: If binary not found in storage, return note's extracted text
+        if (note.getExtractedText() != null && !note.getExtractedText().isBlank()) {
+            byte[] textBytes = note.getExtractedText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            String txtFileName = (note.getTitle() != null ? note.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_") : "notes") + ".txt";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + txtFileName + "\"")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
+                    .body(new ByteArrayResource(textBytes));
+        }
+
         return ResponseEntity.notFound().build();
     }
 
@@ -594,6 +607,23 @@ public class ApiController {
             }
         } catch (Exception ignored) {}
 
+        // Fallback: If not found in storage, check database for extracted text
+        final String lookupTarget = fileName;
+        Optional<Note> matchingNote = database.getAllNotes().stream()
+                .filter(n -> lookupTarget.equals(n.getFileUrl()) ||
+                        (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(lookupTarget) || n.getB2ObjectKey().endsWith("/" + lookupTarget))) ||
+                        lookupTarget.equals(n.getOriginalFilename()))
+                .findFirst();
+        if (matchingNote.isPresent() && matchingNote.get().getExtractedText() != null && !matchingNote.get().getExtractedText().isBlank()) {
+            byte[] textBytes = matchingNote.get().getExtractedText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"extracted_notes.txt\"")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                    .body(new org.springframework.core.io.ByteArrayResource(textBytes));
+        }
+
         return ResponseEntity.notFound().build();
     }
 
@@ -664,7 +694,8 @@ public class ApiController {
                 : "";
         String courseFolder = (coursePrefix + safeSubject).trim();
         String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document.pdf";
-        String b2Key = courseFolder + "/" + safeUnit + "/" + UUID.randomUUID() + "-" + originalName;
+        String safeOriginalName = originalName.replaceAll("[\\\\/:*?\"<>|#%&{}^~`\\[\\]]", "_").trim();
+        String b2Key = courseFolder + "/" + safeUnit + "/" + UUID.randomUUID() + "-" + safeOriginalName;
 
         String savedFileName = backblazeStorageService.uploadFile(file, b2Key);
         

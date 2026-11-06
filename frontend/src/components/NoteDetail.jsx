@@ -243,7 +243,8 @@ const NoteDetail = () => {
             // 3. Fallback to local raw if presigned not working
             if (!blob && note?.fileUrl) {
                 try {
-                    const res = await fetch(`${API_BASE}/files/raw/${encodeURIComponent(note.fileUrl)}`);
+                    const rawKey = note.fileUrl.split('/').map(s => encodeURIComponent(s)).join('/');
+                    const res = await fetch(`${API_BASE}/files/raw/${rawKey}`);
                     if (res.ok) {
                         blob = await res.blob();
                         setCachedNoteBlob(noteId, blob);

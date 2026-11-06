@@ -684,7 +684,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                             onClick={() => setShowLmsSync(true)}
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#1D1D1F] bg-[#F5F5F7] hover:bg-[#E5E5EA] border border-[#E5E5EA] transition cursor-pointer"
                                         >
-                                            <RefreshCw className="w-3.5 h-3.5 text-[#0071E3]" />
+                                            <RefreshIcon size={14} className="text-[#0071E3]" />
                                             <span>Sync Moodle</span>
                                         </button>
                                     )}
@@ -692,7 +692,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
                                         onClick={() => setShowUpload(true)}
                                         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs cursor-pointer"
                                     >
-                                        <Upload className="w-3.5 h-3.5" />
+                                        <Upload01Icon size={14} />
                                         <span>Upload Notes</span>
                                     </button>
                                 </div>

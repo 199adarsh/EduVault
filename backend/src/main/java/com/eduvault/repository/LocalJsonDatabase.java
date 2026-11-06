@@ -245,7 +245,15 @@ public class LocalJsonDatabase {
             List<Note> notesToSave = new java.util.ArrayList<>();
             int countNewOrUpdated = 0;
 
-            // Load cached notes from notes.json to preserve pre-extracted text
+            java.util.Set<String> existingPyqUrls = new java.util.HashSet<>();
+            try {
+                for (com.eduvault.model.PYQ p : pyqRepository.findAll()) {
+                    if (p.getFileUrl() != null) existingPyqUrls.add(p.getFileUrl());
+                }
+            } catch (Exception ex) {
+                logger.warn("Could not pre-cache existing PYQ URLs: {}", ex.getMessage());
+            }
+
             java.util.Map<String, Note> cachedNotesByKey = new java.util.HashMap<>();
             try {
                 java.nio.file.Path notesJsonPath = java.nio.file.Paths.get("data", "notes.json");
@@ -266,8 +274,21 @@ public class LocalJsonDatabase {
                 String key = obj.key();
                 if (key.endsWith(".json") || key.endsWith("/") || key.startsWith(".")) continue;
 
+                String keyUpper = key.toUpperCase();
+                if (keyUpper.contains("01MEL") || keyUpper.contains("01MEP") || keyUpper.contains("01CEP")
+                        || keyUpper.contains("MECH") || keyUpper.contains("CIVIL") || keyUpper.contains("TEXTILE")) {
+                    continue;
+                }
+
                 String filenameOnly = key.contains("/") ? key.substring(key.lastIndexOf('/') + 1) : key;
                 String ext = key.contains(".") ? key.substring(key.lastIndexOf('.')) : "";
+
+                FolderInfo folderInfo = extractFolderInfoFromKey(key);
+                Subject matched = findSubjectFromFolderOrKey(folderInfo.subject, key, subjects);
+
+                if (matched == null || !"B.Tech-UAD".equalsIgnoreCase(matched.getDepartment())) {
+                    continue;
+                }
 
                 Note note = existingByB2Key.get(key);
                 if (note == null) {
@@ -285,7 +306,6 @@ public class LocalJsonDatabase {
                 note.setFileUrl(filenameOnly);
                 note.setB2ObjectKey(key);
 
-                // Attempt text extraction for reliable metadata and course code mapping
                 String extractedText = note.getExtractedText();
                 if (extractedText == null || extractedText.isBlank()) {
                     if (cachedNotesByKey.containsKey(key)) {
@@ -298,29 +318,13 @@ public class LocalJsonDatabase {
                     if ((extractedText == null || extractedText.isBlank()) && fileStorageService != null) {
                         try {
                             extractedText = fileStorageService.extractText(key);
-                        } catch (Exception ex) {
-                            logger.warn("Local text extraction failed for key {}: {}", key, ex.getMessage());
-                        }
-                    }
-
-                    if ((extractedText == null || extractedText.isBlank()) && backblazeStorageService != null) {
-                        try {
-                            byte[] bytes = backblazeStorageService.getObjectBytes(key);
-                            if (bytes != null && bytes.length > 0 && fileStorageService != null) {
-                                extractedText = fileStorageService.extractTextFromBytes(bytes, key);
-                            }
-                        } catch (Exception ex) {
-                            logger.warn("B2 text extraction failed for key {}: {}", key, ex.getMessage());
-                        }
+                        } catch (Exception ignored) {}
                     }
 
                     if (extractedText != null && !extractedText.startsWith("File not found") && !extractedText.startsWith("Failed to extract")) {
                         note.setExtractedText(extractedText.length() > 5000 ? extractedText.substring(0, 5000) : extractedText);
                     }
                 }
-
-                FolderInfo folderInfo = extractFolderInfoFromKey(key);
-                Subject matched = findSubjectFromFolderOrKey(folderInfo.subject, key, subjects);
 
                 String title = extractTitleFromContent(note.getExtractedText(), key, ext);
                 note.setTitle(title);
@@ -347,40 +351,28 @@ public class LocalJsonDatabase {
                 note.setCategory(category);
                 note.setExamType(examType);
 
-                if (matched != null) {
-                    note.setSubjectId(matched.getId());
-                    note.setDepartment(matched.getDepartment());
-                    note.setSemester(matched.getSemester());
-                    note.setStatus("ready");
+                note.setSubjectId(matched.getId());
+                note.setDepartment(matched.getDepartment());
+                note.setSemester(matched.getSemester());
+                note.setStatus("ready");
 
-                    // Mirror to PYQ repository if it's a PYQ/Question Paper
-                    if ("PYQ".equalsIgnoreCase(category)) {
-                        try {
-                            if (pyqRepository.findAll().stream().noneMatch(p -> key.equals(p.getFileUrl()))) {
-                                com.eduvault.model.PYQ pyq = com.eduvault.model.PYQ.builder()
-                                        .id(java.util.UUID.randomUUID().toString())
-                                        .subjectId(matched.getId())
-                                        .subjectName(matched.getName())
-                                        .year(String.valueOf(java.time.LocalDate.now().getYear()))
-                                        .examType(examType)
-                                        .tags("B2, PYQ, " + title)
-                                        .fileUrl(key)
-                                        .uploadedBy("Backblaze B2")
-                                        .createdAt(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE))
-                                        .build();
-                                pyqRepository.save(pyq);
-                            }
-                        } catch (Exception ex) {
-                            logger.warn("Failed to mirror PYQ for key {}: {}", key, ex.getMessage());
-                        }
-                    }
-                } else {
-                    // Unresolved subject mapping: never publish to students!
-                    // Do not overwrite existing valid subject mapping if sync failed to match!
-                    String currentSubId = note.getSubjectId();
-                    if (currentSubId == null || subjects.stream().noneMatch(s -> s.getId().equals(currentSubId))) {
-                        note.setSubjectId(null);
-                        note.setStatus("UNRESOLVED");
+                if ("PYQ".equalsIgnoreCase(category) && !existingPyqUrls.contains(key)) {
+                    try {
+                        com.eduvault.model.PYQ pyq = com.eduvault.model.PYQ.builder()
+                                .id(java.util.UUID.randomUUID().toString())
+                                .subjectId(matched.getId())
+                                .subjectName(matched.getName())
+                                .year(String.valueOf(java.time.LocalDate.now().getYear()))
+                                .examType(examType)
+                                .tags("B2, PYQ, " + title)
+                                .fileUrl(key)
+                                .uploadedBy("Backblaze B2")
+                                .createdAt(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE))
+                                .build();
+                        pyqRepository.save(pyq);
+                        existingPyqUrls.add(key);
+                    } catch (Exception ex) {
+                        logger.warn("Failed to mirror PYQ for key {}: {}", key, ex.getMessage());
                     }
                 }
 
@@ -655,10 +647,13 @@ public class LocalJsonDatabase {
     private void updateSubjectCounts() {
         relinkOrphanNotes();
         List<Subject> subjects = subjectRepository.findAll();
-        List<Note> notes = noteRepository.findAll();
+        List<Object[]> counts = noteRepository.countNotesGroupedBySubject();
+        java.util.Map<String, Integer> countMap = new java.util.HashMap<>();
+        for (Object[] row : counts) {
+            countMap.put((String) row[0], ((Number) row[1]).intValue());
+        }
         for (Subject s : subjects) {
-            long count = notes.stream().filter(n -> n.getSubjectId() != null && n.getSubjectId().equals(s.getId())).count();
-            s.setNoteCount((int) count);
+            s.setNoteCount(countMap.getOrDefault(s.getId(), 0));
         }
         subjectRepository.saveAll(subjects);
     }
@@ -666,22 +661,16 @@ public class LocalJsonDatabase {
     public synchronized void relinkOrphanNotes() {
         ensureCoreSubjects();
         List<Subject> subjects = subjectRepository.findAll();
-        List<Note> notes = noteRepository.findAll();
-        if (subjects.isEmpty() || notes.isEmpty()) return;
-
-        java.util.Set<String> validIds = subjects.stream()
-                .map(Subject::getId)
-                .collect(java.util.stream.Collectors.toSet());
+        List<Note> orphanNotes = noteRepository.findOrphanOrPendingNotes();
+        if (subjects.isEmpty() || orphanNotes.isEmpty()) return;
 
         List<Note> toUpdate = new java.util.ArrayList<>();
-        for (Note n : notes) {
-            if (n.getSubjectId() == null || !validIds.contains(n.getSubjectId()) || "PENDING_MAPPING".equalsIgnoreCase(n.getStatus())) {
-                Subject matched = matchSubjectForNote(n, subjects);
-                if (matched != null) {
-                    n.setSubjectId(matched.getId());
-                    n.setStatus("ready");
-                    toUpdate.add(n);
-                }
+        for (Note n : orphanNotes) {
+            Subject matched = matchSubjectForNote(n, subjects);
+            if (matched != null) {
+                n.setSubjectId(matched.getId());
+                n.setStatus("ready");
+                toUpdate.add(n);
             }
         }
         if (!toUpdate.isEmpty()) {

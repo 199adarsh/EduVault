@@ -546,7 +546,10 @@ public class ApiController {
 
     @GetMapping("/files/raw/{*fileName}")
     public ResponseEntity<Resource> getRawFile(@PathVariable String fileName) {
-        if (fileName != null && fileName.startsWith("/")) {
+        if (fileName == null || fileName.contains("..") || fileName.contains("\\")) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (fileName.startsWith("/")) {
             fileName = fileName.substring(1);
         }
         Path path = fileStorageService.getFilePath(fileName);

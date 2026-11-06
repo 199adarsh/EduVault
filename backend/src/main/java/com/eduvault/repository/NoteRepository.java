@@ -57,4 +57,10 @@ public interface NoteRepository extends JpaRepository<Note, String> {
 
     @Query("SELECT n FROM Note n WHERE (:subjectId IS NULL OR :subjectId = '' OR n.subjectId = :subjectId) AND (n.okfStatus IS NULL OR n.okfStatus = 'PENDING' OR n.okfStatus = 'FAILED')")
     List<Note> findPendingOrFailedOkfNotes(@Param("subjectId") String subjectId);
+
+    @Query("SELECT n.subjectId, count(n) FROM Note n WHERE n.subjectId IS NOT NULL GROUP BY n.subjectId")
+    List<Object[]> countNotesGroupedBySubject();
+
+    @Query("SELECT n FROM Note n WHERE n.subjectId IS NULL OR n.status = 'PENDING_MAPPING'")
+    List<Note> findOrphanOrPendingNotes();
 }

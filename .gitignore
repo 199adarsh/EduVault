@@ -52,6 +52,7 @@ build/
 # Database files
 *.mv.db
 *.trace.db
+*.bak
 
 # User uploads and archives
 Test_Files/

@@ -187,27 +187,27 @@ const SovereignLayout = () => {
         const routeMeta = {
             '/': {
                 title: 'Home | CampusAxis',
-                desc: 'Student academic dashboard, attendance tracking, and marks overview.'
+                desc: 'View attendance, internal marks, and academic updates.'
             },
             '/notes': {
                 title: 'Notes & PYQs | CampusAxis',
-                desc: 'Subject notes, study materials, and previous year question papers.'
+                desc: 'Download syllabus notes and previous year question papers.'
             },
             '/ai-assistant': {
                 title: 'AI Assistant | CampusAxis',
-                desc: 'Academic study assistant and doubt solving.'
+                desc: 'Ask questions and get explanations for your subjects.'
             },
             '/attendance': {
                 title: 'Attendance | CampusAxis',
-                desc: 'Subject attendance tracking and analytics.'
+                desc: 'Check subject-wise attendance and minimum criteria.'
             },
             '/roadmaps': {
                 title: 'Roadmaps | CampusAxis',
-                desc: 'Engineering study roadmaps and semester guides.'
+                desc: 'Subject-wise engineering roadmaps and learning guides.'
             },
             '/announcements': {
                 title: 'Announcements | CampusAxis',
-                desc: 'College notices, circulars, and announcements.'
+                desc: 'Latest college notices, timetables, and circulars.'
             }
         };
 
@@ -218,7 +218,7 @@ const SovereignLayout = () => {
 
         const meta = current ? current[1] : {
             title: 'CampusAxis',
-            desc: 'Student academic portal and resources.'
+            desc: 'Student portal for notes, attendance, and college updates.'
         };
 
         document.title = meta.title;

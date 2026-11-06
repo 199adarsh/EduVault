@@ -149,8 +149,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
                 {/* Brand Header */}
                 <div className={cn("h-16 flex items-center border-b border-[#E2E2E2] shrink-0", collapsed ? "justify-center px-2" : "justify-between px-4")}>
                     <div className={cn("flex items-center gap-2.5 min-w-0", collapsed && "justify-center")}>
-                        <div className="w-9 h-9 rounded-xl bg-[#0073E6] flex items-center justify-center text-white shadow-xs shrink-0" title="Campusaxis Portal">
-                            <Mortarboard02Icon size={20} />
+                        <div className="w-9 h-9 rounded-xl overflow-hidden shadow-xs shrink-0 border border-[#E2E2E2]" title="Campusaxis Portal">
+                            <img src="/favicon.png" alt="Campusaxis" className="w-full h-full object-cover" />
                         </div>
                         {!collapsed && (
                             <div className="flex flex-col min-w-0">

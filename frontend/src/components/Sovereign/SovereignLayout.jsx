@@ -182,32 +182,32 @@ const SovereignLayout = () => {
         setIsDockMinimized(true);
     }, [location.pathname]);
 
-    // Dynamic SEO Titles & Meta Descriptions per page
+    // Dynamic Page Titles & Clean Analytics Names per page
     useEffect(() => {
         const routeMeta = {
             '/': {
-                title: 'CampusAxis | Student Command Center & Academic Portal',
-                desc: 'Unified academic platform with real-time attendance analytics, CIE marks tracking, and course updates.'
+                title: 'Home | CampusAxis',
+                desc: 'Student academic dashboard, attendance tracking, and marks overview.'
             },
             '/notes': {
-                title: 'Academic Notes & PYQs | CampusAxis',
-                desc: 'Access syllabus-organized subject notes, chapter materials, and previous semester question papers.'
+                title: 'Notes & PYQs | CampusAxis',
+                desc: 'Subject notes, study materials, and previous year question papers.'
             },
             '/ai-assistant': {
-                title: 'AI Study Tutor & Exam Prep | CampusAxis',
-                desc: 'Curriculum-grounded AI tutor providing instant doubts clearance and syllabus-grounded explanations.'
+                title: 'AI Assistant | CampusAxis',
+                desc: 'Academic study assistant and doubt solving.'
             },
             '/attendance': {
-                title: 'Attendance Analytics & Bunk Planner | CampusAxis',
-                desc: 'Track subject attendance percentages, calculate buffer bunks, and forecast semester exam eligibility.'
+                title: 'Attendance | CampusAxis',
+                desc: 'Subject attendance tracking and analytics.'
             },
             '/roadmaps': {
-                title: 'Engineering & Career Roadmaps | CampusAxis',
-                desc: 'Step-by-step verified learning paths for frontend, backend, DSA, and placements with curriculum mapping.'
+                title: 'Roadmaps | CampusAxis',
+                desc: 'Engineering study roadmaps and semester guides.'
             },
             '/announcements': {
-                title: 'Notices & Circulars | CampusAxis',
-                desc: 'Official college announcements, exam schedules, and department bulletins.'
+                title: 'Announcements | CampusAxis',
+                desc: 'College notices, circulars, and announcements.'
             }
         };
 
@@ -217,8 +217,8 @@ const SovereignLayout = () => {
         });
 
         const meta = current ? current[1] : {
-            title: 'CampusAxis | Student Academic Intelligence',
-            desc: 'The complete student operating system for university academics and placements.'
+            title: 'CampusAxis',
+            desc: 'Student academic portal and resources.'
         };
 
         document.title = meta.title;
@@ -229,6 +229,15 @@ const SovereignLayout = () => {
             document.head.appendChild(descTag);
         }
         descTag.setAttribute('content', meta.desc);
+
+        // Send clean title & path to Google Analytics
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+            window.gtag('event', 'page_view', {
+                page_title: meta.title,
+                page_location: window.location.href,
+                page_path: location.pathname
+            });
+        }
     }, [location.pathname]);
 
 

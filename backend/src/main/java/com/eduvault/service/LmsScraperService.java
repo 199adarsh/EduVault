@@ -223,7 +223,19 @@ public class LmsScraperService {
             String viewurl = cNode.path("viewurl").asText(BASE_URL + "/course/view.php?id=" + id);
 
             String courseCode = extractCourseCode(fullname, shortname);
+            String codeUpper = (courseCode != null ? courseCode : "").toUpperCase();
+            String nameUpper = (fullname != null ? fullname : "").toUpperCase();
+
+            // Strict Filter: Skip Mech, Civil, and non-UAD courses
+            if (codeUpper.contains("01MEL") || codeUpper.contains("01MEP") || codeUpper.contains("01CEP")
+                    || nameUpper.contains("MECHANICAL") || nameUpper.contains("CIVIL") || nameUpper.contains("TEXTILE")) {
+                continue;
+            }
+
             Subject matchedSubject = matchSubject(courseCode, fullname, existingSubjects);
+            if (matchedSubject != null && !"B.Tech-UAD".equalsIgnoreCase(matchedSubject.getDepartment())) {
+                continue;
+            }
             String displayName = matchedSubject != null ? matchedSubject.getName() : AcademicNormalizer.cleanCourseName(fullname);
 
             result.add(LmsSyncResponse.DiscoveredCourseInfo.builder()
@@ -343,11 +355,29 @@ public class LmsScraperService {
             courseIdx++;
             int basePct = 20 + (int) (((double) (courseIdx - 1) / Math.max(1, totalToProcess)) * 75);
 
+            String courseCodeUpper = (courseInfo.getCode() != null ? courseInfo.getCode() : "").toUpperCase();
+            String courseNameUpper = (courseInfo.getFullname() != null ? courseInfo.getFullname() : "").toUpperCase();
+
+            // Strict Filter: Skip any Mech, Civil, Textile, or non-B.Tech-UAD courses
+            if (courseCodeUpper.contains("01MEL") || courseCodeUpper.contains("01MEP") || courseCodeUpper.contains("01CEP")
+                    || courseNameUpper.contains("MECHANICAL") || courseNameUpper.contains("CIVIL") || courseNameUpper.contains("TEXTILE")) {
+                logger.info("Ignoring non-B.Tech-UAD course from sync: {} ({})", courseInfo.getFullname(), courseInfo.getCode());
+                continue;
+            }
+
             Subject matchedSubject = matchSubject(courseInfo.getCode(), courseInfo.getFullname(), allSubjects);
+            if (matchedSubject != null && !"B.Tech-UAD".equalsIgnoreCase(matchedSubject.getDepartment())) {
+                logger.info("Ignoring non-B.Tech-UAD matched subject: {}", matchedSubject.getName());
+                continue;
+            }
 
             if (matchedSubject == null) {
-                // Auto-register newly discovered course from 1st, 2nd, 3rd, or 4th year
+                // Auto-register newly discovered course ONLY if B.Tech-UAD
                 String dept = com.eduvault.util.AcademicNormalizer.inferDepartmentFromCourse(courseInfo.getCode(), courseInfo.getFullname());
+                if (!"B.Tech-UAD".equalsIgnoreCase(dept) && !"UAD".equalsIgnoreCase(dept)) {
+                    logger.info("Skipping auto-registration for non-UAD dept {}: {}", dept, courseInfo.getFullname());
+                    continue;
+                }
                 String sem = com.eduvault.util.AcademicNormalizer.inferSemesterFromCourse(courseInfo.getCode(), courseInfo.getFullname());
                 String cleanName = com.eduvault.util.AcademicNormalizer.cleanCourseName(courseInfo.getFullname());
 
@@ -355,7 +385,7 @@ public class LmsScraperService {
                         .id(UUID.randomUUID().toString())
                         .name(cleanName)
                         .code(courseInfo.getCode() != null && !courseInfo.getCode().isBlank() ? courseInfo.getCode().trim().toUpperCase() : "")
-                        .department(dept)
+                        .department("B.Tech-UAD")
                         .semester(sem)
                         .createdAt(LocalDate.now().toString())
                         .noteCount(0)

@@ -1,3 +1,4 @@
+import { appPath } from '../../config/appPaths';
 import { isSubjectNameMatch } from "../../lib/noteUtils";
 import React, {
     useState,
@@ -46,7 +47,7 @@ class AIAssistantErrorBoundary extends React.Component {
                         <button
                             type="button"
                             onClick={() => {
-                                window.location.href = '/ai-assistant';
+                                window.location.href = appPath('/ai-assistant');
                             }}
                             className="px-4 py-2 bg-[#0071E3] text-white text-xs font-semibold rounded-xl cursor-pointer hover:bg-[#005BB5] transition-colors"
                         >

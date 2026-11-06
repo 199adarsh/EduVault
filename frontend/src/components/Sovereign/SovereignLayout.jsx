@@ -110,6 +110,7 @@ import UploadNotesView from '../UploadNotesView';
 
 
 import { useLocation, matchPath, Navigate, useNavigate } from 'react-router-dom';
+import { APP_BASE, appPath, isAppHome } from '../../config/appPaths';
 
 
 
@@ -185,34 +186,34 @@ const SovereignLayout = () => {
     // Dynamic Page Titles & Clean Analytics Names per page
     useEffect(() => {
         const routeMeta = {
-            '/': {
+            [APP_BASE]: {
                 title: 'Home | CampusAxis',
                 desc: 'View attendance, internal marks, and academic updates.'
             },
-            '/notes': {
+            [appPath('/notes')]: {
                 title: 'Notes & PYQs | CampusAxis',
                 desc: 'Download syllabus notes and previous year question papers.'
             },
-            '/ai-assistant': {
+            [appPath('/ai-assistant')]: {
                 title: 'AI Assistant | CampusAxis',
                 desc: 'Ask questions and get explanations for your subjects.'
             },
-            '/attendance': {
+            [appPath('/attendance')]: {
                 title: 'Attendance | CampusAxis',
                 desc: 'Check subject-wise attendance and minimum criteria.'
             },
-            '/roadmaps': {
+            [appPath('/roadmaps')]: {
                 title: 'Roadmaps | CampusAxis',
                 desc: 'Subject-wise engineering roadmaps and learning guides.'
             },
-            '/announcements': {
+            [appPath('/announcements')]: {
                 title: 'Announcements | CampusAxis',
                 desc: 'Latest college notices, timetables, and circulars.'
             }
         };
 
         const current = Object.entries(routeMeta).find(([path]) => {
-            if (path === '/') return location.pathname === '/';
+            if (path === APP_BASE) return isAppHome(location.pathname);
             return location.pathname.startsWith(path);
         });
 
@@ -244,7 +245,7 @@ const SovereignLayout = () => {
 
     // Context Detection: Identify if we are viewing a specific note
 
-    const match = matchPath({ path: "/notes/:id" }, location.pathname);
+    const match = matchPath({ path: appPath("/notes/:id") }, location.pathname);
 
     const activeNoteId = match?.params?.id;
 
@@ -605,14 +606,14 @@ const SovereignLayout = () => {
 
 
     const navTabs = [
-        { name: 'Home', path: '/', icon: Home01Icon },
-        { name: 'Notes', path: '/notes', icon: Book02Icon },
-        { name: 'AI Tutor', path: '/ai-assistant', icon: SparklesIcon },
-        { name: 'Notices', path: '/announcements', icon: Notification01Icon },
-        { name: 'Roadmaps', path: '/roadmaps', icon: MapsLocation02Icon },
+        { name: 'Home', path: APP_BASE, icon: Home01Icon },
+        { name: 'Notes', path: appPath('/notes'), icon: Book02Icon },
+        { name: 'AI Tutor', path: appPath('/ai-assistant'), icon: SparklesIcon },
+        { name: 'Notices', path: appPath('/announcements'), icon: Notification01Icon },
+        { name: 'Roadmaps', path: appPath('/roadmaps'), icon: MapsLocation02Icon },
         {
             name: 'Attendance',
-            path: '/attendance',
+            path: appPath('/attendance'),
             icon: Calendar03Icon,
             badge: null
         },
@@ -622,11 +623,11 @@ const SovereignLayout = () => {
 
     const activeDockTab = useMemo(() => {
 
-        if (location.pathname === '/') return '/';
+        if (isAppHome(location.pathname)) return APP_BASE;
 
-        const found = navTabs.find(t => t.path !== '/' && location.pathname.startsWith(t.path));
+        const found = navTabs.find(t => t.path !== APP_BASE && location.pathname.startsWith(t.path));
 
-        return found ? found.path : '/';
+        return found ? found.path : APP_BASE;
 
     }, [location.pathname, navTabs]);
 
@@ -732,7 +733,7 @@ const SovereignLayout = () => {
 
                             <button
 
-                                onClick={() => navigate('/announcements')}
+                                onClick={() => navigate(appPath('/announcements'))}
 
                                 aria-label="Notifications"
 
@@ -812,7 +813,7 @@ const SovereignLayout = () => {
 
                 {/* Page Content */}
 
-                <div className={`flex-1 w-full max-w-full min-w-0 relative ${location.pathname === '/ai-assistant' || location.pathname.startsWith('/notes/') ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-24 md:pb-0'}`}>
+                <div className={`flex-1 w-full max-w-full min-w-0 relative ${location.pathname === appPath('/ai-assistant') || location.pathname.startsWith(appPath('/notes') + '/') ? 'h-full overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden pb-24 md:pb-0'}`}>
 
                     {loading ? (
 
@@ -824,9 +825,9 @@ const SovereignLayout = () => {
 
                         </div>
 
-                    ) : (!profile || !profile.prn || !profile.dob) && location.pathname !== '/' && location.pathname !== '/settings' ? (
+                    ) : (!profile || !profile.prn || !profile.dob) && !isAppHome(location.pathname) && location.pathname !== appPath('/settings') ? (
 
-                        <Navigate to="/" replace />
+                        <Navigate to={APP_BASE} replace />
 
                     ) : (
 
@@ -914,7 +915,7 @@ const SovereignLayout = () => {
 
 
                 {/* Mobile Floating Bottom Navigation Dock (Collapsible, never overlays notes detail) */}
-                {!mobileMenuOpen && !(location.pathname.startsWith('/notes/') && location.pathname !== '/notes') && (
+                {!mobileMenuOpen && !(location.pathname.startsWith(appPath('/notes') + '/') && location.pathname !== appPath('/notes')) && (
                     <div className="fixed bottom-3 inset-x-0 z-30 md:hidden flex justify-center pointer-events-none px-3">
                         {isDockMinimized ? (
                             <button

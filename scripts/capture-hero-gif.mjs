@@ -1,6 +1,9 @@
 /**
- * Captures a fluid desktop walkthrough of CampusAxis and builds a high-quality
- * looping GIF (scroll + sidebar navigation + crossfades).
+ * Records a smooth CampusAxis desktop walkthrough, then encodes Metaflow-scale
+ * landing media (~300-450KB), matching metaflow.org's small WebP hero pattern:
+ *  - campusaxis-desktop.webp  (primary <picture> source)
+ *  - campusaxis-desktop.gif   (fallback <img>)
+ *  - campusaxis-desktop.webm / .mp4 (optional companions)
  *
  * Usage: node scripts/capture-hero-gif.mjs
  * Requires: frontend `npm run dev` on http://localhost:5173
@@ -15,9 +18,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const require = createRequire(path.join(ROOT, 'frontend', 'package.json'));
 const { chromium } = require('playwright');
+
 const OUT_DIR = path.join(ROOT, 'frontend', 'public', 'hero');
-const FRAME_DIR = path.join(OUT_DIR, '_frames');
+const WORK_DIR = path.join(OUT_DIR, '_record');
 const BASE = process.env.CAPTURE_URL || 'http://localhost:5173';
+const W = 1280;
+const H = 800;
 
 function pad(n) {
   return String(n).padStart(2, '0');
@@ -28,7 +34,6 @@ function buildDetailedAttendance(seed, conducted, attendedRate) {
   const start = new Date('2026-07-14');
   let attended = 0;
   const targetAttended = Math.round(conducted * attendedRate);
-
   for (let i = 0; i < conducted; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i * 2 + (seed % 3));
@@ -54,12 +59,10 @@ function enrichSubjects(raw) {
     const rate = rates[i % rates.length];
     const detailedAttendance = buildDetailedAttendance(i + 3, conducted, rate);
     const totalAttended = detailedAttendance.filter((r) => r.status === 'Present').length;
-    const attendance = ((totalAttended / conducted) * 100).toFixed(1);
-    const cie = String(72 + ((i * 7) % 24));
     return {
       ...s,
-      attendance,
-      cie,
+      attendance: ((totalAttended / conducted) * 100).toFixed(1),
+      cie: String(72 + ((i * 7) % 24)),
       totalConducted: conducted,
       totalAttended,
       stillToGo: Math.max(0, (s.totalScheduled || 54) - conducted),
@@ -68,26 +71,43 @@ function enrichSubjects(raw) {
   });
 }
 
+function getFfmpeg() {
+  const requirePy = createRequire(path.join(ROOT, 'package.json'));
+  try {
+    // Prefer imageio-ffmpeg binary path via python
+    const out = execFileSync(
+      'python',
+      ['-c', 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())'],
+      { encoding: 'utf8' }
+    ).trim();
+    if (out && fs.existsSync(out)) return out;
+  } catch {
+    /* fall through */
+  }
+  void requirePy;
+  return 'ffmpeg';
+}
+
 const profile = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'backend', 'data', 'profile.json'), 'utf8')
 );
-const subjectsRaw = JSON.parse(
-  fs.readFileSync(path.join(ROOT, 'backend', 'data', 'subjects.json'), 'utf8')
+const subjects = enrichSubjects(
+  JSON.parse(fs.readFileSync(path.join(ROOT, 'backend', 'data', 'subjects.json'), 'utf8'))
 );
 const announcements = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'backend', 'data', 'announcements.json'), 'utf8')
 );
 const notes = JSON.parse(fs.readFileSync(path.join(ROOT, 'backend', 'data', 'notes.json'), 'utf8'));
-const subjects = enrichSubjects(subjectsRaw);
 
-fs.rmSync(FRAME_DIR, { recursive: true, force: true });
-fs.mkdirSync(FRAME_DIR, { recursive: true });
+fs.rmSync(WORK_DIR, { recursive: true, force: true });
+fs.mkdirSync(WORK_DIR, { recursive: true });
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({
-  viewport: { width: 1512, height: 945 },
-  deviceScaleFactor: 2,
+  viewport: { width: W, height: H },
+  deviceScaleFactor: 1,
+  recordVideo: { dir: WORK_DIR, size: { width: W, height: H } },
 });
 const page = await context.newPage();
 
@@ -134,10 +154,7 @@ await page.addInitScript(
   { profile, subjects }
 );
 
-let frameIndex = 0;
-const frameMeta = []; // { file, durationMs }
-
-async function hideChromeNoise() {
+async function hideNoise() {
   await page.evaluate(() => {
     document.querySelectorAll('[data-sonner-toaster]').forEach((el) => {
       el.style.display = 'none';
@@ -145,208 +162,226 @@ async function hideChromeNoise() {
   });
 }
 
-async function shot(durationMs = 90) {
-  await hideChromeNoise();
-  const file = path.join(FRAME_DIR, `f-${String(frameIndex).padStart(4, '0')}.png`);
-  await page.screenshot({ path: file, type: 'png', animations: 'disabled' });
-  frameMeta.push({ file, durationMs });
-  frameIndex += 1;
-  return file;
+async function smoothScroll(distance = 380, durationMs = 1600) {
+  await page.evaluate(
+    async ({ distance, durationMs }) => {
+      const candidates = [
+        ...document.querySelectorAll(
+          'main, [class*="overflow-y-auto"], [class*="overflow-y-scroll"]'
+        ),
+      ];
+      let el = document.scrollingElement || document.documentElement;
+      for (const c of candidates) {
+        if (c.scrollHeight > c.clientHeight + 40) {
+          el = c;
+          break;
+        }
+      }
+      const start = el.scrollTop || 0;
+      const end = Math.min(start + distance, el.scrollHeight - el.clientHeight);
+      const t0 = performance.now();
+      await new Promise((resolve) => {
+        const tick = (now) => {
+          const t = Math.min(1, (now - t0) / durationMs);
+          const eased = t * t * (3 - 2 * t);
+          el.scrollTop = start + (end - start) * eased;
+          if (t < 1) requestAnimationFrame(tick);
+          else resolve();
+        };
+        requestAnimationFrame(tick);
+      });
+    },
+    { distance, durationMs }
+  );
 }
 
-async function getScrollRoot() {
-  return page.evaluateHandle(() => {
+async function smoothScrollTop(durationMs = 900) {
+  await page.evaluate(async (durationMs) => {
     const candidates = [
-      ...document.querySelectorAll('main, [class*="overflow-y-auto"], [class*="overflow-y-scroll"]'),
+      ...document.querySelectorAll(
+        'main, [class*="overflow-y-auto"], [class*="overflow-y-scroll"]'
+      ),
     ];
-    for (const el of candidates) {
-      if (el.scrollHeight > el.clientHeight + 40) return el;
+    let el = document.scrollingElement || document.documentElement;
+    for (const c of candidates) {
+      if (c.scrollHeight > c.clientHeight + 40) {
+        el = c;
+        break;
+      }
     }
-    return document.scrollingElement || document.documentElement;
-  });
-}
-
-async function scrollSequence({ distance = 420, steps = 10, settleMs = 700 } = {}) {
-  const root = await getScrollRoot();
-  for (let i = 1; i <= steps; i++) {
-    await page.evaluate(
-      ({ el, distance, steps, i }) => {
-        const target = distance * (i / steps);
-        if (el && typeof el.scrollTo === 'function') {
-          el.scrollTo({ top: target, behavior: 'instant' });
-        } else {
-          window.scrollTo({ top: target, behavior: 'instant' });
-        }
-      },
-      { el: root, distance, steps, i }
-    );
-    await shot(75);
-  }
-  await new Promise((r) => setTimeout(r, settleMs));
-  await shot(1100);
-
-  // Ease back toward top for the next scene
-  for (let i = steps - 1; i >= 0; i--) {
-    await page.evaluate(
-      ({ el, distance, steps, i }) => {
-        const target = distance * (i / steps);
-        if (el && typeof el.scrollTo === 'function') {
-          el.scrollTo({ top: target, behavior: 'instant' });
-        } else {
-          window.scrollTo({ top: target, behavior: 'instant' });
-        }
-      },
-      { el: root, distance, steps, i }
-    );
-    await shot(70);
-  }
-  await shot(220);
+    const start = el.scrollTop || 0;
+    const t0 = performance.now();
+    await new Promise((resolve) => {
+      const tick = (now) => {
+        const t = Math.min(1, (now - t0) / durationMs);
+        const eased = t * t * (3 - 2 * t);
+        el.scrollTop = start * (1 - eased);
+        if (t < 1) requestAnimationFrame(tick);
+        else resolve();
+      };
+      requestAnimationFrame(tick);
+    });
+  }, durationMs);
 }
 
 async function clickNav(label) {
-  // Sidebar labels may include badges (e.g. Attendance 81.8%)
   const sidebar = page.locator('aside, nav').first();
   const inSidebar = sidebar.getByRole('link', { name: new RegExp(label, 'i') }).first();
   const fallback = page.getByRole('link', { name: new RegExp(label, 'i') }).first();
   const target = (await inSidebar.count()) > 0 ? inSidebar : fallback;
   await target.click({ timeout: 15000 });
   await page.waitForLoadState('networkidle').catch(() => {});
-  await new Promise((r) => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 700));
+  await hideNoise();
 }
 
-console.log('Seeding session and opening portal...');
+console.log('Recording walkthrough...');
 await page.goto(`${BASE}/app`, { waitUntil: 'networkidle', timeout: 60000 });
-await new Promise((r) => setTimeout(r, 2200));
-await shot(1400);
+await new Promise((r) => setTimeout(r, 1800));
+await hideNoise();
+await page.screenshot({ path: path.join(OUT_DIR, '01-home.png'), type: 'png' });
+await new Promise((r) => setTimeout(r, 700));
 
-console.log('Home scroll...');
-await scrollSequence({ distance: 520, steps: 12, settleMs: 650 });
+await smoothScroll(420, 1800);
+await new Promise((r) => setTimeout(r, 500));
+await smoothScrollTop(1000);
+await new Promise((r) => setTimeout(r, 350));
 
-console.log('Navigate → Attendance...');
 await clickNav('Attendance');
-await shot(1200);
-await scrollSequence({ distance: 480, steps: 11, settleMs: 600 });
+await new Promise((r) => setTimeout(r, 600));
+await page.screenshot({ path: path.join(OUT_DIR, '02-attendance.png'), type: 'png' });
+await smoothScroll(400, 1700);
+await new Promise((r) => setTimeout(r, 450));
+await smoothScrollTop(900);
 
-console.log('Navigate → Announcements...');
 await clickNav('Announcements');
-await shot(1200);
-await scrollSequence({ distance: 360, steps: 9, settleMs: 550 });
+await new Promise((r) => setTimeout(r, 600));
+await page.screenshot({ path: path.join(OUT_DIR, '03-announcements.png'), type: 'png' });
+await smoothScroll(300, 1400);
+await new Promise((r) => setTimeout(r, 400));
+await smoothScrollTop(800);
 
-console.log('Navigate → Home (loop close)...');
 await clickNav('Home');
-await new Promise((r) => setTimeout(r, 800));
-await shot(1500);
+await new Promise((r) => setTimeout(r, 1100));
 
-// Keep still keyframes for reduced-motion / posters
-const keyStill = [
-  ['01-home.png', path.join(FRAME_DIR, 'f-0000.png')],
-];
-for (const [name, src] of keyStill) {
-  if (fs.existsSync(src)) fs.copyFileSync(src, path.join(OUT_DIR, name));
-}
-
+const video = page.video();
+await page.close();
+const rawVideoPath = await video.path();
+await context.close();
 await browser.close();
 
-console.log(`Captured ${frameMeta.length} frames. Compositing GIF...`);
+const rawDest = path.join(WORK_DIR, 'raw.webm');
+fs.renameSync(rawVideoPath, rawDest);
+console.log('Raw video:', rawDest);
 
-const metaPath = path.join(FRAME_DIR, 'meta.json');
-fs.writeFileSync(metaPath, JSON.stringify(frameMeta, null, 2));
+const ffmpeg = getFfmpeg();
+const webmOut = path.join(OUT_DIR, 'campusaxis-desktop.webm');
+const mp4Out = path.join(OUT_DIR, 'campusaxis-desktop.mp4');
+const webpOut = path.join(OUT_DIR, 'campusaxis-desktop.webp');
+const gifOut = path.join(OUT_DIR, 'campusaxis-desktop.gif');
 
-const gifPath = path.join(OUT_DIR, 'campusaxis-desktop.gif');
-const pyFile = path.join(FRAME_DIR, '_compose_gif.py');
-fs.writeFileSync(
-  pyFile,
-  `
-from PIL import Image
-import json, sys
-from pathlib import Path
-
-meta_path = Path(sys.argv[1])
-out = Path(sys.argv[2])
-meta = json.loads(meta_path.read_text(encoding='utf-8'))
-
-MAX_W = 1600
-CROSSFADE = 8  # frames between major holds for smoother scene changes
-hold_threshold = 500
-
-def load_rgb(path):
-    im = Image.open(path).convert('RGB')
-    if im.width > MAX_W:
-        h = int(im.height * MAX_W / im.width)
-        im = im.resize((MAX_W, h), Image.Resampling.LANCZOS)
-    return im
-
-def blend(a, b, t):
-    return Image.blend(a, b, t)
-
-raw = [(load_rgb(m['file']), int(m['durationMs'])) for m in meta]
-
-# Insert short crossfades whenever duration jumps from motion -> hold
-# or between consecutive hold frames that look like scene cuts (duration >= hold_threshold)
-composed = []
-for i, (im, dur) in enumerate(raw):
-    if i > 0:
-        prev_im, prev_dur = raw[i - 1]
-        # Crossfade into a settled frame after motion, or between two settled scenes
-        if dur >= hold_threshold and (prev_dur < hold_threshold or prev_dur >= hold_threshold):
-            # Skip tiny duplicate holds; still soften hard cuts between long holds
-            if prev_dur >= hold_threshold or prev_dur < 200:
-                for step in range(1, CROSSFADE + 1):
-                    t = step / (CROSSFADE + 1)
-                    # ease-in-out
-                    te = t * t * (3 - 2 * t)
-                    composed.append((blend(prev_im, im, te), 42))
-    composed.append((im, max(40, min(dur, 1600))))
-
-# Shared adaptive palette from a sample of frames for cleaner color
-sample = [composed[0][0]]
-step = max(1, len(composed) // 10)
-for i in range(0, len(composed), step):
-    sample.append(composed[i][0])
-sample.append(composed[-1][0])
-
-# Build palette from montage strip
-w, h = sample[0].size
-strip = Image.new('RGB', (w * len(sample), h))
-for i, im in enumerate(sample):
-    strip.paste(im.resize((w, h), Image.Resampling.LANCZOS), (i * w, 0))
-palette = strip.quantize(colors=256, method=Image.Quantize.MEDIANCUT).getpalette()
-
-def to_p(im):
-    p = im.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG)
-    # Remap toward shared palette when possible
-    try:
-        base = Image.new('P', im.size)
-        base.putpalette(palette)
-        return im.quantize(palette=base, dither=Image.Dither.FLOYDSTEINBERG)
-    except Exception:
-        return p
-
-frames = [to_p(im) for im, _ in composed]
-durations = [d for _, d in composed]
-
-frames[0].save(
-    out,
-    save_all=True,
-    append_images=frames[1:],
-    duration=durations,
-    loop=0,
-    optimize=False,
-    disposal=2,
-)
-print(f'Wrote {out} ({len(frames)} frames, {out.stat().st_size / 1024:.0f} KB)')
-`
+// High-quality encode. On-page size is controlled by CSS (.lp-screen max-width),
+// not by crushing export quality.
+console.log('Encoding WebM companion...');
+execFileSync(
+  ffmpeg,
+  [
+    '-y',
+    '-i',
+    rawDest,
+    '-an',
+    '-c:v',
+    'libvpx-vp9',
+    '-b:v',
+    '0',
+    '-crf',
+    '34',
+    '-row-mt',
+    '1',
+    '-deadline',
+    'good',
+    '-cpu-used',
+    '2',
+    '-vf',
+    'fps=24,scale=960:-2:flags=lanczos',
+    webmOut,
+  ],
+  { stdio: 'inherit' }
 );
 
-execFileSync('python', [pyFile, metaPath, gifPath], { stdio: 'inherit' });
+console.log('Encoding MP4 companion...');
+execFileSync(
+  ffmpeg,
+  [
+    '-y',
+    '-i',
+    rawDest,
+    '-an',
+    '-c:v',
+    'libx264',
+    '-pix_fmt',
+    'yuv420p',
+    '-preset',
+    'medium',
+    '-crf',
+    '26',
+    '-movflags',
+    '+faststart',
+    '-vf',
+    'fps=24,scale=960:-2:flags=lanczos',
+    mp4Out,
+  ],
+  { stdio: 'inherit' }
+);
 
-// Refresh still posters from later frames if available
-const attendanceStill = frameMeta.find((m) => m.durationMs >= 1000 && m.file.includes('f-'));
-// Best-effort: copy first long hold after home as attendance/announcements posters via index groups
-const longHolds = frameMeta.filter((m) => m.durationMs >= 1000);
-if (longHolds[0]) fs.copyFileSync(longHolds[0].file, path.join(OUT_DIR, '01-home.png'));
-if (longHolds[1]) fs.copyFileSync(longHolds[1].file, path.join(OUT_DIR, '02-attendance.png'));
-if (longHolds[2]) fs.copyFileSync(longHolds[2].file, path.join(OUT_DIR, '03-announcements.png'));
+console.log('Encoding high-quality animated WebP...');
+execFileSync(
+  ffmpeg,
+  [
+    '-y',
+    '-i',
+    rawDest,
+    '-an',
+    '-vf',
+    'fps=16,scale=720:-2:flags=lanczos',
+    '-c:v',
+    'libwebp',
+    '-lossless',
+    '0',
+    '-compression_level',
+    '5',
+    '-q:v',
+    '75',
+    '-loop',
+    '0',
+    '-preset',
+    'picture',
+    webpOut,
+  ],
+  { stdio: 'inherit' }
+);
 
-fs.rmSync(FRAME_DIR, { recursive: true, force: true });
-console.log('GIF ready:', gifPath);
+console.log('Encoding high-quality GIF fallback...');
+execFileSync(
+  ffmpeg,
+  [
+    '-y',
+    '-i',
+    rawDest,
+    '-an',
+    '-vf',
+    'fps=14,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=192:stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a',
+    '-loop',
+    '0',
+    gifOut,
+  ],
+  { stdio: 'inherit' }
+);
+
+fs.rmSync(WORK_DIR, { recursive: true, force: true });
+
+for (const f of [webpOut, gifOut, webmOut, mp4Out, path.join(OUT_DIR, '01-home.png')]) {
+  const st = fs.statSync(f);
+  console.log(`${path.basename(f)}: ${(st.size / 1024).toFixed(0)} KB`);
+}
+console.log('Done. Display size is CSS-limited (~520px), not encode-crushed.');

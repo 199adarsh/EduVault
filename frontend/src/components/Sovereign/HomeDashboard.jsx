@@ -273,6 +273,7 @@ const HomeDashboard = () => {
     } catch (e) { }
     return '';
   });
+  const [showDobPassword, setShowDobPassword] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [syncStage, setSyncStage] = useState('');
@@ -890,13 +891,16 @@ const HomeDashboard = () => {
             </div>
           ) : loginRole === 'teacher' ? (
             /* Teacher / Faculty Login Form */
-            <form onSubmit={handleTeacherLogin} className="space-y-4 animate-in fade-in duration-200">
+            <form onSubmit={handleTeacherLogin} method="post" action="#" className="space-y-4 animate-in fade-in duration-200">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">
                   Faculty ID
                 </label>
                 <input
                   type="text"
+                  id="faculty-id"
+                  name="username"
+                  autoComplete="username"
                   placeholder="e.g. Faculty@Eduvault"
                   value={teacherId}
                   onChange={(e) => setTeacherId(e.target.value)}
@@ -912,6 +916,9 @@ const HomeDashboard = () => {
                 </label>
                 <input
                   type="password"
+                  id="faculty-password"
+                  name="password"
+                  autoComplete="current-password"
                   placeholder="••••••••••••"
                   value={teacherPassword}
                   onChange={(e) => setTeacherPassword(e.target.value)}
@@ -947,15 +954,18 @@ const HomeDashboard = () => {
             </form>
           ) : (
             /* Student Login Form */
-            <form onSubmit={handleLoginSubmit} className="space-y-4 animate-in fade-in duration-200">
+            <form onSubmit={handleLoginSubmit} method="post" action="#" className="space-y-4 animate-in fade-in duration-200">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">College PRN</label>
                 <input
                   type="text"
+                  id="student-prn"
+                  name="username"
+                  autoComplete="username"
                   placeholder="e.g. 2XUAD0XX"
                   value={loginPrn}
                   onChange={(e) => setLoginPrn(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
                   disabled={syncing}
                   required
                 />
@@ -963,15 +973,29 @@ const HomeDashboard = () => {
 
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary ml-0.5">Date of Birth</label>
-                <input
-                  type="text"
-                  placeholder="DD-MM-YYYY (e.g. 01-10-2001)"
-                  value={loginDob}
-                  onChange={(e) => setLoginDob(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  disabled={syncing}
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showDobPassword ? "text" : "password"}
+                    id="student-dob"
+                    name="password"
+                    autoComplete="current-password"
+                    placeholder="DD-MM-YYYY (e.g. 01-10-2001)"
+                    value={loginDob}
+                    onChange={(e) => setLoginDob(e.target.value)}
+                    className="w-full px-3.5 py-2.5 pr-10 bg-slate-50 border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono"
+                    disabled={syncing}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDobPassword(prev => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    tabIndex={-1}
+                    title={showDobPassword ? "Hide password" : "Show password"}
+                  >
+                    <EyeIcon size={16} />
+                  </button>
+                </div>
                 <span className="text-[10px] text-text-secondary block">Format: DD-MM-YYYY (Day-Month-Year)</span>
               </div>
 

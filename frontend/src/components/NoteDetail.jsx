@@ -228,8 +228,8 @@ const NoteDetail = () => {
                 try {
                     const fetchUrl = (presignedUrl.startsWith('http://') || presignedUrl.startsWith('https://')) &&
                         !presignedUrl.includes(window.location.host)
-                            ? `${API_BASE}/files/${noteId}/raw`
-                            : presignedUrl;
+                        ? `${API_BASE}/files/${noteId}/raw`
+                        : presignedUrl;
                     const res = await fetch(fetchUrl);
                     if (res.ok) {
                         blob = await res.blob();
@@ -438,7 +438,7 @@ const NoteDetail = () => {
                 document.body.removeChild(a);
                 toast.warning('B2 storage daily cap reached. Downloaded extracted note text.');
             } else {
-                toast.error('Backblaze B2 daily download cap exceeded. Please increase cap in B2 Caps & Alerts.');
+                toast.error('Backblaze B2 daily download cap exceeded.');
             }
         } finally {
             setDownloading(false);
@@ -545,7 +545,7 @@ const NoteDetail = () => {
                                 <span className={cn(
                                     "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
                                     isPanelOpen && activeTab === 'doubts' ? "bg-white text-[#0071E3]" : "bg-[#0071E3] text-white"
-                                    )}>
+                                )}>
                                     {doubts.length}
                                 </span>
                             )}

@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar03Icon as CalendarIcon, Clock01Icon as Clock, Cancel01Icon as X, CheckmarkCircle01Icon as CheckCircle2 } from 'hugeicons-react';
 import { cn } from '../../lib/utils';
 import { parseDeadlineDate, getDaysRemainingInfo, formatDeadlineDate } from './deadlineUtils';
@@ -12,6 +13,37 @@ const DeadlinesPopover = ({
   title = 'Academic Deadlines'
 }) => {
   const popoverRef = useRef(null);
+  const [coords, setCoords] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePosition = () => {
+      if (anchorRef?.current) {
+        const rect = anchorRef.current.getBoundingClientRect();
+        const width = 370;
+        let left = rect.right - width;
+        if (left < 16) left = 16;
+        if (left + width > window.innerWidth - 16) {
+          left = window.innerWidth - width - 16;
+        }
+        setCoords({
+          top: rect.bottom + 8,
+          left: Math.max(16, left),
+          width: Math.min(width, window.innerWidth - 32)
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [isOpen, anchorRef]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -59,11 +91,11 @@ const DeadlinesPopover = ({
     .filter(item => item._parsedDate !== null)
     .sort((a, b) => a._parsedDate.getTime() - b._parsedDate.getTime());
 
-  return (
+  const popoverContent = (
     <>
       {/* Mobile Backdrop Overlay */}
       <div
-        className="fixed inset-0 bg-slate-900/30 backdrop-blur-2xs z-[200] sm:hidden animate-in fade-in duration-150"
+        className="fixed inset-0 bg-slate-900/30 backdrop-blur-2xs z-[9990] sm:hidden animate-in fade-in duration-150"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -73,10 +105,23 @@ const DeadlinesPopover = ({
         ref={popoverRef}
         role="dialog"
         aria-label="Upcoming Deadlines Popover"
+        style={
+          coords && typeof window !== 'undefined' && window.innerWidth >= 640
+            ? {
+                position: 'fixed',
+                top: `${coords.top}px`,
+                left: `${coords.left}px`,
+                width: `${coords.width}px`,
+                zIndex: 9999
+              }
+            : {
+                zIndex: 9999
+              }
+        }
         className={cn(
-          "fixed inset-x-3 top-20 max-w-sm mx-auto z-[210]",
-          "sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[370px] sm:z-50",
-          "bg-white rounded-2xl shadow-xl border border-[#E2E2E2] text-[#383838] overflow-hidden",
+          "fixed inset-x-3 top-20 max-w-sm mx-auto",
+          "sm:max-w-none sm:mx-0",
+          "bg-white rounded-2xl shadow-2xl border border-[#E2E2E2] text-[#383838] overflow-hidden",
           "animate-in fade-in zoom-in-95 duration-150 origin-top-right",
           className
         )}
@@ -193,6 +238,10 @@ const DeadlinesPopover = ({
       </div>
     </>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(popoverContent, document.body)
+    : popoverContent;
 };
 
 export default DeadlinesPopover;

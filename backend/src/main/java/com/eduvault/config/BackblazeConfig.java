@@ -36,17 +36,37 @@ public class BackblazeConfig {
 
     private StaticCredentialsProvider credentialsProvider() {
         return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+                AwsBasicCredentials.create(
+                        accessKeyId != null ? accessKeyId.trim() : "",
+                        secretAccessKey != null ? secretAccessKey.trim() : ""));
+    }
+
+    private URI getCleanEndpoint() {
+        if (endpoint == null || endpoint.isBlank()) {
+            return URI.create("https://s3.ca-east-006.backblazeb2.com");
+        }
+        String ep = endpoint.trim();
+        if (ep.startsWith("https://") || ep.startsWith("http://")) {
+            return URI.create(ep);
+        }
+        return URI.create("https://" + ep);
+    }
+
+    private Region getCleanRegion() {
+        if (region == null || region.isBlank()) {
+            return Region.of("auto");
+        }
+        return Region.of(region.trim());
     }
 
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
                 .credentialsProvider(credentialsProvider())
-                .endpointOverride(URI.create("https://" + endpoint))
-                .region(Region.of(region))
+                .endpointOverride(getCleanEndpoint())
+                .region(getCleanRegion())
                 .serviceConfiguration(S3Configuration.builder()
-                        .pathStyleAccessEnabled(true) // Required for B2
+                        .pathStyleAccessEnabled(true) // Required for S3 compatibility
                         .build())
                 .build();
     }
@@ -55,8 +75,8 @@ public class BackblazeConfig {
     public S3Presigner s3Presigner() {
         return S3Presigner.builder()
                 .credentialsProvider(credentialsProvider())
-                .endpointOverride(URI.create("https://" + endpoint))
-                .region(Region.of(region))
+                .endpointOverride(getCleanEndpoint())
+                .region(getCleanRegion())
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())

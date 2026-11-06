@@ -155,7 +155,7 @@ const FOOTER_LINKS = [
 function PillNav({ scrolled, activeSection, onNavClick }) {
   return (
     <nav
-      className={`lp-pill-nav ${scrolled ? 'lp-pill-nav--visible' : ''}`}
+      className={`lp-pill-nav ${scrolled ? 'lp-pill-nav--scrolled' : ''}`}
       aria-label="Site navigation"
     >
       <div className="lp-pill-nav-inner">
@@ -272,17 +272,8 @@ export default function LandingPage() {
       <div className="lp-atmosphere" aria-hidden="true" />
       <div className="lp-dotgrid"    aria-hidden="true" />
 
-      {/* ── Liquid glass pill navbar ── */}
+      {/* ── Liquid glass floating pill navbar (always visible) ── */}
       <PillNav scrolled={scrolled} activeSection={activeSection} onNavClick={scrollTo} />
-
-      {/* ── Static top-bar (before pill appears) ── */}
-      <header className="lp-nav" aria-label="Brand header">
-        <Link to="/" className="lp-nav-brand" aria-label="CampusAxis home">
-          <img src="/favicon.png" alt="" width={28} height={28} className="lp-nav-mark" />
-          <span>CampusAxis</span>
-        </Link>
-        <Link to={APP_BASE} className="lp-nav-cta">Open portal</Link>
-      </header>
 
       <main className="lp-main">
 

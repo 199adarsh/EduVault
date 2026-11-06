@@ -451,7 +451,7 @@ public class ApiController {
             }
         }
 
-        // 2. Try Backblaze B2 with multi-key candidates
+        // 2. Try S3/R2 storage with multi-key candidates
         if (backblazeStorageService != null) {
             LinkedHashSet<String> candidates = new LinkedHashSet<>();
             if (note.getB2ObjectKey() != null && !note.getB2ObjectKey().isBlank()) {
@@ -473,20 +473,45 @@ public class ApiController {
                 }
             }
 
+            byte[] foundBytes = null;
             for (String key : candidates) {
                 try {
                     byte[] bytes = backblazeStorageService.getObjectBytes(key);
                     if (bytes != null && bytes.length > 0) {
-                        String contentType = resolveContentType(fileName);
-                        return ResponseEntity.ok()
-                                .contentType(MediaType.parseMediaType(contentType))
-                                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
-                                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
-                                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
-                                .body(new ByteArrayResource(bytes));
+                        foundBytes = bytes;
+                        break;
                     }
                 } catch (Exception ignored) {}
+            }
+
+            // Fuzzy fallback: if exact key not found in bucket, match by original filename or note ID
+            if (foundBytes == null) {
+                try {
+                    String targetName = note.getOriginalFilename();
+                    for (software.amazon.awssdk.services.s3.model.S3Object s3Obj : backblazeStorageService.listAllObjects()) {
+                        String k = s3Obj.key();
+                        if ((targetName != null && !targetName.isBlank() && k.endsWith(targetName)) ||
+                                (note.getId() != null && k.contains(note.getId())) ||
+                                (note.getB2ObjectKey() != null && k.contains(note.getB2ObjectKey()))) {
+                            byte[] bytes = backblazeStorageService.getObjectBytes(k);
+                            if (bytes != null && bytes.length > 0) {
+                                foundBytes = bytes;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            if (foundBytes != null && foundBytes.length > 0) {
+                String contentType = resolveContentType(fileName);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                        .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                        .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, OPTIONS")
+                        .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                        .body(new ByteArrayResource(foundBytes));
             }
         }
 
@@ -506,8 +531,11 @@ public class ApiController {
         return "application/octet-stream";
     }
 
-    @GetMapping("/files/raw/{fileName}")
+    @GetMapping("/files/raw/{*fileName}")
     public ResponseEntity<Resource> getRawFile(@PathVariable String fileName) {
+        if (fileName != null && fileName.startsWith("/")) {
+            fileName = fileName.substring(1);
+        }
         Path path = fileStorageService.getFilePath(fileName);
         if (!java.nio.file.Files.exists(path)) {
             path = Paths.get("./data").resolve(fileName);
@@ -538,10 +566,12 @@ public class ApiController {
             if (fileName.contains("/")) {
                 b2KeyCandidates.add(fileName.substring(fileName.lastIndexOf('/') + 1));
             }
+            String finalName = fileName;
             database.getAllNotes().stream()
-                    .filter(n -> fileName.equals(n.getFileUrl()) ||
-                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(fileName) || n.getB2ObjectKey().endsWith("/" + fileName))) ||
-                            fileName.equals(n.getOriginalFilename()))
+                    .filter(n -> finalName.equals(n.getFileUrl()) ||
+                            (n.getB2ObjectKey() != null && (n.getB2ObjectKey().equals(finalName) || n.getB2ObjectKey().endsWith("/" + finalName) || n.getB2ObjectKey().contains(finalName))) ||
+                            finalName.equals(n.getOriginalFilename()) ||
+                            (n.getOriginalFilename() != null && finalName.endsWith(n.getOriginalFilename())))
                     .findFirst()
                     .ifPresent(n -> {
                         if (n.getB2ObjectKey() != null) b2KeyCandidates.add(n.getB2ObjectKey());

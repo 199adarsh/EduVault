@@ -116,15 +116,13 @@
   position: fixed;
   top: 1.1rem;
   left: 50%;
-  transform: translateX(-50%) translateY(-8px);
+  transform: translateX(-50%) translateY(-10px);
   z-index: 100;
-
-  /* Invisible until scrolled */
   opacity: 0;
   pointer-events: none;
   transition:
-    opacity 350ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .lp-pill-nav--visible {
@@ -144,11 +142,9 @@
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 
-  /* Liquid ripple on mount */
   animation: pill-mount 450ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -167,7 +163,7 @@
   font-weight: 600;
   font-size: 0.875rem;
   letter-spacing: -0.01em;
-  padding: 0 0.5rem 0 0;
+  padding: 0 0.65rem 0 0;
   margin-right: 0.25rem;
   border-right: 1px solid var(--lp-line);
   white-space: nowrap;
@@ -181,65 +177,60 @@
   object-fit: cover;
 }
 
-/* Nav links */
+/* Nav links list */
 .lp-pill-links {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
   display: flex;
   align-items: center;
-  gap: 0.1rem;
+  gap: 0.05rem;
 }
 
+/* Each <li> is the positioning context for the sliding glass bg */
+.lp-pill-li {
+  position: relative;
+}
+
+/* ── iOS liquid-glass sliding background (Framer Motion layoutId) ── */
+.lp-pill-glass-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  /* Layered glass: backdrop + white tint + inner glow */
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px) saturate(200%);
+  -webkit-backdrop-filter: blur(12px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 2px 10px rgba(0, 20, 60, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 -1px 0 rgba(0, 20, 60, 0.04) inset;
+  /* Must sit below link text */
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Link text sits above the glass bg */
 .lp-pill-link {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
-  padding: 0.42rem 0.75rem;
+  padding: 0.42rem 0.8rem;
   border-radius: 999px;
   font-size: 0.84rem;
   font-weight: 500;
   color: var(--lp-muted);
   text-decoration: none;
   white-space: nowrap;
-  position: relative;
-  transition:
-    color 200ms ease,
-    background 200ms ease;
+  transition: color 200ms ease;
 }
 
-/* Liquid hover background — morphs in */
-.lp-pill-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: rgba(0, 20, 60, 0.06);
-  opacity: 0;
-  transform: scale(0.85);
-  transition:
-    opacity 200ms ease,
-    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+.lp-pill-link:hover { color: var(--lp-ink); }
 
-.lp-pill-link:hover {
-  color: var(--lp-ink);
-}
-
-.lp-pill-link:hover::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Active state — solid glass pill */
 .lp-pill-link--active {
   color: var(--lp-blue);
   font-weight: 600;
-}
-
-.lp-pill-link--active::before {
-  opacity: 1;
-  transform: scale(1);
-  background: rgba(0, 113, 227, 0.09);
 }
 
 /* CTA inside pill */
@@ -258,17 +249,12 @@
   text-decoration: none;
   white-space: nowrap;
   box-shadow: 0 1px 8px rgba(0, 113, 227, 0.28), 0 1px 0 rgba(255,255,255,0.18) inset;
-  transition:
-    background 200ms ease,
-    transform 150ms ease,
-    box-shadow 200ms ease;
+  transition: background 200ms ease, transform 150ms ease, box-shadow 200ms ease;
 }
-
 .lp-pill-cta:hover {
   background: var(--lp-blue-hover);
   box-shadow: 0 2px 12px rgba(0, 113, 227, 0.38), 0 1px 0 rgba(255,255,255,0.18) inset;
 }
-
 .lp-pill-cta:active { transform: scale(0.97); }
 .lp-pill-cta:focus-visible { outline: 2px solid var(--lp-blue); outline-offset: 3px; }
 
@@ -289,19 +275,59 @@
 .lp-hero {
   flex: none;
   display: grid;
-  grid-template-columns: minmax(260px, 0.85fr) minmax(360px, 1.15fr);
+  grid-template-columns: minmax(300px, 1fr) minmax(420px, 1.2fr);
   grid-template-rows: 1fr;
   width: 100%;
   min-height: calc(100dvh - 72px);
   align-items: stretch;
+  overflow: hidden;
 }
+
+/* ── Value pills row ─────────────────────────────────────────────── */
+
+.lp-value-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.lp-value-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: var(--lp-muted);
+  background: var(--lp-wash);
+  border: 1px solid var(--lp-line);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.lp-value-pill svg {
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.lp-value-pill--accent {
+  background: rgba(0, 113, 227, 0.07);
+  border-color: rgba(0, 113, 227, 0.18);
+  color: var(--lp-blue);
+  font-weight: 600;
+}
+
+/* ── Copy column ─────────────────────────────────────────────────── */
 
 .lp-copy {
   align-self: center;
   justify-self: start;
   text-align: left;
-  max-width: 28rem;
-  padding: clamp(1.5rem, 4vh, 3rem) 0 clamp(2rem, 5vh, 3.5rem) clamp(1.25rem, 3vw, 2.5rem);
+  max-width: 30rem;
+  padding: clamp(2rem, 5vh, 4rem) 1.5rem clamp(2rem, 5vh, 4rem) clamp(1.5rem, 4vw, 3rem);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -319,27 +345,36 @@
 .lp-brand {
   margin: 0;
   font-family: "DM Sans", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+  font-size: clamp(2.8rem, 5.5vw, 4.6rem);
   font-weight: 700;
   letter-spacing: -0.045em;
-  line-height: 1.02;
+  line-height: 1.05;
   color: var(--lp-ink);
 }
 
+/* Gradient accent word on second line */
+.lp-brand-accent {
+  background: linear-gradient(120deg, var(--lp-blue) 0%, #5ba4f5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .lp-lede {
-  margin: 0.9rem 0 0;
-  max-width: 24rem;
+  margin: 1rem 0 0;
+  max-width: 26rem;
   font-size: clamp(1rem, 1.5vw, 1.125rem);
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--lp-muted);
   font-weight: 400;
 }
 
 .lp-actions {
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  align-items: center;
 }
 
 .lp-btn {
@@ -353,7 +388,7 @@
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background 200ms ease-out, transform 180ms ease-out, box-shadow 200ms ease-out;
+  transition: background 200ms ease-out, transform 180ms ease-out, box-shadow 200ms ease-out, color 200ms ease-out;
 }
 
 .lp-btn--primary {
@@ -365,10 +400,23 @@
 .lp-btn--primary:active { transform: scale(0.98); }
 .lp-btn--primary:focus-visible { outline: 2px solid var(--lp-blue); outline-offset: 3px; }
 
-/* Hero feature list */
+.lp-btn--ghost {
+  background: transparent;
+  color: var(--lp-muted);
+  border: 1px solid var(--lp-line);
+}
+.lp-btn--ghost:hover {
+  background: var(--lp-wash);
+  color: var(--lp-ink);
+  border-color: #d0d0d8;
+}
+.lp-btn--ghost:active { transform: scale(0.98); }
+
+/* ── Hero feature list ───────────────────────────────────────────── */
+
 .lp-features {
   list-style: none;
-  margin: 2rem 0 0;
+  margin: 2.25rem 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -414,28 +462,45 @@
   color: var(--lp-muted);
 }
 
-/* Product stage */
+/* ── Product stage (flush right panel) ──────────────────────────── */
+
 .lp-stage {
+  position: relative;    /* anchor for floating cards */
   min-height: 0;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 1.25rem clamp(1.25rem, 3vw, 2.75rem) 1.75rem 0.75rem;
+  /* Flush: no right/top/bottom padding — panel bleeds to viewport edge */
+  padding: 2.5rem 0 2.5rem 1.25rem;
+  background: linear-gradient(145deg, #eef3fb 0%, #f0f4fc 60%, #e8eef9 100%);
+}
+
+/* Soft glow blob behind the frame */
+.lp-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 50%, rgba(0, 113, 227, 0.1), transparent 70%);
+  pointer-events: none;
 }
 
 .lp-screen {
-  width: min(100%, 960px);
-  max-height: min(80vh, 680px);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-height: min(78vh, 640px);
   aspect-ratio: 8 / 5;
   min-height: 0;
   background: var(--lp-wash);
-  border: 1px solid var(--lp-line);
-  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 16px 0 0 16px;    /* flush on the right */
   overflow: hidden;
   box-shadow:
-    0 1px 2px rgba(0, 20, 60, 0.04),
-    0 24px 64px rgba(0, 20, 60, 0.13);
+    -4px 0 0 rgba(255,255,255,0.6),
+    0 2px 4px rgba(0, 20, 60, 0.05),
+    0 32px 80px rgba(0, 20, 60, 0.16);
 }
 
 .lp-media {
@@ -444,6 +509,97 @@
   object-fit: cover;
   object-position: left top;
   background: var(--lp-wash);
+}
+
+/* ── Floating glass stat cards ───────────────────────────────────── */
+
+.lp-stat-card {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 4px 20px rgba(0, 20, 60, 0.1),
+    0 1px 0 rgba(255,255,255,0.9) inset;
+
+  animation: card-float 5s ease-in-out infinite;
+}
+
+/* Stagger the float animation per card */
+.lp-stat-card--tl {
+  top: 14%;
+  left: -1.5rem;
+  animation-delay: 0s;
+}
+.lp-stat-card--br {
+  bottom: 16%;
+  right: 1.5rem;
+  animation-delay: 1.8s;
+}
+.lp-stat-card--bc {
+  bottom: 7%;
+  left: 10%;
+  animation-delay: 0.9s;
+}
+
+@keyframes card-float {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-6px);  }
+}
+
+.lp-stat-icon {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lp-stat-icon--blue {
+  background: rgba(0, 113, 227, 0.1);
+  color: var(--lp-blue);
+}
+
+.lp-stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.lp-stat-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--lp-ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.lp-stat-label {
+  font-size: 0.72rem;
+  color: var(--lp-muted);
+  line-height: 1;
+}
+
+.lp-stat-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+.lp-stat-badge--green {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -664,81 +820,204 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   FOOTER CTA BAND
+   FOOTER
    ══════════════════════════════════════════════════════════════════ */
 
-.lp-footer-cta {
+/* Pre-footer CTA band */
+.lp-prefooter {
   position: relative;
   z-index: 1;
-  padding: clamp(4rem, 8vh, 6rem) clamp(1.25rem, 4vw, 3rem);
-  background: var(--lp-ink);
-  color: #fff;
-  text-align: center;
+  background: linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0f2347 100%);
+  padding: clamp(3rem, 7vh, 5rem) clamp(1.5rem, 4vw, 3rem);
+  overflow: hidden;
 }
 
-.lp-footer-cta-inner {
-  max-width: 600px;
+/* Decorative glow behind prefooter */
+.lp-prefooter::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(0,113,227,0.25) 0%, transparent 70%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+
+.lp-prefooter-inner {
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.lp-footer-cta-title {
+.lp-prefooter-copy { flex: 1; min-width: 260px; }
+
+.lp-prefooter-title {
   margin: 0;
   font-family: "DM Sans", Inter, sans-serif;
-  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.15;
+  color: #fff;
 }
 
-.lp-footer-cta-sub {
-  margin: 0;
+.lp-prefooter-sub {
+  margin: 0.6rem 0 0;
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.65);
   line-height: 1.6;
+  color: rgba(255,255,255,0.6);
 }
 
-.lp-footer-cta .lp-btn--primary {
-  margin-top: 0.5rem;
-  box-shadow: 0 1px 2px rgba(0, 20, 60, 0.12), 0 8px 28px rgba(0, 113, 227, 0.4);
+.lp-prefooter-cta {
+  flex-shrink: 0;
+  gap: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0,20,60,0.12), 0 8px 28px rgba(0,113,227,0.4);
+  min-height: 52px;
+  font-size: 1rem;
 }
+
+/* Main footer grid */
+.lp-footer-main {
+  position: relative;
+  z-index: 1;
+  background: #0a1628;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.lp-footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 5vh, 4rem) clamp(1.5rem, 4vw, 3rem) 0;
+  display: grid;
+  grid-template-columns: 1.6fr repeat(2, 1fr);
+  gap: 3rem;
+}
+
+/* Brand column */
+.lp-footer-brand-col { display: flex; flex-direction: column; gap: 1rem; }
+
+.lp-footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+.lp-footer-logo:hover { opacity: 0.85; }
+
+.lp-footer-logo-mark {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.lp-footer-tagline {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.5);
+  max-width: 280px;
+}
+
+.lp-footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.lp-footer-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.01em;
+}
+
+/* Link columns */
+.lp-footer-link-col { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.lp-footer-col-heading {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lp-footer-link-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lp-footer-link {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.lp-footer-link:hover { color: rgba(255,255,255,0.9); }
+
+/* Bottom bar */
+.lp-footer-bar {
+  max-width: 1100px;
+  margin: 2.5rem auto 0;
+  padding: 1.25rem clamp(1.5rem, 4vw, 3rem);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lp-footer-copy {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.3);
+}
+
+.lp-footer-bar-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.lp-footer-bar-link {
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.lp-footer-bar-link:hover { color: rgba(255,255,255,0.7); }
 
 /* ══════════════════════════════════════════════════════════════════
-   ENTRANCE ANIMATIONS
+   ENTRANCE ANIMATIONS (hero — now handled by Framer Motion)
+   Keep .lp-copy / .lp-stage visible so FM takes over
    ══════════════════════════════════════════════════════════════════ */
 
-.lp-copy {
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 520ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.lp-stage {
-  opacity: 0;
-  transform: translateX(18px);
-  transition:
-    opacity 620ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.lp--in .lp-copy { opacity: 1; transform: none; }
-.lp--in .lp-stage {
-  opacity: 1; transform: none;
-  transition-delay: 90ms;
-}
+.lp-copy  { /* FM handles opacity/transform */ }
+.lp-stage { /* FM handles opacity/transform */ }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-copy, .lp-stage { opacity: 1; transform: none; transition: none; }
+  .lp-copy, .lp-stage { opacity: 1; transform: none; }
   .lp-nav-cta, .lp-btn { transition: none; }
   .lp-pill-nav { transition: none; }
   .lp-pill-nav-inner { animation: none; }
-  .lp-pill-link::before { transition: none; }
   .lp-feat-card { transition: none; }
+  .lp-stat-card { animation: none; }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -748,6 +1027,8 @@
 @media (max-width: 1024px) {
   .lp-pill-brand span { display: none; }
   .lp-pill-brand { border-right: none; margin-right: 0; padding-right: 0.25rem; }
+  .lp-footer-inner { grid-template-columns: 1fr 1fr; }
+  .lp-footer-brand-col { grid-column: 1 / -1; }
 }
 
 @media (max-width: 900px) {
@@ -760,18 +1041,24 @@
   .lp-stage {
     order: -1;
     justify-content: center;
-    padding: 0.75rem 1rem 0;
+    padding: 1.25rem 0 0;
+    background: linear-gradient(180deg, #eef3fb 0%, #f4f7fd 100%);
   }
 
+  .lp-stage::before { display: none; }
+
   .lp-screen {
-    width: min(100%, 720px);
-    max-height: min(50vh, 420px);
+    border-radius: 12px;
+    max-height: min(50vh, 400px);
+    margin: 0 1rem;
   }
+
+  .lp-stat-card { display: none; }
 
   .lp-copy {
     align-self: start;
     max-width: none;
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.75rem 1.25rem 2rem;
   }
 
   .lp-brand { font-size: clamp(2.4rem, 10vw, 3.25rem); }
@@ -783,10 +1070,15 @@
 
   .lp-feature:last-child { border-bottom: none; }
 
-  /* Pill nav — hide on very small screens, use static header */
   .lp-pill-nav { display: none; }
 
   .lp-step + .lp-step::before { display: none; }
   .lp-step { padding: 1.25rem 0; border-top: 1px solid var(--lp-line); }
   .lp-step:first-child { border-top: none; }
+
+  .lp-prefooter-inner { flex-direction: column; align-items: flex-start; }
+  .lp-prefooter-cta { width: 100%; justify-content: center; }
+
+  .lp-footer-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .lp-footer-bar { flex-direction: column; align-items: flex-start; }
 }

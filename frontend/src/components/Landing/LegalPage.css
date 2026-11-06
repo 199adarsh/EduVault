@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CampusAxis Legal Pages (Privacy Policy & Terms of Use)
+   Clean, Apple-inspired editorial legal typography
+   ═══════════════════════════════════════════════════════════════════ */
+
+.legal-page {
+  --lp-ink:         #1d1d1f;
+  --lp-muted:       #6e6e73;
+  --lp-line:        #e5e5ea;
+  --lp-blue:        #0071e3;
+  --lp-blue-hover:  #005bb5;
+  --lp-canvas:      #ffffff;
+  --lp-wash:        #f2f4f8;
+  --lp-alt:         #f7f8fb;
+
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--lp-canvas);
+  color: var(--lp-ink);
+  font-family: Inter, "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background ambiance */
+.legal-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0, 113, 227, 0.05), transparent 60%),
+    linear-gradient(180deg, #f7f9fc 0%, #ffffff 400px);
+  z-index: 0;
+}
+
+/* Glass Header */
+.legal-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-bottom: 1px solid var(--lp-line);
+}
+
+.legal-header-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0.9rem clamp(1rem, 3vw, 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legal-header-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--lp-ink);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: opacity 150ms ease;
+}
+
+.legal-header-back:hover {
+  opacity: 0.75;
+}
+
+.legal-header-brand-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.legal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.legal-nav-switch {
+  display: inline-flex;
+  align-items: center;
+  background: var(--lp-wash);
+  border: 1px solid var(--lp-line);
+  padding: 0.2rem;
+  border-radius: 999px;
+  gap: 0.2rem;
+}
+
+.legal-nav-tab {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--lp-muted);
+  transition: all 180ms ease;
+}
+
+.legal-nav-tab:hover {
+  color: var(--lp-ink);
+}
+
+.legal-nav-tab--active {
+  background: #ffffff;
+  color: var(--lp-blue);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 20, 60, 0.08);
+}
+
+.legal-portal-cta {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  background: var(--lp-blue);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 180ms ease;
+}
+
+.legal-portal-cta:hover {
+  background: var(--lp-blue-hover);
+}
+
+/* Main Container */
+.legal-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 5vh, 4rem) clamp(1.25rem, 3.5vw, 2.5rem) clamp(4rem, 8vh, 6rem);
+}
+
+/* Page Intro */
+.legal-intro {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--lp-line);
+}
+
+.legal-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lp-blue);
+  background: rgba(0, 113, 227, 0.08);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+.legal-title {
+  margin: 0 0 0.85rem;
+  font-family: "DM Sans", Inter, sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--lp-ink);
+}
+
+.legal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.84rem;
+  color: var(--lp-muted);
+}
+
+.legal-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Callout Box for Disclaimers */
+.legal-callout {
+  margin: 1.75rem 0 2.5rem;
+  padding: 1.25rem 1.4rem;
+  background: rgba(0, 113, 227, 0.04);
+  border: 1px solid rgba(0, 113, 227, 0.18);
+  border-left: 4px solid var(--lp-blue);
+  border-radius: 12px;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.legal-callout-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--lp-blue);
+  margin-top: 2px;
+}
+
+.legal-callout-content {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--lp-ink);
+}
+
+.legal-callout-title {
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+  color: var(--lp-ink);
+}
+
+.legal-callout-p {
+  margin: 0;
+  color: #3a3a3c;
+}
+
+/* Typography & Content Sections */
+.legal-section {
+  margin-bottom: 2.75rem;
+}
+
+.legal-h2 {
+  font-family: "DM Sans", Inter, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lp-ink);
+  margin: 0 0 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.legal-h2-number {
+  color: var(--lp-blue);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.legal-p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #3a3a3c;
+  margin: 0 0 1rem;
+}
+
+.legal-list {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.legal-list li {
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: #3a3a3c;
+}
+
+.legal-list li strong {
+  color: var(--lp-ink);
+  font-weight: 600;
+}
+
+/* Highlighted data grid / pills */
+.legal-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.legal-feature-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: var(--lp-wash);
+  border: 1px solid var(--lp-line);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lp-ink);
+}
+
+/* Footer within legal page */
+.legal-footer {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--lp-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.84rem;
+  color: var(--lp-muted);
+}
+
+.legal-footer-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.legal-footer-links a {
+  color: var(--lp-muted);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.legal-footer-links a:hover {
+  color: var(--lp-blue);
+}
+
+@media (max-width: 640px) {
+  .legal-header-inner {
+    gap: 0.5rem;
+  }
+  .legal-portal-cta {
+    display: none;
+  }
+  .legal-callout {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+

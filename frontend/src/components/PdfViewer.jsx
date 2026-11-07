@@ -15,7 +15,10 @@ import {
 
 // Use reliable CORS-friendly CDN worker compatible with all mobile browsers
 if (typeof window !== 'undefined') {
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+    ).toString();
 }
 
 export default function PdfViewer({ url, data, presignedUrl, title, onDownload, extractedText }) {
@@ -30,6 +33,16 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
     });
     const [loadError, setLoadError] = useState(null);
     const containerRef = useRef(null);
+    const scrollContainerRef = useRef(null);
+    const pageRefs = useRef({});
+
+    const scrollToPage = useCallback((target) => {
+        const el = pageRefs.current[target];
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setPageNumber(target);
+        }
+    }, []);
 
     const onDocumentLoadSuccess = useCallback(({ numPages }) => {
         setNumPages(numPages);
@@ -100,13 +113,44 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
         return Math.round(base * scale);
     }, [containerWidth, scale]);
 
+    // Track current visible page during continuous scroll
+    useEffect(() => {
+        if (!numPages || numPages <= 1) return;
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        const page = Number(entry.target.getAttribute('data-page-number'));
+                        if (page && !isNaN(page)) {
+                            setPageNumber(page);
+                        }
+                    }
+                }
+            },
+            {
+                root: container,
+                rootMargin: '-10% 0px -70% 0px',
+                threshold: 0,
+            }
+        );
+
+        Object.values(pageRefs.current).forEach((el) => {
+            if (el) observer.observe(el);
+        });
+
+        return () => observer.disconnect();
+    }, [numPages]);
+
     const pageNav = (
         <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-[#E5E5EA] dark:border-[#2C2C2E] bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-md sticky top-0 z-20 select-none text-xs">
             <div className="flex items-center gap-1 sm:gap-1.5">
                 <button
                     type="button"
                     disabled={pageNumber <= 1}
-                    onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+                    onClick={() => scrollToPage(Math.max(1, pageNumber - 1))}
                     className="p-1.5 rounded-lg border border-[#E5E5EA] dark:border-[#2C2C2E] disabled:opacity-40 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer disabled:cursor-not-allowed text-[#1D1D1F] dark:text-white transition-colors"
                     title="Previous page"
                 >
@@ -118,7 +162,7 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
                 <button
                     type="button"
                     disabled={!numPages || pageNumber >= numPages}
-                    onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}
+                    onClick={() => scrollToPage(Math.min(numPages, pageNumber + 1))}
                     className="p-1.5 rounded-lg border border-[#E5E5EA] dark:border-[#2C2C2E] disabled:opacity-40 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer disabled:cursor-not-allowed text-[#1D1D1F] dark:text-white transition-colors"
                     title="Next page"
                 >
@@ -213,7 +257,7 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
                     {extractedText && (
                         <div className="w-full text-left bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-2xl p-6 sm:p-8 shadow-xs">
                             <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-lg text-xs text-amber-800 dark:text-amber-300">
-                                <span>Showing full extracted document text while storage bandwidth resets.</span>
+                                <span>Showing extracted document text.</span>
                             </div>
                             <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {extractedText}
@@ -228,7 +272,10 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
     return (
         <div id="pdf-canvas-container" ref={containerRef} className="w-full h-full min-h-[400px] flex flex-col bg-[#F5F5F7] dark:bg-black overflow-hidden relative">
             {pageNav}
-            <div className="flex-1 overflow-y-auto overflow-x-auto flex justify-center p-2 sm:p-6 min-h-0">
+            <div
+                ref={scrollContainerRef}
+                className="flex-1 overflow-y-auto overflow-x-auto flex justify-center p-2 sm:p-6 min-h-0 scroll-smooth"
+            >
                 <Document
                     file={fileSource}
                     onLoadSuccess={onDocumentLoadSuccess}
@@ -239,15 +286,42 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
                             <span>Rendering PDF pages...</span>
                         </div>
                     }
-                    className="flex flex-col items-center max-w-full"
+                    className="flex flex-col items-center gap-4 max-w-full pb-8"
                 >
-                    <Page
-                        pageNumber={pageNumber}
-                        width={calculatedWidth}
-                        className="shadow-sm rounded-lg overflow-hidden border border-[#E5E5EA] dark:border-[#2C2C2E] bg-white"
-                        renderAnnotationLayer={false}
-                        renderTextLayer={false}
-                    />
+                    {numPages ? (
+                        Array.from(new Array(numPages), (_, index) => {
+                            const pNum = index + 1;
+                            return (
+                                <div
+                                    key={`page_${pNum}`}
+                                    ref={(el) => (pageRefs.current[pNum] = el)}
+                                    data-page-number={pNum}
+                                    className="flex flex-col items-center"
+                                >
+                                    <Page
+                                        pageNumber={pNum}
+                                        width={calculatedWidth}
+                                        className="shadow-sm rounded-lg overflow-hidden border border-[#E5E5EA] dark:border-[#2C2C2E] bg-white"
+                                        renderAnnotationLayer={false}
+                                        renderTextLayer={false}
+                                    />
+                                    {numPages > 1 && (
+                                        <div className="text-[10px] text-[#8E8E93] font-mono mt-1 mb-2">
+                                            Page {pNum} of {numPages}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <Page
+                            pageNumber={1}
+                            width={calculatedWidth}
+                            className="shadow-sm rounded-lg overflow-hidden border border-[#E5E5EA] dark:border-[#2C2C2E] bg-white"
+                            renderAnnotationLayer={false}
+                            renderTextLayer={false}
+                        />
+                    )}
                 </Document>
             </div>
         </div>

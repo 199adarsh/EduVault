@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, Loader2, ZoomIn, ZoomOut } from 'lucide-react';
@@ -8,7 +8,12 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+if (typeof window !== 'undefined') {
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+    ).toString();
+}
 
 const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
   const [numPages, setNumPages] = useState(null);
@@ -17,10 +22,51 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
 
+  const scrollContainerRef = useRef(null);
+  const pageRefs = useRef({});
+
+  const scrollToPage = useCallback((target) => {
+    const el = pageRefs.current[target];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setPageNumber(target);
+    }
+  }, []);
+
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
     setPageNumber(1);
   }
+
+  useEffect(() => {
+    if (!numPages || numPages <= 1) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const page = Number(entry.target.getAttribute('data-page-number'));
+            if (page && !isNaN(page)) {
+              setPageNumber(page);
+            }
+          }
+        }
+      },
+      {
+        root: container,
+        rootMargin: '-10% 0px -70% 0px',
+        threshold: 0,
+      }
+    );
+
+    Object.values(pageRefs.current).forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [numPages]);
 
   const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
   const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
@@ -67,7 +113,7 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 flex justify-center items-start bg-zinc-100/50 relative">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 flex justify-center items-start bg-zinc-100/50 relative scroll-smooth">
            {downloading && (
              <DocumentLoadingBar 
                progress={downloadProgress} 
@@ -95,15 +141,37 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
                          Please download the file to view it.
                      </div>
                  }
+                 className="flex flex-col items-center gap-4 pb-6"
                >
-                 <div className="shadow-2xl border border-border/50 bg-white inline-block">
-                    <Page 
-                      pageNumber={pageNumber} 
-                      scale={scale} 
-                      renderTextLayer={false} 
-                      renderAnnotationLayer={false}
-                    />
-                 </div>
+                 {numPages ? (
+                   Array.from(new Array(numPages), (_, index) => {
+                     const pNum = index + 1;
+                     return (
+                       <div
+                         key={`page_${pNum}`}
+                         ref={(el) => (pageRefs.current[pNum] = el)}
+                         data-page-number={pNum}
+                         className="flex flex-col items-center shadow-lg border border-border/50 bg-white"
+                       >
+                         <Page 
+                           pageNumber={pNum} 
+                           scale={scale} 
+                           renderTextLayer={false} 
+                           renderAnnotationLayer={false}
+                         />
+                       </div>
+                     );
+                   })
+                 ) : (
+                   <div className="shadow-2xl border border-border/50 bg-white inline-block">
+                     <Page 
+                       pageNumber={1} 
+                       scale={scale} 
+                       renderTextLayer={false} 
+                       renderAnnotationLayer={false}
+                     />
+                   </div>
+                 )}
                </Document>
            ) : fileUrl && isOfficeDoc ? (
                <iframe 
@@ -134,7 +202,7 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
                     <Button 
                         variant="outline" 
                         size="icon" 
-                        onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
+                        onClick={() => scrollToPage(Math.max(pageNumber - 1, 1))}
                         disabled={pageNumber <= 1}
                     >
                         <ChevronLeft className="w-4 h-4" />
@@ -145,7 +213,7 @@ const NotePreviewModal = ({ open, note, onClose, fileUrl }) => {
                     <Button 
                         variant="outline" 
                         size="icon" 
-                        onClick={() => setPageNumber(prev => Math.min(prev + 1, numPages))}
+                        onClick={() => scrollToPage(Math.min(pageNumber + 1, numPages))}
                         disabled={pageNumber >= numPages}
                     >
                         <ChevronRight className="w-4 h-4" />

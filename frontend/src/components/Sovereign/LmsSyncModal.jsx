@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FluidTabs } from '../fluid-tabs';
+import { DropdownDisclosure } from '../dropdown-disclosure';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -33,6 +34,16 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete, availableSubjects = [] 
     const [discoveredCourses, setDiscoveredCourses] = useState(null);
     const [activeTab, setActiveTab] = useState('sync'); // 'sync' | 'preview'
     const [isMinimized, setIsMinimized] = useState(false);
+    const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+
+    const subjectDropdownItems = React.useMemo(() => [
+        { id: '', name: '-- Choose Subject to Scrape --' },
+        ...(subjectList || []).map(s => ({
+            id: s.code || s.id || s.name,
+            name: s.code ? `${s.name} (${s.code})` : s.name,
+            description: s.code ? `Course Code: ${s.code}` : undefined
+        }))
+    ], [subjectList]);
 
     const pollingRef = useRef(null);
     const logContainerRef = useRef(null);
@@ -406,28 +417,27 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete, availableSubjects = [] 
                                                     <span>Target Subject to Scrape</span>
                                                     <span className="text-[10px] text-[#0071E3] font-normal">Select subject</span>
                                                 </label>
-                                                <select
-                                                    value={selectedSubject}
-                                                    onChange={(e) => setSelectedSubject(e.target.value)}
-                                                    disabled={isLoading}
-                                                    className="w-full bg-white border border-[#E5E5EA] rounded-lg py-2 px-3 text-xs text-[#1D1D1F] focus:outline-none focus:border-[#0071E3] transition cursor-pointer"
-                                                >
-                                                    <option value="">-- Choose Subject to Scrape --</option>
-                                                    {subjectList.map((s, idx) => (
-                                                        <option key={s.id || s.code || idx} value={s.code || s.id || s.name}>
-                                                            {s.name} {s.code ? `(${s.code})` : ''}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                <DropdownDisclosure
+                                                    items={subjectDropdownItems}
+                                                    selectedId={selectedSubject}
+                                                    onChange={(item) => setSelectedSubject(item.id)}
+                                                    isOpen={isSubjectDropdownOpen}
+                                                    onOpenChange={setIsSubjectDropdownOpen}
+                                                    title="Target Subject"
+                                                    compact={false}
+                                                    placement="bottom"
+                                                    align="left"
+                                                    className="w-full"
+                                                />
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Live Ingestion Progress Card */}
+                            {/* Live Ingestion Progress (Clean flattened layout) */}
                             {isLoading && (
-                                <div className="bg-white border border-[#E5E5EA] rounded-xl p-5 space-y-4 shadow-sm animate-in fade-in duration-200">
+                                <div className="space-y-4 animate-in fade-in duration-200">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <span className="w-2 h-2 rounded-full bg-[#0071E3] animate-pulse" />
@@ -513,17 +523,6 @@ const LmsSyncModal = ({ isOpen, onClose, onSyncComplete, availableSubjects = [] 
                                             </div>
                                         </div>
                                     )}
-
-                                    {/* Minimize prompt */}
-                                    <div className="pt-1 text-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsMinimized(true)}
-                                            className="text-xs font-medium text-[#0071E3] hover:underline cursor-pointer"
-                                        >
-                                            Continue in background →
-                                        </button>
-                                    </div>
                                 </div>
                             )}
 

@@ -129,8 +129,8 @@
 .lp-pill-nav-inner {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.38rem 0.5rem 0.38rem 0.85rem;
+  gap: 0.3rem;
+  padding: 0.35rem 0.45rem;
   border-radius: 999px;
 
   background: var(--glass-bg);
@@ -145,32 +145,6 @@
   background: rgba(255, 255, 255, 0.94);
   border-color: rgba(0, 20, 60, 0.14);
   box-shadow: 0 16px 42px -6px rgba(0, 20, 60, 0.18), 0 4px 12px -2px rgba(0, 20, 60, 0.1), var(--glass-highlight);
-}
-
-/* Brand icon inside pill */
-.lp-pill-brand {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0.55rem 0 0.15rem;
-  margin-right: 0.2rem;
-  border-right: 1px solid rgba(0, 20, 60, 0.1);
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-.lp-pill-brand:hover {
-  opacity: 0.8;
-  transform: scale(1.05);
-}
-.lp-pill-brand:active {
-  transform: scale(0.95);
-}
-
-.lp-pill-mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  object-fit: cover;
-  box-shadow: 0 1px 3px rgba(0, 20, 60, 0.12);
 }
 
 /* Nav links list */
@@ -1070,14 +1044,8 @@
   }
 
   .lp-pill-nav-inner {
-    padding: 0.32rem 0.45rem 0.32rem 0.65rem;
+    padding: 0.3rem 0.35rem;
     gap: 0.15rem;
-  }
-
-  .lp-pill-brand {
-    border-right: none;
-    margin-right: 0;
-    padding-right: 0.35rem;
   }
 
   .lp-pill-link {

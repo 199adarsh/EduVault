@@ -159,16 +159,6 @@ function PillNav({ scrolled, activeSection, onNavClick }) {
       aria-label="Site navigation"
     >
       <div className="lp-pill-nav-inner">
-        {/* Brand logo icon */}
-        <a
-          href="#hero"
-          className="lp-pill-brand"
-          onClick={(e) => onNavClick(e, '#hero')}
-          aria-label="CampusAxis — back to top"
-        >
-          <img src="/favicon.png" alt="" width={24} height={24} className="lp-pill-mark" />
-        </a>
-
         {/* Links with sliding glass indicator */}
         <ul className="lp-pill-links" role="list">
           {NAV_LINKS.map(({ label, href }) => {

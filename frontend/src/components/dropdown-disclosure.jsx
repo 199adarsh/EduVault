@@ -63,6 +63,7 @@ export const DropdownDisclosure = ({
   placement = "bottom",
   align = "left",
   className = "",
+  triggerClassName = "",
 }) => {
   const itemList = items || models || DEFAULT_MODELS;
   const currentId = selectedId || selectedModelId;
@@ -104,7 +105,7 @@ export const DropdownDisclosure = ({
           compact
             ? 'gap-1.5 px-2.5 py-1 rounded-full border border-[#D9ECFF] dark:border-white/10 bg-[#F2F7FC] dark:bg-[#2C2C2E] hover:bg-[#E5F1FC] dark:hover:bg-[#3A3A3C]'
             : 'gap-2 px-3 py-1.5 rounded-2xl border border-black/10 dark:border-white/10 bg-neutral-50 dark:bg-neutral-900 shadow-xs'
-        }`}
+        } ${triggerClassName}`}
       >
         {selected.icon && (
           <div className={`flex shrink-0 items-center justify-center rounded-full text-neutral-600 dark:text-neutral-300 ${compact ? 'w-4 h-4' : 'w-7 h-7 border border-neutral-200 dark:border-neutral-700'}`}>
@@ -112,7 +113,7 @@ export const DropdownDisclosure = ({
           </div>
         )}
 
-        <span className={`truncate font-semibold text-[#174073] dark:text-zinc-200 ${compact ? 'text-[11px] max-w-[150px]' : 'text-sm font-bold'}`}>
+        <span className={`truncate font-semibold text-[#174073] dark:text-zinc-200 ${compact ? 'text-[11px] max-w-[150px]' : 'text-xs font-bold'} flex-1 text-left`}>
           {selected.name}
         </span>
 

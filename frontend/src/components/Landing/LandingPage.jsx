@@ -319,9 +319,17 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
-              Your campus,<br />
-              <span className="lp-brand-accent">one screen.</span>
+              CampusAxis
             </motion.h1>
+
+            <motion.p
+              className="lp-brand-tagline"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Your campus, <span className="lp-brand-accent">one screen.</span>
+            </motion.p>
 
             <motion.p
               className="lp-lede"

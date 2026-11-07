@@ -366,11 +366,21 @@
 .lp-brand {
   margin: 0;
   font-family: "DM Sans", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(2.8rem, 5.5vw, 4.6rem);
+  font-size: clamp(2.8rem, 5.5vw, 4.4rem);
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1.05;
   color: var(--lp-ink);
+}
+
+.lp-brand-tagline {
+  margin: 0.35rem 0 0;
+  font-family: "DM Sans", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(1.35rem, 2.5vw, 1.95rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  color: #1f2937;
 }
 
 /* Gradient accent word on second line */

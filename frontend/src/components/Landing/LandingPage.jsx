@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import Lenis from 'lenis';
 import { APP_BASE } from '../../config/appPaths';
+import { TopographyBackground } from '@/components/animate-ui/backgrounds/topography';
+import { HexagonBackground } from '@/components/animate-ui/backgrounds/hexagon';
 import './LandingPage.css';
 
 /* ─── Lenis smooth scroll initialisation ───────────────────────────── */
@@ -259,6 +261,18 @@ export default function LandingPage() {
   return (
     <div className={`lp ${entered ? 'lp--in' : ''}`}>
       <div className="lp-atmosphere" aria-hidden="true" />
+      <div className="lp-topography-wrapper" aria-hidden="true">
+        <TopographyBackground
+          className="absolute inset-0 text-slate-400/40"
+          lineColor="#3b9eff"
+          levels={16}
+          speed={1.2}
+          scale={1.15}
+          peak={1.4}
+          interactive={!reduceMotion}
+        />
+        <div className="lp-topography-vignette" />
+      </div>
       <div className="lp-dotgrid"    aria-hidden="true" />
 
       {/* ── Liquid glass floating pill navbar (always visible) ── */}
@@ -354,6 +368,20 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
+            {/* Topography living backdrop directly behind hero showcase */}
+            <div className="lp-stage-topography" aria-hidden="true">
+              <TopographyBackground
+                className="absolute inset-0"
+                lineColor="#3b9eff"
+                levels={18}
+                speed={1.5}
+                scale={0.9}
+                peak={1.8}
+                interactive={!reduceMotion}
+              />
+              <div className="lp-stage-topography-tint" />
+            </div>
+
             {/* Floating stat cards */}
             <div className="lp-stat-card lp-stat-card--tl" aria-label="Attendance stat">
               <span className="lp-stat-icon">
@@ -466,6 +494,7 @@ export default function LandingPage() {
         <footer className="lp-footer" aria-label="Site footer">
           {/* Pre-footer CTA band */}
           <Reveal className="lp-prefooter">
+            <HexagonBackground className="absolute inset-0 opacity-40 pointer-events-none" hexagonSize={70} />
             <div className="lp-prefooter-inner">
               <div className="lp-prefooter-copy">
                 <h2 className="lp-prefooter-title">Ready to own your semester?</h2>
@@ -482,6 +511,7 @@ export default function LandingPage() {
 
           {/* Main footer grid */}
           <div className="lp-footer-main">
+            <HexagonBackground className="absolute inset-0" hexagonSize={64} />
             <div className="lp-footer-inner">
               {/* Brand column */}
               <div className="lp-footer-brand-col">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
+import { appPath } from '../config/appPaths';
 import axios from 'axios';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -510,7 +511,7 @@ const NoteDetail = () => {
             <header className="h-14 px-4 sm:px-6 bg-[#FFFFFF] border-b border-[#E5E5EA] flex items-center justify-between shrink-0 z-20">
                 <div className="flex items-center gap-3 min-w-0">
                     <button
-                        onClick={() => navigate('/notes')}
+                        onClick={() => navigate(appPath('/notes'))}
                         className="p-2 bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] rounded-xl transition-colors cursor-pointer shrink-0 border border-[#E5E5EA]"
                         title="Back to Notes"
                     >
@@ -762,7 +763,7 @@ const NoteDetail = () => {
                                             Doubts are only shown to teachers who have selected this subject ({note?.subjectId || 'this subject'}).
                                         </p>
                                         <button
-                                            onClick={() => navigate('/settings')}
+                                            onClick={() => navigate(appPath('/settings'))}
                                             className="mt-4 px-3.5 py-1.5 bg-[#0071E3] hover:bg-[#005BB5] text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs"
                                         >
                                             Assign Subject in Settings

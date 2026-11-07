@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
+import { appPath } from '../../config/appPaths';
 import axios from 'axios';
 import { toPng } from 'html-to-image';
 import { cn } from '../../lib/utils';
@@ -662,7 +663,7 @@ const HomeDashboard = () => {
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
-      navigate(`/notes?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`${appPath('/notes')}?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -1082,7 +1083,7 @@ const HomeDashboard = () => {
           </div>
 
           <button
-            onClick={() => navigate('/announcements')}
+            onClick={() => navigate(appPath('/announcements'))}
             className="relative w-9 h-9 rounded-full bg-[#FFFFFF] hover:bg-[#DEEDFC]/40 border border-[#E2E2E2] flex items-center justify-center text-[#383838] transition-colors cursor-pointer"
             title="Notifications"
           >
@@ -1182,7 +1183,7 @@ const HomeDashboard = () => {
               {isTeacher ? (
                 <div className="flex items-center gap-2 lg:ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                   <div
-                    onClick={() => navigate('/attendance')}
+                    onClick={() => navigate(appPath('/attendance'))}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F5F7] border border-[#E5E5EA] transition-colors cursor-pointer shadow-xs"
                   >
                     <Clock01Icon size={15} className={ncStats.pending > 0 ? "text-[#FF9F0A]" : "text-[#8E8E93]"} />
@@ -1191,7 +1192,7 @@ const HomeDashboard = () => {
                   </div>
 
                   <div
-                    onClick={() => navigate('/attendance')}
+                    onClick={() => navigate(appPath('/attendance'))}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F5F7] border border-[#E5E5EA] transition-colors cursor-pointer shadow-xs"
                   >
                     <CheckmarkBadge01Icon size={15} className="text-[#34C759]" />
@@ -1201,7 +1202,7 @@ const HomeDashboard = () => {
 
                   <button
                     type="button"
-                    onClick={() => navigate('/attendance')}
+                    onClick={() => navigate(appPath('/attendance'))}
                     className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0071E3] hover:bg-[#005BB5] text-white text-xs font-medium transition-colors cursor-pointer shadow-xs"
                   >
                     <span>Attendance Desk</span>
@@ -1211,7 +1212,7 @@ const HomeDashboard = () => {
               ) : (
                 <div className="hidden lg:flex items-center gap-2 ml-auto shrink-0">
                   <div
-                    onClick={() => navigate('/attendance')}
+                    onClick={() => navigate(appPath('/attendance'))}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-[#DEEDFC]/30 border border-[#E2E2E2] transition-colors cursor-pointer"
                   >
                     <CheckmarkBadge01Icon size={16} className="text-[#0073E6]" />
@@ -1220,7 +1221,7 @@ const HomeDashboard = () => {
                   </div>
 
                   <div
-                    onClick={() => navigate('/attendance')}
+                    onClick={() => navigate(appPath('/attendance'))}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-white hover:bg-rose-50/40 border border-[#E2E2E2] hover:border-[#E11D48]/30 transition-colors cursor-pointer"
                   >
                     <AlertCircleIcon size={16} className="text-[#E11D48]" />
@@ -1235,7 +1236,7 @@ const HomeDashboard = () => {
             {isTeacher ? (
               <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E5E5EA] lg:hidden">
                 <div
-                  onClick={() => navigate('/attendance')}
+                  onClick={() => navigate(appPath('/attendance'))}
                   className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E5E5EA] active:bg-[#F5F5F7] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -1249,7 +1250,7 @@ const HomeDashboard = () => {
                   </div>
                 </div>
                 <div
-                  onClick={() => navigate('/attendance')}
+                  onClick={() => navigate(appPath('/attendance'))}
                   className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E5E5EA] active:bg-[#F5F5F7] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -1261,7 +1262,7 @@ const HomeDashboard = () => {
                   </div>
                 </div>
                 <div
-                  onClick={() => navigate('/announcements')}
+                  onClick={() => navigate(appPath('/announcements'))}
                   className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E5E5EA] active:bg-[#F5F5F7] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -1276,7 +1277,7 @@ const HomeDashboard = () => {
             ) : (
               <div className="w-full grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E2E2E2] lg:hidden">
                 <div
-                  onClick={() => navigate('/attendance')}
+                  onClick={() => navigate(appPath('/attendance'))}
                   className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-[#DEEDFC]/30 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -1288,7 +1289,7 @@ const HomeDashboard = () => {
                   </div>
                 </div>
                 <div
-                  onClick={() => navigate('/attendance')}
+                  onClick={() => navigate(appPath('/attendance'))}
                   className="flex flex-col bg-white rounded-lg p-2.5 border border-[#E2E2E2] active:bg-rose-50/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -1335,7 +1336,7 @@ const HomeDashboard = () => {
                 </div>
               </div>
               <button
-                onClick={() => navigate('/announcements')}
+                onClick={() => navigate(appPath('/announcements'))}
                 className="px-3.5 py-1 rounded-full bg-[#0073E6] hover:bg-[#4A9AF0] text-white font-medium text-xs shrink-0 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <span>View</span>
@@ -1850,7 +1851,7 @@ const HomeDashboard = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate('/announcements')}
+                    onClick={() => navigate(appPath('/announcements'))}
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-[#0073E6] bg-white hover:bg-[#DEEDFC]/50 border border-[#D9ECFF] transition-all cursor-pointer shrink-0 shadow-2xs"
                   >
                     <span>View All</span>
@@ -1863,7 +1864,7 @@ const HomeDashboard = () => {
                     announcements.slice(0, 2).map((item, idx) => (
                       <div
                         key={item.id || idx}
-                        onClick={() => navigate('/announcements')}
+                        onClick={() => navigate(appPath('/announcements'))}
                         className="p-3 rounded-lg bg-white border border-[#E2E2E2] hover:border-[#0073E6] hover:shadow-2xs transition-all cursor-pointer group flex items-start gap-3"
                       >
                         <div className="w-9 h-9 rounded-md bg-[#DEEDFC]/60 border border-[#D9ECFF] flex flex-col items-center justify-center shrink-0 text-[#174073]">
@@ -1922,7 +1923,7 @@ const HomeDashboard = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <button
                       type="button"
-                      onClick={() => navigate('/announcements')}
+                      onClick={() => navigate(appPath('/announcements'))}
                       className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
                     >
                       <div className="w-8 h-8 rounded-lg bg-[#0071E3]/8 text-[#0071E3] flex items-center justify-center shrink-0 mt-0.5">
@@ -1939,7 +1940,7 @@ const HomeDashboard = () => {
 
                     <button
                       type="button"
-                      onClick={() => navigate('/attendance')}
+                      onClick={() => navigate(appPath('/attendance'))}
                       className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
                     >
                       <div className="w-8 h-8 rounded-lg bg-[#34C759]/10 text-[#34C759] flex items-center justify-center shrink-0 mt-0.5">
@@ -1956,7 +1957,7 @@ const HomeDashboard = () => {
 
                     <button
                       type="button"
-                      onClick={() => navigate('/notes')}
+                      onClick={() => navigate(appPath('/notes'))}
                       className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
                     >
                       <div className="w-8 h-8 rounded-lg bg-[#F5F5F7] text-[#1D1D1F] border border-[#E5E5EA] flex items-center justify-center shrink-0 mt-0.5">
@@ -1973,7 +1974,7 @@ const HomeDashboard = () => {
 
                     <button
                       type="button"
-                      onClick={() => navigate('/roadmaps')}
+                      onClick={() => navigate(appPath('/roadmaps'))}
                       className="flex items-start gap-3 p-3 rounded-xl border border-[#E5E5EA] bg-white hover:bg-[#F5F5F7] hover:border-[#D2D2D7] text-left transition-colors cursor-pointer group"
                     >
                       <div className="w-8 h-8 rounded-lg bg-[#F5F5F7] text-[#1D1D1F] border border-[#E5E5EA] flex items-center justify-center shrink-0 mt-0.5">

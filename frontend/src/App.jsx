@@ -2,7 +2,11 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import SovereignLayout from './components/Sovereign/SovereignLayout';
+import LandingPage from './components/Landing/LandingPage';
+import { APP_BASE } from './config/appPaths';
 
+const PrivacyPolicy = React.lazy(() => import('./components/Landing/PrivacyPolicy'));
+const TermsOfUse = React.lazy(() => import('./components/Landing/TermsOfUse'));
 const HomeDashboard = React.lazy(() => import('./components/Sovereign/HomeDashboard'));
 const NotesLibrary = React.lazy(() => import('./components/Sovereign/NotesLibrary'));
 const NoteDetail = React.lazy(() => import('./components/NoteDetail'));
@@ -25,7 +29,10 @@ function App() {
     <Router>
       <Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
-          <Route path="/" element={<SovereignLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfUse />} />
+          <Route path={APP_BASE} element={<SovereignLayout />}>
             <Route index element={<HomeDashboard />} />
             <Route path="notes" element={<NotesLibrary />} />
             <Route path="notes/:id" element={<NoteDetail />} />
@@ -45,4 +52,3 @@ function App() {
 }
 
 export default App;
-

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { APP_BASE, appPath } from '../../config/appPaths';
 import { toast } from 'sonner';
 import axios from 'axios';
 import {
@@ -95,38 +96,38 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
             {
                 name: 'Home',
                 icon: DashboardSquare02Icon,
-                path: '/'
+                path: APP_BASE
             },
             {
                 name: 'Notes & PYQs',
                 icon: PencilEdit02Icon,
-                path: '/notes'
+                path: appPath('/notes')
             },
             {
                 name: 'AI Assistant',
                 icon: Mortarboard02Icon,
-                path: '/ai-assistant'
+                path: appPath('/ai-assistant')
             },
             {
                 name: 'Roadmaps',
                 icon: MapsLocation02Icon,
-                path: '/roadmaps'
+                path: appPath('/roadmaps')
             },
             {
                 name: 'Announcements',
                 icon: Notification02Icon,
-                path: '/announcements'
+                path: appPath('/announcements')
             },
             {
                 name: isTeacher ? 'Attendance & NC' : 'Attendance',
                 icon: CalendarCheckIn01Icon,
-                path: '/attendance',
+                path: appPath('/attendance'),
                 badge: attendance ? `${attendance}%` : null,
             },
             {
                 name: 'Settings',
                 icon: Settings02Icon,
-                path: '/settings'
+                path: appPath('/settings')
             },
         ];
 
@@ -191,7 +192,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
                                 <NavLink
                                     key={item.path}
                                     to={item.path}
-                                    end={item.path === '/'}
+                                    end={item.path === APP_BASE}
                                     title={collapsed ? item.name : undefined}
                                     onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
                                     className={({ isActive }) => cn(

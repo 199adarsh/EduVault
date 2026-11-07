@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useOutletContext, useNavigate, useSearchParams } from 'react-router-dom';
+import { appPath } from '../../config/appPaths';
 import {
     Search01Icon,
     Upload01Icon,
@@ -226,7 +227,7 @@ const NotesLibrary = ({ defaultTab = 'notes' }) => {
     const [downloadProgress, setDownloadProgress] = useState(0);
 
     const handleOpenNote = (note) => {
-        navigate(`/notes/${note.id}`);
+        navigate(`${appPath('/notes')}/${note.id}`);
     };
 
     const handleDownloadNote = (e, note) => {

@@ -113,6 +113,13 @@ const page = await context.newPage();
 
 await page.route('**/api/**', async (route) => {
   const url = route.request().url();
+  if (url.includes('/profile')) {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(profile),
+    });
+  }
   if (url.includes('/subjects')) {
     return route.fulfill({
       status: 200,

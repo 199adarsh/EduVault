@@ -147,23 +147,23 @@
   box-shadow: 0 16px 42px -6px rgba(0, 20, 60, 0.18), 0 4px 12px -2px rgba(0, 20, 60, 0.1), var(--glass-highlight);
 }
 
-/* Brand inside pill */
+/* Brand icon inside pill */
 .lp-pill-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #111827;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.88rem;
-  letter-spacing: -0.015em;
-  padding: 0 0.75rem 0 0;
-  margin-right: 0.25rem;
+  justify-content: center;
+  padding: 0 0.55rem 0 0.15rem;
+  margin-right: 0.2rem;
   border-right: 1px solid rgba(0, 20, 60, 0.1);
-  white-space: nowrap;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms ease, transform 150ms ease;
 }
-.lp-pill-brand:hover { opacity: 0.8; }
+.lp-pill-brand:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+.lp-pill-brand:active {
+  transform: scale(0.95);
+}
 
 .lp-pill-mark {
   width: 24px;
@@ -1072,10 +1072,6 @@
   .lp-pill-nav-inner {
     padding: 0.32rem 0.45rem 0.32rem 0.65rem;
     gap: 0.15rem;
-  }
-
-  .lp-pill-brand span {
-    display: none;
   }
 
   .lp-pill-brand {

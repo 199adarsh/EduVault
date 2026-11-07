@@ -15,7 +15,10 @@ import {
 
 // Use reliable CORS-friendly CDN worker compatible with all mobile browsers
 if (typeof window !== 'undefined') {
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+        'pdfjs-dist/build/pdf.worker.min.mjs',
+        import.meta.url
+    ).toString();
 }
 
 export default function PdfViewer({ url, data, presignedUrl, title, onDownload, extractedText }) {
@@ -254,7 +257,7 @@ export default function PdfViewer({ url, data, presignedUrl, title, onDownload, 
                     {extractedText && (
                         <div className="w-full text-left bg-white dark:bg-[#1C1C1E] border border-[#E5E5EA] dark:border-[#2C2C2E] rounded-2xl p-6 sm:p-8 shadow-xs">
                             <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-lg text-xs text-amber-800 dark:text-amber-300">
-                                <span>Showing full extracted document text while storage bandwidth resets.</span>
+                                <span>Showing extracted document text.</span>
                             </div>
                             <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {extractedText}

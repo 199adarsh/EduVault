@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import mammoth from 'mammoth';
+import { renderAsync } from 'docx-preview';
 import {
     ArrowLeft02Icon,
     Download01Icon,
@@ -89,10 +89,9 @@ const NoteDetail = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [presignedUrl, setPresignedUrl] = useState(null);
-    const [directUrl, setDirectUrl] = useState(null);
     const [blobUrl, setBlobUrl] = useState(null);
     const [pdfData, setPdfData] = useState(null);
-    const [docxHtml, setDocxHtml] = useState(null);
+    const [docxBlob, setDocxBlob] = useState(null);
     const [docLoading, setDocLoading] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
@@ -105,6 +104,25 @@ const NoteDetail = () => {
     const [copiedIndex, setCopiedIndex] = useState(null);
     const scrollRef = useRef(null);
     const textareaRef = useRef(null);
+    const docxContainerRef = useRef(null);
+
+    // Render docx-preview when docxBlob is available
+    useEffect(() => {
+        let active = true;
+        if (docxBlob && docxContainerRef.current) {
+            docxContainerRef.current.innerHTML = '';
+            renderAsync(docxBlob, docxContainerRef.current, null, {
+                inWrapper: false,
+                ignoreWidth: false,
+                ignoreHeight: false
+            }).catch(err => {
+                if (active) console.warn('docx-preview render error:', err);
+            });
+        }
+        return () => {
+            active = false;
+        };
+    }, [docxBlob]);
 
     // Minimize sidebar when side panel is open so notes and AI chat stay side-by-side
     useEffect(() => {
@@ -175,14 +193,9 @@ const NoteDetail = () => {
                 setDoubts(freshDoubts);
                 doubtsCache.set(noteId, freshDoubts);
 
-                if (fileRes?.data) {
-                    if (fileRes.data.url) {
-                        presignedCache.set(noteId, fileRes.data.url);
-                        setPresignedUrl(fileRes.data.url);
-                    }
-                    if (fileRes.data.directUrl) {
-                        setDirectUrl(fileRes.data.directUrl);
-                    }
+                if (fileRes?.data?.url) {
+                    presignedCache.set(noteId, fileRes.data.url);
+                    setPresignedUrl(fileRes.data.url);
                 }
             } catch (err) {
                 console.error('Error fetching note details:', err);
@@ -209,7 +222,7 @@ const NoteDetail = () => {
             // 0. Persistent IndexedDB Cache (0 KB B2 Bandwidth)
             try {
                 const idbBlob = await getCachedNoteBlob(noteId);
-                if (idbBlob) {
+                if (idbBlob && (!idbBlob.type || !idbBlob.type.includes('text/plain'))) {
                     blob = idbBlob;
                 }
             } catch (e) {
@@ -221,8 +234,11 @@ const NoteDetail = () => {
                 try {
                     const res = await fetch(`${API_BASE}/files/${noteId}/raw`);
                     if (res.ok) {
-                        blob = await res.blob();
-                        setCachedNoteBlob(noteId, blob);
+                        const ct = res.headers.get('content-type') || '';
+                        if (!ct.includes('text/plain')) {
+                            blob = await res.blob();
+                            setCachedNoteBlob(noteId, blob);
+                        }
                     }
                 } catch (e) {
                     console.warn('Direct backend raw fetch failed, trying presigned:', e);
@@ -238,8 +254,11 @@ const NoteDetail = () => {
                         : presignedUrl;
                     const res = await fetch(fetchUrl);
                     if (res.ok) {
-                        blob = await res.blob();
-                        setCachedNoteBlob(noteId, blob);
+                        const ct = res.headers.get('content-type') || '';
+                        if (!ct.includes('text/plain')) {
+                            blob = await res.blob();
+                            setCachedNoteBlob(noteId, blob);
+                        }
                     }
                 } catch (e) {
                     console.warn('Presigned fetch failed, falling back:', e);
@@ -252,8 +271,11 @@ const NoteDetail = () => {
                     const rawKey = note.fileUrl.split('/').map(s => encodeURIComponent(s)).join('/');
                     const res = await fetch(`${API_BASE}/files/raw/${rawKey}`);
                     if (res.ok) {
-                        blob = await res.blob();
-                        setCachedNoteBlob(noteId, blob);
+                        const ct = res.headers.get('content-type') || '';
+                        if (!ct.includes('text/plain')) {
+                            blob = await res.blob();
+                            setCachedNoteBlob(noteId, blob);
+                        }
                     }
                 } catch (err) {
                     console.warn('Local raw fetch error:', err);
@@ -267,15 +289,9 @@ const NoteDetail = () => {
                 blobCache.set(noteId, bUrl);
                 setBlobUrl(bUrl);
 
-                const ext = note?.fileUrl ? note.fileUrl.split('.').pop().toLowerCase() : '';
+                const ext = ((note?.originalFilename || note?.fileUrl || '').split('.').pop() || '').toLowerCase();
                 if (ext === 'docx') {
-                    try {
-                        const arrayBuffer = await blob.arrayBuffer();
-                        const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
-                        if (!cancelled) setDocxHtml(html);
-                    } catch (e) {
-                        console.warn('DOCX parse error:', e);
-                    }
+                    if (!cancelled) setDocxBlob(blob);
                 } else if (ext === 'pdf') {
                     try {
                         const arrayBuffer = await blob.arrayBuffer();
@@ -292,7 +308,7 @@ const NoteDetail = () => {
         return () => {
             cancelled = true;
         };
-    }, [presignedUrl, note?.fileUrl, noteId]);
+    }, [presignedUrl, note?.fileUrl, note?.originalFilename, noteId]);
 
     const handlePostDoubt = async () => {
         if (!doubtQuery.trim()) return;
@@ -467,7 +483,7 @@ const NoteDetail = () => {
 
     if (!note) return null;
 
-    const fileExt = note.fileUrl ? note.fileUrl.split('.').pop().toLowerCase() : '';
+    const fileExt = ((note.originalFilename || note.fileUrl || '').split('.').pop() || '').toLowerCase();
     const isPdf = fileExt === 'pdf';
     const isOfficeDoc = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(fileExt);
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(fileExt);
@@ -478,13 +494,6 @@ const NoteDetail = () => {
         !note.extractedText.startsWith("Text extraction only supported") &&
         !note.extractedText.startsWith("Failed to extract text")
     );
-    const publicGdocUrl = (directUrl && directUrl.startsWith('http'))
-        ? directUrl
-        : (note.fileUrl && note.fileUrl.startsWith('http')
-            ? note.fileUrl
-            : (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-                ? `${window.location.origin}${API_BASE}/files/${noteId}/raw`
-                : null));
 
     return (
         <div className="relative flex-1 flex flex-col bg-[#F5F5F7] overflow-hidden antialiased h-full w-full font-sans text-[#1D1D1F]">
@@ -633,44 +642,11 @@ const NoteDetail = () => {
                                     submessage="Preparing layout preview..."
                                 />
                             </div>
-                        ) : docxHtml ? (
+                        ) : docxBlob ? (
                             <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
                                 <div className="max-w-4xl mx-auto bg-white border border-[#E5E5EA] rounded-2xl p-6 sm:p-8 shadow-xs">
-                                    <div
-                                        className="docx-content prose prose-slate max-w-none prose-headings:font-semibold prose-headings:text-[#1D1D1F] prose-h1:text-2xl prose-h2:text-xl prose-p:text-sm prose-p:leading-relaxed"
-                                        dangerouslySetInnerHTML={{ __html: docxHtml }}
-                                    />
+                                    <div ref={docxContainerRef} className="docx-preview-container overflow-x-auto" />
                                 </div>
-                            </div>
-                        ) : publicGdocUrl ? (
-                            <div className="flex-1 w-full h-full flex flex-col bg-white">
-                                <div className="px-4 py-2 border-b border-[#E5E5EA] flex items-center justify-between text-xs bg-[#F5F5F7]">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-medium text-[#1D1D1F]">Document Preview (Google Docs)</span>
-                                        <span className="text-[10px] text-[#6E6E73] font-mono uppercase bg-[#E5E5EA] px-1.5 py-0.5 rounded font-semibold">{fileExt}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={handleDownload}
-                                            className="px-2.5 py-1 bg-white hover:bg-black/5 border border-[#E5E5EA] text-[#1D1D1F] rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                                        >
-                                            <Download01Icon size={13} />
-                                            <span>Download</span>
-                                        </button>
-                                        <button
-                                            onClick={() => window.open(publicGdocUrl, '_blank', 'noopener,noreferrer')}
-                                            className="px-2.5 py-1 bg-[#0071E3] hover:bg-[#0077ED] text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                                        >
-                                            <ViewIcon size={13} />
-                                            <span>Full View</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <iframe
-                                    src={`https://docs.google.com/gview?url=${encodeURIComponent(publicGdocUrl)}&embedded=true`}
-                                    className="w-full flex-1 border-0 min-h-[500px]"
-                                    title="Google Docs Document Preview"
-                                />
                             </div>
                         ) : hasValidExtractedText ? (
                             <div className="flex-1 w-full h-full overflow-y-auto bg-[#F5F5F7] p-4 sm:p-6 text-[#1D1D1F]">
